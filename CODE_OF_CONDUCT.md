@@ -59,8 +59,8 @@ representative at an online or offline event.
 ## Enforcement
 
 Instances of abusive, harassing, or otherwise unacceptable behavior may be
-reported at [cnect-eudiw-development@ec.europa.eu](mailto:cnect-eudiw-development@ec.europa.eu).
-to the community leaders responsible for enforcement.
+reported to the community leaders responsible for enforcement at
+[cnect-eudiw-development@ec.europa.eu](mailto:cnect-eudiw-development@ec.europa.eu).
 
 All complaints will be reviewed and investigated promptly and fairly.
 

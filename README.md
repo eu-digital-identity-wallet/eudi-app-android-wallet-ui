@@ -8,10 +8,14 @@ the [EUDI Wallet Reference Implementation project description](https://github.co
 ## Table of contents
 
 * [Overview](#overview)
+* [Specifications Employed](#specifications-employed)
 * [Important things to know](#important-things-to-know)
 * [How to use the application](#how-to-use-the-application)
 * [How to build - Quick start guide](#how-to-build---quick-start-guide)
 * [Application configuration](#application-configuration)
+* [Production go-live guide](#production-go-live-guide)
+* [Release automation](#release-automation)
+* [Package structure](#package-structure)
 * [Demo videos](#demo-videos)
 * [Disclaimer](#disclaimer)
 * [How to contribute](#how-to-contribute)
@@ -31,7 +35,7 @@ The EUDI Wallet Reference Implementation is the application that allows users to
 
 The EUDIW project provides, through this repository, an Android app. Please refer to the repositories listed in the following sections for more detailed information on how to get started, contribute, and engage with the EUDI Wallet Reference Implementation.
  
-# 💡 Specifications Employed
+## Specifications Employed
 
 The app consumes the SDK called EUDIW Wallet core [Wallet core](https://github.com/eu-digital-identity-wallet/eudi-lib-android-wallet-core) and a list of available libraries to facilitate remote presentation, proximity, and issuing test/demo functionality following the specification of the [ARF](https://github.com/eu-digital-identity-wallet/eudi-doc-architecture-and-reference-framework), including:
  
@@ -69,9 +73,14 @@ The main purpose of the reference implementation is to showcase the ecosystem an
 
 If you're planning to use this application in production, we recommend reviewing the following steps:
 - Configure the application properly by following the guide [here](wiki/configuration.md)
+- Follow the production go-live guide [here](wiki/go_live.md) before creating a release candidate.
 - The Pin storage configuration matches your security requirements, or provide your own by following this guide [Pin Storage Configuration](wiki/configuration.md#pin-storage-configuration)
 - The application meets the OWASP MASVS industry standard. Please refer to the following links for further information on the controls you must implement to ensure maximum compliance:
     - [OWASP MASVS](https://mas.owasp.org/MASVS/)
+
+Do not treat `devRelease` or `demoRelease` as production-ready artifacts. They use demo services,
+demo/development trust anchors, and reference-implementation defaults that an implementer must
+replace before launch.
 
 ## How to use the application
 
@@ -151,7 +160,23 @@ To delete a document, navigate to the 'Documents' tab within the 'Dashboard' scr
 
 You can find instructions on how to configure the application [here](wiki/configuration.md)
 
+## Production go-live guide
+
+Member State teams, wallet providers, and integrators preparing a live deployment should follow the
+production go-live guide [here](wiki/go_live.md). It explains how to create a production flavor,
+replace demo endpoints and trust anchors, configure Wallet Core and RQES, harden the Android app,
+and collect release/security evidence.
+
+## Release automation
+
+Fastlane lane reference is generated in [fastlane/README.md](fastlane/README.md). Human-maintained
+usage notes, required environment variables, and release-lane cautions are documented in
+[fastlane/USAGE.md](fastlane/USAGE.md).
+
 ## Package structure
+
+*app*: Android application module. Defines application ID, signing configuration, build types,
+version code, and the final packaged app.
 
 *assembly-logic*: App dependencies.
 
@@ -164,6 +189,8 @@ You can find instructions on how to configure the application [here](wiki/config
 *business-logic*: App business logic.
 
 *core-logic*: Wallet core logic.
+
+*network-logic*: Ktor HTTP client configuration and wallet attestation network access.
 
 *storage-logic*: Persistent storage cache.
 
@@ -183,9 +210,17 @@ You can find instructions on how to configure the application [here](wiki/config
 
 *proximity-feature*: Proximity scenarios feature.
 
+*baseline-profile*: Baseline profile generation for release performance.
+
+*test-logic*: Shared test utilities.
+
+*test-feature*: Shared feature-test utilities.
+
 
 ```mermaid
 graph TD;
+  app --> assembly-logic
+
   startup-feature --> assembly-logic
   dashboard-feature --> assembly-logic
   presentation-feature --> assembly-logic
@@ -225,6 +260,8 @@ graph TD;
 
   resources-logic --> authentication-logic
   business-logic --> authentication-logic
+
+  test-feature --> test-logic
 ```
 
 ## Demo videos

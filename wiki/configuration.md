@@ -3,7 +3,8 @@
 ## Table of contents
 
 * [General configuration](#general-configuration)
-* [DeepLink Schemas configuration](#deeplink-schemas-configuration)
+* [Production configuration reference](#production-configuration-reference)
+* [Deep link scheme configuration](#deep-link-scheme-configuration)
 * [Scoped Issuance Document Configuration](#scoped-issuance-document-configuration)
 * [How to work with self-signed certificates](#how-to-work-with-self-signed-certificates)
 * [Theme configuration](#theme-configuration)
@@ -17,22 +18,31 @@ All core network and trust settings are centralized in the `WalletCoreConfig` in
 
 ```kotlin
 interface WalletCoreConfig {
-    // 1. Issuing API
+    // 1. Wallet Core SDK configuration, including trust, OpenID4VP, DCAPI, and key settings.
+    val config: EudiWalletConfig
+
+    // 2. Issuing APIs.
     val issuersConfig: List<VciConfig>
 
-    // 2. Wallet Provider Host
-    val walletProviderHost: String
+    // 3. Document category grouping used by the UI.
+    val documentCategories: DocumentCategories
 
-    // 3. Trusted certificates
-    val config: EudiWalletConfig
+    // 4. Revocation/status check interval.
+    val revocationInterval: Duration
+
+    // 5. Credential issuance and re-issuance policy.
+    val documentIssuanceConfig: DocumentIssuanceConfig
+
+    // 6. Wallet Provider Host.
+    val walletProviderHost: String
 }
 ```
 
 You configure these properties **per flavor** by providing a `WalletCoreConfigImpl` for each build
 variant:
 
-* `core-logic/src/demo/config/WalletCoreConfigImpl.kt`
-* `core-logic/src/dev/config/WalletCoreConfigImpl.kt`
+* `core-logic/src/demo/java/eu/europa/ec/corelogic/config/WalletCoreConfigImpl.kt`
+* `core-logic/src/dev/java/eu/europa/ec/corelogic/config/WalletCoreConfigImpl.kt`
 
 Each flavor can use different issuer configs, wallet provider hosts, and trust stores.
 
@@ -52,11 +62,22 @@ Each flavor can use different issuer configs, wallet provider hosts, and trust s
                     .withDPopConfig(DPopConfig.Default)
                     .build(),
                 order = 0
+            ),
+            VciConfig(
+                config = OpenId4VciManager.Config.Builder()
+                    .withIssuerUrl(issuerUrl = "https://dev.issuer-backend.eudiw.dev")
+                    .withClientAuthenticationType(OpenId4VciManager.ClientAuthenticationType.AttestationBased)
+                    .withAuthFlowRedirectionURI(BuildConfig.ISSUE_AUTHORIZATION_DEEPLINK)
+                    .withParUsage(OpenId4VciManager.Config.ParUsage.IF_SUPPORTED)
+                    .withDPopConfig(DPopConfig.Default)
+                    .build(),
+                order = 1
             )
         )
     ```
 
-   Adjust the configuration per flavor in the corresponding `WalletCoreConfigImpl`.
+   Adjust the configuration per flavor in the corresponding `WalletCoreConfigImpl`. The `order`
+   property controls how issuers are displayed in the add-document flow.
 
 2. Wallet Provider Host
 
@@ -64,10 +85,12 @@ Each flavor can use different issuer configs, wallet provider hosts, and trust s
 
     ```kotlin
     override val walletProviderHost: String
-        get() = "https://wallet-provider.eudiw.dev"
+        get() = "https://dev.wallet-provider.eudiw.dev"
     ```
 
-   Again, set a different value per flavor in the corresponding `WalletCoreConfigImpl`.
+   Again, set a different value per flavor in the corresponding `WalletCoreConfigImpl`. This host is
+   used by wallet attestation flows and must point to the wallet provider service for the selected
+   environment.
 
 3. Trusted certificates
 
@@ -82,7 +105,8 @@ Each flavor can use different issuer configs, wallet provider hosts, and trust s
    The application's IACA certificates are
    located [here](https://github.com/eu-digital-identity-wallet/eudi-app-android-wallet-ui/tree/main/resources-logic/src/main/res/raw)
 
-   Configure `EudiWalletConfig` per flavor inside the appropriate `WalletCoreConfigImpl`.
+   Configure `EudiWalletConfig` per flavor inside the appropriate `WalletCoreConfigImpl`. Demo and
+   development trust anchors must be replaced before production.
 
 4. Preregistered Client Scheme
 
@@ -126,7 +150,8 @@ Each flavor can use different issuer configs, wallet provider hosts, and trust s
 
    You can configure the *RQESConfig*, which implements the EudiRQESUiConfig interface from the
    RQESUi SDK, per flavor. Both implementations are inside the business-logic module at
-   src/demo/config/RQESConfigImpl and src/dev/config/RQESConfigImpl.
+   `business-logic/src/demo/java/eu/europa/ec/businesslogic/config/RQESConfigImpl.kt` and
+   `business-logic/src/dev/java/eu/europa/ec/businesslogic/config/RQESConfigImpl.kt`.
 
     ```kotlin
     class RQESConfigImpl : EudiRQESUiConfig {
@@ -158,7 +183,7 @@ Each flavor can use different issuer configs, wallet provider hosts, and trust s
                     endpoint = "your_endpoint".toUri(),
                     tsaUrl = "your_tsaUrl",
                     clientId = "your_clientid",
-                    clientSecret = "your_secret",
+                    clientSecret = "your_secret_or_non_confidential_demo_value",
                     authFlowRedirectionURI = URI.create("your_uri"),
                     hashAlgorithm = HashAlgorithmOID.SHA_256,
                 )
@@ -174,6 +199,9 @@ Each flavor can use different issuer configs, wallet provider hosts, and trust s
             )
     }
     ```
+
+   Do not hardcode real production OAuth client secrets in the mobile app. Prefer a public-client
+   profile, backend mediation, or another pattern approved by the QTSP and security team.
 
 6. Wallet Activation
 
@@ -192,11 +220,43 @@ Each flavor can use different issuer configs, wallet provider hosts, and trust s
    }
     ```
 
-## DeepLink Schemas configuration
+## Production configuration reference
+
+The following table summarizes the main values an implementer must review before release. For a
+complete production process, see [go_live.md](go_live.md).
+
+| Configuration | Where it is defined | What to put in production |
+| --- | --- | --- |
+| App ID | `app/build.gradle.kts` | A reverse-DNS package name owned by the implementer, for example `eu.example.wallet`. Do not change after public release unless publishing a separate app. |
+| App name suffix | `build-logic/convention/src/main/kotlin/project/convention/logic/AppFlavor.kt` | Empty for production. Keep suffixes only for dev/test builds. |
+| Build flavor | `AppFlavor.kt` and matching source sets | Add a dedicated production flavor, for example `prod`, instead of reusing `dev` or `demo`. |
+| Issuer URLs | `core-logic/src/<flavor>/java/.../WalletCoreConfigImpl.kt` | HTTPS URLs for approved production OpenID4VCI issuers. Include scheme and port if non-default. |
+| Issuer order | `VciConfig(order = ...)` | Integer display order in the add-document flow. Use stable ordering for user support and screenshots. |
+| Wallet Provider host | `walletProviderHost` in `WalletCoreConfigImpl.kt` | HTTPS base URL for the production wallet provider/attestation service. |
+| OpenID4VCI redirect URI | `BuildConfig.ISSUE_AUTHORIZATION_DEEPLINK` from build-logic placeholders | A registered URI accepted by the issuer and handled only by the wallet app. |
+| OpenID4VP schemes | `AndroidLibraryConventionPlugin.kt` and `EudiWalletConfig.configureOpenId4Vp` | Schemes and client ID schemes approved for the ecosystem. Keep the manifest, `BuildConfig`, and Wallet Core config aligned. |
+| Reader/verifier trust anchors | `configureReaderTrustStore(...)` raw resources | Production IACA/reader/verifier trust anchors from an approved trust list or governance process. |
+| Document key settings | `configureDocumentKeyCreation(...)` | Policy-approved user authentication, timeout, and StrongBox behavior. Test fallback on devices without StrongBox. |
+| DCAPI | `configureDCAPI { withEnabled(...) }` | Enable only if the production wallet supports Digital Credential API flows and has tested them. |
+| Document issuance rules | `documentIssuanceConfig` | Credential rotation, one-time-use, quantity, and re-issuance intervals agreed with issuer capacity and privacy policy. |
+| Revocation interval | `revocationInterval` | A value that balances user experience, battery/network use, and relying-party risk. |
+| RQES QTSP endpoint | `business-logic/src/<flavor>/java/.../RQESConfigImpl.kt` | Production CSC/QTSP endpoint provided by the selected qualified trust service provider. |
+| RQES TSA URL | `RQESConfigImpl.kt` | Production timestamp authority URL required by the QTSP/signature profile. |
+| RQES client ID/secret | `RQESConfigImpl.kt` | Do not hardcode confidential secrets in the app. Use an approved public-client or backend-mediated design. |
+| RQES redirect URI | `BuildConfig.RQES_DEEPLINK` | Redirect URI registered with the QTSP and declared in the Android manifest. |
+| RQES document retrieval trust | `DocumentRetrievalConfig` | Production certificates or trust material required for retrieving signing documents. |
+| PIN storage | `authentication-logic` and `StorageConfig` | Confirm PBKDF2 parameters, lockout policy, encrypted preferences, and migration behavior meet policy. |
+| Database key/storage | `storage-logic` and encrypted `PrefsController` | Ensure database keys are generated securely, encrypted at rest, excluded from backup, and migrated safely. |
+| Network logging | `network-logic/.../NetworkModule.kt` | `LogLevel.NONE` for release. Never log tokens, credentials, signatures, or document data. |
+| Network security config | `network-logic/src/main/res/xml/network_security_config.xml` | Cleartext disabled. No debug CA or trust-all logic in release. |
+| Analytics providers | `analytics-logic` | Only approved providers, with data minimization, consent, retention, and no credential contents. |
+| Release signing | `app/build.gradle.kts` and CI secrets | Keystore and passwords controlled through CI secret storage, HSM/KMS, or an equivalent process. |
+
+## Deep link scheme configuration
 
 According to the specifications, issuance, presentation, and RQES require deep-linking for the same device flows.
 
-If you want to adjust any schema, you can alter the *AndroidLibraryConventionPlugin* inside the build-logic module.
+If you want to adjust any scheme, you can alter the *AndroidLibraryConventionPlugin* inside the build-logic module.
 
 ```kotlin
 val eudiOpenId4VpScheme = "eudi-openid4vp"
@@ -225,7 +285,11 @@ val rqesDocRetrievalScheme = "eudi-rqes"
 val rqesDocRetrievalHost = "*"
 ```
 
-Let's assume you want to change the credential offer schema to custom-my-offer:// the *AndroidLibraryConventionPlugin* should look like this:
+The reference configuration uses broad wildcard hosts for several custom-scheme links. For
+production, restrict hosts and paths where the protocol allows it, register redirect URIs with the
+issuer/verifier/QTSP, and validate every inbound URI before acting on it.
+
+Let's assume you want to change the credential offer scheme to custom-my-offer:// the *AndroidLibraryConventionPlugin* should look like this:
 
 ```kotlin
 val eudiOpenId4VpScheme = "eudi-openid4vp"
@@ -247,7 +311,7 @@ val credentialOfferHaipScheme = "haip-vci"
 val credentialOfferHaipHost = "*"
 ```
 
-In case of an additive change, e.g., adding an extra credential offer schema, you must adjust the following.
+In case of an additive change, e.g., adding an extra credential offer scheme, you must adjust the following.
 
 AndroidLibraryConventionPlugin:
 
@@ -376,79 +440,61 @@ configureOpenId4Vp {
 
 The credential configuration is derived directly from the issuer's metadata.
 The issuer URL is configured per flavor via the *issuersConfig* property inside the core-logic
-module at src/demo/config/WalletCoreConfigImpl and src/dev/config/WalletCoreConfigImpl.
+module at `core-logic/src/demo/java/eu/europa/ec/corelogic/config/WalletCoreConfigImpl.kt` and
+`core-logic/src/dev/java/eu/europa/ec/corelogic/config/WalletCoreConfigImpl.kt`.
 The *order* property determines the order the issuers appear into, in the *AddDocumentScreen*, if
 more than one exists.
 If you want to add or adjust the displayed scoped documents, you must modify the issuer's metadata, and the wallet will automatically resolve your changes.
 
 ## How to work with self-signed certificates
 
-This section describes configuring the application to interact with services utilizing self-signed certificates.
+This section describes configuring the application to interact with local services that use
+self-signed or private-CA certificates.
 
-*To enable support for self-signed certificates, you must customize the existing Ktor `HttpClient`
-used by the application.*
+Do not disable TLS validation. Do not add a trust-all `X509TrustManager`. Do not set
+`HostnameVerifier { _, _ -> true }`. Those patterns make the app vulnerable to trivial
+man-in-the-middle attacks and must not be present in release builds.
 
-1. Open the `NetworkModule.kt` file of the `network-logic` module.
-2. Add the following imports:
+For local development, use a debug-only trust anchor:
 
-    ```kotlin
-    import android.annotation.SuppressLint
-    import java.security.SecureRandom
-    import javax.net.ssl.HostnameVerifier
-    import javax.net.ssl.SSLContext
-    import javax.net.ssl.TrustManager
-    import javax.net.ssl.X509TrustManager
-    import javax.security.cert.CertificateException
-    ```
+1. Create a local development CA.
+2. Use that CA to sign the TLS certificates for your local issuer, verifier, and wallet-provider
+   services.
+3. Add the CA certificate to a debug-only resource such as
+   `network-logic/src/debug/res/raw/local_dev_ca.cer`.
+4. Add a debug-only `network_security_config.xml` under
+   `network-logic/src/debug/res/xml/network_security_config.xml`.
+5. Configure only the local development host or domain to trust that CA:
 
-3. Replace the `provideHttpClient` function with the following:
+   ```xml
+   <?xml version="1.0" encoding="utf-8"?>
+   <network-security-config>
+       <domain-config cleartextTrafficPermitted="false">
+           <domain includeSubdomains="true">10.0.2.2</domain>
+           <trust-anchors>
+               <certificates src="@raw/local_dev_ca" />
+           </trust-anchors>
+       </domain-config>
+       <base-config cleartextTrafficPermitted="false">
+           <trust-anchors>
+               <certificates src="system" />
+           </trust-anchors>
+       </base-config>
+   </network-security-config>
+   ```
 
-    ```kotlin
-    @SuppressLint("TrustAllX509TrustManager", "CustomX509TrustManager")
-    @Single
-    fun provideHttpClient(json: Json): HttpClient {
-        val trustAllCerts = arrayOf<TrustManager>(
-            object : X509TrustManager {
-                @Throws(CertificateException::class)
-                override fun checkClientTrusted(
-                    chain: Array<java.security.cert.X509Certificate>,
-                    authType: String
-                ) {
-                }
-    
-                @Throws(CertificateException::class)
-                override fun checkServerTrusted(
-                    chain: Array<java.security.cert.X509Certificate>,
-                    authType: String
-                ) {
-                }
-    
-                override fun getAcceptedIssuers(): Array<java.security.cert.X509Certificate> {
-                    return arrayOf()
-                }
-            }
-        )
-    
-        return HttpClient(Android) {
-            install(Logging)
-            install(ContentNegotiation) {
-                json(
-                    json = json,
-                    contentType = ContentType.Application.Json
-                )
-            }
-            engine {
-                requestConfig
-                sslManager = { httpsURLConnection ->
-                    httpsURLConnection.sslSocketFactory = SSLContext.getInstance("TLS").apply {
-                        init(null, trustAllCerts, SecureRandom())
-                    }.socketFactory
-                    httpsURLConnection.hostnameVerifier = HostnameVerifier { _, _ -> true }
-                }
-            }
-        }
-    }
-    ```
+6. Keep `network-logic/src/main/res/xml/network_security_config.xml` strict for release builds:
+
+   ```xml
+   <network-security-config>
+       <base-config cleartextTrafficPermitted="false" />
+   </network-security-config>
+   ```
+
+If a temporary trust-all client is needed for a one-off experiment, keep it out of committed source
+or isolate it in a debug-only source set that cannot be compiled into release. Add CI checks that
+search for `TrustAll`, `X509TrustManager`, `HostnameVerifier { _, _ -> true }`, and
+`cleartextTrafficPermitted="true"` before release.
 
 ## Theme configuration
 
@@ -471,6 +517,12 @@ The application allows the configuration of the PIN storage. You can configure t
 3. Pin matching and validity
 
 Via the *StorageConfig* inside the authentication-logic module.
+
+The reference implementation uses `PrefsPinStorageProvider`, which stores a PBKDF2-HMAC-SHA256
+hash with a random salt and an iteration count, backed by the encrypted `PrefsController`. The
+encrypted preferences use Jetpack DataStore with Google Tink AEAD and an Android Keystore master
+key. For production, confirm the iteration count, lockout behavior, device binding, migration,
+backup exclusion, and recovery policy against your security requirements.
 
 ```kotlin
 interface StorageConfig {
@@ -538,6 +590,10 @@ The application allows the configuration of multiple analytics providers. You ca
 3. Event logging
 
 Via the *AnalyticsConfig* inside the analytics-logic module.
+
+No analytics provider is enabled by default. If you add one, also add the required SDK dependency,
+document the provider's data processing role, avoid logging credential contents or verifier request
+payloads, and align telemetry with consent, retention, and privacy requirements.
 
 ```kotlin
 interface AnalyticsConfig {
