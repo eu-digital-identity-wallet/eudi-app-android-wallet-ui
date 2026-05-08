@@ -175,47 +175,28 @@ usage notes, required environment variables, and release-lane cautions are docum
 
 ## Package structure
 
-*app*: Android application module. Defines application ID, signing configuration, build types,
-version code, and the final packaged app.
-
-*assembly-logic*: App dependencies.
-
-*build-logic*: Application Gradle plugins.
-
-*resources-logic*: All app resources reside here (images, etc.)
-
-*analytics-logic*: Access to analytics providers. Capabilities for test monitoring analytics (i.e., crashes) can be added here (no functionality right now)
-
-*business-logic*: App business logic.
-
-*core-logic*: Wallet core logic.
-
-*network-logic*: Ktor HTTP client configuration and wallet attestation network access.
-
-*storage-logic*: Persistent storage cache.
-
-*authentication-logic*: Pin/Biometry Storage and System Biometrics Logic.
-
-*ui-logic*: Common UI components.
-
-*common-feature*: Code that is common to all features.
-
-*dashboard-feature*: The application's main dashboard.
-
-*startup-feature*: The initial screen of the app.
-
-*presentation-feature*: Online authentication feature.
-
-*issuance-feature*: Document issuance feature.
-
-*proximity-feature*: Proximity scenarios feature.
-
-*baseline-profile*: Baseline profile generation for release performance.
-
-*test-logic*: Shared test utilities.
-
-*test-feature*: Shared feature-test utilities.
-
+| Module | Description |
+|---|---|
+| `app` | Android application module. Defines the application ID, signing configuration, build types, version code, and final packaged app. |
+| `assembly-logic` | App dependencies. |
+| `build-logic` | Application Gradle plugins. |
+| `resources-logic` | All app resources, such as images and other assets. |
+| `analytics-logic` | Access to analytics providers. Capabilities for test monitoring analytics, such as crashes, can be added here. |
+| `business-logic` | App business logic. |
+| `core-logic` | Wallet core logic. |
+| `network-logic` | Ktor HTTP client configuration and wallet attestation network access. |
+| `storage-logic` | Persistent storage cache. |
+| `authentication-logic` | PIN, biometry storage, and system biometrics logic. |
+| `ui-logic` | Common UI components. |
+| `common-feature` | Code that is common to all features. |
+| `dashboard-feature` | The application's main dashboard. |
+| `startup-feature` | The initial screen of the app. |
+| `presentation-feature` | Online authentication feature. |
+| `issuance-feature` | Document issuance feature. |
+| `proximity-feature` | Proximity scenarios feature. |
+| `baseline-profile` | Baseline profile generation for release performance. |
+| `test-logic` | Shared test utilities. |
+| `test-feature` | Shared feature-test utilities. |
 
 ```mermaid
 graph TD;
