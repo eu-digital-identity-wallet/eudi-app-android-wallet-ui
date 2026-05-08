@@ -177,7 +177,7 @@ usage notes, required environment variables, and release-lane cautions are docum
 
 ```mermaid
 graph TD;
-  app --> assembly-logic
+  assembly-logic --> app
 
   startup-feature --> assembly-logic
   dashboard-feature --> assembly-logic
