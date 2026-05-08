@@ -3,6 +3,7 @@
 ## Table of contents
 
 * [General configuration](#general-configuration)
+* [Dependency versions](#dependency-versions)
 * [Production configuration reference](#production-configuration-reference)
 * [Deep link scheme configuration](#deep-link-scheme-configuration)
 * [Scoped Issuance Document Configuration](#scoped-issuance-document-configuration)
@@ -219,6 +220,28 @@ Each flavor can use different issuer configs, wallet provider hosts, and trust s
         val forcePidActivation: Boolean get() = false
    }
     ```
+
+## Dependency versions
+
+The central version catalog is:
+
+`gradle/libs.versions.toml`
+
+At the time this guide was written, key versions included:
+
+| Dependency | Current repo version |
+| --- | --- |
+| Android Gradle Plugin | `9.2.1` |
+| Kotlin | `2.3.21` |
+| EUDI Wallet Core | `0.27.1` |
+| EUDI RQES UI SDK | `0.3.8` |
+| Ktor | `3.4.3` |
+| SQLCipher Android | `4.15.0` |
+| OWASP Dependency Check | `12.2.2` |
+
+Review these versions whenever you change configuration that depends on SDK behavior, such as
+Wallet Core issuance/presentation, RQES, Ktor networking, SQLCipher storage, or dependency-check
+policy. For production release rules, see [go_live.md](go_live.md#dependency-versions).
 
 ## Production configuration reference
 
