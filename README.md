@@ -184,6 +184,18 @@ graph TD;
   presentation-feature --> assembly-logic
   proximity-feature --> assembly-logic
   issuance-feature --> assembly-logic
+  
+  test-logic --> test-feature
+  test-feature -> common-feature
+  
+  test-logic --> business-logic
+  test-logic --> ui-logic
+  test-logic --> network-logic
+  test-logic --> resources-logic
+  test-logic --> analytics-logic
+  test-logic --> authentication-logic
+  test-logic --> core-logic
+  test-logic --> storage-logic
 
   common-feature --> startup-feature
   common-feature --> dashboard-feature
@@ -218,8 +230,6 @@ graph TD;
 
   resources-logic --> authentication-logic
   business-logic --> authentication-logic
-
-  test-feature --> test-logic
 ```
 
 ## Demo videos
