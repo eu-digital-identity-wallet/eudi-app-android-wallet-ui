@@ -97,6 +97,7 @@ class KeystoreControllerImpl(
             setKeySize(256)
             setBlockModes(KeyProperties.BLOCK_MODE_GCM)
             setEncryptionPaddings(KeyProperties.ENCRYPTION_PADDING_NONE)
+            setIsStrongBoxBacked(true)
             if (userAuthenticationRequired) {
                 setUserAuthenticationRequired(true)
                 setInvalidatedByBiometricEnrollment(true)
