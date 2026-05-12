@@ -63,19 +63,20 @@ Use this checklist before the first production release.
 
 The application is a modular Android project. Important modules for production are:
 
-| Module | Production relevance |
-| --- | --- |
-| `app` | Application ID, signing, release build type, baseline profile packaging. |
-| `assembly-logic` | Android application class, manifest, permissions, activities, deep links, NFC service, app name. |
-| `core-logic` | Wallet Core integration, issuer configuration, wallet provider, trust stores, document issuance, presentation, revocation, reissuance. |
-| `business-logic` | Global app config, RQES config, logging, encrypted preference storage, crypto helpers. |
-| `authentication-logic` | PIN and biometric storage providers and controllers. |
-| `storage-logic` | SQLCipher-backed Room database and local transaction/revocation storage. |
-| `network-logic` | Ktor client, logging level, wallet attestation repository. |
-| `resources-logic` | Strings, images, raw certificate resources. |
-| `analytics-logic` | Optional analytics provider integration. |
-| `build-logic` | Gradle convention plugins, flavors, deep-link constants, lint, dependency check, managed devices. |
-| `baseline-profile` | Baseline profile generation for release performance. |
+| Module                       | Production relevance                                                                                                                   |
+|------------------------------|----------------------------------------------------------------------------------------------------------------------------------------|
+| `app`                        | Application ID, signing, release build type, baseline profile packaging.                                                               |
+| `assembly-logic`             | Android application class, manifest, permissions, activities, deep links, NFC service, app name.                                       |
+| `core-logic`                 | Wallet Core integration, issuer configuration, wallet provider, trust stores, document issuance, presentation, revocation, reissuance. |
+| `business-logic`             | Global app config, RQES config, logging, encrypted preference storage, crypto helpers.                                                 |
+| `authentication-logic`       | PIN and biometric storage providers and controllers.                                                                                   |
+| `storage-logic`              | SQLCipher-backed Room database and local transaction/revocation storage.                                                               |
+| `network-logic`              | Ktor client, logging level, wallet attestation repository.                                                                             |
+| `resources-logic`            | Strings, images, raw certificate resources.                                                                                            |
+| `analytics-logic`            | Optional analytics provider integration.                                                                                               |
+| `build-logic`                | Gradle convention plugins, flavors, deep-link constants, lint, dependency check, managed devices.                                      |
+| `baseline-profile`           | Baseline profile generation for release performance.                                                                                   |
+| `test-logic`, `test-feature` | Test-only support modules for shared unit and instrumentation test utilities; not production runtime modules.                          |
 
 Current flavors:
 
