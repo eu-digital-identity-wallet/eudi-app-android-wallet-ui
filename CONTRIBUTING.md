@@ -15,7 +15,7 @@ for more information.
 
 ## GitHub Flow
 
-We use the [GitHub Flow](https://guides.github.com/introduction/flow/) workflow for making
+We use the [GitHub Flow](https://docs.github.com/en/get-started/using-github/github-flow) workflow for making
 contributions to this project. This means that:
 
 1. Fork the repository and create a new branch from `main` for your changes.
@@ -48,6 +48,10 @@ contributions to this project. This means that:
 * Test your changes as thoroughly as possible before you commit them. Preferably, automate your test
   by unit/integration tests. If tested manually, provide information about the test scope in the PR
   description (e.g. “Test passed: Upgrade version from 0.42 to 0.42.23.”).
+
+* For configuration, release, security, or production-readiness changes, verify that no secrets,
+  signing material, demo endpoints, or demo trust anchors are accidentally introduced into
+  production code or documentation.
 
 * Create _Work In Progress [WIP]_ pull requests only if you need clarification or an explicit review
   before you can continue your work item.

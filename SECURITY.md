@@ -6,6 +6,23 @@ At the European Commission, we treat the security of our Communication and Infor
 
 - Architecture and Reference Framework
 - Source code in [eu-digital-identity-wallet](https://github.com/eu-digital-identity-wallet) public repositories
+- Public documentation and reference configuration in this repository
+
+Hosted demo/reference services may have separate operational ownership and availability constraints.
+When reporting an issue, clearly state whether it affects source code, documentation, a hosted demo
+service, or a production deployment operated by another implementer.
+
+## Supported versions
+
+Only the latest published version of the reference implementation is supported by this repository.
+Implementers who fork or deploy the application are responsible for defining their own supported
+versions, patch process, and user update policy.
+
+## Production security guidance
+
+The reference application is not production ready as delivered. Before production use, review the
+configuration guide, the production go-live guide in [wiki/GO_LIVE.md](wiki/GO_LIVE.md), and perform
+a security assessment aligned with OWASP MASVS.
 
 ## If you have identified a vulnerability, please do the following
 
@@ -35,8 +52,9 @@ At the European Commission, we treat the security of our Communication and Infor
 ## What we promise
 
 - We will respond to your report within three business days with our evaluation of the report.
-
 - We will handle your report with strict confidentiality.
+- We will triage the report according to impact, exploitability, affected component, and whether the
+  issue affects reference/demo code or a production deployment.
 - Where possible, we will inform you when the vulnerability has been remedied.
 - We will process the personal data that you provide (such as your e-mail address and name) in accordance with the applicable data protection legislation and will not pass on your personal details to third parties without your permission.
 - In the public information concerning the problem reported, we will publish your name as the discoverer of the problem if you have agreed to this in your initial e-mail
