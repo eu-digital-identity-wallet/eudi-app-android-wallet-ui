@@ -19,7 +19,7 @@ This guide helps developers build the Android Wallet application and connect it 
 hosted reference services or locally running issuer/verifier services.
 
 For production deployment, use this file only as a build reference. Production teams must also
-follow [the go-live guide](go_live.md).
+follow [the go-live guide](GO_LIVE.md).
 
 ## Dependency versions
 
@@ -142,7 +142,7 @@ keystore file at the project root named `sign` and reads signing values from `lo
 environment variables. In the current Gradle file, `storePassword` is read from the same
 `androidKeyPassword` / `ANDROID_KEY_PASSWORD` value used for `keyPassword`; if your keystore uses a
 separate store password, update the Gradle signing config before building release artifacts. For
-production signing, see [go_live.md](go_live.md#release-signing).
+production signing, see [GO_LIVE.md](GO_LIVE.md#release-signing).
 
 ## Running with remote services
 
@@ -219,7 +219,7 @@ For a physical device, use the host computer's LAN IP address instead:
 ```
 
 The issuer/verifier metadata, redirect URIs, and wallet deep links must match the app's configured
-schemes and hosts. See [configuration.md](configuration.md) for those values.
+schemes and hosts. See [CONFIGURATION.md](CONFIGURATION.md) for those values.
 
 ## Why 10.0.2.2?
 
@@ -286,4 +286,4 @@ The hosted reference values, local IP addresses, self-signed certificates, debug
 anchors described here are not production configuration.
 
 Before launching a real wallet, create a dedicated production flavor, replace all endpoints and
-trust anchors, verify signing and release checks, and follow [go_live.md](go_live.md).
+trust anchors, verify signing and release checks, and follow [GO_LIVE.md](GO_LIVE.md).

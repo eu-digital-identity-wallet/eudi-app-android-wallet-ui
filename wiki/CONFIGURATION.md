@@ -241,12 +241,12 @@ At the time this guide was written, key versions included:
 
 Review these versions whenever you change configuration that depends on SDK behavior, such as
 Wallet Core issuance/presentation, RQES, Ktor networking, SQLCipher storage, or dependency-check
-policy. For production release rules, see [go_live.md](go_live.md#dependency-versions).
+policy. For production release rules, see [GO_LIVE.md](GO_LIVE.md#dependency-versions).
 
 ## Production configuration reference
 
 The following table summarizes the main values an implementer must review before release. For a
-complete production process, see [go_live.md](go_live.md).
+complete production process, see [GO_LIVE.md](GO_LIVE.md).
 
 | Configuration | Where it is defined | What to put in production |
 | --- | --- | --- |

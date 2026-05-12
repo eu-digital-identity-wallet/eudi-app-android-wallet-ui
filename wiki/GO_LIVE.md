@@ -5,8 +5,8 @@ reference wallet and turn it into a production candidate.
 
 It complements:
 
-* [How to build](how_to_build.md)
-* [How to configure the application](configuration.md)
+* [How to build](HOW_TO_BUILD.md)
+* [How to configure the application](CONFIGURATION.md)
 * [Main README](../README.md)
 
 The reference application is not production ready as delivered. It uses demo services, demo trust

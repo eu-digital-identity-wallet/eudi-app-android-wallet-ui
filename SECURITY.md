@@ -21,7 +21,7 @@ versions, patch process, and user update policy.
 ## Production security guidance
 
 The reference application is not production ready as delivered. Before production use, review the
-configuration guide, the production go-live guide in [wiki/go_live.md](wiki/go_live.md), and perform
+configuration guide, the production go-live guide in [wiki/GO_LIVE.md](wiki/GO_LIVE.md), and perform
 a security assessment aligned with OWASP MASVS.
 
 ## If you have identified a vulnerability, please do the following

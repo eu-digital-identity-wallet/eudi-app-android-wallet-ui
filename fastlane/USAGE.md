@@ -18,7 +18,7 @@ bundle exec fastlane android tests
 ```
 
 The Android build still uses the Gradle wrapper and project configuration described in
-[../wiki/how_to_build.md](../wiki/how_to_build.md).
+[../wiki/HOW_TO_BUILD.md](../wiki/HOW_TO_BUILD.md).
 
 ## Common lanes
 
@@ -111,4 +111,4 @@ Before using Fastlane for production:
 * Do not rely on Firebase App Distribution build numbers as the only source of production release
   numbering unless the release process explicitly approves it.
 
-For the complete production release process, see [../wiki/go_live.md](../wiki/go_live.md).
+For the complete production release process, see [../wiki/GO_LIVE.md](../wiki/GO_LIVE.md).

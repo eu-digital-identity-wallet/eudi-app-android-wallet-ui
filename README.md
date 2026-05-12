@@ -72,9 +72,9 @@ The issuer, verifier service, and verifier app authentication are based on the E
 The main purpose of the reference implementation is to showcase the ecosystem and act as a technical example of how to integrate and use all of the available components.
 
 If you're planning to use this application in production, we recommend reviewing the following steps:
-- Configure the application properly by following the guide [here](wiki/configuration.md)
-- Follow the production go-live guide [here](wiki/go_live.md) before creating a release candidate.
-- The Pin storage configuration matches your security requirements, or provide your own by following this guide [Pin Storage Configuration](wiki/configuration.md#pin-storage-configuration)
+- Configure the application properly by following the guide [here](wiki/CONFIGURATION.md)
+- Follow the production go-live guide [here](wiki/GO_LIVE.md) before creating a release candidate.
+- The Pin storage configuration matches your security requirements, or provide your own by following this guide [Pin Storage Configuration](wiki/CONFIGURATION.md#pin-storage-configuration)
 - The application meets the OWASP MASVS industry standard. Please refer to the following links for further information on the controls you must implement to ensure maximum compliance:
     - [OWASP MASVS](https://mas.owasp.org/MASVS/)
 
@@ -154,16 +154,16 @@ To delete a document, navigate to the 'Documents' tab within the 'Dashboard' scr
 
 ## How to build - Quick start guide
 
-[This document](wiki/how_to_build.md) describes how you can build the application and deploy the issuing and verification services locally.
+[This document](wiki/HOW_TO_BUILD.md) describes how you can build the application and deploy the issuing and verification services locally.
 
 ## Application configuration
 
-You can find instructions on how to configure the application [here](wiki/configuration.md)
+You can find instructions on how to configure the application [here](wiki/CONFIGURATION.md)
 
 ## Production go-live guide
 
 Member State teams, wallet providers, and integrators preparing a live deployment should follow the
-production go-live guide [here](wiki/go_live.md). It explains how to create a production flavor,
+production go-live guide [here](wiki/GO_LIVE.md). It explains how to create a production flavor,
 replace demo endpoints and trust anchors, configure Wallet Core and RQES, harden the Android app,
 and collect release/security evidence.
 
