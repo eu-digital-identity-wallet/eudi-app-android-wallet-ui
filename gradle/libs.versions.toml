@@ -53,7 +53,7 @@ slf4j = "2.0.17"
 gson = "2.14.0"
 googlePhoneNumber = "9.0.30"
 zxing = "3.5.4"
-eudiWalletCore = "0.27.1"
+eudiWalletCore = "0.28.0"
 cameraCore = "1.6.1"
 owaspDependencyCheck = "12.2.2"
 materialIcons = "1.7.8"
@@ -68,6 +68,7 @@ androidxRoom = "2.8.4"
 cloudy = "0.5.0"
 sqlcipher = "4.15.0"
 datastore = "1.3.0-alpha09"
+androidxCredentials = "1.0.0-alpha04"
 
 [libraries]
 accompanist-permissions = { group = "com.google.accompanist", name = "accompanist-permissions", version.ref = "accompanist" }
@@ -104,6 +105,7 @@ androidx-profileinstaller = { group = "androidx.profileinstaller", name = "profi
 androidx-datastore-prefs = { group = "androidx.datastore", name = "datastore-preferences", version.ref = "datastore" }
 androidx-datastore-core = { group = "androidx.datastore", name = "datastore-preferences-core", version.ref = "datastore" }
 androidx-datastore-tink = { group = "androidx.datastore", name = "datastore-tink", version.ref = "datastore" }
+androidx-credentials-registry = { group = "androidx.credentials.registry", name = "registry-provider-play-services", version.ref = "androidxCredentials" }
 androidx-test-core = { group = "androidx.test", name = "core", version.ref = "androidxTestCore" }
 androidx-test-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "androidxEspresso" }
 androidx-test-ext = { group = "androidx.test.ext", name = "junit-ktx", version.ref = "androidxTestExt" }
