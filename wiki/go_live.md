@@ -63,19 +63,20 @@ Use this checklist before the first production release.
 
 The application is a modular Android project. Important modules for production are:
 
-| Module | Production relevance |
-| --- | --- |
-| `app` | Application ID, signing, release build type, baseline profile packaging. |
-| `assembly-logic` | Android application class, manifest, permissions, activities, deep links, NFC service, app name. |
-| `core-logic` | Wallet Core integration, issuer configuration, wallet provider, trust stores, document issuance, presentation, revocation, reissuance. |
-| `business-logic` | Global app config, RQES config, logging, encrypted preference storage, crypto helpers. |
-| `authentication-logic` | PIN and biometric storage providers and controllers. |
-| `storage-logic` | SQLCipher-backed Room database and local transaction/revocation storage. |
-| `network-logic` | Ktor client, logging level, wallet attestation repository. |
-| `resources-logic` | Strings, images, raw certificate resources. |
-| `analytics-logic` | Optional analytics provider integration. |
-| `build-logic` | Gradle convention plugins, flavors, deep-link constants, lint, dependency check, managed devices. |
-| `baseline-profile` | Baseline profile generation for release performance. |
+| Module                       | Production relevance                                                                                                                   |
+|------------------------------|----------------------------------------------------------------------------------------------------------------------------------------|
+| `app`                        | Application ID, signing, release build type, baseline profile packaging.                                                               |
+| `assembly-logic`             | Android application class, manifest, permissions, activities, deep links, NFC service, app name.                                       |
+| `core-logic`                 | Wallet Core integration, issuer configuration, wallet provider, trust stores, document issuance, presentation, revocation, reissuance. |
+| `business-logic`             | Global app config, RQES config, logging, encrypted preference storage, crypto helpers.                                                 |
+| `authentication-logic`       | PIN and biometric storage providers and controllers.                                                                                   |
+| `storage-logic`              | SQLCipher-backed Room database and local transaction/revocation storage.                                                               |
+| `network-logic`              | Ktor client, logging level, wallet attestation repository.                                                                             |
+| `resources-logic`            | Strings, images, raw certificate resources.                                                                                            |
+| `analytics-logic`            | Optional analytics provider integration.                                                                                               |
+| `build-logic`                | Gradle convention plugins, flavors, deep-link constants, lint, dependency check, managed devices.                                      |
+| `baseline-profile`           | Baseline profile generation for release performance.                                                                                   |
+| `test-logic`, `test-feature` | Test-only support modules for shared unit and instrumentation test utilities; not production runtime modules.                          |
 
 Current flavors:
 
@@ -132,13 +133,23 @@ Example:
 
 ```kotlin
 enum class AppFlavor(
-    val dimension: FlavorDimension,
-    val applicationIdSuffix: String? = null,
-    val applicationNameSuffix: String? = null
+  val dimension: FlavorDimension,
+  val applicationIdSuffix: String? = null,
+  val applicationNameSuffix: String? = null
 ) {
-    Dev(FlavorDimension.contentType, applicationIdSuffix = ".dev"),
-    Demo(FlavorDimension.contentType, applicationNameSuffix = " Demo"),
-    Prod(FlavorDimension.contentType)
+  Dev(
+    dimension = FlavorDimension.contentType,
+    applicationIdSuffix = ".dev",
+    applicationNameSuffix = " Dev"
+  ),
+  Demo(
+    dimension = FlavorDimension.contentType,
+    applicationIdSuffix = ".demo",
+    applicationNameSuffix = " Demo"
+  ),
+  Prod(
+    dimension = FlavorDimension.contentType
+  )
 }
 ```
 
@@ -146,7 +157,19 @@ Recommended production behavior:
 
 * `Prod` should normally have no `applicationIdSuffix`.
 * `Prod` should normally have no `applicationNameSuffix`.
-* `Dev` and `Demo` should have suffixes so they cannot be confused with the production app.
+* `Dev` and `Demo` should both have `applicationIdSuffix` values so they install as separate apps
+  and cannot collide with the production app.
+* `Dev` and `Demo` should both have visible `applicationNameSuffix` values so testers can clearly
+  distinguish non-production builds from the production wallet.
+* Do not publish a `dev` or `demo` variant to a production distribution channel.
+
+After this change, the expected app identities are:
+
+| Flavor | Example application ID behavior | Example app name behavior |
+|--------|---------------------------------|---------------------------|
+| `dev`  | `<baseApplicationId>.dev`       | `<appName> Dev`           |
+| `demo` | `<baseApplicationId>.demo`      | `<appName> Demo`          |
+| `prod` | `<baseApplicationId>`           | `<appName>`               |
 
 ### 2. Add Production Config Source Sets
 
