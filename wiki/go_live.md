@@ -132,13 +132,23 @@ Example:
 
 ```kotlin
 enum class AppFlavor(
-    val dimension: FlavorDimension,
-    val applicationIdSuffix: String? = null,
-    val applicationNameSuffix: String? = null
+  val dimension: FlavorDimension,
+  val applicationIdSuffix: String? = null,
+  val applicationNameSuffix: String? = null
 ) {
-    Dev(FlavorDimension.contentType, applicationIdSuffix = ".dev"),
-    Demo(FlavorDimension.contentType, applicationNameSuffix = " Demo"),
-    Prod(FlavorDimension.contentType)
+  Dev(
+    dimension = FlavorDimension.contentType,
+    applicationIdSuffix = ".dev",
+    applicationNameSuffix = " Dev"
+  ),
+  Demo(
+    dimension = FlavorDimension.contentType,
+    applicationIdSuffix = ".demo",
+    applicationNameSuffix = " Demo"
+  ),
+  Prod(
+    dimension = FlavorDimension.contentType
+  )
 }
 ```
 
@@ -146,7 +156,19 @@ Recommended production behavior:
 
 * `Prod` should normally have no `applicationIdSuffix`.
 * `Prod` should normally have no `applicationNameSuffix`.
-* `Dev` and `Demo` should have suffixes so they cannot be confused with the production app.
+* `Dev` and `Demo` should both have `applicationIdSuffix` values so they install as separate apps
+  and cannot collide with the production app.
+* `Dev` and `Demo` should both have visible `applicationNameSuffix` values so testers can clearly
+  distinguish non-production builds from the production wallet.
+* Do not publish a `dev` or `demo` variant to a production distribution channel.
+
+After this change, the expected app identities are:
+
+| Flavor | Example application ID behavior | Example app name behavior |
+|--------|---------------------------------|---------------------------|
+| `dev`  | `<baseApplicationId>.dev`       | `<appName> Dev`           |
+| `demo` | `<baseApplicationId>.demo`      | `<appName> Demo`          |
+| `prod` | `<baseApplicationId>`           | `<appName>`               |
 
 ### 2. Add Production Config Source Sets
 
