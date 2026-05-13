@@ -233,10 +233,10 @@ At the time this guide was written, key versions included:
 | --- | --- |
 | Android Gradle Plugin | `9.2.1` |
 | Kotlin | `2.3.21` |
-| EUDI Wallet Core | `0.27.1` |
+| EUDI Wallet Core | `0.28.0` |
 | EUDI RQES UI SDK | `0.3.8` |
 | Ktor | `3.4.3` |
-| SQLCipher Android | `4.15.0` |
+| SQLCipher Android | `4.16.0` |
 | OWASP Dependency Check | `12.2.2` |
 
 Review these versions whenever you change configuration that depends on SDK behavior, such as
@@ -259,7 +259,11 @@ complete production process, see [GO_LIVE.md](GO_LIVE.md).
 | OpenID4VCI redirect URI | `BuildConfig.ISSUE_AUTHORIZATION_DEEPLINK` from build-logic placeholders | A registered URI accepted by the issuer and handled only by the wallet app. |
 | OpenID4VP schemes | `AndroidLibraryConventionPlugin.kt` and `EudiWalletConfig.configureOpenId4Vp` | Schemes and client ID schemes approved for the ecosystem. Keep the manifest, `BuildConfig`, and Wallet Core config aligned. |
 | Reader/verifier trust anchors | `configureReaderTrustStore(...)` raw resources | Production IACA/reader/verifier trust anchors from an approved trust list or governance process. |
-| Document key settings | `configureDocumentKeyCreation(...)` | Policy-approved user authentication, timeout, and StrongBox behavior. Test fallback on devices without StrongBox. |
+| Document key settings | `configureDocumentKeyCreation(...)` | For LoA High PID and other high-assurance EAA/QEAA credentials, require strong user authentication and hardware-backed key protection unless an approved remote high-assurance key protection design replaces local key use. Use `0.seconds` only when one prompt per key use is acceptable; for batch issuing, a short approved window such as `10.seconds` may be needed. |
+| Document key storage | `EudiWallet.Builder` in `core-logic/src/main/java/.../LogicCoreModule.kt` | Default Wallet Core behavior uses Android Keystore secure areas. Use `withSecureAreas(...)`, `withStorage(...)`, or `withDocumentManager(...)` if production requires an alternative secure area, remote-backed key service, or custom document manager. |
+| Wallet attestation key storage | `EudiWallet.Builder.withWalletKeyManager(...)` and Wallet Provider policy | Use if wallet attestation/client-attestation keys must be generated, stored, attested, or unlocked by a custom secure area or remote high-assurance key service. |
+| DPoP key storage | `DPopConfig.Default` or `DPopConfig.Custom(...)` in each issuer config | Prefer DPoP where supported. Use `DPopConfig.Custom(...)` when issuance proof-of-possession keys require custom secure area, StrongBox, user authentication, or issuer-specific key policy. |
+| Remote presentation ephemeral key handling | OpenID4VP/presentation-manager integration | Ephemeral protocol key material must be generated per transaction, not reused across verifiers, and not persisted beyond the protocol flow. If the Wallet Core version exposes a dedicated ephemeral key-storage option, configure it in the production `EudiWallet` or presentation-manager integration and document the exact SDK API. |
 | DCAPI | `configureDCAPI { withEnabled(...) }` | Enable only if the production wallet supports Digital Credential API flows and has tested them. |
 | Document issuance rules | `documentIssuanceConfig` | Credential rotation, one-time-use, quantity, and re-issuance intervals agreed with issuer capacity and privacy policy. |
 | Revocation interval | `revocationInterval` | A value that balances user experience, battery/network use, and relying-party risk. |
