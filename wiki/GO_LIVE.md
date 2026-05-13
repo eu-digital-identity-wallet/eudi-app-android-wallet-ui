@@ -35,6 +35,34 @@ Do not publish the application by only switching to `demoRelease`.
 Create a separate production configuration, replace every demo endpoint and certificate, perform a
 MASVS-aligned assessment, add runtime hardening, and run a formal release process.
 
+## Out Of Scope
+
+This guide focuses on taking the Android reference wallet application to a production-ready mobile
+deployment posture. It does not define every backend, governance, or product decision around a
+national wallet ecosystem.
+
+The following items are out of scope and must be designed, implemented, assessed, and approved by
+the Member State or wallet provider:
+
+* Enrollment and identity proofing flows before PID issuance.
+* Selfie capture, video capture, liveness detection, document scanning, face matching, registry
+  lookup, or any equivalent national onboarding process.
+* The integration contract between the wallet app, the issuer, and any identity-proofing or
+  population-register backend.
+* Legal certification, accreditation, conformity assessment, supervisory approval, and governance
+  decisions.
+* Full production implementation of issuer, verifier, wallet-provider, QTSP, or status-list
+  backend services.
+* Non-Android form factors such as web wallets, browser extensions, desktop apps, kiosk apps, or
+  iOS applications.
+* Migration from an existing national wallet product unless the implementer designs and tests that
+  migration explicitly.
+
+If the Member State requires selfie, video, remote identity proofing, in-person proofing, national
+eID login, or another enrollment method, integrate that flow through the Member State onboarding and
+issuer architecture. The app must only receive the production credential offer, authorization
+redirect, or issuer-specific entry point after the enrollment policy has been satisfied.
+
 ## Go-Live Checklist
 
 Use this checklist before the first production release.
@@ -350,10 +378,10 @@ At the time this guide was written, key versions included:
 | --- | --- |
 | Android Gradle Plugin | `9.2.1` |
 | Kotlin | `2.3.21` |
-| EUDI Wallet Core | `0.27.1` |
+| EUDI Wallet Core | `0.28.0` |
 | EUDI RQES UI SDK | `0.3.8` |
 | Ktor | `3.4.3` |
-| SQLCipher Android | `4.15.0` |
+| SQLCipher Android | `4.16.0` |
 | OWASP Dependency Check | `12.2.2` |
 
 Production rules:
@@ -411,30 +439,125 @@ configureDocumentKeyCreation(
 )
 ```
 
+This is the reference configuration as shipped. It is not a production recommendation for LoA High
+PID or other high-assurance credentials.
+
 Meaning:
 
 | Value | Meaning | Production guidance |
 | --- | --- | --- |
-| `userAuthenticationRequired` | Whether document private keys require device user authentication before use. | For high-assurance credentials, strongly consider `true`. If `false`, the app-level PIN protects flows, but document keys are not individually bound to a platform authentication event. |
-| `userAuthenticationTimeout` | Time window after authentication during which key use remains allowed. | Use the shortest practical value. For very sensitive operations, use `0.seconds` or an equivalent per-use requirement if supported and acceptable for UX. |
-| `useStrongBoxForKeys` | Requests StrongBox-backed key storage where available. | Keep `true`. Define fallback behavior for devices without StrongBox. Decide whether such devices are allowed, restricted, or rejected. |
+| `userAuthenticationRequired` | Whether document private keys require device user authentication before use. | For LoA High PID and other high-assurance EAA/QEAA credentials, set this to `true` unless an approved remote high-assurance key protection design replaces local key use. If `false`, the app-level PIN protects flows, but document keys are not individually bound to a platform authentication event. |
+| `userAuthenticationTimeout` | Time window after authentication during which key use remains allowed. `0.seconds` means authentication is required for every key use. | Use the shortest approved value that still supports the intended flow. `0.seconds` is appropriate for isolated high-risk operations where one prompt per key use is acceptable. For batch issuing, a very short window such as `10.seconds` may be needed so one strong authentication can cover the batch without repeatedly prompting the user. |
+| `useStrongBoxForKeys` | Requests StrongBox-backed key storage where available. | Keep `true` for supported devices. Define fallback behavior for devices without StrongBox. Decide whether such devices are allowed, restricted, or rejected. |
 
-Recommended production example:
+Recommended production example for batch issuance:
 
 ```kotlin
 configureDocumentKeyCreation(
     userAuthenticationRequired = true,
-    userAuthenticationTimeout = 30.seconds,
+    userAuthenticationTimeout = 10.seconds,
     useStrongBoxForKeys = true
 )
 ```
 
-Decision point:
+Recommended production example for strict per-use authentication:
 
-* If the Member State requires a high assurance level for PID presentation or signing-related
-  actions, document key use should be bound to strong local authentication.
+```kotlin
+configureDocumentKeyCreation(
+    userAuthenticationRequired = true,
+    userAuthenticationTimeout = 0.seconds,
+    useStrongBoxForKeys = true
+)
+```
+
+Requirements and decision points:
+
+* For LoA High PID and other high-assurance EAA/QEAA credentials, document keys must be protected by
+  strong user authentication and hardware-backed key protection, either locally on the device or
+  through an approved remote high-assurance hardware-backed storage design.
+* Local key use should be bound to strong authentication such as biometric authentication or device
+  credential according to the approved assurance policy.
+* Batch issuing and one-time-use credential issuance should be tested with the selected timeout. If
+  `0.seconds` forces repeated prompts during one PID issuance flow, use a short approved timeout such
+  as `10.seconds`, document the risk decision, and verify that the window is not usable outside the
+  intended flow.
 * If the supported device population lacks StrongBox, define a policy for hardware-backed TEE keys
   versus StrongBox-only devices.
+
+### Key Storage Extension Points
+
+The default Wallet Core configuration uses Android Keystore-backed secure areas for document keys.
+Production teams must decide whether the default local storage model is sufficient or whether a
+custom secure area, remote signing service, or external protection SDK is required.
+
+Document key creation policy is configured in:
+
+```text
+core-logic/src/<flavor>/java/eu/europa/ec/corelogic/config/WalletCoreConfigImpl.kt
+```
+
+using:
+
+```kotlin
+configureDocumentKeyCreation(
+    userAuthenticationRequired = true,
+    userAuthenticationTimeout = 10.seconds,
+    useStrongBoxForKeys = true
+)
+```
+
+The default document key storage is selected by Wallet Core when `EudiWallet` is built. In this
+application, the integration point is:
+
+```text
+core-logic/src/main/java/eu/europa/ec/corelogic/di/LogicCoreModule.kt
+```
+
+inside `provideEudiWallet(...)`:
+
+```kotlin
+EudiWallet(
+    context = context,
+    config = walletCoreConfig.config,
+    walletProvider = walletCoreAttestationProvider
+) {
+    withLogger(walletCoreLogController)
+    withTransactionLogger(walletCoreTransactionLogController)
+    withKtorHttpClientFactory { httpClient }
+}
+```
+
+If production requires document key storage other than the default Android Keystore secure area,
+customize the `EudiWallet.Builder` block. Wallet Core exposes the following extension points:
+
+| Extension point | Purpose | When to use |
+| --- | --- | --- |
+| `withSecureAreas(...)` | Supplies custom `org.multipaz.securearea.SecureArea` implementations for document key management. | Use when document keys must be created in a different secure area, external SDK, remote-backed secure area, or policy-controlled key provider. |
+| `withStorage(...)` | Supplies custom document metadata/storage backing. | Use when the default Android storage path does not meet backup, migration, encryption, or operational requirements. |
+| `withDocumentManager(...)` | Replaces the Wallet Core document manager. | Use only for advanced integrations that need full control over document lifecycle, storage, and key binding. |
+| `withWalletKeyManager(...)` | Replaces the key manager used for wallet attestation/client-attestation keys. | Use when wallet attestation keys must be stored, attested, or unlocked through a custom secure area or remote high-assurance key service. |
+| `DPopConfig.Custom(...)` in issuer configuration | Customizes OpenID4VCI DPoP key storage and unlock behavior. | Use when issuance proof-of-possession keys must be generated in a specific secure area, require user authentication, or satisfy issuer policy beyond `DPopConfig.Default`. |
+| `withPresentationManager(...)` | Replaces the default remote/proximity presentation manager. | Use only if the default OpenID4VP/proximity implementation does not meet production key-handling, transaction logging, or protocol policy. |
+
+Production implementation rules:
+
+* Treat document keys, wallet attestation keys, DPoP keys, and remote presentation protocol keys as
+  separate key classes with separate policies.
+* Document keys for LoA High PID and high-assurance EAA/QEAA credentials must be hardware-backed or
+  protected by an approved remote high-assurance hardware-backed design.
+* Wallet attestation keys must be generated and attested according to the Wallet Provider policy.
+  If Android platform key attestation is required, the key manager and Wallet Provider endpoint must
+  both support that policy.
+* DPoP keys protect issuance access tokens against replay. Do not disable DPoP in production unless
+  the issuer explicitly does not support it and the risk is accepted.
+* Remote presentation uses protocol-level ephemeral key material for encrypted OpenID4VP responses.
+  Ephemeral key material must be generated per transaction, must not be reused across verifiers, and
+  must not be persisted longer than the protocol flow requires. If the selected Wallet Core version
+  exposes a dedicated configuration option for this ephemeral key storage, configure it in the
+  production `EudiWallet` or presentation-manager integration and record the exact SDK API in the
+  release evidence.
+* Test custom storage with device lock changes, biometric enrollment changes, app upgrade, app
+  reinstall, backup/restore attempts, low-storage conditions, and issuer reissuance.
 
 ### OpenID4VP Configuration
 
