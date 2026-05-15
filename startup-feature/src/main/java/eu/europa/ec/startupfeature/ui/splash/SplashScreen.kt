@@ -100,7 +100,7 @@ private fun Content(
                 exit = fadeOut(animationSpec = tween(state.logoAnimationDuration)),
             ) {
                 WrapImage(
-                    iconData = AppIcons.LogoFull
+                    iconData = AppIcons.LogoIcon
                 )
             }
         }
