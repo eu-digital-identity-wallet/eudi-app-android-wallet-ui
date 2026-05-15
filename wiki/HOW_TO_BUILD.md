@@ -3,7 +3,6 @@
 ## Table of contents
 
 * [Overview](#overview)
-* [Dependency versions](#dependency-versions)
 * [Prerequisites](#prerequisites)
 * [Build variants](#build-variants)
 * [Build commands](#build-commands)
@@ -20,27 +19,6 @@ hosted reference services or locally running issuer/verifier services.
 
 For production deployment, use this file only as a build reference. Production teams must also
 follow [the go-live guide](GO_LIVE.md).
-
-## Dependency versions
-
-The central version catalog is:
-
-`gradle/libs.versions.toml`
-
-At the time this guide was written, key versions included:
-
-| Dependency | Current repo version |
-| --- | --- |
-| Android Gradle Plugin | `9.2.1` |
-| Kotlin | `2.3.21` |
-| EUDI Wallet Core | `0.28.0` |
-| EUDI RQES UI SDK | `0.3.8` |
-| Ktor | `3.4.3` |
-| SQLCipher Android | `4.16.0` |
-| OWASP Dependency Check | `12.2.2` |
-
-Before building a release candidate, confirm these values against `gradle/libs.versions.toml` and
-archive the dependency report or SBOM with the release evidence.
 
 ## Prerequisites
 
