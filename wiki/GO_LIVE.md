@@ -366,23 +366,10 @@ Example final-artifact checks:
 
 Inspect the merged manifest and dependency output as release evidence.
 
-## Dependency Versions
+## Dependency Management
 
-The central version catalog is:
-
-`gradle/libs.versions.toml`
-
-At the time this guide was written, key versions included:
-
-| Dependency | Current repo version |
-| --- | --- |
-| Android Gradle Plugin | `9.2.1` |
-| Kotlin | `2.3.21` |
-| EUDI Wallet Core | `0.28.0` |
-| EUDI RQES UI SDK | `0.3.8` |
-| Ktor | `3.4.3` |
-| SQLCipher Android | `4.16.0` |
-| OWASP Dependency Check | `12.2.2` |
+Use `gradle/libs.versions.toml` as the single source of truth for dependency and plugin versions.
+Do not duplicate the active dependency versions in this guide.
 
 Production rules:
 
