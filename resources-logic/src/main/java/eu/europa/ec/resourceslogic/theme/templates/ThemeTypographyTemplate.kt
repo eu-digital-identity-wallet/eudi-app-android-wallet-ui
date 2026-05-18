@@ -76,6 +76,7 @@ data class ThemeTypographyTemplate(
 data class ThemeTextStyle(
     val color: Long? = null,
     val fontSize: Long? = null,
+    val lineHeight: Long? = null,
     val fontWeight: ThemeFontWeight? = null,
     val fontStyle: ThemeFontStyle? = null,
     val fontFamily: List<ThemeFont>? = null,
@@ -92,7 +93,7 @@ data class ThemeTextStyle(
                     null -> Color.Unspecified
                     else -> Color(color)
                 }
-            } catch (exception: Exception) {
+            } catch (_: Exception) {
                 throw IllegalArgumentException("Invalid color $color")
             }
             val mFontSize = try {
@@ -103,8 +104,19 @@ data class ThemeTextStyle(
                         type = TextUnitType.Sp
                     )
                 }
-            } catch (exception: Exception) {
+            } catch (_: Exception) {
                 throw IllegalArgumentException("Invalid fontSize $fontSize")
+            }
+            val mLineHeight = try {
+                when (lineHeight) {
+                    null -> TextUnit.Unspecified
+                    else -> TextUnit(
+                        value = lineHeight.toFloat(),
+                        type = TextUnitType.Sp
+                    )
+                }
+            } catch (_: Exception) {
+                throw IllegalArgumentException("Invalid lineHeight $lineHeight")
             }
             val mLetterSpacing = try {
                 when (letterSpacing) {
@@ -114,7 +126,7 @@ data class ThemeTextStyle(
                         type = TextUnitType.Sp
                     )
                 }
-            } catch (exception: Exception) {
+            } catch (_: Exception) {
                 throw IllegalArgumentException("Invalid letterSpacing $letterSpacing")
             }
             val mBackground = try {
@@ -122,7 +134,7 @@ data class ThemeTextStyle(
                     null -> Color.Unspecified
                     else -> Color(color)
                 }
-            } catch (exception: Exception) {
+            } catch (_: Exception) {
                 throw IllegalArgumentException("Invalid background $background")
             }
 
@@ -145,7 +157,8 @@ data class ThemeTextStyle(
                 letterSpacing = mLetterSpacing,
                 background = mBackground,
                 textDecoration = textDecoration?.toTextDecoration(),
-                textAlign = textAlign?.toTextAlign() ?: TextAlign.Unspecified
+                textAlign = textAlign?.toTextAlign() ?: TextAlign.Unspecified,
+                lineHeight = mLineHeight,
             )
         }
     }
