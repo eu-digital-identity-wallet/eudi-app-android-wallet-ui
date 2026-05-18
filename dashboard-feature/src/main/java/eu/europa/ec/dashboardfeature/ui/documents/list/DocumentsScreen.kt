@@ -164,6 +164,14 @@ fun DocumentsScreen(
             )
         },
         fabPosition = FabPosition.End,
+        snackbarHost = { snackbarPaddings ->
+            state.error?.let { error ->
+                InlineSnackbar(
+                    error = error,
+                    modifier = Modifier.padding(snackbarPaddings),
+                )
+            }
+        },
         broadcastAction = BroadcastAction(
             intentFilters = listOf(
                 CoreActions.REVOCATION_WORK_REFRESH_ACTION,
@@ -310,15 +318,6 @@ private fun Content(
                     }
                 }
             }
-        }
-
-        if (state.error != null) {
-            InlineSnackbar(
-                error = state.error,
-                modifier = Modifier
-                    .align(Alignment.BottomCenter)
-                    .padding(bottom = SPACING_EXTRA_SMALL.dp)
-            )
         }
     }
 

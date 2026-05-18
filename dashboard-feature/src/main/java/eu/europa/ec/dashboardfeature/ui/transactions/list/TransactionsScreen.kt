@@ -89,7 +89,6 @@ import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
 import eu.europa.ec.uilogic.component.utils.HSpacer
 import eu.europa.ec.uilogic.component.utils.LifecycleEffect
 import eu.europa.ec.uilogic.component.utils.OneTimeLaunchedEffect
-import eu.europa.ec.uilogic.component.utils.SPACING_EXTRA_SMALL
 import eu.europa.ec.uilogic.component.utils.SPACING_LARGE
 import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
 import eu.europa.ec.uilogic.component.utils.SPACING_SMALL
@@ -143,7 +142,15 @@ fun TransactionsScreen(
             TopBar(
                 onDashboardEventSent = onDashboardEventSent
             )
-        }
+        },
+        snackbarHost = { snackbarPaddings ->
+            state.error?.let { error ->
+                InlineSnackbar(
+                    error = error,
+                    modifier = Modifier.padding(snackbarPaddings),
+                )
+            }
+        },
     ) { paddingValues ->
         Content(
             state = state,
@@ -269,15 +276,6 @@ private fun Content(
                     }
                 }
             }
-        }
-
-        if (state.error != null) {
-            InlineSnackbar(
-                error = state.error,
-                modifier = Modifier
-                    .align(Alignment.BottomCenter)
-                    .padding(bottom = SPACING_EXTRA_SMALL.dp)
-            )
         }
     }
 
