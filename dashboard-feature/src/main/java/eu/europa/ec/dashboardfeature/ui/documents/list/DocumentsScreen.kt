@@ -63,7 +63,6 @@ import eu.europa.ec.dashboardfeature.model.SearchItemUi
 import eu.europa.ec.dashboardfeature.ui.component.BottomNavigationItem
 import eu.europa.ec.dashboardfeature.ui.documents.detail.model.DocumentIssuanceStateUi
 import eu.europa.ec.dashboardfeature.ui.documents.list.model.DocumentUi
-import eu.europa.ec.dashboardfeature.util.TestTag
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.theme.values.warning
 import eu.europa.ec.uilogic.component.AppIcons
@@ -101,7 +100,6 @@ import eu.europa.ec.uilogic.component.wrap.WrapExpandableListItem
 import eu.europa.ec.uilogic.component.wrap.WrapIconButton
 import eu.europa.ec.uilogic.component.wrap.WrapListItem
 import eu.europa.ec.uilogic.component.wrap.WrapModalBottomSheet
-import eu.europa.ec.uilogic.extension.applyTestTag
 import eu.europa.ec.uilogic.extension.finish
 import eu.europa.ec.uilogic.extension.paddingFrom
 import kotlinx.coroutines.CoroutineScope
@@ -138,7 +136,6 @@ fun DocumentsScreen(
         contentErrorConfig = null,
         topBar = {
             TopBar(
-                onEventSend = { viewModel.setEvent(it) },
                 onDashboardEventSent = onDashboardEventSent
             )
         },
@@ -206,7 +203,6 @@ private fun handleNavigationEffect(
 
 @Composable
 private fun TopBar(
-    onEventSend: (Event) -> Unit,
     onDashboardEventSent: (DashboardEvent) -> Unit,
 ) {
     Box(
@@ -231,16 +227,6 @@ private fun TopBar(
             style = MaterialTheme.typography.headlineMedium,
             text = stringResource(R.string.documents_screen_title)
         )
-
-        WrapIconButton(
-            modifier = Modifier
-                .applyTestTag(TestTag.DocumentsScreen.PLUS_BUTTON)
-                .align(Alignment.CenterEnd),
-            iconData = AppIcons.Add,
-            customTint = MaterialTheme.colorScheme.onSurfaceVariant,
-        ) {
-            onEventSend(Event.AddDocumentPressed)
-        }
     }
 }
 
@@ -599,7 +585,6 @@ private fun DocumentsScreenPreview() {
             onBack = { },
             topBar = {
                 TopBar(
-                    onEventSend = { },
                     onDashboardEventSent = {}
                 )
             },
