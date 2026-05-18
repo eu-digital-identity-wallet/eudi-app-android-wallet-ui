@@ -39,12 +39,12 @@ class ThemeColors {
         private const val eudiw_theme_light_primaryContainer: Long = 0xFFEADDFF
         private const val eudiw_theme_light_onPrimaryContainer: Long = 0xFF21005D
         private const val eudiw_theme_light_secondary: Long = 0xFFD6D9F9
-        private const val eudiw_theme_light_onSecondary: Long = 0xF1D192B
+        private const val eudiw_theme_light_onSecondary: Long = 0xFF1D192B
         private const val eudiw_theme_light_secondaryContainer: Long = 0xFFE8DEF8
         private const val eudiw_theme_light_onSecondaryContainer: Long = 0xFF1D192B
         private const val eudiw_theme_light_tertiary: Long = 0xFFE4EEE7
         private const val eudiw_theme_light_onTertiary: Long = 0xFF1D192B
-        private const val eudiw_theme_light_tertiaryContainer: Long = 0xFFFFD8E4
+        private const val eudiw_theme_light_tertiaryContainer: Long = 0xFFDAEEE0
         private const val eudiw_theme_light_onTertiaryContainer: Long = 0xFF31111D
         private const val eudiw_theme_light_error: Long = 0xFFB3261E
         private const val eudiw_theme_light_onError: Long = white
@@ -73,23 +73,23 @@ class ThemeColors {
         private const val eudiw_theme_light_surfaceTint: Long = eudiw_theme_light_surface
 
         // Light theme fixed accent roles (identical in dark as well).
-        private const val eudiw_theme_light_primaryFixed: Long = 0xFFD4DEF7
-        private const val eudiw_theme_light_primaryFixedDim: Long = 0xFFA8BEF0
-        private const val eudiw_theme_light_onPrimaryFixed: Long = 0xFF08122B
-        private const val eudiw_theme_light_onPrimaryFixedVariant: Long = 0xFF173782
+        private const val eudiw_theme_light_primaryFixed: Long = 0xFFEADDFF
+        private const val eudiw_theme_light_primaryFixedDim: Long = 0xFFD0BCFF
+        private const val eudiw_theme_light_onPrimaryFixed: Long = 0xFF21005D
+        private const val eudiw_theme_light_onPrimaryFixedVariant: Long = 0xFF4F378B
 
-        private const val eudiw_theme_light_secondaryFixed: Long = 0xFFD3D6F8
-        private const val eudiw_theme_light_secondaryFixedDim: Long = 0xFFA6ADF2
-        private const val eudiw_theme_light_onSecondaryFixed: Long = 0xFF070A2C
-        private const val eudiw_theme_light_onSecondaryFixedVariant: Long = 0xFF141D85
+        private const val eudiw_theme_light_secondaryFixed: Long = 0xFFE8DEF8
+        private const val eudiw_theme_light_secondaryFixedDim: Long = 0xFFCCC2DC
+        private const val eudiw_theme_light_onSecondaryFixed: Long = 0xFF1D192B
+        private const val eudiw_theme_light_onSecondaryFixedVariant: Long = 0xFF4A4458
 
-        private const val eudiw_theme_light_tertiaryFixed: Long = 0xFFE0EBE3
-        private const val eudiw_theme_light_tertiaryFixedDim: Long = 0xFFC0D8C7
-        private const val eudiw_theme_light_onTertiaryFixed: Long = 0xFF141F17
-        private const val eudiw_theme_light_onTertiaryFixedVariant: Long = 0xFF3B5E46
+        private const val eudiw_theme_light_tertiaryFixed: Long = 0xFFFFD8E4
+        private const val eudiw_theme_light_tertiaryFixedDim: Long = 0xFFEFB8C8
+        private const val eudiw_theme_light_onTertiaryFixed: Long = 0xFF31111D
+        private const val eudiw_theme_light_onTertiaryFixedVariant: Long = 0xFF633B48
 
         // Light theme extra colors palette.
-        internal const val eudiw_theme_light_success: Long = 0xFF55953B
+        internal const val eudiw_theme_light_success: Long = 0xFF2C7E0A
         internal const val eudiw_theme_light_warning: Long = 0xFFF39626
         internal const val eudiw_theme_light_pending: Long = 0xFFAB5200
         internal const val eudiw_theme_light_divider: Long = 0xFFD9D9D9
@@ -133,20 +133,20 @@ class ThemeColors {
         private const val eudiw_theme_dark_surfaceTint: Long = eudiw_theme_dark_surface
 
         // Dark theme fixed accent roles (same values as light).
-        private const val eudiw_theme_dark_primaryFixed: Long = 0xFFD4DEF7
-        private const val eudiw_theme_dark_primaryFixedDim: Long = 0xFFA8BEF0
-        private const val eudiw_theme_dark_onPrimaryFixed: Long = 0xFF08122B
-        private const val eudiw_theme_dark_onPrimaryFixedVariant: Long = 0xFF173782
+        private const val eudiw_theme_dark_primaryFixed: Long = 0xFFEADDFF
+        private const val eudiw_theme_dark_primaryFixedDim: Long = 0xFFD0BCFF
+        private const val eudiw_theme_dark_onPrimaryFixed: Long = 0xFF21005D
+        private const val eudiw_theme_dark_onPrimaryFixedVariant: Long = 0xFF4F378B
 
-        private const val eudiw_theme_dark_secondaryFixed: Long = 0xFFD3D6F8
-        private const val eudiw_theme_dark_secondaryFixedDim: Long = 0xFFA6ADF2
-        private const val eudiw_theme_dark_onSecondaryFixed: Long = 0xFF070A2C
-        private const val eudiw_theme_dark_onSecondaryFixedVariant: Long = 0xFF141D85
+        private const val eudiw_theme_dark_secondaryFixed: Long = 0xFFE8DEF8
+        private const val eudiw_theme_dark_secondaryFixedDim: Long = 0xFFCCC2DC
+        private const val eudiw_theme_dark_onSecondaryFixed: Long = 0xFF1D192B
+        private const val eudiw_theme_dark_onSecondaryFixedVariant: Long = 0xFF4A4458
 
-        private const val eudiw_theme_dark_tertiaryFixed: Long = 0xFFE0EBE3
-        private const val eudiw_theme_dark_tertiaryFixedDim: Long = 0xFFC0D8C7
-        private const val eudiw_theme_dark_onTertiaryFixed: Long = 0xFF141F17
-        private const val eudiw_theme_dark_onTertiaryFixedVariant: Long = 0xFF3B5E46
+        private const val eudiw_theme_dark_tertiaryFixed: Long = 0xFFFFD8E4
+        private const val eudiw_theme_dark_tertiaryFixedDim: Long = 0xFFEFB8C8
+        private const val eudiw_theme_dark_onTertiaryFixed: Long = 0xFF31111D
+        private const val eudiw_theme_dark_onTertiaryFixedVariant: Long = 0xFF633B48
 
         // Dark theme extra colors palette.
         internal const val eudiw_theme_dark_success: Long = 0xFF93D875
