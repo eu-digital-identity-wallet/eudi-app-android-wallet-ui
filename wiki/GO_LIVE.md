@@ -81,6 +81,7 @@ Use this checklist before the first production release.
 | Storage | Wallet data, database keys, PIN material, and logs are protected, excluded from backup, and migration-safe. |
 | Authentication | PIN, biometrics, device credential fallback, key authentication, lockout, and recovery policies are approved. |
 | Deep links | All inbound URI schemes, hosts, and parameters are validated and threat-modeled. |
+| Presentation relay risk | Relay attack risk is documented, verifier compensating controls are defined, and residual risk is accepted for each presentation scenario. |
 | Logs | Production logs do not include PID, credentials, tokens, request objects, signatures, keys, or user decisions. |
 | RASP | Play Integrity, commercial protection such as DexGuard, or a manual RASP strategy is implemented. |
 | MASVS | Controls are mapped to evidence and tested with static, dynamic, and manual security testing. |
@@ -609,6 +610,87 @@ Rules:
 * `clientId` must match the verifier registration and protocol profile.
 * Do not include development verifier URLs in production.
 * If a verifier is not trusted, the user interface must clearly show that status before disclosure.
+
+### Relay Attack Risk In Presentation Flows
+
+Production presentation flows must explicitly account for relay attacks. This is especially
+important for high-assurance identity verification and for selective-disclosure-only requests such
+as age checks.
+
+The wallet's presentation flows implement standard session binding, such as OpenID4VP `nonce`,
+`state`, `client_id` binding, and ISO 18013-5 session transcript binding. These controls are
+necessary and protect against replay, injection, session mix-up, and similar protocol attacks when
+verifiers validate them correctly. They do not, by themselves, prove that the wallet holder is
+physically present at the verifier or prevent a live verifier request from being relayed to a
+different legitimate wallet holder.
+
+Relay is different from replay:
+
+| Attack | What happens | Why standard binding is not enough |
+| --- | --- | --- |
+| Replay | An attacker reuses an old presentation response. | Fresh nonces, transaction binding, audience/client binding, and session transcript validation are intended to make old responses invalid. |
+| Relay | An attacker forwards a live verifier request to another wallet holder, who creates a fresh, cryptographically valid response that is relayed back to the verifier. | The response is fresh and correctly bound to the verifier request, so cryptographic replay checks can pass even though the person interacting with the verifier is not the wallet holder. |
+
+This is an architectural and ecosystem risk, not necessarily a wallet code bug. The wallet may be
+fully conformant with OpenID4VP and ISO 18013-5 and still require verifier-side, issuer-side, or
+deployment-policy controls to mitigate relay risk.
+
+Verifier guidance:
+
+* Document relay risk in integrator and relying-party guidance. Verifiers must understand that
+  selective-disclosure-only requests, for example `age_over_18` without portrait or another
+  holder-presence check, are vulnerable to live relay.
+* For attended in-person verification where the relying party must know that the person in front of
+  them is the wallet holder, consider requiring portrait disclosure or another approved biometric
+  holder-binding claim. Human comparison of the live person to the disclosed portrait is the primary
+  practical relay defense in this scenario.
+* Requesting portrait or other biometric data must be lawful, proportionate, purpose-specific, and
+  reflected in the verifier privacy notice. Do not request portrait for low-risk age checks unless
+  the assurance requirement justifies the additional disclosure.
+* For unattended or automated verification, do not treat a cryptographically valid age-only or
+  claim-only response as proof of physical presence. Consider additional binding, such as
+  server-validated app/device attestation, account/session risk signals, step-up authentication,
+  lawful and consented location evidence, or other trust-framework-approved controls.
+* For ISO 18013-5 proximity use cases where physical presence is expected, evaluate distance
+  bounding or other proximity verification mechanisms. QR, BLE, or NFC engagement alone should not
+  be documented as a complete relay defense unless the deployment profile includes a tested
+  relay-resistant mechanism.
+* Treat timing and latency checks as weak signals. They can help identify suspicious relays but do
+  not prevent a fast relay and should not be the only control.
+
+Wallet and protocol-profile guidance:
+
+* Keep OpenID4VP replay/session-binding checks enabled and test that verifiers reject wrong or reused
+  `nonce`, `state`, `client_id`, and response/session values.
+* If the ecosystem profile allows wallet-side timestamps in VP responses or response envelopes, make
+  the timestamp integrity-protected and bound to the transaction. Verifiers should reject responses
+  outside a short freshness window or responses with suspicious end-to-end latency.
+* Do not add unsigned or unauthenticated timestamps and treat them as a security control. Unsigned
+  metadata can be altered by an attacker.
+* If device attestation, location evidence, or app integrity is used as a compensating control, bind
+  the evidence to a fresh verifier/backend nonce and to the same presentation transaction.
+* Make the user consent screen clear about the verifier, the requested claims, and whether the flow
+  is remote or proximity/in-person. Clear UX does not prevent relay by itself, but it reduces social
+  engineering opportunities.
+
+Production decision record:
+
+| Scenario | Required decision |
+| --- | --- |
+| Age-only remote verification | Decide whether relay risk is acceptable. If not, define additional controls or require a different presentation policy. |
+| In-person age or identity verification | Decide whether portrait disclosure and human comparison are mandatory. |
+| ISO 18013-5 proximity verification | Decide whether distance bounding, latency checks, human portrait comparison, or another proximity control is required. |
+| Automated high-value verification | Define additional binding, such as app/device attestation, account risk, location evidence, or transaction monitoring. |
+| Verifier certification/onboarding | Require verifiers to document how they mitigate relay for each requested claim set and relying-party context. |
+
+Evidence to collect:
+
+* Threat model section distinguishing replay, session fixation, phishing, and live relay.
+* Verifier policy for claim-only, age-only, portrait, and proximity requests.
+* Test evidence for relayed QR/OpenID4VP requests and relayed proximity engagement where feasible.
+* Residual-risk sign-off for scenarios where relay cannot be fully mitigated.
+* User-facing and verifier-facing guidance explaining the limits of selective disclosure for
+  physical-presence assurance.
 
 ### Digital Credential API
 
@@ -1893,8 +1975,10 @@ Before release candidate approval, test:
 * Revocation.
 * Same-device OpenID4VP presentation.
 * Cross-device presentation.
+* Relayed OpenID4VP request and response handling.
 * Proximity QR/BLE.
 * NFC engagement, if supported.
+* Relayed proximity engagement where feasible.
 * RQES signing.
 * RQES cancellation.
 * Network unavailable.
@@ -1919,7 +2003,7 @@ Minimum device coverage:
 | Accessibility | Screen reader, font scaling, display size. |
 | Permissions | Denied camera, denied Bluetooth, denied location, denied notifications if used. |
 | Distribution | Fresh install, update, reinstall, restore attempt. |
-| Security | Rooted test device, emulator, debugger, repackaged APK, proxy. |
+| Security | Rooted test device, emulator, debugger, repackaged APK, proxy, relay simulation for remote and proximity presentation flows. |
 
 ## Release Evidence Package
 
@@ -1937,6 +2021,8 @@ For every production release, archive:
 * Unit and instrumentation test reports.
 * MASVS test report.
 * Penetration test report or delta assessment.
+* Presentation relay-risk threat model and accepted residual risks.
+* Verifier policy for age-only, portrait, proximity, and automated presentation scenarios.
 * Signed artifact hash.
 * Signing certificate fingerprint.
 * Mapping files stored securely.
@@ -2036,6 +2122,7 @@ Do not publish until all of these are true:
 * Production signing is controlled and documented.
 * Production trust anchors are installed and documented.
 * Issuer, verifier, wallet provider, and QTSP integrations pass end-to-end testing.
+* Presentation relay-risk controls and residual risks are documented for verifier scenarios.
 * MASVS assessment is complete with accepted residual risks.
 * RASP/integrity strategy is implemented and tested.
 * Privacy and legal reviews are complete.
@@ -2048,6 +2135,8 @@ Do not publish until all of these are true:
 * EUDI Architecture Reference Framework: https://github.com/eu-digital-identity-wallet/eudi-doc-architecture-and-reference-framework
 * OWASP MASVS: https://mas.owasp.org/MASVS/
 * OWASP MASTG: https://mas.owasp.org/MASTG/
+* OpenID for Verifiable Presentations 1.0: https://openid.net/specs/openid-4-verifiable-presentations-1_0.html
+* ISO/IEC 18013-5: https://www.iso.org/standard/69084.html
 * Google Play Integrity API: https://developer.android.com/google/play/integrity/overview
 * Play Integrity verdicts: https://developer.android.com/google/play/integrity/verdicts
 * Android Key Attestation: https://developer.android.com/privacy-and-security/security-key-attestation
