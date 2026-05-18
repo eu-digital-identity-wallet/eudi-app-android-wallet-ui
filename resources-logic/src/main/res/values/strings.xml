@@ -47,6 +47,7 @@
     <string name="generic_filters_sort_by">Sort by</string>
     <string name="generic_filters_ascending">Ascending</string>
     <string name="generic_filters_descending">Descending</string>
+    <string name="generic_search">Search</string>
     <!--endregion-->
 
     <!-- region Content Description -->
@@ -260,7 +261,7 @@
 
     <!-- region Documents Screen -->
     <string name="documents_screen_title">Documents</string>
-    <string name="documents_screen_search_label">Search Documents</string>
+    <string name="documents_screen_search_label">@string/generic_search</string>
     <string name="documents_screen_search_no_results">No documents match your search. Try changing your search query or filters.</string>
     <string name="documents_screen_add_document_title">Add document</string>
     <string name="documents_screen_add_document_description">Add documents to your wallet by choosing from a list or by scanning a provided QR code.</string>
@@ -293,7 +294,7 @@
 
     <!-- region Transactions Screen -->
     <string name="transactions_screen_title">Transactions</string>
-    <string name="transactions_screen_search_label">Search Transactions</string>
+    <string name="transactions_screen_search_label">@string/generic_search</string>
     <string name="transactions_screen_search_no_results">No transactions found. Try changing your search query or filters.</string>
     <string name="transactions_screen_0_minutes_ago_message">Just now</string>
     <plurals name="transactions_screen_some_minutes_ago_message">
