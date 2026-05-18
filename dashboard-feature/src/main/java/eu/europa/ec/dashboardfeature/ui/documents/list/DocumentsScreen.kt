@@ -27,10 +27,14 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FabPosition
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SheetState
 import androidx.compose.material3.Text
@@ -63,6 +67,7 @@ import eu.europa.ec.dashboardfeature.model.SearchItemUi
 import eu.europa.ec.dashboardfeature.ui.component.BottomNavigationItem
 import eu.europa.ec.dashboardfeature.ui.documents.detail.model.DocumentIssuanceStateUi
 import eu.europa.ec.dashboardfeature.ui.documents.list.model.DocumentUi
+import eu.europa.ec.dashboardfeature.util.TestTag
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.theme.values.warning
 import eu.europa.ec.uilogic.component.AppIcons
@@ -83,7 +88,7 @@ import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
 import eu.europa.ec.uilogic.component.utils.HSpacer
 import eu.europa.ec.uilogic.component.utils.LifecycleEffect
 import eu.europa.ec.uilogic.component.utils.OneTimeLaunchedEffect
-import eu.europa.ec.uilogic.component.utils.SPACING_EXTRA_SMALL
+import eu.europa.ec.uilogic.component.utils.SIZE_MEDIUM
 import eu.europa.ec.uilogic.component.utils.SPACING_LARGE
 import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
 import eu.europa.ec.uilogic.component.utils.SPACING_SMALL
@@ -94,13 +99,18 @@ import eu.europa.ec.uilogic.component.wrap.BottomSheetWithTwoBigIcons
 import eu.europa.ec.uilogic.component.wrap.ButtonConfig
 import eu.europa.ec.uilogic.component.wrap.ButtonType
 import eu.europa.ec.uilogic.component.wrap.DialogBottomSheet
+import eu.europa.ec.uilogic.component.wrap.FabDataUi
 import eu.europa.ec.uilogic.component.wrap.GenericBottomSheet
 import eu.europa.ec.uilogic.component.wrap.WrapButton
 import eu.europa.ec.uilogic.component.wrap.WrapExpandableListItem
+import eu.europa.ec.uilogic.component.wrap.WrapIcon
 import eu.europa.ec.uilogic.component.wrap.WrapIconButton
 import eu.europa.ec.uilogic.component.wrap.WrapListItem
 import eu.europa.ec.uilogic.component.wrap.WrapModalBottomSheet
+import eu.europa.ec.uilogic.component.wrap.WrapPrimaryExtendedFab
+import eu.europa.ec.uilogic.extension.applyTestTag
 import eu.europa.ec.uilogic.extension.finish
+import eu.europa.ec.uilogic.extension.isScrollingUp
 import eu.europa.ec.uilogic.extension.paddingFrom
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.Channel
@@ -129,6 +139,8 @@ fun DocumentsScreen(
         skipPartiallyExpanded = true
     )
 
+    val listScrollState = rememberLazyListState()
+
     ContentScreen(
         isLoading = state.isLoading,
         navigatableAction = ScreenNavigateAction.NONE,
@@ -139,6 +151,19 @@ fun DocumentsScreen(
                 onDashboardEventSent = onDashboardEventSent
             )
         },
+        fab = {
+            WrapPrimaryExtendedFab(
+                data = FabDataUi(
+                    text = { Text(text = stringResource(R.string.documents_screen_add_document_fab)) },
+                    icon = { WrapIcon(iconData = AppIcons.Add) },
+                    onClick = { viewModel.setEvent(Event.AddDocumentPressed) }
+                ),
+                modifier = Modifier.applyTestTag(TestTag.DocumentsScreen.PLUS_BUTTON),
+                expanded = listScrollState.isScrollingUp(),
+                shape = RoundedCornerShape(SIZE_MEDIUM.dp),
+            )
+        },
+        fabPosition = FabPosition.End,
         broadcastAction = BroadcastAction(
             intentFilters = listOf(
                 CoreActions.REVOCATION_WORK_REFRESH_ACTION,
@@ -156,6 +181,7 @@ fun DocumentsScreen(
             onNavigationRequested = { navigationEffect ->
                 handleNavigationEffect(navigationEffect, navHostController, context)
             },
+            scrollState = listScrollState,
             paddingValues = paddingValues,
             coroutineScope = scope,
             modalBottomSheetState = bottomSheetState
@@ -237,6 +263,7 @@ private fun Content(
     effectFlow: Flow<Effect>,
     onEventSend: (Event) -> Unit,
     onNavigationRequested: (navigationEffect: Effect.Navigation) -> Unit,
+    scrollState: LazyListState,
     paddingValues: PaddingValues,
     coroutineScope: CoroutineScope,
     modalBottomSheetState: SheetState,
@@ -248,6 +275,7 @@ private fun Content(
     ) {
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
+            state = scrollState,
             contentPadding = PaddingValues(bottom = SPACING_MEDIUM.dp),
         ) {
             item {
@@ -659,6 +687,7 @@ private fun DocumentsScreenPreview() {
                 effectFlow = Channel<Effect>().receiveAsFlow(),
                 onEventSend = {},
                 onNavigationRequested = {},
+                scrollState = rememberLazyListState(),
                 paddingValues = paddingValues,
                 coroutineScope = scope,
                 modalBottomSheetState = bottomSheetState,

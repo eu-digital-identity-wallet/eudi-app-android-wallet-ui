@@ -265,6 +265,7 @@
     <string name="documents_screen_search_no_results">No documents match your search. Try changing your search query or filters.</string>
     <string name="documents_screen_add_document_title">Add document</string>
     <string name="documents_screen_add_document_description">Add documents to your wallet by choosing from a list or by scanning a provided QR code.</string>
+    <string name="documents_screen_add_document_fab">Add document</string>
     <string name="documents_screen_add_document_option_list">From list</string>
     <string name="documents_screen_add_document_option_qr">@string/generic_scan_qr</string>
     <string name="documents_screen_add_document_option_or">@string/generic_or</string>
