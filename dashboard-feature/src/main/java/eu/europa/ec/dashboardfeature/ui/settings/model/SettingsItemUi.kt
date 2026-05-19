@@ -23,7 +23,7 @@ data class SettingsItemUi(
     val data: ListItemDataUi,
 )
 
-enum class SettingsMenuItemType {
-    RETRIEVE_LOGS,
-    CHANGELOG,
+enum class SettingsMenuItemType(val itemId: String) {
+    RETRIEVE_LOGS("retrieveLogsId"),
+    CHANGELOG("changelogId"),
 }

@@ -200,7 +200,7 @@ private fun SettingsScreenPreview() {
             SettingsItemUi(
                 type = SettingsMenuItemType.RETRIEVE_LOGS,
                 data = ListItemDataUi(
-                    itemId = stringResource(R.string.settings_screen_option_retrieve_logs_id),
+                    itemId = SettingsMenuItemType.RETRIEVE_LOGS.itemId,
                     mainContentData = ListItemMainContentDataUi.Text(
                         text = stringResource(R.string.settings_screen_option_retrieve_logs)
                     ),

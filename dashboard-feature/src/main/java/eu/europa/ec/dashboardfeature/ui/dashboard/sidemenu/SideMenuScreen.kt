@@ -140,7 +140,7 @@ private fun SideMenuContentPreview() {
                     SideMenuItemUi(
                         type = SideMenuTypeUi.CHANGE_PIN,
                         data = ListItemDataUi(
-                            itemId = stringResource(R.string.dashboard_side_menu_option_change_pin_id),
+                            itemId = SideMenuTypeUi.CHANGE_PIN.itemId,
                             mainContentData = ListItemMainContentDataUi.Text(
                                 text = stringResource(R.string.dashboard_side_menu_option_change_pin)
                             ),
@@ -155,7 +155,7 @@ private fun SideMenuContentPreview() {
                     SideMenuItemUi(
                         type = SideMenuTypeUi.SETTINGS,
                         data = ListItemDataUi(
-                            itemId = stringResource(R.string.dashboard_side_menu_option_settings_id),
+                            itemId = SideMenuTypeUi.SETTINGS.itemId,
                             mainContentData = ListItemMainContentDataUi.Text(
                                 text = stringResource(R.string.dashboard_side_menu_option_settings)
                             ),

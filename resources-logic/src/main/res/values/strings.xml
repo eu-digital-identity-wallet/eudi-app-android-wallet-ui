@@ -224,17 +224,13 @@
     <!-- region Dashboard Side Menu -->
     <string name="dashboard_side_menu_title">My EU Wallet</string>
     <string name="dashboard_side_menu_option_change_pin">Change PIN</string>
-    <string name="dashboard_side_menu_option_change_pin_id">changePinId</string>
     <string name="dashboard_side_menu_option_settings">Settings</string>
-    <string name="dashboard_side_menu_option_settings_id">settingsId</string>
     <!--endregion-->
 
     <!-- region Settings Screen -->
     <string name="settings_screen_title">Settings</string>
     <string name="settings_screen_option_retrieve_logs">Retrieve logs</string>
-    <string name="settings_screen_option_retrieve_logs_id">retrieveLogsId</string>
     <string name="settings_screen_option_changelog">Changelog</string>
-    <string name="settings_screen_option_changelog_id">changelogId</string>
     <string name="settings_intent_chooser_logs_share_title">Share logs</string>
     <!--endregion-->
 

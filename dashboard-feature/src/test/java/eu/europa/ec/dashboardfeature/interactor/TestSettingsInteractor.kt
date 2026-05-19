@@ -162,7 +162,7 @@ class TestSettingsInteractor {
         // 2a. Type
         assertEquals(SettingsMenuItemType.RETRIEVE_LOGS, secondItem.type)
         // 2b. itemId
-        assertEquals(retrieveLogsIdString, secondItem.data.itemId)
+        assertEquals(SettingsMenuItemType.RETRIEVE_LOGS.itemId, secondItem.data.itemId)
         // 2c. mainContentData.text
         val mainContent2 =
             secondItem.data.mainContentData as ListItemMainContentDataUi.Text
@@ -197,7 +197,7 @@ class TestSettingsInteractor {
         // 2. First item: RETRIEVE_LOGS
         val firstItem = settingsItems[0]
         assertEquals(SettingsMenuItemType.RETRIEVE_LOGS, firstItem.type)
-        assertEquals(retrieveLogsIdString, firstItem.data.itemId)
+        assertEquals(SettingsMenuItemType.RETRIEVE_LOGS.itemId, firstItem.data.itemId)
         val mainContent1 =
             firstItem.data.mainContentData as ListItemMainContentDataUi.Text
         assertEquals(retrieveLogsText, mainContent1.text)
@@ -211,7 +211,7 @@ class TestSettingsInteractor {
         // 3. Second item: CHANGELOG
         val secondItem = settingsItems[1]
         assertEquals(SettingsMenuItemType.CHANGELOG, secondItem.type)
-        assertEquals(changelogIdString, secondItem.data.itemId)
+        assertEquals(SettingsMenuItemType.CHANGELOG.itemId, secondItem.data.itemId)
         val mainContent2 =
             secondItem.data.mainContentData as ListItemMainContentDataUi.Text
         assertEquals(changelogText, mainContent2.text)
@@ -232,7 +232,6 @@ class TestSettingsInteractor {
         mockResourceProviderStrings(
             resourcesProvider,
             listOf(
-                R.string.settings_screen_option_retrieve_logs_id to retrieveLogsIdString,
                 R.string.settings_screen_option_retrieve_logs to retrieveLogsText,
             )
         )
@@ -241,7 +240,6 @@ class TestSettingsInteractor {
             mockResourceProviderStrings(
                 resourcesProvider,
                 listOf(
-                    R.string.settings_screen_option_changelog_id to changelogIdString,
                     R.string.settings_screen_option_changelog to changelogText,
                 )
             )
@@ -250,9 +248,7 @@ class TestSettingsInteractor {
     //endregion
 
     //region Mocked objects needed for tests.
-    private val retrieveLogsIdString = "retrieveLogsId"
     private val retrieveLogsText = "Retrieve logs"
-    private val changelogIdString = "changelogId"
     private val changelogText = "Changelog"
     //endregion
 }
