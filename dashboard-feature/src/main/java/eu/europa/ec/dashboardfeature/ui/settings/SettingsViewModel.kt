@@ -16,8 +16,12 @@
 
 package eu.europa.ec.dashboardfeature.ui.settings
 
+import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import androidx.lifecycle.viewModelScope
+import eu.europa.ec.authenticationlogic.controller.authentication.BiometricsAuthenticate
+import eu.europa.ec.authenticationlogic.controller.authentication.BiometricsAvailability
 import eu.europa.ec.businesslogic.extension.toUri
 import eu.europa.ec.dashboardfeature.interactor.SettingsInteractor
 import eu.europa.ec.dashboardfeature.ui.settings.model.SettingsItemUi
@@ -28,9 +32,11 @@ import eu.europa.ec.uilogic.mvi.MviViewModel
 import eu.europa.ec.uilogic.mvi.ViewEvent
 import eu.europa.ec.uilogic.mvi.ViewSideEffect
 import eu.europa.ec.uilogic.mvi.ViewState
+import kotlinx.coroutines.launch
 import org.koin.core.annotation.KoinViewModel
 
 data class State(
+    val isLoading: Boolean = false,
     val screenTitle: String,
 
     val settingsItems: List<SettingsItemUi> = emptyList(),
@@ -40,18 +46,25 @@ data class State(
 ) : ViewState
 
 sealed class Event : ViewEvent {
+    data object Init : Event()
     data object Pop : Event()
-    data class ItemClicked(val itemType: SettingsMenuItemType) : Event()
+    data object LaunchBiometricSystemScreen : Event()
+    data class ItemClicked(
+        val itemType: SettingsMenuItemType,
+        val context: Context
+    ) : Event()
 }
 
 sealed class Effect : ViewSideEffect {
     sealed class Navigation : Effect() {
         data object Pop : Navigation()
+        data object LaunchBiometricsSystemScreen : Navigation()
 
         data class OpenUrlExternally(val url: Uri) : Navigation()
     }
 
     data class ShareLogFile(val intent: Intent, val chooserTitle: String) : Effect()
+    data class ShowSnackbar(val message: String) : Effect()
 }
 
 @KoinViewModel
@@ -60,26 +73,75 @@ class SettingsViewModel(
     private val resourceProvider: ResourceProvider,
 ) : MviViewModel<Event, State, Effect>() {
     override fun setInitialState(): State {
-        val changelogUrl = settingsInteractor.getChangelogUrl()
         return State(
             screenTitle = resourceProvider.getString(R.string.settings_screen_title),
-            settingsItems = settingsInteractor.getSettingsItemsUi(changelogUrl = changelogUrl),
-
             appVersion = settingsInteractor.getAppVersion(),
-            changelogUrl = changelogUrl,
+            changelogUrl = settingsInteractor.getChangelogUrl(),
         )
     }
 
     override fun handleEvents(event: Event) {
         when (event) {
+            is Event.Init -> {
+                createSettingsItemsUi(viewState.value.changelogUrl)
+            }
+
             is Event.Pop -> setEffect { Effect.Navigation.Pop }
 
-            is Event.ItemClicked -> handleSettingsMenuItemClicked(event.itemType)
+            is Event.LaunchBiometricSystemScreen -> {
+                settingsInteractor.launchBiometricSystemScreen()
+            }
+
+            is Event.ItemClicked -> handleSettingsMenuItemClicked(
+                itemType = event.itemType,
+                context = event.context
+            )
         }
     }
 
-    private fun handleSettingsMenuItemClicked(itemType: SettingsMenuItemType) {
+    private fun createSettingsItemsUi(changelogUrl: String?) {
+        viewModelScope.launch {
+            setState {
+                copy(
+                    isLoading = true,
+                )
+            }
+
+            val settingsItems = settingsInteractor.getSettingsItemsUi(changelogUrl = changelogUrl)
+            setState {
+                copy(
+                    isLoading = false,
+                    settingsItems = settingsItems,
+                )
+            }
+        }
+    }
+
+    private fun handleSettingsMenuItemClicked(
+        itemType: SettingsMenuItemType,
+        context: Context,
+    ) {
         when (itemType) {
+            SettingsMenuItemType.BIOMETRICS_AUTHENTICATION -> {
+                settingsInteractor.getBiometricsAvailability { availability ->
+                    when (availability) {
+                        is BiometricsAvailability.CanAuthenticate -> authenticate(context)
+
+                        is BiometricsAvailability.NonEnrolled -> {
+                            setEffect {
+                                Effect.Navigation.LaunchBiometricsSystemScreen
+                            }
+                        }
+
+                        is BiometricsAvailability.Failure -> {
+                            setEffect {
+                                Effect.ShowSnackbar(availability.errorMessage)
+                            }
+                        }
+                    }
+                }
+            }
+
             SettingsMenuItemType.RETRIEVE_LOGS -> {
                 val logs = settingsInteractor.retrieveLogFileUris()
                 if (logs.isNotEmpty()) {
@@ -103,6 +165,45 @@ class SettingsViewModel(
                         Effect.Navigation.OpenUrlExternally(
                             url = changelogUrl.toUri()
                         )
+                    }
+                }
+            }
+        }
+    }
+
+    private fun authenticate(context: Context) {
+        settingsInteractor.authenticateWithBiometrics(
+            context = context,
+            notifyOnAuthenticationFailure = true,
+        ) { result ->
+            when (result) {
+                is BiometricsAuthenticate.Cancelled -> {
+                    setEffect {
+                        Effect.ShowSnackbar(
+                            resourceProvider.getString(
+                                R.string.settings_screen_biometrics_authentication_cancelled
+                            )
+                        )
+                    }
+                }
+
+                is BiometricsAuthenticate.Failed -> {
+                    setEffect {
+                        Effect.ShowSnackbar(result.errorMessage)
+                    }
+                }
+
+                is BiometricsAuthenticate.Success -> {
+                    viewModelScope.launch {
+                        settingsInteractor.toggleBiometricsAuthentication()
+                        val settingsItems = settingsInteractor.getSettingsItemsUi(
+                            changelogUrl = viewState.value.changelogUrl
+                        )
+                        setState {
+                            copy(
+                                settingsItems = settingsItems,
+                            )
+                        }
                     }
                 }
             }

@@ -50,7 +50,9 @@ enum class BiometricsAuthError(val code: Int) {
 }
 
 interface BiometricAuthenticationController {
+    fun getBiometricsAvailability(): BiometricsAvailability
     fun deviceSupportsBiometrics(listener: (BiometricsAvailability) -> Unit)
+
     fun authenticate(
         context: Context,
         notifyOnAuthenticationFailure: Boolean,
@@ -74,17 +76,20 @@ class BiometricAuthenticationControllerImpl(
     private val dispatcher: CoroutineDispatcher = Dispatchers.IO
 ) : BiometricAuthenticationController {
 
-    override fun deviceSupportsBiometrics(listener: (BiometricsAvailability) -> Unit) {
+    override fun getBiometricsAvailability(): BiometricsAvailability {
         val biometricManager = BiometricManager.from(resourceProvider.provideContext())
-        when (biometricManager.canAuthenticate(BIOMETRIC_WEAK)) {
-            BiometricManager.BIOMETRIC_SUCCESS -> listener.invoke(BiometricsAvailability.CanAuthenticate)
-            BiometricManager.BIOMETRIC_ERROR_NONE_ENROLLED -> listener.invoke(BiometricsAvailability.NonEnrolled)
-            BiometricManager.BIOMETRIC_ERROR_NO_HARDWARE, BiometricManager.BIOMETRIC_ERROR_UNSUPPORTED -> listener.invoke(
+        return when (biometricManager.canAuthenticate(BIOMETRIC_WEAK)) {
+            BiometricManager.BIOMETRIC_SUCCESS -> BiometricsAvailability.CanAuthenticate
+            BiometricManager.BIOMETRIC_ERROR_NONE_ENROLLED -> BiometricsAvailability.NonEnrolled
+            BiometricManager.BIOMETRIC_ERROR_NO_HARDWARE, BiometricManager.BIOMETRIC_ERROR_UNSUPPORTED ->
                 BiometricsAvailability.Failure(resourceProvider.getString(R.string.biometric_no_hardware))
-            )
 
-            else -> listener.invoke(BiometricsAvailability.Failure(resourceProvider.getString(R.string.biometric_unknown_error)))
+            else -> BiometricsAvailability.Failure(resourceProvider.getString(R.string.biometric_unknown_error))
         }
+    }
+
+    override fun deviceSupportsBiometrics(listener: (BiometricsAvailability) -> Unit) {
+        return listener.invoke(getBiometricsAvailability())
     }
 
     override fun authenticate(

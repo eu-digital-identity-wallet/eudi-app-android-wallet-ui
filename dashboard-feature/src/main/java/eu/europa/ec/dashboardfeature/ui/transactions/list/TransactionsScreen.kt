@@ -397,7 +397,7 @@ private fun NoResults(
     Column(modifier = modifier) {
         WrapListItem(
             item = ListItemDataUi(
-                itemId = stringResource(R.string.transactions_screen_search_no_results_id),
+                itemId = TRANSACTIONS_NO_RESULTS_ITEM_ID,
                 mainContentData = ListItemMainContentDataUi.Text(
                     text = stringResource(R.string.transactions_screen_search_no_results)
                 ),
@@ -623,6 +623,8 @@ fun FiltersDatePickerField(
             }
     )
 }
+
+private const val TRANSACTIONS_NO_RESULTS_ITEM_ID = "noTransactionsId"
 
 @ThemeModePreviews
 @Composable

@@ -47,7 +47,7 @@ class DocumentSignInteractorImpl(
     override fun getItemUi(): DocumentSignButtonUi {
         return DocumentSignButtonUi(
             data = ListItemDataUi(
-                itemId = resourceProvider.getString(R.string.document_sign_select_document_button_id),
+                itemId = DOCUMENT_SIGN_BUTTON_ID,
                 mainContentData = ListItemMainContentDataUi.Text(
                     text = resourceProvider.getString(R.string.document_sign_select_document)
                 ),
@@ -58,3 +58,5 @@ class DocumentSignInteractorImpl(
         )
     }
 }
+
+private const val DOCUMENT_SIGN_BUTTON_ID = "documentSignButtonId"

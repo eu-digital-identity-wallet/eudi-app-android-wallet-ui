@@ -119,7 +119,7 @@ class TransactionDetailsInteractorImpl(
 
                             dataShared = transaction.documents.toGroupedNestedClaims(
                                 documentSupportingText = resourceProvider.getString(R.string.transaction_details_collapsed_supporting_text),
-                                itemIdentifierPrefix = resourceProvider.getString(R.string.transaction_details_data_shared_prefix_id),
+                                itemIdentifierPrefix = TRANSACTION_DETAILS_DATA_SHARED_ITEM_ID_PREFIX,
                                 userLocale = userLocale,
                                 resourceProvider = resourceProvider,
                                 uuidProvider = uuidProvider,
@@ -257,3 +257,5 @@ class TransactionDetailsInteractorImpl(
         }
     }
 }
+
+private const val TRANSACTION_DETAILS_DATA_SHARED_ITEM_ID_PREFIX = "transactionDetailsDataSharedId"

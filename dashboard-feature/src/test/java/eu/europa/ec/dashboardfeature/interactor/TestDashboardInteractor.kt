@@ -71,7 +71,7 @@ class TestDashboardInteractor {
         // 1. First item: CHANGE_PIN
         val firstItem = sideMenuItems[0]
         assertEquals(SideMenuTypeUi.CHANGE_PIN, firstItem.type)
-        assertEquals(changePinIdString, firstItem.data.itemId)
+        assertEquals(SideMenuTypeUi.CHANGE_PIN.itemId, firstItem.data.itemId)
         val mainContent1 = firstItem.data.mainContentData as ListItemMainContentDataUi.Text
         assertEquals(changePinText, mainContent1.text)
         val leadingIcon1 = firstItem.data.leadingContentData as ListItemLeadingContentDataUi.Icon
@@ -82,7 +82,7 @@ class TestDashboardInteractor {
         // 2. Second item: SETTINGS
         val secondItem = sideMenuItems[1]
         assertEquals(SideMenuTypeUi.SETTINGS, secondItem.type)
-        assertEquals(settingsIdString, secondItem.data.itemId)
+        assertEquals(SideMenuTypeUi.SETTINGS.itemId, secondItem.data.itemId)
         val mainContent2 = secondItem.data.mainContentData as ListItemMainContentDataUi.Text
         assertEquals(settingsText, mainContent2.text)
         val leadingIcon2 = secondItem.data.leadingContentData as ListItemLeadingContentDataUi.Icon
@@ -93,11 +93,7 @@ class TestDashboardInteractor {
 
         // Verify that getString was called exactly once per resource ID
         verify(resourceProvider, times(1))
-            .getString(R.string.dashboard_side_menu_option_change_pin_id)
-        verify(resourceProvider, times(1))
             .getString(R.string.dashboard_side_menu_option_change_pin)
-        verify(resourceProvider, times(1))
-            .getString(R.string.dashboard_side_menu_option_settings_id)
         verify(resourceProvider, times(1))
             .getString(R.string.dashboard_side_menu_option_settings)
     }
@@ -108,9 +104,7 @@ class TestDashboardInteractor {
         mockResourceProviderStrings(
             resourcesProvider,
             listOf(
-                R.string.dashboard_side_menu_option_change_pin_id to changePinIdString,
                 R.string.dashboard_side_menu_option_change_pin to changePinText,
-                R.string.dashboard_side_menu_option_settings_id to settingsIdString,
                 R.string.dashboard_side_menu_option_settings to settingsText,
             )
         )
@@ -118,9 +112,7 @@ class TestDashboardInteractor {
     //endregion
 
     //region Mocked objects needed for tests.
-    private val changePinIdString = "changePinId"
     private val changePinText = "Change PIN"
-    private val settingsIdString = "settingsId"
     private val settingsText = "Settings"
     //endregion
 }

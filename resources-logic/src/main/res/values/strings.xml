@@ -224,17 +224,15 @@
     <!-- region Dashboard Side Menu -->
     <string name="dashboard_side_menu_title">My EU Wallet</string>
     <string name="dashboard_side_menu_option_change_pin">Change PIN</string>
-    <string name="dashboard_side_menu_option_change_pin_id">changePinId</string>
     <string name="dashboard_side_menu_option_settings">Settings</string>
-    <string name="dashboard_side_menu_option_settings_id">settingsId</string>
     <!--endregion-->
 
     <!-- region Settings Screen -->
     <string name="settings_screen_title">Settings</string>
+    <string name="settings_screen_option_biometrics_authentication">Authenticate with biometrics</string>
     <string name="settings_screen_option_retrieve_logs">Retrieve logs</string>
-    <string name="settings_screen_option_retrieve_logs_id">retrieveLogsId</string>
     <string name="settings_screen_option_changelog">Changelog</string>
-    <string name="settings_screen_option_changelog_id">changelogId</string>
+    <string name="settings_screen_biometrics_authentication_cancelled">Biometric authentication was cancelled</string>
     <string name="settings_intent_chooser_logs_share_title">Share logs</string>
     <!--endregion-->
 
@@ -268,7 +266,6 @@
     <string name="documents_screen_title">Documents</string>
     <string name="documents_screen_search_label">Search Documents</string>
     <string name="documents_screen_search_no_results">No documents match your search. Try changing your search query or filters.</string>
-    <string name="documents_screen_search_no_results_id">noResultsId</string>
     <string name="documents_screen_add_document_title">Add document</string>
     <string name="documents_screen_add_document_description">Add documents to your wallet by choosing from a list or by scanning a provided QR code.</string>
     <string name="documents_screen_add_document_option_list">From list</string>
@@ -301,7 +298,6 @@
     <!-- region Transactions Screen -->
     <string name="transactions_screen_title">Transactions</string>
     <string name="transactions_screen_search_label">Search Transactions</string>
-    <string name="transactions_screen_search_no_results_id">noTransactionsId</string>
     <string name="transactions_screen_search_no_results">No transactions found. Try changing your search query or filters.</string>
     <string name="transactions_screen_0_minutes_ago_message">Just now</string>
     <plurals name="transactions_screen_some_minutes_ago_message">
@@ -337,7 +333,6 @@
     <string name="document_sign_title">Sign Document</string>
     <string name="document_sign_subtitle">Select a document from your device to sign electronically.</string>
     <string name="document_sign_select_document">Select document</string>
-    <string name="document_sign_select_document_button_id">documentSignButtonId</string>
     <!--endregion-->
 
     <!-- region Qr Scan -->
@@ -368,7 +363,6 @@
     <string name="document_details_issuer_card_issued_message_text">You may reissue this document at any time.</string>
     <string name="document_details_issuer_card_issued_action_btn_text">Reissue document</string>
     <string name="document_details_issuer_card_revoked_message_text">This document cannot be used for verification.</string>
-    <string name="document_details_issuer_card_id">issuerDetailsCardId</string>
     <string name="document_details_secondary_button_text">Remove from wallet</string>
 
     <string name="document_details_bottom_sheet_bookmark_info_title">Saved to favourites</string>
@@ -389,9 +383,7 @@
     <string name="transaction_details_request_deletion_button">Request data deletion</string>
     <string name="transaction_details_report_transaction_button">Report suspicious transaction</string>
     <string name="transaction_details_data_shared_section_title">DATA SHARED</string>
-    <string name="transaction_details_data_shared_prefix_id">transactionDetailsDataSharedId</string>
     <string name="transaction_details_data_signed_section_title">DATA SIGNED</string>
-    <string name="transaction_details_data_signed_prefix_id">transactionDetailsDataSignedId</string>
     <string name="transaction_details_collapsed_supporting_text">@string/generic_view_details</string>
     <!--endregion-->
 

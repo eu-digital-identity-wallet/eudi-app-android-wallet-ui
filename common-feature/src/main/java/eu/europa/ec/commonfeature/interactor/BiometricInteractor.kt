@@ -30,6 +30,7 @@ import kotlinx.coroutines.flow.Flow
 interface BiometricInteractor {
     val maxFailedPinAttempts: Int
 
+    fun getBiometricsAvailability(): BiometricsAvailability
     fun getBiometricsAvailability(listener: (BiometricsAvailability) -> Unit)
     suspend fun getBiometricUserSelection(): Boolean
     suspend fun storeBiometricsUsageDecision(shouldUseBiometrics: Boolean)
@@ -77,6 +78,10 @@ class BiometricInteractorImpl(
 
     override suspend fun getBiometricUserSelection(): Boolean {
         return biometryStorageController.getUseBiometricsAuth()
+    }
+
+    override fun getBiometricsAvailability(): BiometricsAvailability {
+        return biometricAuthenticationController.getBiometricsAvailability()
     }
 
     override fun getBiometricsAvailability(listener: (BiometricsAvailability) -> Unit) {

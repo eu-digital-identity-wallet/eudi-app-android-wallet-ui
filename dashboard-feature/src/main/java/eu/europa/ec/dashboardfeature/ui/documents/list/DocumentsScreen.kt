@@ -409,7 +409,7 @@ private fun NoResults(
     Column(modifier = modifier) {
         WrapListItem(
             item = ListItemDataUi(
-                itemId = stringResource(R.string.documents_screen_search_no_results_id),
+                itemId = DOCUMENTS_NO_RESULTS_ITEM_ID,
                 mainContentData = ListItemMainContentDataUi.Text(text = stringResource(R.string.documents_screen_search_no_results)),
             ),
             onItemClick = null,
@@ -581,6 +581,8 @@ private fun DocumentsSheetContent(
         }
     }
 }
+
+private const val DOCUMENTS_NO_RESULTS_ITEM_ID = "noResultsId"
 
 @OptIn(ExperimentalMaterial3Api::class)
 @ThemeModePreviews
