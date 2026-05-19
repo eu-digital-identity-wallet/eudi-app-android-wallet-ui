@@ -51,7 +51,6 @@ enum class BiometricsAuthError(val code: Int) {
 
 interface BiometricAuthenticationController {
     fun getBiometricsAvailability(): BiometricsAvailability
-    fun deviceSupportsBiometrics(listener: (BiometricsAvailability) -> Unit)
 
     fun authenticate(
         context: Context,
@@ -86,10 +85,6 @@ class BiometricAuthenticationControllerImpl(
 
             else -> BiometricsAvailability.Failure(resourceProvider.getString(R.string.biometric_unknown_error))
         }
-    }
-
-    override fun deviceSupportsBiometrics(listener: (BiometricsAvailability) -> Unit) {
-        return listener.invoke(getBiometricsAvailability())
     }
 
     override fun authenticate(

@@ -40,7 +40,6 @@ import org.junit.Test
 import org.mockito.Mock
 import org.mockito.Mockito.mock
 import org.mockito.MockitoAnnotations
-import org.mockito.kotlin.any
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
@@ -311,11 +310,7 @@ class TestProximityLoadingInteractor {
     }
 
     private fun mockBiometricsAvailabilityResponse(response: BiometricsAvailability) {
-        whenever(deviceAuthenticationInteractor.getBiometricsAvailability(listener = any()))
-            .thenAnswer {
-                val bioAvailability = it.getArgument<(BiometricsAvailability) -> Unit>(0)
-                bioAvailability(response)
-            }
+        whenever(deviceAuthenticationInteractor.getBiometricsAvailability()).thenReturn(response)
     }
 
     private fun mockEmissionOfIntentionallyNotHandledEvent() {

@@ -19,7 +19,6 @@ package eu.europa.ec.commonfeature.interactor
 import eu.europa.ec.authenticationlogic.config.AuthenticationConfig
 import eu.europa.ec.authenticationlogic.controller.authentication.BiometricAuthenticationController
 import eu.europa.ec.authenticationlogic.controller.authentication.BiometricsAuthenticate
-import eu.europa.ec.authenticationlogic.controller.authentication.BiometricsAvailability
 import eu.europa.ec.authenticationlogic.controller.storage.BiometryStorageController
 import eu.europa.ec.authenticationlogic.controller.throttle.PinThrottleController
 import eu.europa.ec.authenticationlogic.secure.SecurePinImpl
@@ -166,14 +165,11 @@ class TestBiometricInteractor {
     // Case: getBiometricsAvailability behaviour
     @Test
     fun `When getBiometricsAvailability is called, Then verify deviceSupportsBiometrics is executed`() {
-        // Given
-        val mockListener: (BiometricsAvailability) -> Unit = mock()
-
         // When
-        interactor.getBiometricsAvailability(mockListener)
+        interactor.getBiometricsAvailability()
 
         // Then
-        verify(biometricAuthenticationController).deviceSupportsBiometrics(mockListener)
+        verify(biometricAuthenticationController).getBiometricsAvailability()
     }
     //endregion
 

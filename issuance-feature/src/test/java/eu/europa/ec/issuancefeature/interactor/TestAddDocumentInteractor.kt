@@ -638,11 +638,7 @@ class TestAddDocumentInteractor {
     }
 
     private fun mockBiometricsAvailabilityResponse(response: BiometricsAvailability) {
-        whenever(deviceAuthenticationInteractor.getBiometricsAvailability(listener = any()))
-            .thenAnswer {
-                val bioAvailability = it.getArgument<(BiometricsAvailability) -> Unit>(0)
-                bioAvailability(response)
-            }
+        whenever(deviceAuthenticationInteractor.getBiometricsAvailability()).thenReturn(response)
     }
 
     private fun mockNoDocumentsString(): String {

@@ -272,24 +272,22 @@ class DocumentOfferInteractorImpl(
         notifyOnAuthenticationFailure: Boolean,
         resultHandler: DeviceAuthenticationResult
     ) {
-        deviceAuthenticationInteractor.getBiometricsAvailability {
-            when (it) {
-                is BiometricsAvailability.CanAuthenticate -> {
-                    deviceAuthenticationInteractor.authenticateWithBiometrics(
-                        context = context,
-                        crypto = crypto,
-                        notifyOnAuthenticationFailure = notifyOnAuthenticationFailure,
-                        resultHandler = resultHandler
-                    )
-                }
+        when (deviceAuthenticationInteractor.getBiometricsAvailability()) {
+            is BiometricsAvailability.CanAuthenticate -> {
+                deviceAuthenticationInteractor.authenticateWithBiometrics(
+                    context = context,
+                    crypto = crypto,
+                    notifyOnAuthenticationFailure = notifyOnAuthenticationFailure,
+                    resultHandler = resultHandler
+                )
+            }
 
-                is BiometricsAvailability.NonEnrolled -> {
-                    deviceAuthenticationInteractor.launchBiometricSystemScreen()
-                }
+            is BiometricsAvailability.NonEnrolled -> {
+                deviceAuthenticationInteractor.launchBiometricSystemScreen()
+            }
 
-                is BiometricsAvailability.Failure -> {
-                    resultHandler.onAuthenticationFailure()
-                }
+            is BiometricsAvailability.Failure -> {
+                resultHandler.onAuthenticationFailure()
             }
         }
     }
