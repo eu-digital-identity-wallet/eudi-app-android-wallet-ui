@@ -103,7 +103,7 @@ import eu.europa.ec.uilogic.component.wrap.WrapExpandableListItem
 import eu.europa.ec.uilogic.component.wrap.WrapIcon
 import eu.europa.ec.uilogic.component.wrap.WrapIconButton
 import eu.europa.ec.uilogic.component.wrap.WrapListItem
-import eu.europa.ec.uilogic.component.wrap.WrapListItems
+import eu.europa.ec.uilogic.component.wrap.WrapListItemDefaults
 import eu.europa.ec.uilogic.component.wrap.WrapModalBottomSheet
 import eu.europa.ec.uilogic.extension.finish
 import eu.europa.ec.uilogic.extension.paddingFrom
@@ -355,36 +355,43 @@ private fun TransactionCategory(
             text = category.displayName ?: stringResource(category.stringResId)
         )
 
-        val transactionItems = remember(key1 = transactions) {
-            transactions.map { it.uiData }
-        }
         val transactionMap = remember(key1 = transactions) {
             transactions.associateBy { it.uiData.header.itemId }
         }
 
-        WrapListItems(
+        Column(
             modifier = Modifier.fillMaxWidth(),
-            items = transactionItems,
-            onItemClick = { item ->
-                onEventSend(
-                    Event.TransactionItemPressed(itemId = item.itemId)
-                )
-            },
-            onExpandedChange = null,
-            overlineTextStyle = { item ->
-                val transactionUi = transactionMap[item.itemId]
+            verticalArrangement = Arrangement.spacedBy(WrapListItemDefaults.GroupedItemSpacing)
+        ) {
+            transactions.forEachIndexed { index, transactionItem: TransactionUi ->
+                WrapListItem(
+                    modifier = Modifier.fillMaxWidth(),
+                    item = transactionItem.uiData.header,
+                    onItemClick = { item ->
+                        onEventSend(
+                            Event.TransactionItemPressed(itemId = item.itemId)
+                        )
+                    },
+                    overlineTextStyle = { item ->
+                        val transactionUi = transactionMap[item.itemId]
 
-                val overlineTextColor = when (transactionUi?.uiStatus) {
-                    TransactionStatusUi.Completed -> MaterialTheme.colorScheme.success
-                    TransactionStatusUi.Failed -> MaterialTheme.colorScheme.error
-                    null -> MaterialTheme.colorScheme.onSurfaceVariant
-                }
+                        val overlineTextColor = when (transactionUi?.uiStatus) {
+                            TransactionStatusUi.Completed -> MaterialTheme.colorScheme.success
+                            TransactionStatusUi.Failed -> MaterialTheme.colorScheme.error
+                            null -> MaterialTheme.colorScheme.onSurfaceVariant
+                        }
 
-                MaterialTheme.typography.labelMedium.copy(
-                    color = overlineTextColor
+                        MaterialTheme.typography.labelMedium.copy(
+                            color = overlineTextColor
+                        )
+                    },
+                    shape = WrapListItemDefaults.groupedShape(
+                        index = index,
+                        itemCount = transactions.size
+                    ),
                 )
             }
-        )
+        }
     }
 }
 

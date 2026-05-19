@@ -106,6 +106,7 @@ import eu.europa.ec.uilogic.component.wrap.WrapExpandableListItem
 import eu.europa.ec.uilogic.component.wrap.WrapIcon
 import eu.europa.ec.uilogic.component.wrap.WrapIconButton
 import eu.europa.ec.uilogic.component.wrap.WrapListItem
+import eu.europa.ec.uilogic.component.wrap.WrapListItemDefaults
 import eu.europa.ec.uilogic.component.wrap.WrapModalBottomSheet
 import eu.europa.ec.uilogic.component.wrap.WrapPrimaryExtendedFab
 import eu.europa.ec.uilogic.extension.applyTestTag
@@ -386,31 +387,40 @@ private fun DocumentCategory(
             text = stringResource(category.stringResId)
         )
 
-        documents.forEach { documentItem: DocumentUi ->
-            WrapListItem(
-                modifier = Modifier.fillMaxWidth(),
-                item = documentItem.uiData,
-                onItemClick = {
-                    val onItemClickEvent = if (
-                        documentItem.documentIssuanceState == DocumentIssuanceStateUi.Pending
-                        || documentItem.documentIssuanceState == DocumentIssuanceStateUi.Failed
-                    ) {
-                        Event.BottomSheet.DeferredDocument.DeferredNotReadyYet.DocumentSelected(
-                            documentId = documentItem.uiData.itemId
-                        )
-                    } else {
-                        Event.GoToDocumentDetails(documentItem.uiData.itemId)
-                    }
-                    onEventSend(onItemClickEvent)
-                },
-                supportingTextColor = when (documentItem.documentIssuanceState) {
-                    DocumentIssuanceStateUi.Issued -> null
-                    DocumentIssuanceStateUi.Pending -> MaterialTheme.colorScheme.warning
-                    DocumentIssuanceStateUi.Failed -> MaterialTheme.colorScheme.error
-                    DocumentIssuanceStateUi.Expired -> MaterialTheme.colorScheme.error
-                    DocumentIssuanceStateUi.Revoked -> MaterialTheme.colorScheme.error
-                }
-            )
+        Column(
+            modifier = Modifier.fillMaxWidth(),
+            verticalArrangement = Arrangement.spacedBy(WrapListItemDefaults.GroupedItemSpacing)
+        ) {
+            documents.forEachIndexed { index, documentItem: DocumentUi ->
+                WrapListItem(
+                    modifier = Modifier.fillMaxWidth(),
+                    item = documentItem.uiData,
+                    onItemClick = {
+                        val onItemClickEvent = if (
+                            documentItem.documentIssuanceState == DocumentIssuanceStateUi.Pending
+                            || documentItem.documentIssuanceState == DocumentIssuanceStateUi.Failed
+                        ) {
+                            Event.BottomSheet.DeferredDocument.DeferredNotReadyYet.DocumentSelected(
+                                documentId = documentItem.uiData.itemId
+                            )
+                        } else {
+                            Event.GoToDocumentDetails(documentItem.uiData.itemId)
+                        }
+                        onEventSend(onItemClickEvent)
+                    },
+                    supportingTextColor = when (documentItem.documentIssuanceState) {
+                        DocumentIssuanceStateUi.Issued -> null
+                        DocumentIssuanceStateUi.Pending -> MaterialTheme.colorScheme.warning
+                        DocumentIssuanceStateUi.Failed -> MaterialTheme.colorScheme.error
+                        DocumentIssuanceStateUi.Expired -> MaterialTheme.colorScheme.error
+                        DocumentIssuanceStateUi.Revoked -> MaterialTheme.colorScheme.error
+                    },
+                    shape = WrapListItemDefaults.groupedShape(
+                        index = index,
+                        itemCount = documents.size
+                    ),
+                )
+            }
         }
     }
 }

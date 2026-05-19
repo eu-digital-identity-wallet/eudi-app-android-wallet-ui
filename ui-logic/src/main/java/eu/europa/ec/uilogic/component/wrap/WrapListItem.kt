@@ -19,11 +19,14 @@ package eu.europa.ec.uilogic.component.wrap
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CardColors
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Immutable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.tooling.preview.PreviewParameter
@@ -39,7 +42,32 @@ import eu.europa.ec.uilogic.component.ListItemTrailingContentDataUi
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.TextLengthPreviewProvider
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
+import eu.europa.ec.uilogic.component.utils.SIZE_SMALL
 import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
+
+@Immutable
+object WrapListItemDefaults {
+
+    val GroupedItemSpacing = 2.dp
+
+    fun groupedShape(index: Int, itemCount: Int): Shape {
+        return when {
+            itemCount == 1 -> RoundedCornerShape(SIZE_SMALL.dp)
+
+            index == 0 -> RoundedCornerShape(
+                topStart = SIZE_SMALL.dp,
+                topEnd = SIZE_SMALL.dp
+            )
+
+            index == itemCount - 1 -> RoundedCornerShape(
+                bottomStart = SIZE_SMALL.dp,
+                bottomEnd = SIZE_SMALL.dp
+            )
+
+            else -> RectangleShape
+        }
+    }
+}
 
 @Composable
 fun WrapListItem(
@@ -50,7 +78,7 @@ fun WrapListItem(
     hideSensitiveContent: Boolean = false,
     mainContentVerticalPadding: Dp? = null,
     mainContentTextStyle: TextStyle? = null,
-    overlineTextStyle: TextStyle? = null,
+    overlineTextStyle: (@Composable (item: ListItemDataUi) -> TextStyle)? = null,
     supportingTextColor: Color? = null,
     clickableAreas: List<ClickableArea>? = null,
     shape: Shape? = null,
@@ -69,9 +97,10 @@ fun WrapListItem(
             hideSensitiveContent = hideSensitiveContent,
             mainContentVerticalPadding = mainContentVerticalPadding,
             mainContentTextStyle = mainContentTextStyle,
-            overlineTextStyle = overlineTextStyle ?: MaterialTheme.typography.labelMedium.copy(
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            ),
+            overlineTextStyle = overlineTextStyle?.invoke(item)
+                ?: MaterialTheme.typography.labelMedium.copy(
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                ),
             supportingTextColor = supportingTextColor,
             clickableAreas = clickableAreas ?: listOf(ClickableArea.ENTIRE_ROW),
         )

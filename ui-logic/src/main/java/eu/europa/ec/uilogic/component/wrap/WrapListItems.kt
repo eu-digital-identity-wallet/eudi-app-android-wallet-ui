@@ -20,7 +20,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.CardColors
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.RectangleShape
@@ -81,10 +80,6 @@ fun WrapListItems(
                 }
 
                 is ExpandableListItemUi.SingleListItem -> {
-                    val defaultOverlineTextStyle = MaterialTheme.typography.labelMedium.copy(
-                        MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-
                     WrapListItem(
                         modifier = itemModifier,
                         item = item.header,
@@ -93,8 +88,7 @@ fun WrapListItems(
                         hideSensitiveContent = hideSensitiveContent,
                         mainContentVerticalPadding = mainContentVerticalPadding,
                         clickableAreas = clickableAreas,
-                        overlineTextStyle = overlineTextStyle?.invoke(item.header)
-                            ?: defaultOverlineTextStyle,
+                        overlineTextStyle = overlineTextStyle,
                         shape = RectangleShape
                     )
                 }
