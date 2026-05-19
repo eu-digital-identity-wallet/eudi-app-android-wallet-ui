@@ -151,33 +151,31 @@ class BiometricViewModel(
 
             is Event.OnBiometricsClicked -> {
                 setState { copy(error = null) }
-                biometricInteractor.getBiometricsAvailability {
-                    when (it) {
-                        is BiometricsAvailability.CanAuthenticate -> authenticate(
-                            event.context
-                        )
+                when (val availability = biometricInteractor.getBiometricsAvailability()) {
+                    is BiometricsAvailability.CanAuthenticate -> authenticate(
+                        event.context
+                    )
 
-                        is BiometricsAvailability.NonEnrolled -> {
-                            if (!event.shouldThrowErrorIfNotAvailable) {
-                                return@getBiometricsAvailability
-                            }
-                            setEffect {
-                                Effect.Navigation.LaunchBiometricsSystemScreen
-                            }
+                    is BiometricsAvailability.NonEnrolled -> {
+                        if (!event.shouldThrowErrorIfNotAvailable) {
+                            return
                         }
+                        setEffect {
+                            Effect.Navigation.LaunchBiometricsSystemScreen
+                        }
+                    }
 
-                        is BiometricsAvailability.Failure -> {
-                            if (!event.shouldThrowErrorIfNotAvailable) {
-                                return@getBiometricsAvailability
-                            }
-                            setState {
-                                copy(
-                                    error = ContentErrorConfig(
-                                        errorSubTitle = it.errorMessage,
-                                        onCancel = { setEvent(Event.OnErrorDismiss) }
-                                    )
+                    is BiometricsAvailability.Failure -> {
+                        if (!event.shouldThrowErrorIfNotAvailable) {
+                            return
+                        }
+                        setState {
+                            copy(
+                                error = ContentErrorConfig(
+                                    errorSubTitle = availability.errorMessage,
+                                    onCancel = { setEvent(Event.OnErrorDismiss) }
                                 )
-                            }
+                            )
                         }
                     }
                 }

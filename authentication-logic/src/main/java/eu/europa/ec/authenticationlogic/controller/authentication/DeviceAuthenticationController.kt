@@ -27,7 +27,7 @@ import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import kotlinx.coroutines.launch
 
 interface DeviceAuthenticationController {
-    fun deviceSupportsBiometrics(listener: (BiometricsAvailability) -> Unit)
+    fun deviceSupportsBiometrics(): BiometricsAvailability
     fun authenticate(
         context: Context,
         biometryCrypto: BiometricCrypto,
@@ -43,8 +43,8 @@ class DeviceAuthenticationControllerImpl(
     private val biometricAuthenticationController: BiometricAuthenticationController
 ) : DeviceAuthenticationController {
 
-    override fun deviceSupportsBiometrics(listener: (BiometricsAvailability) -> Unit) {
-        biometricAuthenticationController.deviceSupportsBiometrics(listener)
+    override fun deviceSupportsBiometrics(): BiometricsAvailability {
+        return biometricAuthenticationController.getBiometricsAvailability()
     }
 
     override fun authenticate(

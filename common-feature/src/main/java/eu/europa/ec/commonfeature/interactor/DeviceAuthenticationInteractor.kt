@@ -23,7 +23,7 @@ import eu.europa.ec.authenticationlogic.controller.authentication.DeviceAuthenti
 import eu.europa.ec.authenticationlogic.model.BiometricCrypto
 
 interface DeviceAuthenticationInteractor {
-    fun getBiometricsAvailability(listener: (BiometricsAvailability) -> Unit)
+    fun getBiometricsAvailability(): BiometricsAvailability
     fun authenticateWithBiometrics(
         context: Context,
         crypto: BiometricCrypto,
@@ -42,8 +42,8 @@ class DeviceAuthenticationInteractorImpl(
         deviceAuthenticationController.launchBiometricSystemScreen()
     }
 
-    override fun getBiometricsAvailability(listener: (BiometricsAvailability) -> Unit) {
-        deviceAuthenticationController.deviceSupportsBiometrics(listener)
+    override fun getBiometricsAvailability(): BiometricsAvailability {
+        return deviceAuthenticationController.deviceSupportsBiometrics()
     }
 
     override fun authenticateWithBiometrics(

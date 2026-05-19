@@ -16,7 +16,6 @@
 
 package eu.europa.ec.commonfeature.interactor
 
-import eu.europa.ec.authenticationlogic.controller.authentication.BiometricsAvailability
 import eu.europa.ec.authenticationlogic.controller.authentication.DeviceAuthenticationController
 import eu.europa.ec.authenticationlogic.controller.authentication.DeviceAuthenticationResult
 import eu.europa.ec.authenticationlogic.model.BiometricCrypto
@@ -28,7 +27,6 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.Mock
-import org.mockito.Mockito.mock
 import org.mockito.Mockito.verify
 import org.mockito.MockitoAnnotations
 import org.robolectric.RobolectricTestRunner
@@ -68,16 +66,12 @@ class TestDeviceAuthenticationInteractor {
     // Case: getBiometricsAvailability behaviour
     @Test
     fun `Given a BiometricsAvailability listener, When getBiometricsAvailability is called, Then deviceSupportsBiometrics should be triggered`() {
-        // Given
-        val mockListener: (BiometricsAvailability) -> Unit = mock()
 
         // When
-        interactor.getBiometricsAvailability(
-            listener = mockListener
-        )
+        interactor.getBiometricsAvailability()
 
         // Then
-        verify(deviceAuthenticationController).deviceSupportsBiometrics(mockListener)
+        verify(deviceAuthenticationController).deviceSupportsBiometrics()
     }
 
     // Case: authenticateWithBiometrics behaviour

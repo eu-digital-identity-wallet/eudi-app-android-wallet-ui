@@ -123,20 +123,18 @@ class SettingsViewModel(
     ) {
         when (itemType) {
             SettingsMenuItemType.BIOMETRICS_AUTHENTICATION -> {
-                settingsInteractor.getBiometricsAvailability { availability ->
-                    when (availability) {
-                        is BiometricsAvailability.CanAuthenticate -> authenticate(context)
+                when (val availability = settingsInteractor.getBiometricsAvailability()) {
+                    is BiometricsAvailability.CanAuthenticate -> authenticate(context)
 
-                        is BiometricsAvailability.NonEnrolled -> {
-                            setEffect {
-                                Effect.Navigation.LaunchBiometricsSystemScreen
-                            }
+                    is BiometricsAvailability.NonEnrolled -> {
+                        setEffect {
+                            Effect.Navigation.LaunchBiometricsSystemScreen
                         }
+                    }
 
-                        is BiometricsAvailability.Failure -> {
-                            setEffect {
-                                Effect.ShowSnackbar(availability.errorMessage)
-                            }
+                    is BiometricsAvailability.Failure -> {
+                        setEffect {
+                            Effect.ShowSnackbar(availability.errorMessage)
                         }
                     }
                 }
@@ -177,22 +175,6 @@ class SettingsViewModel(
             notifyOnAuthenticationFailure = true,
         ) { result ->
             when (result) {
-                is BiometricsAuthenticate.Cancelled -> {
-                    setEffect {
-                        Effect.ShowSnackbar(
-                            resourceProvider.getString(
-                                R.string.settings_screen_biometrics_authentication_cancelled
-                            )
-                        )
-                    }
-                }
-
-                is BiometricsAuthenticate.Failed -> {
-                    setEffect {
-                        Effect.ShowSnackbar(result.errorMessage)
-                    }
-                }
-
                 is BiometricsAuthenticate.Success -> {
                     viewModelScope.launch {
                         settingsInteractor.toggleBiometricsAuthentication()
@@ -206,6 +188,8 @@ class SettingsViewModel(
                         }
                     }
                 }
+
+                else -> {}
             }
         }
     }

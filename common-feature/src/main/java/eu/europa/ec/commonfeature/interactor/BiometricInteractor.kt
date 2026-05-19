@@ -31,7 +31,6 @@ interface BiometricInteractor {
     val maxFailedPinAttempts: Int
 
     fun getBiometricsAvailability(): BiometricsAvailability
-    fun getBiometricsAvailability(listener: (BiometricsAvailability) -> Unit)
     suspend fun getBiometricUserSelection(): Boolean
     suspend fun storeBiometricsUsageDecision(shouldUseBiometrics: Boolean)
     fun authenticateWithBiometrics(
@@ -82,10 +81,6 @@ class BiometricInteractorImpl(
 
     override fun getBiometricsAvailability(): BiometricsAvailability {
         return biometricAuthenticationController.getBiometricsAvailability()
-    }
-
-    override fun getBiometricsAvailability(listener: (BiometricsAvailability) -> Unit) {
-        biometricAuthenticationController.deviceSupportsBiometrics(listener)
     }
 
     override fun authenticateWithBiometrics(
