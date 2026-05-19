@@ -24,6 +24,7 @@ data class SettingsItemUi(
 )
 
 enum class SettingsMenuItemType(val itemId: String) {
+    BIOMETRICS_AUTHENTICATION("biometricsAuthenticationId"),
     RETRIEVE_LOGS("retrieveLogsId"),
     CHANGELOG("changelogId"),
 }

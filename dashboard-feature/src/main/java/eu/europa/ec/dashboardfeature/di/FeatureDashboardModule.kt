@@ -20,6 +20,7 @@ import eu.europa.ec.businesslogic.config.ConfigLogic
 import eu.europa.ec.businesslogic.controller.log.LogController
 import eu.europa.ec.businesslogic.provider.UuidProvider
 import eu.europa.ec.businesslogic.validator.FilterValidator
+import eu.europa.ec.commonfeature.interactor.BiometricInteractor
 import eu.europa.ec.commonfeature.interactor.DeviceAuthenticationInteractor
 import eu.europa.ec.corelogic.config.WalletCoreConfig
 import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
@@ -59,10 +60,12 @@ fun provideDashboardInteractor(
 
 @Factory
 fun provideSettingsInteractor(
+    biometricInteractor: BiometricInteractor,
     configLogic: ConfigLogic,
     logController: LogController,
     resourceProvider: ResourceProvider,
 ): SettingsInteractor = SettingsInteractorImpl(
+    biometricInteractor,
     configLogic,
     logController,
     resourceProvider,

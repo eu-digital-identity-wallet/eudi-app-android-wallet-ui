@@ -17,8 +17,10 @@
 package eu.europa.ec.dashboardfeature.interactor
 
 import android.net.Uri
+import eu.europa.ec.authenticationlogic.controller.authentication.BiometricsAvailability
 import eu.europa.ec.businesslogic.config.ConfigLogic
 import eu.europa.ec.businesslogic.controller.log.LogController
+import eu.europa.ec.commonfeature.interactor.BiometricInteractor
 import eu.europa.ec.dashboardfeature.ui.settings.model.SettingsMenuItemType
 import eu.europa.ec.dashboardfeature.util.mockedChangeLogUrl
 import eu.europa.ec.resourceslogic.R
@@ -26,6 +28,8 @@ import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.testfeature.util.StringResourceProviderMocker.mockResourceProviderStrings
 import eu.europa.ec.testfeature.util.mockedUriPath1
 import eu.europa.ec.testfeature.util.mockedUriPath2
+import eu.europa.ec.testlogic.extension.runTest
+import eu.europa.ec.testlogic.rule.CoroutineTestRule
 import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.ListItemLeadingContentDataUi
 import eu.europa.ec.uilogic.component.ListItemMainContentDataUi
@@ -33,14 +37,22 @@ import eu.europa.ec.uilogic.component.ListItemTrailingContentDataUi
 import junit.framework.TestCase.assertEquals
 import org.junit.After
 import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
 import org.mockito.Mock
 import org.mockito.MockitoAnnotations
+import org.mockito.kotlin.never
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 
 class TestSettingsInteractor {
+
+    @get:Rule
+    val coroutineRule = CoroutineTestRule()
+
+    @Mock
+    private lateinit var biometricInteractor: BiometricInteractor
 
     @Mock
     private lateinit var configLogic: ConfigLogic
@@ -60,6 +72,7 @@ class TestSettingsInteractor {
         closeable = MockitoAnnotations.openMocks(this)
 
         interactor = SettingsInteractorImpl(
+            biometricInteractor = biometricInteractor,
             configLogic = configLogic,
             logController = logController,
             resourceProvider = resourceProvider,
@@ -143,91 +156,240 @@ class TestSettingsInteractor {
 
     //region getSettingsItemsUi
     @Test
-    fun `Given no Changelog URL, When getSettingsItemsUi is called, Then only one SettingsItemUi entry is returned`() {
-        // Given
-        mockStringsNeededForGetSettingsItemsUi(
-            resourcesProvider = resourceProvider,
-            changeLogUrlIsNull = true,
-        )
+    fun `Given no Changelog URL, When getSettingsItemsUi is called, Then only one SettingsItemUi entry is returned`() =
+        coroutineRule.runTest {
+            // Given
+            whenever(biometricInteractor.getBiometricsAvailability())
+                .thenReturn(BiometricsAvailability.Failure(biometricsFailureText))
 
-        // When
-        val settingsItems = interactor.getSettingsItemsUi(changelogUrl = null)
+            mockStringsNeededForGetSettingsItemsUi(
+                resourcesProvider = resourceProvider,
+                changeLogUrlIsNull = true,
+            )
 
-        // Then
-        // 1. Size = 1 (RETRIEVE_LOGS)
-        assertEquals(1, settingsItems.size)
+            // When
+            val settingsItems = interactor.getSettingsItemsUi(changelogUrl = null)
 
-        // 2. First item: RETRIEVE_LOGS
-        val secondItem = settingsItems[0]
-        // 2a. Type
-        assertEquals(SettingsMenuItemType.RETRIEVE_LOGS, secondItem.type)
-        // 2b. itemId
-        assertEquals(SettingsMenuItemType.RETRIEVE_LOGS.itemId, secondItem.data.itemId)
-        // 2c. mainContentData.text
-        val mainContent2 =
-            secondItem.data.mainContentData as ListItemMainContentDataUi.Text
-        assertEquals(retrieveLogsText, mainContent2.text)
-        // 2d. leadingContentData is an icon with AppIcons.OpenNew
-        val leadingIcon2 =
-            secondItem.data.leadingContentData as ListItemLeadingContentDataUi.Icon
-        assertEquals(AppIcons.OpenNew, leadingIcon2.iconData)
-        // 2e. trailingContentData is an icon with AppIcons.KeyboardArrowRight
-        val trailingIcon2 =
-            secondItem.data.trailingContentData as ListItemTrailingContentDataUi.Icon
-        assertEquals(AppIcons.KeyboardArrowRight, trailingIcon2.iconData)
-    }
+            // Then
+            // 1. Size = 1 (RETRIEVE_LOGS)
+            assertEquals(1, settingsItems.size)
+
+            // 2. First item: RETRIEVE_LOGS
+            val secondItem = settingsItems[0]
+            // 2a. Type
+            assertEquals(SettingsMenuItemType.RETRIEVE_LOGS, secondItem.type)
+            // 2b. itemId
+            assertEquals(SettingsMenuItemType.RETRIEVE_LOGS.itemId, secondItem.data.itemId)
+            // 2c. mainContentData.text
+            val mainContent2 =
+                secondItem.data.mainContentData as ListItemMainContentDataUi.Text
+            assertEquals(retrieveLogsText, mainContent2.text)
+            // 2d. leadingContentData is an icon with AppIcons.OpenNew
+            val leadingIcon2 =
+                secondItem.data.leadingContentData as ListItemLeadingContentDataUi.Icon
+            assertEquals(AppIcons.OpenNew, leadingIcon2.iconData)
+            // 2e. trailingContentData is an icon with AppIcons.KeyboardArrowRight
+            val trailingIcon2 =
+                secondItem.data.trailingContentData as ListItemTrailingContentDataUi.Icon
+            assertEquals(AppIcons.KeyboardArrowRight, trailingIcon2.iconData)
+
+            verify(biometricInteractor, never()).getBiometricUserSelection()
+        }
 
     @Test
-    fun `Given a Changelog URL, When getSettingsItemsUi is called, Then two SettingsItemUi entries are returned`() {
-        // Given
-        mockStringsNeededForGetSettingsItemsUi(
-            resourcesProvider = resourceProvider,
-            changeLogUrlIsNull = false,
-        )
+    fun `Given a Changelog URL, When getSettingsItemsUi is called, Then two SettingsItemUi entries are returned`() =
+        coroutineRule.runTest {
+            // Given
+            whenever(biometricInteractor.getBiometricsAvailability())
+                .thenReturn(BiometricsAvailability.Failure(biometricsFailureText))
 
-        val sampleChangelogUrl = mockedChangeLogUrl
+            mockStringsNeededForGetSettingsItemsUi(
+                resourcesProvider = resourceProvider,
+                changeLogUrlIsNull = false,
+            )
 
-        // When
-        val settingsItems = interactor.getSettingsItemsUi(changelogUrl = sampleChangelogUrl)
+            val sampleChangelogUrl = mockedChangeLogUrl
 
-        // Then
-        // 1. Size = 2 (RETRIEVE_LOGS + CHANGELOG)
-        assertEquals(2, settingsItems.size)
+            // When
+            val settingsItems = interactor.getSettingsItemsUi(changelogUrl = sampleChangelogUrl)
 
-        // 2. First item: RETRIEVE_LOGS
-        val firstItem = settingsItems[0]
-        assertEquals(SettingsMenuItemType.RETRIEVE_LOGS, firstItem.type)
-        assertEquals(SettingsMenuItemType.RETRIEVE_LOGS.itemId, firstItem.data.itemId)
-        val mainContent1 =
-            firstItem.data.mainContentData as ListItemMainContentDataUi.Text
-        assertEquals(retrieveLogsText, mainContent1.text)
-        val leadingIcon1 =
-            firstItem.data.leadingContentData as ListItemLeadingContentDataUi.Icon
-        assertEquals(AppIcons.OpenNew, leadingIcon1.iconData)
-        val trailingIcon1 =
-            firstItem.data.trailingContentData as ListItemTrailingContentDataUi.Icon
-        assertEquals(AppIcons.KeyboardArrowRight, trailingIcon1.iconData)
+            // Then
+            // 1. Size = 2 (RETRIEVE_LOGS + CHANGELOG)
+            assertEquals(2, settingsItems.size)
 
-        // 3. Second item: CHANGELOG
-        val secondItem = settingsItems[1]
-        assertEquals(SettingsMenuItemType.CHANGELOG, secondItem.type)
-        assertEquals(SettingsMenuItemType.CHANGELOG.itemId, secondItem.data.itemId)
-        val mainContent2 =
-            secondItem.data.mainContentData as ListItemMainContentDataUi.Text
-        assertEquals(changelogText, mainContent2.text)
-        val leadingIcon2 =
-            secondItem.data.leadingContentData as ListItemLeadingContentDataUi.Icon
-        assertEquals(AppIcons.OpenInBrowser, leadingIcon2.iconData)
-        val trailingIcon2 =
-            secondItem.data.trailingContentData as ListItemTrailingContentDataUi.Icon
-        assertEquals(AppIcons.KeyboardArrowRight, trailingIcon2.iconData)
-    }
+            // 2. First item: RETRIEVE_LOGS
+            val firstItem = settingsItems[0]
+            assertEquals(SettingsMenuItemType.RETRIEVE_LOGS, firstItem.type)
+            assertEquals(SettingsMenuItemType.RETRIEVE_LOGS.itemId, firstItem.data.itemId)
+            val mainContent1 =
+                firstItem.data.mainContentData as ListItemMainContentDataUi.Text
+            assertEquals(retrieveLogsText, mainContent1.text)
+            val leadingIcon1 =
+                firstItem.data.leadingContentData as ListItemLeadingContentDataUi.Icon
+            assertEquals(AppIcons.OpenNew, leadingIcon1.iconData)
+            val trailingIcon1 =
+                firstItem.data.trailingContentData as ListItemTrailingContentDataUi.Icon
+            assertEquals(AppIcons.KeyboardArrowRight, trailingIcon1.iconData)
+
+            // 3. Second item: CHANGELOG
+            val secondItem = settingsItems[1]
+            assertEquals(SettingsMenuItemType.CHANGELOG, secondItem.type)
+            assertEquals(SettingsMenuItemType.CHANGELOG.itemId, secondItem.data.itemId)
+            val mainContent2 =
+                secondItem.data.mainContentData as ListItemMainContentDataUi.Text
+            assertEquals(changelogText, mainContent2.text)
+            val leadingIcon2 =
+                secondItem.data.leadingContentData as ListItemLeadingContentDataUi.Icon
+            assertEquals(AppIcons.OpenInBrowser, leadingIcon2.iconData)
+            val trailingIcon2 =
+                secondItem.data.trailingContentData as ListItemTrailingContentDataUi.Icon
+            assertEquals(AppIcons.KeyboardArrowRight, trailingIcon2.iconData)
+
+            verify(biometricInteractor, never()).getBiometricUserSelection()
+        }
+
+    @Test
+    fun `Given device supports Biometrics and no Changelog URL, When getSettingsItemsUi is called, Then Biometrics and Retrieve Logs entries are returned`() =
+        coroutineRule.runTest {
+            // Given
+            whenever(biometricInteractor.getBiometricsAvailability())
+                .thenReturn(BiometricsAvailability.CanAuthenticate)
+            whenever(biometricInteractor.getBiometricUserSelection())
+                .thenReturn(true)
+
+            mockStringsNeededForGetSettingsItemsUi(
+                resourcesProvider = resourceProvider,
+                changeLogUrlIsNull = true,
+                deviceSupportsBiometrics = true,
+            )
+
+            // When
+            val settingsItems = interactor.getSettingsItemsUi(changelogUrl = null)
+
+            // Then
+            assertEquals(2, settingsItems.size)
+
+            val firstItem = settingsItems[0]
+            assertEquals(SettingsMenuItemType.BIOMETRICS_AUTHENTICATION, firstItem.type)
+            assertEquals(
+                SettingsMenuItemType.BIOMETRICS_AUTHENTICATION.itemId,
+                firstItem.data.itemId
+            )
+            val mainContent1 =
+                firstItem.data.mainContentData as ListItemMainContentDataUi.Text
+            assertEquals(biometricsAuthenticationText, mainContent1.text)
+            val leadingIcon1 =
+                firstItem.data.leadingContentData as ListItemLeadingContentDataUi.Icon
+            assertEquals(AppIcons.TouchId, leadingIcon1.iconData)
+            val trailingSwitch1 =
+                firstItem.data.trailingContentData as ListItemTrailingContentDataUi.Switch
+            assertEquals(true, trailingSwitch1.switchData.isChecked)
+            assertEquals(true, trailingSwitch1.switchData.enabled)
+
+            val secondItem = settingsItems[1]
+            assertEquals(SettingsMenuItemType.RETRIEVE_LOGS, secondItem.type)
+            assertEquals(SettingsMenuItemType.RETRIEVE_LOGS.itemId, secondItem.data.itemId)
+            val mainContent2 =
+                secondItem.data.mainContentData as ListItemMainContentDataUi.Text
+            assertEquals(retrieveLogsText, mainContent2.text)
+            val leadingIcon2 =
+                secondItem.data.leadingContentData as ListItemLeadingContentDataUi.Icon
+            assertEquals(AppIcons.OpenNew, leadingIcon2.iconData)
+            val trailingIcon2 =
+                secondItem.data.trailingContentData as ListItemTrailingContentDataUi.Icon
+            assertEquals(AppIcons.KeyboardArrowRight, trailingIcon2.iconData)
+        }
+
+    @Test
+    fun `Given device has Biometrics but user selection is false, When getSettingsItemsUi is called, Then Biometrics switch is unchecked`() =
+        coroutineRule.runTest {
+            // Given
+            whenever(biometricInteractor.getBiometricsAvailability())
+                .thenReturn(BiometricsAvailability.NonEnrolled)
+            whenever(biometricInteractor.getBiometricUserSelection())
+                .thenReturn(false)
+
+            mockStringsNeededForGetSettingsItemsUi(
+                resourcesProvider = resourceProvider,
+                changeLogUrlIsNull = true,
+                deviceSupportsBiometrics = true,
+            )
+
+            // When
+            val settingsItems = interactor.getSettingsItemsUi(changelogUrl = null)
+
+            // Then
+            assertEquals(2, settingsItems.size)
+
+            val biometricsItem = settingsItems[0]
+            assertEquals(SettingsMenuItemType.BIOMETRICS_AUTHENTICATION, biometricsItem.type)
+            val trailingSwitch =
+                biometricsItem.data.trailingContentData as ListItemTrailingContentDataUi.Switch
+            assertEquals(false, trailingSwitch.switchData.isChecked)
+            assertEquals(true, trailingSwitch.switchData.enabled)
+        }
+
+    @Test
+    fun `Given device supports Biometrics and a Changelog URL, When getSettingsItemsUi is called, Then three SettingsItemUi entries are returned`() =
+        coroutineRule.runTest {
+            // Given
+            whenever(biometricInteractor.getBiometricsAvailability())
+                .thenReturn(BiometricsAvailability.CanAuthenticate)
+            whenever(biometricInteractor.getBiometricUserSelection())
+                .thenReturn(true)
+
+            mockStringsNeededForGetSettingsItemsUi(
+                resourcesProvider = resourceProvider,
+                changeLogUrlIsNull = false,
+                deviceSupportsBiometrics = true,
+            )
+
+            val sampleChangelogUrl = mockedChangeLogUrl
+
+            // When
+            val settingsItems = interactor.getSettingsItemsUi(changelogUrl = sampleChangelogUrl)
+
+            // Then
+            assertEquals(3, settingsItems.size)
+            assertEquals(SettingsMenuItemType.BIOMETRICS_AUTHENTICATION, settingsItems[0].type)
+            assertEquals(SettingsMenuItemType.RETRIEVE_LOGS, settingsItems[1].type)
+            assertEquals(SettingsMenuItemType.CHANGELOG, settingsItems[2].type)
+        }
+    //endregion
+
+    //region toggleBiometricsAuthentication
+    @Test
+    fun `Given Biometrics user selection is false, When toggleBiometricsAuthentication is called, Then true is stored`() =
+        coroutineRule.runTest {
+            // Given
+            whenever(biometricInteractor.getBiometricUserSelection()).thenReturn(false)
+
+            // When
+            interactor.toggleBiometricsAuthentication()
+
+            // Then
+            verify(biometricInteractor).storeBiometricsUsageDecision(true)
+        }
+
+    @Test
+    fun `Given Biometrics user selection is true, When toggleBiometricsAuthentication is called, Then false is stored`() =
+        coroutineRule.runTest {
+            // Given
+            whenever(biometricInteractor.getBiometricUserSelection()).thenReturn(true)
+
+            // When
+            interactor.toggleBiometricsAuthentication()
+
+            // Then
+            verify(biometricInteractor).storeBiometricsUsageDecision(false)
+        }
     //endregion
 
     //region Mock Calls
     private fun mockStringsNeededForGetSettingsItemsUi(
         resourcesProvider: ResourceProvider,
         changeLogUrlIsNull: Boolean,
+        deviceSupportsBiometrics: Boolean = false,
     ) {
         mockResourceProviderStrings(
             resourcesProvider,
@@ -235,6 +397,15 @@ class TestSettingsInteractor {
                 R.string.settings_screen_option_retrieve_logs to retrieveLogsText,
             )
         )
+
+        if (deviceSupportsBiometrics) {
+            mockResourceProviderStrings(
+                resourcesProvider,
+                listOf(
+                    R.string.settings_screen_option_biometrics_authentication to biometricsAuthenticationText,
+                )
+            )
+        }
 
         if (!changeLogUrlIsNull) {
             mockResourceProviderStrings(
@@ -248,7 +419,9 @@ class TestSettingsInteractor {
     //endregion
 
     //region Mocked objects needed for tests.
+    private val biometricsAuthenticationText = "Authenticate with biometrics"
     private val retrieveLogsText = "Retrieve logs"
     private val changelogText = "Changelog"
+    private val biometricsFailureText = "Biometrics unavailable"
     //endregion
 }

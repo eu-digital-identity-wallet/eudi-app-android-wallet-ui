@@ -27,10 +27,15 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Snackbar
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -52,6 +57,7 @@ import eu.europa.ec.uilogic.component.content.ContentTitle
 import eu.europa.ec.uilogic.component.content.ScreenNavigateAction
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
+import eu.europa.ec.uilogic.component.utils.OneTimeLaunchedEffect
 import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
 import eu.europa.ec.uilogic.component.utils.SPACING_SMALL
 import eu.europa.ec.uilogic.component.wrap.WrapListItem
@@ -61,6 +67,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.launch
 
 @Composable
 fun SettingsScreen(
@@ -69,10 +76,19 @@ fun SettingsScreen(
 ) {
     val state: State by viewModel.viewState.collectAsStateWithLifecycle()
     val context = LocalContext.current
+    val snackbarHostState = remember { SnackbarHostState() }
 
     ContentScreen(
         navigatableAction = ScreenNavigateAction.BACKABLE,
-        isLoading = false,
+        snackbarHost = {
+            SnackbarHost(
+                hostState = snackbarHostState,
+                snackbar = { snackbarData ->
+                    Snackbar(snackbarData = snackbarData)
+                }
+            )
+        },
+        isLoading = state.isLoading,
         onBack = { viewModel.setEvent(Event.Pop) }
     ) { paddingValues ->
         Content(
@@ -80,11 +96,23 @@ fun SettingsScreen(
             effectFlow = viewModel.effect,
             onEventSend = { viewModel.setEvent(it) },
             onNavigationRequested = { navigationEffect ->
-                handleNavigationEffect(navigationEffect, navController, context)
+                handleNavigationEffect(
+                    navigationEffect = navigationEffect,
+                    navController = navController,
+                    context = context,
+                    onLaunchBiometricSystemScreen = {
+                        viewModel.setEvent(Event.LaunchBiometricSystemScreen)
+                    }
+                )
             },
+            snackbarHostState = snackbarHostState,
             context = context,
             paddingValues = paddingValues,
         )
+    }
+
+    OneTimeLaunchedEffect {
+        viewModel.setEvent(Event.Init)
     }
 }
 
@@ -92,9 +120,12 @@ private fun handleNavigationEffect(
     navigationEffect: Effect.Navigation,
     navController: NavController,
     context: Context,
+    onLaunchBiometricSystemScreen: () -> Unit,
 ) {
     when (navigationEffect) {
         is Effect.Navigation.Pop -> navController.popBackStack()
+
+        is Effect.Navigation.LaunchBiometricsSystemScreen -> onLaunchBiometricSystemScreen()
 
         is Effect.Navigation.OpenUrlExternally -> context.openUrl(uri = navigationEffect.url)
     }
@@ -106,6 +137,7 @@ private fun Content(
     effectFlow: Flow<Effect>,
     onEventSend: (Event) -> Unit,
     onNavigationRequested: (Effect.Navigation) -> Unit,
+    snackbarHostState: SnackbarHostState,
     context: Context,
     paddingValues: PaddingValues,
 ) {
@@ -126,6 +158,7 @@ private fun Content(
                     .verticalScroll(rememberScrollState()),
                 items = state.settingsItems,
                 onEventSent = onEventSend,
+                context = context,
             )
         }
 
@@ -150,6 +183,16 @@ private fun Content(
                         effect.chooserTitle
                     )
                 }
+
+                is Effect.ShowSnackbar -> {
+                    snackbarHostState.currentSnackbarData?.dismiss()
+                    launch {
+                        snackbarHostState.showSnackbar(
+                            message = effect.message,
+                            duration = SnackbarDuration.Short,
+                        )
+                    }
+                }
             }
         }.collect()
     }
@@ -160,6 +203,7 @@ private fun SettingsItems(
     modifier: Modifier = Modifier,
     items: List<SettingsItemUi>,
     onEventSent: (Event) -> Unit,
+    context: Context,
 ) {
     Column(
         modifier = modifier
@@ -170,7 +214,10 @@ private fun SettingsItems(
                 item = settingsItemUi.data,
                 onItemClick = {
                     onEventSent(
-                        Event.ItemClicked(itemType = settingsItemUi.type)
+                        Event.ItemClicked(
+                            itemType = settingsItemUi.type,
+                            context = context
+                        )
                     )
                 },
                 throttleClicks = false,
@@ -219,11 +266,12 @@ private fun SettingsScreenPreview() {
                 screenTitle = stringResource(R.string.settings_screen_title),
                 settingsItems = settingsItems,
                 appVersion = "1.0.0",
-                changelogUrl = ""
+                changelogUrl = "",
             ),
             effectFlow = emptyFlow(),
             onEventSend = {},
             onNavigationRequested = {},
+            snackbarHostState = remember { SnackbarHostState() },
             context = context,
             paddingValues = PaddingValues(SPACING_MEDIUM.dp)
         )

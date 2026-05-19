@@ -229,8 +229,10 @@
 
     <!-- region Settings Screen -->
     <string name="settings_screen_title">Settings</string>
+    <string name="settings_screen_option_biometrics_authentication">Authenticate with biometrics</string>
     <string name="settings_screen_option_retrieve_logs">Retrieve logs</string>
     <string name="settings_screen_option_changelog">Changelog</string>
+    <string name="settings_screen_biometrics_authentication_cancelled">Biometric authentication was cancelled</string>
     <string name="settings_intent_chooser_logs_share_title">Share logs</string>
     <!--endregion-->
 
