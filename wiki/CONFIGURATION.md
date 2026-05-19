@@ -9,6 +9,7 @@
 * [How to work with self-signed certificates](#how-to-work-with-self-signed-certificates)
 * [Theme configuration](#theme-configuration)
 * [Pin Storage configuration](#pin-storage-configuration)
+* [PIN throttle configuration](#pin-throttle-configuration)
 * [Analytics configuration](#analytics-configuration)
 
 ## General configuration
@@ -249,7 +250,8 @@ complete production process, see [GO_LIVE.md](GO_LIVE.md).
 | RQES client ID/secret | `RQESConfigImpl.kt` | Do not hardcode confidential secrets in the app. Use an approved public-client or backend-mediated design. |
 | RQES redirect URI | `BuildConfig.RQES_DEEPLINK` | Redirect URI registered with the QTSP and declared in the Android manifest. |
 | RQES document retrieval trust | `DocumentRetrievalConfig` | Production certificates or trust material required for retrieving signing documents. |
-| PIN storage | `authentication-logic` and `StorageConfig` | Confirm PBKDF2 parameters, lockout policy, encrypted preferences, and migration behavior meet policy. |
+| PIN storage | `authentication-logic` and `StorageConfig` | Confirm PBKDF2 parameters, encrypted preferences, and migration behavior meet policy. |
+| PIN throttle policy | `authentication-logic` and `AuthenticationConfig` | Confirm `maxFailedPinAttempts` and `pinLockoutDurations` meet policy. Define what happens once the final lockout tier is reached (e.g. wipe, support flow, step-up). |
 | Database key/storage | `storage-logic` and encrypted `PrefsController` | Ensure database keys are generated securely, encrypted at rest, excluded from backup, and migrated safely. |
 | Network logging | `network-logic/.../NetworkModule.kt` | `LogLevel.NONE` for release. Never log tokens, credentials, signatures, or document data. |
 | Network security config | `network-logic/src/main/res/xml/network_security_config.xml` | Cleartext disabled. No debug CA or trust-all logic in release. |
@@ -532,6 +534,7 @@ backup exclusion, and recovery policy against your security requirements.
 interface StorageConfig {
     val pinStorageProvider: PinStorageProvider
     val biometryStorageProvider: BiometryStorageProvider
+    val pinThrottleProvider: PinThrottleProvider
 }
 ```
 
@@ -564,12 +567,15 @@ Config Example:
 ```kotlin
 class StorageConfigImpl(
     private val pinImpl: PinStorageProvider,
-    private val biometryImpl: BiometryStorageProvider
+    private val biometryImpl: BiometryStorageProvider,
+    private val pinThrottleImpl: PinThrottleProvider
 ) : StorageConfig {
     override val pinStorageProvider: PinStorageProvider
         get() = pinImpl
     override val biometryStorageProvider: BiometryStorageProvider
         get() = biometryImpl
+    override val pinThrottleProvider: PinThrottleProvider
+        get() = pinThrottleImpl
 }
 ```
 
@@ -578,12 +584,92 @@ Config Construction via Koin DI Example:
 ```kotlin
 @Single
 fun provideStorageConfig(
-    prefsController: PrefsController
+    prefsController: PrefsController,
+    authenticationConfig: AuthenticationConfig,
 ): StorageConfig = StorageConfigImpl(
     pinImpl = PrefsPinStorageProvider(prefsController),
-    biometryImpl = PrefsBiometryStorageProvider(prefsController)
+    biometryImpl = PrefsBiometryStorageProvider(prefsController),
+    pinThrottleImpl = PrefsPinThrottleProvider(prefsController, authenticationConfig)
 )
 ```
+
+The *pinThrottleProvider* is consumed by *PinThrottleController* to enforce
+brute-force protection on PIN entry. See
+[PIN throttle configuration](#pin-throttle-configuration) for how to tune
+attempt counts and lockout durations.
+
+## PIN throttle configuration
+
+The application protects against brute-force PIN attempts via an
+escalating lockout mechanism. After a configurable number of consecutive
+failed attempts the PIN input is disabled for an increasing duration.
+Lockout state is persisted in the encrypted *PrefsController* DataStore,
+so it survives process death and device reboot. State is reset on any
+successful PIN or biometric authentication.
+
+The policy is configurable via the *AuthenticationConfig* interface
+inside the authentication-logic module:
+
+```kotlin
+interface AuthenticationConfig {
+    /**
+     * Number of consecutive wrong PIN attempts allowed before the user
+     * is locked out.
+     */
+    val maxFailedPinAttempts: Int
+
+    /**
+     * Lockout durations applied each time the user reaches
+     * [maxFailedPinAttempts]. The list indexes by lockout level
+     * (0 = first lockout). Once the user exceeds the size of the list,
+     * the last entry is reused for every subsequent lockout.
+     */
+    val pinLockoutDurations: List<Duration>
+}
+```
+
+Default policy (*AuthenticationConfigImpl*):
+
+```kotlin
+class AuthenticationConfigImpl : AuthenticationConfig {
+    override val maxFailedPinAttempts: Int = 3
+    override val pinLockoutDurations: List<Duration> = listOf(
+        30.seconds,
+        90.seconds,
+        5.minutes
+    )
+}
+```
+
+Resulting behavior with the defaults:
+
+| Event                                       | Behavior                                     |
+|---------------------------------------------|----------------------------------------------|
+| 3 consecutive wrong PIN attempts            | First lockout: 30 seconds.                   |
+| 3 more wrong attempts after lockout ends    | Second lockout: 90 seconds.                  |
+| 3 more wrong attempts                       | Third lockout: 5 minutes.                    |
+| Each subsequent batch of 3 wrong attempts   | 5 minutes (last list entry reused).          |
+| Successful PIN or biometric authentication  | Failure counter and lockout level reset.     |
+| App kill or device reboot                   | Active lockout window persists (wall-clock). |
+| Device clock rolled back                    | Detected; user remains locked.               |
+
+You can change the policy by providing your own *AuthenticationConfigImpl*
+and wiring it in *LogicAuthenticationModule*:
+
+```kotlin
+@Single
+fun provideAuthenticationConfig(): AuthenticationConfig = AuthenticationConfigImpl()
+```
+
+The lockout is enforced through the *PinThrottleController* and applied
+in both the login screen (`BiometricViewModel`) and the change-PIN
+validation step (`PinViewModel`). The PIN input is disabled while
+locked, and the existing inline error slot of the PIN composable
+displays a countdown message formatted from the
+`quick_pin_locked_out` string resource. The message takes two format
+arguments — the configured `maxFailedPinAttempts` and the remaining
+time as `mm:ss` — so changing the config values updates the
+user-facing message automatically.
 
 ## Analytics configuration
 

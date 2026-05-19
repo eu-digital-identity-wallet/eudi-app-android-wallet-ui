@@ -17,14 +17,19 @@
 package eu.europa.ec.commonfeature.interactor
 
 import android.content.Context
+import eu.europa.ec.authenticationlogic.config.AuthenticationConfig
 import eu.europa.ec.authenticationlogic.controller.authentication.BiometricAuthenticationController
 import eu.europa.ec.authenticationlogic.controller.authentication.BiometricsAuthenticate
 import eu.europa.ec.authenticationlogic.controller.authentication.BiometricsAvailability
 import eu.europa.ec.authenticationlogic.controller.storage.BiometryStorageController
+import eu.europa.ec.authenticationlogic.controller.throttle.PinThrottleController
+import eu.europa.ec.authenticationlogic.provider.PinLockoutState
 import eu.europa.ec.authenticationlogic.secure.SecurePin
 import kotlinx.coroutines.flow.Flow
 
 interface BiometricInteractor {
+    val maxFailedPinAttempts: Int
+
     fun getBiometricsAvailability(listener: (BiometricsAvailability) -> Unit)
     suspend fun getBiometricUserSelection(): Boolean
     suspend fun storeBiometricsUsageDecision(shouldUseBiometrics: Boolean)
@@ -36,16 +41,35 @@ interface BiometricInteractor {
 
     fun launchBiometricSystemScreen()
     fun isPinValid(pin: SecurePin): Flow<QuickPinInteractorPinValidPartialState>
+
+    suspend fun getPinLockoutState(): PinLockoutState
+    suspend fun recordPinFailure(): PinLockoutState
+    suspend fun resetPinThrottle()
 }
 
 class BiometricInteractorImpl(
     private val biometryStorageController: BiometryStorageController,
     private val biometricAuthenticationController: BiometricAuthenticationController,
     private val quickPinInteractor: QuickPinInteractor,
+    private val pinThrottleController: PinThrottleController,
+    private val authenticationConfig: AuthenticationConfig,
 ) : BiometricInteractor {
+
+    override val maxFailedPinAttempts: Int
+        get() = authenticationConfig.maxFailedPinAttempts
 
     override fun isPinValid(pin: SecurePin): Flow<QuickPinInteractorPinValidPartialState> =
         quickPinInteractor.isCurrentPinValid(pin)
+
+    override suspend fun getPinLockoutState(): PinLockoutState =
+        pinThrottleController.getState()
+
+    override suspend fun recordPinFailure(): PinLockoutState =
+        pinThrottleController.recordFailure()
+
+    override suspend fun resetPinThrottle() {
+        pinThrottleController.recordSuccess()
+    }
 
     override suspend fun storeBiometricsUsageDecision(shouldUseBiometrics: Boolean) {
         biometryStorageController.setUseBiometricsAuth(shouldUseBiometrics)

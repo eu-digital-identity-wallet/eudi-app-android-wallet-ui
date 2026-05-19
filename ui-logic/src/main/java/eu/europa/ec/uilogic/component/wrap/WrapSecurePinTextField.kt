@@ -185,7 +185,10 @@ fun WrapSecurePinTextField(
             backgroundColor = Color.Transparent
         )
     ) {
-        Column(modifier = modifier) {
+        Column(
+            modifier = modifier,
+            verticalArrangement = Arrangement.spacedBy(SPACING_SMALL.dp)
+        ) {
             DisableSelection {
                 BasicSecureTextField(
                     state = state.textFieldState,

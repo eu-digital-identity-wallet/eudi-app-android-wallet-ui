@@ -16,6 +16,8 @@
 
 package eu.europa.ec.authenticationlogic.di
 
+import eu.europa.ec.authenticationlogic.config.AuthenticationConfig
+import eu.europa.ec.authenticationlogic.config.AuthenticationConfigImpl
 import eu.europa.ec.authenticationlogic.config.StorageConfig
 import eu.europa.ec.authenticationlogic.config.StorageConfigImpl
 import eu.europa.ec.authenticationlogic.controller.authentication.BiometricAuthenticationController
@@ -26,8 +28,11 @@ import eu.europa.ec.authenticationlogic.controller.storage.BiometryStorageContro
 import eu.europa.ec.authenticationlogic.controller.storage.BiometryStorageControllerImpl
 import eu.europa.ec.authenticationlogic.controller.storage.PinStorageController
 import eu.europa.ec.authenticationlogic.controller.storage.PinStorageControllerImpl
+import eu.europa.ec.authenticationlogic.controller.throttle.PinThrottleController
+import eu.europa.ec.authenticationlogic.controller.throttle.PinThrottleControllerImpl
 import eu.europa.ec.authenticationlogic.storage.PrefsBiometryStorageProvider
 import eu.europa.ec.authenticationlogic.storage.PrefsPinStorageProvider
+import eu.europa.ec.authenticationlogic.storage.PrefsPinThrottleProvider
 import eu.europa.ec.businesslogic.controller.crypto.CryptoController
 import eu.europa.ec.businesslogic.controller.storage.PrefsController
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
@@ -43,11 +48,16 @@ import org.koin.core.annotation.Single
 class LogicAuthenticationModule
 
 @Single
+fun provideAuthenticationConfig(): AuthenticationConfig = AuthenticationConfigImpl()
+
+@Single
 fun provideStorageConfig(
     prefsController: PrefsController,
+    authenticationConfig: AuthenticationConfig,
 ): StorageConfig = StorageConfigImpl(
     pinImpl = PrefsPinStorageProvider(prefsController),
-    biometryImpl = PrefsBiometryStorageProvider(prefsController)
+    biometryImpl = PrefsBiometryStorageProvider(prefsController),
+    pinThrottleImpl = PrefsPinThrottleProvider(prefsController, authenticationConfig)
 )
 
 @Factory
@@ -81,3 +91,8 @@ fun providePinStorageController(
 fun provideBiometryStorageController(
     storageConfig: StorageConfig
 ): BiometryStorageController = BiometryStorageControllerImpl(storageConfig)
+
+@Factory
+fun providePinThrottleController(
+    storageConfig: StorageConfig
+): PinThrottleController = PinThrottleControllerImpl(storageConfig)

@@ -17,6 +17,7 @@
 package eu.europa.ec.commonfeature.ui.pin
 
 import androidx.lifecycle.viewModelScope
+import eu.europa.ec.authenticationlogic.provider.PinLockoutState
 import eu.europa.ec.authenticationlogic.secure.SecurePin
 import eu.europa.ec.commonfeature.config.IssuanceFlowType
 import eu.europa.ec.commonfeature.config.IssuanceUiConfig
@@ -42,6 +43,7 @@ import eu.europa.ec.uilogic.navigation.ModuleRoute
 import eu.europa.ec.uilogic.navigation.helper.generateComposableArguments
 import eu.europa.ec.uilogic.navigation.helper.generateComposableNavigationLink
 import eu.europa.ec.uilogic.serializer.UiSerializer
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.koin.core.annotation.InjectedParam
@@ -64,7 +66,9 @@ data class State(
     val resetPin: Boolean = false,
     val pinState: PinValidationState,
     val isBottomSheetOpen: Boolean = false,
-    val quickPinSize: Int = 6
+    val quickPinSize: Int = 6,
+    val isLockedOut: Boolean = false,
+    val lockoutMessage: String? = null
 ) : ViewState {
     val action: ScreenNavigateAction
         get() {
@@ -84,6 +88,7 @@ data class State(
 }
 
 sealed class Event : ViewEvent {
+    data object Init : Event()
     data class NextButtonPressed(val pin: SecurePin) : Event()
     data class OnQuickPinLengthChanged(val length: Int) : Event()
     data object CancelPressed : Event()
@@ -120,6 +125,7 @@ class PinViewModel(
 ) : MviViewModel<Event, State, Effect>() {
 
     private var enteredPin: SecurePin? = null
+    private var lockoutTickJob: Job? = null
 
     override fun setInitialState(): State {
         val title: String
@@ -156,12 +162,27 @@ class PinViewModel(
 
     override fun handleEvents(event: Event) {
         when (event) {
+            is Event.Init -> {
+                if (viewState.value.pinState != PinValidationState.VALIDATE) return
+                viewModelScope.launch {
+                    when (val lockoutState = interactor.getPinLockoutState()) {
+                        is PinLockoutState.Active -> startLockoutTick(lockoutState.remaining.inWholeMilliseconds)
+                        PinLockoutState.Idle -> Unit
+                    }
+                }
+            }
+
             is Event.OnQuickPinLengthChanged -> {
+                if (viewState.value.isLockedOut) return
                 validatePinLength(event.length)
             }
 
             is Event.NextButtonPressed -> {
                 val state = viewState.value
+                if (state.isLockedOut) {
+                    event.pin.close()
+                    return
+                }
 
                 when (state.pinState) {
                     PinValidationState.ENTER -> {
@@ -211,6 +232,13 @@ class PinViewModel(
         }
     }
 
+    override fun onCleared() {
+        clearPendingPin()
+        lockoutTickJob?.cancel()
+        lockoutTickJob = null
+        super.onCleared()
+    }
+
     private fun validatePin(currentPin: SecurePin) {
         setState { copy(isLoading = true) }
         viewModelScope.launch {
@@ -219,15 +247,26 @@ class PinViewModel(
             ).collect {
                 when (it) {
                     is QuickPinInteractorPinValidPartialState.Failed -> {
-                        setState {
-                            copy(
-                                quickPinError = it.errorMessage,
-                                isLoading = false
-                            )
+                        when (val lockoutState = interactor.recordPinFailure()) {
+                            is PinLockoutState.Active -> {
+                                setState { copy(isLoading = false) }
+                                startLockoutTick(lockoutState.remaining.inWholeMilliseconds)
+                            }
+
+                            PinLockoutState.Idle -> {
+                                setState {
+                                    copy(
+                                        quickPinError = it.errorMessage,
+                                        isLoading = false
+                                    )
+                                }
+                            }
                         }
                     }
 
                     QuickPinInteractorPinValidPartialState.Success -> {
+                        interactor.resetPinThrottle()
+                        stopLockoutTick()
                         setupEnterPhase()
                     }
                 }
@@ -304,11 +343,63 @@ class PinViewModel(
     private fun validatePinLength(length: Int) {
         setState {
             copy(
-                isButtonEnabled = length == quickPinSize,
+                isButtonEnabled = length == quickPinSize && !isLockedOut,
                 quickPinError = null,
                 resetPin = false
             )
         }
+    }
+
+    private fun startLockoutTick(initialRemainingMs: Long) {
+        lockoutTickJob?.cancel()
+        if (initialRemainingMs <= 0L) {
+            stopLockoutTick()
+            return
+        }
+        setState {
+            copy(
+                isLockedOut = true,
+                isLoading = false,
+                quickPinError = null,
+                isButtonEnabled = false,
+                lockoutMessage = buildLockoutMessage(initialRemainingMs)
+            )
+        }
+        lockoutTickJob = viewModelScope.launch {
+            var remaining = initialRemainingMs
+            while (remaining > 0L) {
+                delay(1_000L)
+                remaining -= 1_000L
+                if (remaining <= 0L) break
+                setState {
+                    copy(lockoutMessage = buildLockoutMessage(remaining))
+                }
+            }
+            stopLockoutTick()
+        }
+    }
+
+    private fun stopLockoutTick() {
+        lockoutTickJob?.cancel()
+        lockoutTickJob = null
+        setState {
+            copy(
+                isLockedOut = false,
+                lockoutMessage = null
+            )
+        }
+    }
+
+    private fun buildLockoutMessage(remainingMs: Long): String {
+        val totalSeconds = ((remainingMs + 999L) / 1000L).coerceAtLeast(0L)
+        val minutes = totalSeconds / 60L
+        val seconds = totalSeconds % 60L
+        val mmss = "%02d:%02d".format(minutes, seconds)
+        return resourceProvider.getString(
+            R.string.quick_pin_locked_out,
+            interactor.maxFailedPinAttempts,
+            mmss
+        )
     }
 
     private fun calculateSubtitle(pinState: PinValidationState): String {
@@ -454,10 +545,5 @@ class PinViewModel(
     private fun clearPendingPin() {
         enteredPin?.close()
         enteredPin = null
-    }
-
-    override fun onCleared() {
-        clearPendingPin()
-        super.onCleared()
     }
 }

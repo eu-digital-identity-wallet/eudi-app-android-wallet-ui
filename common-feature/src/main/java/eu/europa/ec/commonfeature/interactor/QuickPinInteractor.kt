@@ -16,7 +16,10 @@
 
 package eu.europa.ec.commonfeature.interactor
 
+import eu.europa.ec.authenticationlogic.config.AuthenticationConfig
 import eu.europa.ec.authenticationlogic.controller.storage.PinStorageController
+import eu.europa.ec.authenticationlogic.controller.throttle.PinThrottleController
+import eu.europa.ec.authenticationlogic.provider.PinLockoutState
 import eu.europa.ec.authenticationlogic.secure.SecurePin
 import eu.europa.ec.businesslogic.extension.safeAsync
 import eu.europa.ec.resourceslogic.R
@@ -25,6 +28,8 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 
 interface QuickPinInteractor {
+    val maxFailedPinAttempts: Int
+
     fun setPin(newPin: SecurePin, initialPin: SecurePin): Flow<QuickPinInteractorSetPinPartialState>
 
     fun changePin(
@@ -33,12 +38,31 @@ interface QuickPinInteractor {
 
     fun isCurrentPinValid(pin: SecurePin): Flow<QuickPinInteractorPinValidPartialState>
     suspend fun hasPin(): Boolean
+
+    suspend fun getPinLockoutState(): PinLockoutState
+    suspend fun recordPinFailure(): PinLockoutState
+    suspend fun resetPinThrottle()
 }
 
 class QuickPinInteractorImpl(
     private val pinStorageController: PinStorageController,
     private val resourceProvider: ResourceProvider,
+    private val pinThrottleController: PinThrottleController,
+    private val authenticationConfig: AuthenticationConfig,
 ) : QuickPinInteractor {
+
+    override val maxFailedPinAttempts: Int
+        get() = authenticationConfig.maxFailedPinAttempts
+
+    override suspend fun getPinLockoutState(): PinLockoutState =
+        pinThrottleController.getState()
+
+    override suspend fun recordPinFailure(): PinLockoutState =
+        pinThrottleController.recordFailure()
+
+    override suspend fun resetPinThrottle() {
+        pinThrottleController.recordSuccess()
+    }
 
     private val genericErrorMsg
         get() = resourceProvider.genericErrorMessage()

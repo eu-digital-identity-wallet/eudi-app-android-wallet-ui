@@ -16,10 +16,12 @@
 
 package eu.europa.ec.commonfeature.interactor
 
+import eu.europa.ec.authenticationlogic.config.AuthenticationConfig
 import eu.europa.ec.authenticationlogic.controller.authentication.BiometricAuthenticationController
 import eu.europa.ec.authenticationlogic.controller.authentication.BiometricsAuthenticate
 import eu.europa.ec.authenticationlogic.controller.authentication.BiometricsAvailability
 import eu.europa.ec.authenticationlogic.controller.storage.BiometryStorageController
+import eu.europa.ec.authenticationlogic.controller.throttle.PinThrottleController
 import eu.europa.ec.authenticationlogic.secure.SecurePinImpl
 import eu.europa.ec.testfeature.util.mockedNotifyOnAuthenticationFailure
 import eu.europa.ec.testlogic.base.TestApplication
@@ -58,6 +60,12 @@ class TestBiometricInteractor {
     @Mock
     private lateinit var quickPinInteractor: QuickPinInteractor
 
+    @Mock
+    private lateinit var pinThrottleController: PinThrottleController
+
+    @Mock
+    private lateinit var authenticationConfig: AuthenticationConfig
+
     private lateinit var interactor: BiometricInteractor
 
     private lateinit var closeable: AutoCloseable
@@ -69,7 +77,9 @@ class TestBiometricInteractor {
         interactor = BiometricInteractorImpl(
             biometryStorageController = biometryStorageController,
             biometricAuthenticationController = biometricAuthenticationController,
-            quickPinInteractor = quickPinInteractor
+            quickPinInteractor = quickPinInteractor,
+            pinThrottleController = pinThrottleController,
+            authenticationConfig = authenticationConfig
         )
     }
 

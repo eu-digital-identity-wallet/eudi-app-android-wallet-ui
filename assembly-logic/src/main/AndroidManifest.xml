@@ -35,6 +35,10 @@
         android:name="android.hardware.bluetooth_le"
         android:required="true" />
 
+    <uses-feature
+        android:name="android.hardware.strongbox_keystore"
+        android:required="false" />
+
     <uses-permission
         android:name="android.permission.BLUETOOTH"
         android:maxSdkVersion="30" />

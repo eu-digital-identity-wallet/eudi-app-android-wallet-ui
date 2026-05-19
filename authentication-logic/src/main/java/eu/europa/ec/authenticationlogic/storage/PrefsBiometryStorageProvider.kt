@@ -64,6 +64,6 @@ class PrefsBiometryStorageProvider(
      * Setting an empty value will clear the entry from shared prefs.
      */
     override suspend fun getUseBiometricsAuth(): Boolean {
-        return prefsController.getBool("UseBiometricsAuth", false)
+        return prefsController.getBool("UseBiometricsAuth", true)
     }
 }
