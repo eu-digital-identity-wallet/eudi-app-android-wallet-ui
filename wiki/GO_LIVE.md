@@ -98,7 +98,7 @@ The application is a modular Android project. Important modules for production a
 | `assembly-logic`             | Android application class, manifest, permissions, activities, deep links, NFC service, app name.                                       |
 | `core-logic`                 | Wallet Core integration, issuer configuration, wallet provider, trust stores, document issuance, presentation, revocation, reissuance. |
 | `business-logic`             | Global app config, RQES config, logging, encrypted preference storage, crypto helpers.                                                 |
-| `authentication-logic`       | PIN and biometric storage providers and controllers.                                                                                   |
+| `authentication-logic`       | PIN and biometric storage providers and controllers, PIN throttle/lockout, authentication configuration.                               |
 | `storage-logic`              | SQLCipher-backed Room database and local transaction/revocation storage.                                                               |
 | `network-logic`              | Ktor client, logging level, wallet attestation repository.                                                                             |
 | `resources-logic`            | Strings, images, raw certificate resources.                                                                                            |
@@ -144,6 +144,8 @@ Keep these files under strict review:
 | `business-logic/src/main/res/xml/backup_rules.xml` | Auto Backup policy for Android 11 and below. |
 | `business-logic/src/main/res/xml/data_extraction_rules.xml` | Cloud backup and device transfer policy for Android 12 and above. |
 | `authentication-logic/src/main/java/eu/europa/ec/authenticationlogic/storage/PrefsPinStorageProvider.kt` | PIN hashing, salt, iteration count, constant-time comparison. |
+| `authentication-logic/src/main/java/eu/europa/ec/authenticationlogic/config/AuthenticationConfig.kt` | PIN lockout policy (max failed attempts, escalating lockout durations). |
+| `authentication-logic/src/main/java/eu/europa/ec/authenticationlogic/storage/PrefsPinThrottleProvider.kt` | Persisted PIN failure counter, lockout level, lockout window timestamps; clock-rollback detection. |
 | `business-logic/src/main/java/eu/europa/ec/businesslogic/controller/storage/PrefsController.kt` | Encrypted DataStore and database key storage. |
 | `storage-logic/src/main/java/eu/europa/ec/storagelogic/di/LogicStorageModule.kt` | SQLCipher database setup and migration behavior. |
 
@@ -1256,27 +1258,65 @@ Production guidance:
 * Constant-time hash comparison.
 * Encrypted preference storage through `PrefsController`.
 
-Production gaps to address:
+Production guidance:
 
-* Add failed-attempt counting.
-* Add exponential backoff or lockout.
-* Define maximum attempts before reset/recovery.
 * Consider binding PIN verification to a hardware-backed key operation.
 * Benchmark PBKDF2 iterations on the slowest supported device.
 * Consider memory-hard KDF options if supported by your platform/security policy.
-* Add telemetry for repeated failed attempts without logging PIN values.
+* Add telemetry for repeated failed attempts without logging PIN values
+  (the reference implementation does not emit lockout metrics).
 
-Example policy:
+### PIN Throttle And Lockout
 
-| Event | Suggested behavior |
-| --- | --- |
-| 5 failed attempts | Delay next attempt by 30 seconds. |
-| 10 failed attempts | Require device credential or stronger step-up. |
-| 15 failed attempts | Lock wallet until recovery or re-enrollment. |
-| App reinstall | Require re-enrollment unless secure backup/recovery is explicitly implemented. |
+The reference implementation includes an escalating client-side lockout
+enforced by `PinThrottleController` and persisted via the encrypted
+`PrefsController`. Policy is configured through `AuthenticationConfig`
+(see [CONFIGURATION.md#pin-throttle-configuration](CONFIGURATION.md#pin-throttle-configuration)).
 
-Do not implement lockout only in UI state. Persist counters securely and make bypass harder with
-RASP and server-side risk checks where applicable.
+Persisted state keys (encrypted DataStore):
+
+* `PinFailedAttempts` — current consecutive failure counter.
+* `PinLockoutLevel` — monotonic counter indexing
+  `AuthenticationConfig.pinLockoutDurations`.
+* `PinLockoutStartedAt` — wall-clock timestamp when the current lockout
+  began. Used for clock-rollback detection.
+* `PinLockoutEndsAt` — wall-clock timestamp when the current lockout
+  ends.
+
+Default policy (`AuthenticationConfigImpl`):
+
+| Event                                       | Behavior                                     |
+|---------------------------------------------|----------------------------------------------|
+| 3 consecutive failed attempts               | First lockout: 30 seconds.                   |
+| 3 more failures after lockout ends          | Second lockout: 90 seconds.                  |
+| 3 more failures after that                  | Third lockout: 5 minutes.                    |
+| Each subsequent batch of 3 failures         | 5 minutes (last list entry reused).          |
+| Successful PIN or biometric authentication  | Counters and lockout level reset.            |
+| App kill or device reboot                   | Lockout window persists (wall-clock based).  |
+| Device clock rolled back                    | Detected via stored start timestamp; user remains locked for the full duration. |
+| App reinstall                               | State is wiped together with app data. Require re-enrollment unless secure backup/recovery is explicitly implemented. |
+
+Lockout counters are persisted in the encrypted DataStore, not just in
+UI state. The PIN input is disabled in both the login screen
+(`BiometricViewModel`) and the change-PIN validation step
+(`PinViewModel`) while locked. The biometric icon on the login screen
+stays enabled during PIN lockout and acts as an escape hatch — a
+successful biometric authentication clears the throttle.
+
+Production gaps to address:
+
+* Decide what happens once the final lockout tier is reached. The
+  reference implementation cycles at the last list entry indefinitely;
+  production policy may instead require device-credential step-up,
+  wallet wipe, or a support recovery flow.
+* Decide whether to step up to device credential at high failure
+  counts (e.g. after 10 cumulative failures).
+* Add server-side risk signals; the current lockout is purely
+  client-side and is wiped by reinstall.
+* Add telemetry for lockout events without logging PIN values.
+* Combine with RASP and server-side risk checks where applicable.
+* Clock-rollback mitigation is best-effort; a fully tampered device
+  with reset clock could still bypass parts of the wall-clock window.
 
 ### SQLCipher Room Database
 
@@ -1410,6 +1450,7 @@ Production decisions:
 | Key invalidation | Keep invalidation on new biometric enrollment. |
 | Session duration | Keep short. Reauthenticate for disclosure and signing. |
 | PIN length | Current UI defaults to 6 digits. Confirm policy. |
+| PIN lockout policy | Defaults to 3 attempts then escalating lockouts of 30s, 90s, 5m (then 5m repeats). Tune via `AuthenticationConfig.maxFailedPinAttempts` and `pinLockoutDurations`. Decide whether the final tier should escalate further (wipe, support flow, device credential step-up). |
 | Recovery | Define what happens if user forgets PIN or changes biometrics. |
 
 Critical point:

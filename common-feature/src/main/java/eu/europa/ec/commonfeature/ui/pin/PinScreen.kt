@@ -50,6 +50,7 @@ import eu.europa.ec.uilogic.component.content.ContentScreen
 import eu.europa.ec.uilogic.component.content.ImePaddingConfig
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
+import eu.europa.ec.uilogic.component.utils.OneTimeLaunchedEffect
 import eu.europa.ec.uilogic.component.utils.SPACING_LARGE
 import eu.europa.ec.uilogic.component.utils.SPACING_SMALL
 import eu.europa.ec.uilogic.component.wrap.BottomSheetTextDataUi
@@ -160,6 +161,10 @@ fun PinScreen(
                 )
             }
         }
+    }
+
+    OneTimeLaunchedEffect {
+        viewModel.setEvent(Event.Init)
     }
 }
 
@@ -297,12 +302,12 @@ private fun PinFieldLayout(
         modifier = modifier,
         state = pinInputState,
         onPinLengthChanged = onPinInput,
-        hasError = !state.quickPinError.isNullOrEmpty(),
-        errorMessage = state.quickPinError,
+        hasError = !state.quickPinError.isNullOrEmpty() || state.isLockedOut,
+        errorMessage = state.lockoutMessage ?: state.quickPinError,
         pinWidth = 42.dp,
         clearCode = state.resetPin,
-        focusOnCreate = true,
-        enabled = !state.isLoading
+        focusOnCreate = !state.isLockedOut,
+        enabled = !state.isLoading && !state.isLockedOut
     )
 }
 

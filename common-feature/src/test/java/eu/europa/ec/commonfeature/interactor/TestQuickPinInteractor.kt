@@ -16,7 +16,9 @@
 
 package eu.europa.ec.commonfeature.interactor
 
+import eu.europa.ec.authenticationlogic.config.AuthenticationConfig
 import eu.europa.ec.authenticationlogic.controller.storage.PinStorageController
+import eu.europa.ec.authenticationlogic.controller.throttle.PinThrottleController
 import eu.europa.ec.authenticationlogic.secure.SecurePin
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
@@ -50,6 +52,12 @@ class TestQuickPinInteractor {
     @Mock
     private lateinit var resourceProvider: ResourceProvider
 
+    @Mock
+    private lateinit var pinThrottleController: PinThrottleController
+
+    @Mock
+    private lateinit var authenticationConfig: AuthenticationConfig
+
     private lateinit var interactor: QuickPinInteractor
 
     private lateinit var closeable: AutoCloseable
@@ -60,7 +68,9 @@ class TestQuickPinInteractor {
 
         interactor = QuickPinInteractorImpl(
             pinStorageController = pinStorageController,
-            resourceProvider = resourceProvider
+            resourceProvider = resourceProvider,
+            pinThrottleController = pinThrottleController,
+            authenticationConfig = authenticationConfig
         )
 
         whenever(resourceProvider.genericErrorMessage())

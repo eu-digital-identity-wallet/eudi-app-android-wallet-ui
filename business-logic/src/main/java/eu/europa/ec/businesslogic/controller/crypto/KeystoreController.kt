@@ -88,19 +88,23 @@ class KeystoreControllerImpl(
 
     @Suppress("DEPRECATION")
     private fun generateSecretKey(alias: String, userAuthenticationRequired: Boolean) {
-        val keyGenerator = KeyGenerator.getInstance(KeyProperties.KEY_ALGORITHM_AES, STORE_TYPE)
 
-        val builder = KeyGenParameterSpec.Builder(
+        fun buildSpec(useStrongBox: Boolean): KeyGenParameterSpec = KeyGenParameterSpec.Builder(
             alias,
             KeyProperties.PURPOSE_ENCRYPT or KeyProperties.PURPOSE_DECRYPT
         ).apply {
             setKeySize(256)
             setBlockModes(KeyProperties.BLOCK_MODE_GCM)
             setEncryptionPaddings(KeyProperties.ENCRYPTION_PADDING_NONE)
-            setIsStrongBoxBacked(true)
+
+            if (useStrongBox) {
+                setIsStrongBoxBacked(true)
+            }
+
             if (userAuthenticationRequired) {
                 setUserAuthenticationRequired(true)
                 setInvalidatedByBiometricEnrollment(true)
+
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
                     setUserAuthenticationParameters(
                         0,
@@ -110,13 +114,23 @@ class KeystoreControllerImpl(
                     setUserAuthenticationValidityDurationSeconds(-1)
                 }
             }
+        }.build()
+
+        fun generate(useStrongBox: Boolean) {
+            val keyGenerator = KeyGenerator.getInstance(
+                KeyProperties.KEY_ALGORITHM_AES,
+                STORE_TYPE
+            )
+
+            keyGenerator.init(buildSpec(useStrongBox))
+            keyGenerator.generateKey()
         }
 
-        keyGenerator.init(
-            builder.build()
-        )
-
-        keyGenerator.generateKey()
+        try {
+            generate(useStrongBox = true)
+        } catch (_: android.security.keystore.StrongBoxUnavailableException) {
+            generate(useStrongBox = false)
+        }
     }
 
     private fun getSecretKey(keyStore: KeyStore, alias: String): SecretKey {

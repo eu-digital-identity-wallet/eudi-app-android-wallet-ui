@@ -18,18 +18,23 @@ package eu.europa.ec.authenticationlogic.config
 
 import eu.europa.ec.authenticationlogic.provider.BiometryStorageProvider
 import eu.europa.ec.authenticationlogic.provider.PinStorageProvider
+import eu.europa.ec.authenticationlogic.provider.PinThrottleProvider
 
 interface StorageConfig {
     val pinStorageProvider: PinStorageProvider
     val biometryStorageProvider: BiometryStorageProvider
+    val pinThrottleProvider: PinThrottleProvider
 }
 
 class StorageConfigImpl(
     private val pinImpl: PinStorageProvider,
-    private val biometryImpl: BiometryStorageProvider
+    private val biometryImpl: BiometryStorageProvider,
+    private val pinThrottleImpl: PinThrottleProvider
 ) : StorageConfig {
     override val pinStorageProvider: PinStorageProvider
         get() = pinImpl
     override val biometryStorageProvider: BiometryStorageProvider
         get() = biometryImpl
+    override val pinThrottleProvider: PinThrottleProvider
+        get() = pinThrottleImpl
 }

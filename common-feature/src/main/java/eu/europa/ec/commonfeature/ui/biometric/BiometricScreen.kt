@@ -366,12 +366,12 @@ private fun PinFieldLayout(
         state = pinInputState,
         onPinLengthChanged = onPinInput,
         onPinComplete = onPinComplete,
-        hasError = !state.quickPinError.isNullOrEmpty(),
-        errorMessage = state.quickPinError,
+        hasError = !state.quickPinError.isNullOrEmpty() || state.isLockedOut,
+        errorMessage = state.lockoutMessage ?: state.quickPinError,
         pinWidth = 42.dp,
-        focusOnCreate = !state.userBiometricsAreEnabled,
+        focusOnCreate = !state.userBiometricsAreEnabled && !state.isLockedOut,
         shouldHideKeyboardOnCompletion = true,
-        enabled = !state.isLoading
+        enabled = !state.isLoading && !state.isLockedOut
     )
 }
 

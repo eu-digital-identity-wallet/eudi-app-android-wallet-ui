@@ -16,10 +16,12 @@
 
 package eu.europa.ec.commonfeature.di
 
+import eu.europa.ec.authenticationlogic.config.AuthenticationConfig
 import eu.europa.ec.authenticationlogic.controller.authentication.BiometricAuthenticationController
 import eu.europa.ec.authenticationlogic.controller.authentication.DeviceAuthenticationController
 import eu.europa.ec.authenticationlogic.controller.storage.BiometryStorageController
 import eu.europa.ec.authenticationlogic.controller.storage.PinStorageController
+import eu.europa.ec.authenticationlogic.controller.throttle.PinThrottleController
 import eu.europa.ec.businesslogic.validator.FormValidator
 import eu.europa.ec.commonfeature.interactor.BiometricInteractor
 import eu.europa.ec.commonfeature.interactor.BiometricInteractorImpl
@@ -43,21 +45,32 @@ class FeatureCommonModule
 @Factory
 fun provideQuickPinInteractor(
     pinStorageController: PinStorageController,
-    resourceProvider: ResourceProvider
+    resourceProvider: ResourceProvider,
+    pinThrottleController: PinThrottleController,
+    authenticationConfig: AuthenticationConfig
 ): QuickPinInteractor {
-    return QuickPinInteractorImpl(pinStorageController, resourceProvider)
+    return QuickPinInteractorImpl(
+        pinStorageController,
+        resourceProvider,
+        pinThrottleController,
+        authenticationConfig
+    )
 }
 
 @Factory
 fun provideBiometricInteractor(
     biometryStorageController: BiometryStorageController,
     biometricAuthenticationController: BiometricAuthenticationController,
-    quickPinInteractor: QuickPinInteractor
+    quickPinInteractor: QuickPinInteractor,
+    pinThrottleController: PinThrottleController,
+    authenticationConfig: AuthenticationConfig
 ): BiometricInteractor {
     return BiometricInteractorImpl(
         biometryStorageController,
         biometricAuthenticationController,
-        quickPinInteractor
+        quickPinInteractor,
+        pinThrottleController,
+        authenticationConfig
     )
 }
 
