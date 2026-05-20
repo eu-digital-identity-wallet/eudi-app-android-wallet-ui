@@ -366,7 +366,6 @@ class PinViewModel(
                 isLockedOut = true,
                 isLoading = false,
                 quickPinError = null,
-                isButtonEnabled = false,
                 lockoutMessage = buildLockoutMessage(initialRemainingMs)
             )
         }
