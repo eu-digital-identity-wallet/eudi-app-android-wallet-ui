@@ -981,6 +981,180 @@ class TestFormValidator {
         )
     }
 
+    @Test
+    fun testValidateEmailRule_emptyValueShortCircuits() = coroutineRule.runTest {
+        val rules = listOf(Rule.ValidateEmail(plainErrorMessage))
+        // Empty value → isNotEmpty() false → short-circuits the &&
+        validateForm(
+            rules = rules,
+            value = "",
+            expectedValidationResult = validationError
+        )
+    }
+
+    @Test
+    fun testValidateUrlRule_onlyHostValidated_passesWithHostFailsWithout() = coroutineRule.runTest {
+        // shouldValidateHost = true (only), everything else off — covers the host-guard's
+        // `&& uri.host.isNullOrEmpty()` second-operand-false branch (host non-empty) AND the
+        // `shouldValidatePath/Query = false` short-circuit on the first operand.
+        val rules = listOf(
+            Rule.ValidateUrl(
+                shouldValidateSchema = false,
+                shouldValidateHost = true,
+                shouldValidatePath = false,
+                shouldValidateQuery = false,
+                errorMessage = plainErrorMessage,
+            )
+        )
+        validateForm(
+            rules = rules,
+            value = "https://www.example.com",
+            expectedValidationResult = validationSuccess
+        )
+        validateForm(
+            rules = rules,
+            value = "https:///path",
+            expectedValidationResult = validationError
+        )
+    }
+
+    @Test
+    fun testValidateUrlRule_onlyPathValidated_passesWithPathFailsWithout() = coroutineRule.runTest {
+        // Mirrors the host test above for the path guard.
+        val rules = listOf(
+            Rule.ValidateUrl(
+                shouldValidateSchema = false,
+                shouldValidateHost = false,
+                shouldValidatePath = true,
+                shouldValidateQuery = false,
+                errorMessage = plainErrorMessage,
+            )
+        )
+        validateForm(
+            rules = rules,
+            value = "https://www.example.com/some/path",
+            expectedValidationResult = validationSuccess
+        )
+        validateForm(
+            rules = rules,
+            value = "https://www.example.com",
+            expectedValidationResult = validationError
+        )
+    }
+
+    @Test
+    fun testValidateUrlRule_shouldValidateAllDisabled() = coroutineRule.runTest {
+        // Each `if (shouldValidate* && ...)` short-circuits to false when shouldValidate* is false.
+        val rules = listOf(
+            Rule.ValidateUrl(
+                shouldValidateSchema = false,
+                shouldValidateHost = false,
+                shouldValidatePath = false,
+                shouldValidateQuery = false,
+                errorMessage = plainErrorMessage,
+            )
+        )
+        // Empty value → early return false (still validationError because isValidUrl returns false)
+        validateForm(
+            rules = rules,
+            value = "",
+            expectedValidationResult = validationError
+        )
+        // Non-empty but no components — none of the guards fire because shouldValidate* are all false,
+        // so isValidUrl returns true → validationSuccess.
+        validateForm(
+            rules = rules,
+            value = "abc",
+            expectedValidationResult = validationSuccess
+        )
+    }
+
+    @Test
+    fun testValidateStringRange_inRangeAndOutOfRange() = coroutineRule.runTest {
+        val rules = listOf(Rule.ValidateStringRange(range = 2..5, errorMessage = plainErrorMessage))
+        validateForm(rules = rules, value = "a", expectedValidationResult = validationError)
+        validateForm(rules = rules, value = "ab", expectedValidationResult = validationSuccess)
+        validateForm(rules = rules, value = "abcdef", expectedValidationResult = validationError)
+    }
+
+    @Test
+    fun testValidateDuplicateCharacterNotInConsecutiveOrder_belowThreshold() = coroutineRule.runTest {
+        // maxTimesOfConsecutiveOrder < 2 → always returns true (always valid).
+        val rules = listOf(
+            Rule.ValidateDuplicateCharacterNotInConsecutiveOrder(
+                maxTimesOfConsecutiveOrder = 1,
+                errorMessage = plainErrorMessage,
+            )
+        )
+        validateForm(rules = rules, value = "aaaa", expectedValidationResult = validationSuccess)
+        validateForm(rules = rules, value = "abcd", expectedValidationResult = validationSuccess)
+    }
+
+    @Test
+    fun testValidateNumericNotInConsecutiveSequenceOrder_shortCircuitGuards() =
+        coroutineRule.runTest {
+            // The guard `value.isEmpty() || minLength < 2 || value.toIntOrNull() == null || value.length != minLength`
+            // returns true for any of these conditions, so the rule is satisfied.
+            val rules = listOf(
+                Rule.ValidateNumericNotInConsecutiveSequenceOrder(
+                    minLength = 4,
+                    errorMessage = plainErrorMessage,
+                )
+            )
+            // Empty value → first OR-arm true
+            validateForm(rules = rules, value = "", expectedValidationResult = validationSuccess)
+            // Non-numeric → third OR-arm true (toIntOrNull() == null)
+            validateForm(rules = rules, value = "abcd", expectedValidationResult = validationSuccess)
+            // Length mismatch → fourth OR-arm true
+            validateForm(rules = rules, value = "123", expectedValidationResult = validationSuccess)
+
+            val tinyMinLengthRule = listOf(
+                Rule.ValidateNumericNotInConsecutiveSequenceOrder(
+                    minLength = 1,
+                    errorMessage = plainErrorMessage,
+                )
+            )
+            // minLength < 2 → second OR-arm true
+            validateForm(
+                rules = tinyMinLengthRule,
+                value = "1",
+                expectedValidationResult = validationSuccess
+            )
+
+            // A genuinely consecutive sequence at the correct length → returns false (validationError)
+            validateForm(rules = rules, value = "1234", expectedValidationResult = validationError)
+            // Reversed consecutive
+            validateForm(rules = rules, value = "4321", expectedValidationResult = validationError)
+        }
+
+    @Test
+    fun testValidateFileName() = coroutineRule.runTest {
+        val rules = listOf(
+            Rule.ValidateFileName(errorMessage = plainErrorMessage)
+        )
+
+        // Valid: alphanumerics + the allowed punctuation
+        validateForm(
+            rules = rules,
+            value = "my-file_name 01!",
+            expectedValidationResult = validationSuccess
+        )
+
+        // Invalid: contains a character outside the allowed set (e.g. a dot for the extension)
+        validateForm(
+            rules = rules,
+            value = "file.txt",
+            expectedValidationResult = validationError
+        )
+
+        // Invalid: empty value (regex requires at least one allowed char)
+        validateForm(
+            rules = rules,
+            value = "",
+            expectedValidationResult = validationError
+        )
+    }
+
     private suspend fun validateForm(
         rules: List<Rule>,
         value: String,

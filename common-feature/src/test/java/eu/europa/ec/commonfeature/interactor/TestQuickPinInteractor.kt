@@ -19,6 +19,7 @@ package eu.europa.ec.commonfeature.interactor
 import eu.europa.ec.authenticationlogic.config.AuthenticationConfig
 import eu.europa.ec.authenticationlogic.controller.storage.PinStorageController
 import eu.europa.ec.authenticationlogic.controller.throttle.PinThrottleController
+import eu.europa.ec.authenticationlogic.provider.PinLockoutState
 import eu.europa.ec.authenticationlogic.secure.SecurePin
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
@@ -37,6 +38,8 @@ import org.junit.Test
 import org.mockito.Mock
 import org.mockito.MockitoAnnotations
 import org.mockito.kotlin.any
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.never
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
@@ -212,6 +215,59 @@ class TestQuickPinInteractor {
                     awaitItem()
                 )
             }
+        }
+    }
+
+    // Case 5:
+    // setPin succeeds. Explicitly verifies the `finally` block closes initialPin and does
+    // NOT close newPin, exercising the `if (shouldClearInitialPin)` true / `if (shouldClearNewPin)`
+    // false branches with mocked SecurePins so Kover's branch tracker registers both outcomes.
+    @Test
+    fun `Given Case 5, When setPin is called and succeeds, Then finally closes initialPin and skips newPin`() {
+        coroutineRule.runTest {
+            // Given
+            val newPin = mock<SecurePin>()
+            val initialPin = mock<SecurePin>()
+            whenever(initialPin.contentEquals(newPin)).thenReturn(true)
+
+            // When
+            interactor.setPin(newPin = newPin, initialPin = initialPin).runFlowTest {
+                assertEquals(QuickPinInteractorSetPinPartialState.Success, awaitItem())
+            }
+
+            // Then
+            verify(initialPin).close()
+            verify(newPin, never()).close()
+        }
+    }
+
+    // Case 6:
+    // setPin's pins do not match. Explicitly verifies the `finally` block closes newPin and
+    // does NOT close initialPin, exercising the `if (shouldClearInitialPin)` false /
+    // `if (shouldClearNewPin)` true branches.
+    @Test
+    fun `Given Case 6, When setPin is called with mismatched pins, Then finally closes newPin and skips initialPin`() {
+        coroutineRule.runTest {
+            // Given
+            whenever(resourceProvider.getString(R.string.quick_pin_non_match))
+                .thenReturn(mockedPinsDontMatchMessage)
+            val newPin = mock<SecurePin>()
+            val initialPin = mock<SecurePin>()
+            whenever(initialPin.contentEquals(newPin)).thenReturn(false)
+
+            // When
+            interactor.setPin(newPin = newPin, initialPin = initialPin).runFlowTest {
+                assertEquals(
+                    QuickPinInteractorSetPinPartialState.Failed(
+                        errorMessage = mockedPinsDontMatchMessage
+                    ),
+                    awaitItem()
+                )
+            }
+
+            // Then
+            verify(newPin).close()
+            verify(initialPin, never()).close()
         }
     }
 
@@ -415,6 +471,61 @@ class TestQuickPinInteractor {
             }
         }
     }
+    //endregion
+
+    //region pin throttle delegation
+
+    @Test
+    fun `When maxFailedPinAttempts is accessed, Then it returns authenticationConfig#maxFailedPinAttempts`() {
+        // Given
+        whenever(authenticationConfig.maxFailedPinAttempts).thenReturn(5)
+
+        // When
+        val result = interactor.maxFailedPinAttempts
+
+        // Then
+        assertEquals(5, result)
+    }
+
+    @Test
+    fun `When getPinLockoutState is called, Then pinThrottleController#getState is invoked and its result is returned`() =
+        coroutineRule.runTest {
+            // Given
+            val expected = PinLockoutState.Idle
+            whenever(pinThrottleController.getState()).thenReturn(expected)
+
+            // When
+            val result = interactor.getPinLockoutState()
+
+            // Then
+            assertEquals(expected, result)
+            verify(pinThrottleController).getState()
+        }
+
+    @Test
+    fun `When recordPinFailure is called, Then pinThrottleController#recordFailure is invoked and its result is returned`() =
+        coroutineRule.runTest {
+            // Given
+            val expected = PinLockoutState.Idle
+            whenever(pinThrottleController.recordFailure()).thenReturn(expected)
+
+            // When
+            val result = interactor.recordPinFailure()
+
+            // Then
+            assertEquals(expected, result)
+            verify(pinThrottleController).recordFailure()
+        }
+
+    @Test
+    fun `When resetPinThrottle is called, Then pinThrottleController#recordSuccess is invoked`() =
+        coroutineRule.runTest {
+            // When
+            interactor.resetPinThrottle()
+
+            // Then
+            verify(pinThrottleController).recordSuccess()
+        }
     //endregion
 
     //region Mocked objects needed for tests.

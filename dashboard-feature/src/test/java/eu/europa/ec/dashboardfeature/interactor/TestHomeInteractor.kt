@@ -22,12 +22,19 @@ import android.content.Context
 import eu.europa.ec.corelogic.config.WalletCoreConfig
 import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
+import eu.europa.ec.testfeature.util.getMockedFullPid
+import eu.europa.ec.testfeature.util.mockedExceptionWithMessage
+import eu.europa.ec.testfeature.util.mockedExceptionWithNoMessage
 import eu.europa.ec.testfeature.util.mockedGenericErrorMessage
+import eu.europa.ec.testfeature.util.mockedUserFirstName
+import eu.europa.ec.testlogic.extension.runFlowTest
+import eu.europa.ec.testlogic.extension.runTest
 import eu.europa.ec.testfeature.walletcore.getMockedEudiWalletConfig
 import eu.europa.ec.testlogic.base.TestApplication
 import eu.europa.ec.testlogic.base.getMockedContext
 import eu.europa.ec.testlogic.rule.CoroutineTestRule
 import junit.framework.TestCase.assertEquals
+import junit.framework.TestCase.assertTrue
 import org.junit.After
 import org.junit.Before
 import org.junit.Rule
@@ -120,6 +127,25 @@ class TestHomeInteractor {
     }
     //endregion
 
+    // Case 3:
+    // Context.getSystemService(BLUETOOTH_SERVICE) returns null (or non-BluetoothManager) →
+    // the `as? BluetoothManager` cast yields null → `bluetoothManager?.adapter?.isEnabled == true`
+    // short-circuits to false. Exercises both the `as?` null branch and the `?.adapter` short-circuit.
+    @Test
+    fun `Given Case 3, When the system returns no BluetoothManager, Then isBleAvailable returns false`() {
+        // Given
+        val nullBluetoothContext = org.mockito.kotlin.mock<Context>()
+        whenever(nullBluetoothContext.getSystemService(Context.BLUETOOTH_SERVICE)).thenReturn(null)
+        whenever(resourceProvider.provideContext()).thenReturn(nullBluetoothContext)
+
+        // When
+        val actual = interactor.isBleAvailable()
+
+        // Then
+        assertEquals(false, actual)
+    }
+    //endregion
+
     //region isBleCentralClientModeEnabled
 
     // Case 1:
@@ -160,6 +186,105 @@ class TestHomeInteractor {
 
         // Then
         assertEquals(expectedBleCentralClientModeEnabled, actual)
+    }
+    //endregion
+
+    //region getUserNameViaMainPidDocument
+
+    // Case 1:
+    // walletCoreDocumentsController.getMainPidDocument() returns a real PID document with
+    // a non-empty FIRST_NAME claim.
+
+    // Case 1 Expected Result:
+    // Success with the extracted first name.
+    @Test
+    fun `Given Case 1, When getUserNameViaMainPidDocument is called, Then Success with the document's first name is returned`() {
+        coroutineRule.runTest {
+            // Given
+            val pid = getMockedFullPid()
+            whenever(walletCoreDocumentsController.getMainPidDocument()).thenReturn(pid)
+
+            // When
+            interactor.getUserNameViaMainPidDocument().runFlowTest {
+                // Then
+                val result = awaitItem()
+                assertTrue(result is HomeInteractorGetUserNameViaMainPidDocumentPartialState.Success)
+                result as HomeInteractorGetUserNameViaMainPidDocumentPartialState.Success
+                assertEquals(mockedUserFirstName, result.userFirstName)
+            }
+        }
+    }
+
+    // Case 2:
+    // walletCoreDocumentsController.getMainPidDocument() returns null.
+
+    // Case 2 Expected Result:
+    // Success with an empty userFirstName (the `.orEmpty()` fallback on the nullable let).
+    @Test
+    fun `Given Case 2, When getUserNameViaMainPidDocument is called with no PID, Then Success with empty name is returned`() {
+        coroutineRule.runTest {
+            // Given
+            whenever(walletCoreDocumentsController.getMainPidDocument()).thenReturn(null)
+
+            // When
+            interactor.getUserNameViaMainPidDocument().runFlowTest {
+                // Then
+                assertEquals(
+                    HomeInteractorGetUserNameViaMainPidDocumentPartialState.Success(userFirstName = ""),
+                    awaitItem()
+                )
+            }
+        }
+    }
+
+    // Case 3:
+    // walletCoreDocumentsController.getMainPidDocument() throws an exception with a message.
+
+    // Case 3 Expected Result:
+    // Failure with the exception's localized message.
+    @Test
+    fun `Given Case 3, When getUserNameViaMainPidDocument is called and throws with message, Then Failure with localized message is returned`() {
+        coroutineRule.runTest {
+            // Given
+            whenever(walletCoreDocumentsController.getMainPidDocument())
+                .thenThrow(mockedExceptionWithMessage)
+
+            // When
+            interactor.getUserNameViaMainPidDocument().runFlowTest {
+                // Then
+                assertEquals(
+                    HomeInteractorGetUserNameViaMainPidDocumentPartialState.Failure(
+                        error = mockedExceptionWithMessage.localizedMessage!!
+                    ),
+                    awaitItem()
+                )
+            }
+        }
+    }
+
+    // Case 4:
+    // walletCoreDocumentsController.getMainPidDocument() throws an exception with no message.
+
+    // Case 4 Expected Result:
+    // Failure with the generic error message.
+    @Test
+    fun `Given Case 4, When getUserNameViaMainPidDocument is called and throws without message, Then Failure with generic message is returned`() {
+        coroutineRule.runTest {
+            // Given
+            whenever(walletCoreDocumentsController.getMainPidDocument())
+                .thenThrow(mockedExceptionWithNoMessage)
+
+            // When
+            interactor.getUserNameViaMainPidDocument().runFlowTest {
+                // Then
+                assertEquals(
+                    HomeInteractorGetUserNameViaMainPidDocumentPartialState.Failure(
+                        error = mockedGenericErrorMessage
+                    ),
+                    awaitItem()
+                )
+            }
+        }
     }
     //endregion
 

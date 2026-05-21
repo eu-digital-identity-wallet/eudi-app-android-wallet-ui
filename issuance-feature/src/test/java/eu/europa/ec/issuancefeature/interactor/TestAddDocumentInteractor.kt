@@ -403,6 +403,49 @@ class TestAddDocumentInteractor {
         }
     }
 
+    // Case 9:
+    // ExtraDocument with a non-PID formatType matching exactly one of the scoped documents
+    // (mDL). Filter keeps only the mDL → after partition pidDocs is empty (covers the
+    // `if (pidDocs.isNotEmpty())` false branch and the `else emptyList()` arm on line 407 of
+    // the kover report). Also covers the `doc.formatType == formatType` true branch of
+    // the OR-pair on line 377.
+
+    // Case 9 Expected Result:
+    // AddDocumentInteractorScopedPartialState.Success with one option containing only the mDL,
+    // no combined-PID entry.
+    @Test
+    fun `Given Case 9, When getAddDocumentOption is called with a non-PID formatType, Then only that doc is returned`() {
+        coroutineRule.runTest {
+            // Given
+            val expectedResponse = FetchScopedDocumentsPartialState.Success(
+                documents = mockedScopedDocuments
+            )
+            mockGetScopedDocumentsResponse(expectedResponse)
+
+            // When
+            interactor.getAddDocumentOption(
+                flowType = IssuanceFlowType.ExtraDocument(
+                    formatType = eu.europa.ec.testfeature.util.mockedMdocMdlFormat.docType
+                )
+            ).runFlowTest {
+                // Then
+                val result = awaitItem()
+                org.junit.Assert.assertTrue(
+                    result is AddDocumentInteractorScopedPartialState.Success
+                )
+                result as AddDocumentInteractorScopedPartialState.Success
+                val firstGroup = result.options.first()
+                // The combined-PID listing is empty for a non-PID filter; only the mDL remains.
+                val titles: List<String> = firstGroup.second.map { item ->
+                    (item.itemData.mainContentData as eu.europa.ec.uilogic.component.ListItemMainContentDataUi.Text).text
+                }
+                org.junit.Assert.assertTrue(
+                    titles.none { title -> title == mockedCombinedPid }
+                )
+            }
+        }
+    }
+
     //region issueDocument
     @Test
     fun `Given an issuance method and a document type, When issueDocument is called, Then it calls walletCoreDocumentsController#issueDocument`() {
@@ -437,6 +480,210 @@ class TestAddDocumentInteractor {
                         configIds = mockedConfigIds,
                         issuerId = mockedIssuerId
                     )
+            }
+        }
+    }
+    //endregion
+
+    // Case A:
+    // walletCoreDocumentsController.issueDocuments returns DeferredSuccess
+    // → AddDocumentInteractorIssueDocumentsPartialState.DeferredSuccess
+    @Test
+    fun `Given controller emits DeferredSuccess, When issueDocuments is called, Then DeferredSuccess is emitted`() {
+        coroutineRule.runTest {
+            // Given
+            whenever(
+                walletCoreDocumentsController.issueDocuments(
+                    issuanceMethod = IssuanceMethod.OPENID4VCI,
+                    configIds = listOf("id"),
+                    issuerId = "issuerId",
+                )
+            ).thenReturn(
+                IssueDocumentsPartialState.DeferredSuccess(deferredDocuments = emptyMap()).toFlow()
+            )
+
+            // When
+            interactor.issueDocuments(
+                issuanceMethod = IssuanceMethod.OPENID4VCI,
+                configIds = listOf("id"),
+                issuerId = "issuerId",
+            ).runFlowTest {
+                // Then
+                assertEquals(
+                    AddDocumentInteractorIssueDocumentsPartialState.DeferredSuccess,
+                    awaitItem()
+                )
+            }
+        }
+    }
+
+    // Case B:
+    // walletCoreDocumentsController.issueDocuments returns Failure with a message
+    // → AddDocumentInteractorIssueDocumentsPartialState.Failure with the same message
+    @Test
+    fun `Given controller emits Failure, When issueDocuments is called, Then Failure with the same message is emitted`() {
+        coroutineRule.runTest {
+            // Given
+            whenever(
+                walletCoreDocumentsController.issueDocuments(
+                    issuanceMethod = IssuanceMethod.OPENID4VCI,
+                    configIds = listOf("id"),
+                    issuerId = "issuerId",
+                )
+            ).thenReturn(
+                IssueDocumentsPartialState.Failure(errorMessage = mockedPlainFailureMessage).toFlow()
+            )
+
+            // When
+            interactor.issueDocuments(
+                issuanceMethod = IssuanceMethod.OPENID4VCI,
+                configIds = listOf("id"),
+                issuerId = "issuerId",
+            ).runFlowTest {
+                // Then
+                assertEquals(
+                    AddDocumentInteractorIssueDocumentsPartialState.Failure(
+                        errorMessage = mockedPlainFailureMessage
+                    ),
+                    awaitItem()
+                )
+            }
+        }
+    }
+
+    // Case C:
+    // walletCoreDocumentsController.issueDocuments returns PartialSuccess with documentIds
+    // → AddDocumentInteractorIssueDocumentsPartialState.Success with the same ids
+    @Test
+    fun `Given controller emits PartialSuccess, When issueDocuments is called, Then Success with the same ids is emitted`() {
+        coroutineRule.runTest {
+            // Given
+            whenever(
+                walletCoreDocumentsController.issueDocuments(
+                    issuanceMethod = IssuanceMethod.OPENID4VCI,
+                    configIds = listOf("id"),
+                    issuerId = "issuerId",
+                )
+            ).thenReturn(
+                IssueDocumentsPartialState.PartialSuccess(
+                    documentIds = listOf(mockedPidId),
+                    nonIssuedDocuments = emptyMap(),
+                ).toFlow()
+            )
+
+            // When
+            interactor.issueDocuments(
+                issuanceMethod = IssuanceMethod.OPENID4VCI,
+                configIds = listOf("id"),
+                issuerId = "issuerId",
+            ).runFlowTest {
+                // Then
+                assertEquals(
+                    AddDocumentInteractorIssueDocumentsPartialState.Success(listOf(mockedPidId)),
+                    awaitItem()
+                )
+            }
+        }
+    }
+
+    // Case D:
+    // walletCoreDocumentsController.issueDocuments returns UserAuthRequired
+    // → AddDocumentInteractorIssueDocumentsPartialState.UserAuthRequired with the crypto + handler
+    @Test
+    fun `Given controller emits UserAuthRequired, When issueDocuments is called, Then UserAuthRequired is emitted`() {
+        coroutineRule.runTest {
+            // Given
+            whenever(
+                walletCoreDocumentsController.issueDocuments(
+                    issuanceMethod = IssuanceMethod.OPENID4VCI,
+                    configIds = listOf("id"),
+                    issuerId = "issuerId",
+                )
+            ).thenReturn(
+                IssueDocumentsPartialState.UserAuthRequired(
+                    crypto = crypto,
+                    resultHandler = resultHandler,
+                ).toFlow()
+            )
+
+            // When
+            interactor.issueDocuments(
+                issuanceMethod = IssuanceMethod.OPENID4VCI,
+                configIds = listOf("id"),
+                issuerId = "issuerId",
+            ).runFlowTest {
+                // Then
+                assertEquals(
+                    AddDocumentInteractorIssueDocumentsPartialState.UserAuthRequired(
+                        crypto = crypto,
+                        resultHandler = resultHandler,
+                    ),
+                    awaitItem()
+                )
+            }
+        }
+    }
+
+    // Case F:
+    // walletCoreDocumentsController.issueDocuments throws WITH a message
+    // → safeAsync catches → Failure with the exception's localizedMessage (elvis left side)
+    @Test
+    fun `Given controller throws with message, When issueDocuments is called, Then Failure with localized message is emitted`() {
+        coroutineRule.runTest {
+            // Given
+            whenever(
+                walletCoreDocumentsController.issueDocuments(
+                    issuanceMethod = IssuanceMethod.OPENID4VCI,
+                    configIds = listOf("id"),
+                    issuerId = "issuerId",
+                )
+            ).thenThrow(mockedExceptionWithMessage)
+
+            // When
+            interactor.issueDocuments(
+                issuanceMethod = IssuanceMethod.OPENID4VCI,
+                configIds = listOf("id"),
+                issuerId = "issuerId",
+            ).runFlowTest {
+                // Then
+                assertEquals(
+                    AddDocumentInteractorIssueDocumentsPartialState.Failure(
+                        errorMessage = mockedExceptionWithMessage.localizedMessage!!
+                    ),
+                    awaitItem()
+                )
+            }
+        }
+    }
+
+    // Case E:
+    // walletCoreDocumentsController.issueDocuments throws with no message
+    // → safeAsync catches → Failure with the generic error message
+    @Test
+    fun `Given controller throws without message, When issueDocuments is called, Then Failure with generic error is emitted`() {
+        coroutineRule.runTest {
+            // Given
+            whenever(
+                walletCoreDocumentsController.issueDocuments(
+                    issuanceMethod = IssuanceMethod.OPENID4VCI,
+                    configIds = listOf("id"),
+                    issuerId = "issuerId",
+                )
+            ).thenThrow(mockedExceptionWithNoMessage)
+
+            // When
+            interactor.issueDocuments(
+                issuanceMethod = IssuanceMethod.OPENID4VCI,
+                configIds = listOf("id"),
+                issuerId = "issuerId",
+            ).runFlowTest {
+                // Then
+                assertEquals(
+                    AddDocumentInteractorIssueDocumentsPartialState.Failure(
+                        errorMessage = mockedGenericErrorMessage
+                    ),
+                    awaitItem()
+                )
             }
         }
     }
@@ -611,6 +858,43 @@ class TestAddDocumentInteractor {
 
         // Then
         val expectedResult = "SUCCESS?successConfig=$mockedRouteArguments"
+        assertEquals(expectedResult, result)
+    }
+    // Case 3:
+    // 1. uiSerializer.toBase64 returns null → the `.orEmpty()` fallback path is exercised,
+    //    producing a route with an empty successConfig argument.
+    @Test
+    fun `When buildGenericSuccessRouteForDeferred is called and uiSerializer returns null, Then the route uses the empty fallback`() {
+        // Given
+        mockDocumentIssuanceStrings()
+
+        val config = SuccessUIConfig(
+            textElementsConfig = mockedTripleObject.first,
+            imageConfig = mockedTripleObject.second,
+            buttonConfig = listOf(
+                SuccessUIConfig.ButtonConfig(
+                    text = mockedTripleObject.third,
+                    style = SuccessUIConfig.ButtonConfig.Style.PRIMARY,
+                    navigation = mockedConfigNavigationTypePush
+                )
+            ),
+            onBackScreenToNavigate = mockedConfigNavigationTypePush
+        )
+
+        whenever(
+            uiSerializer.toBase64(
+                model = config,
+                parser = SuccessUIConfig.Parser
+            )
+        ).thenReturn(null)
+
+        val flowType = IssuanceFlowType.NoDocument
+
+        // When
+        val result = interactor.buildGenericSuccessRouteForDeferred(flowType = flowType)
+
+        // Then
+        val expectedResult = "SUCCESS?successConfig="
         assertEquals(expectedResult, result)
     }
     //endregion

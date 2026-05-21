@@ -74,6 +74,16 @@ class TestDeviceAuthenticationInteractor {
         verify(deviceAuthenticationController).deviceSupportsBiometrics()
     }
 
+    // Case: launchBiometricSystemScreen behaviour
+    @Test
+    fun `When launchBiometricSystemScreen is called, Then deviceAuthenticationController#launchBiometricSystemScreen is invoked`() {
+        // When
+        interactor.launchBiometricSystemScreen()
+
+        // Then
+        verify(deviceAuthenticationController).launchBiometricSystemScreen()
+    }
+
     // Case: authenticateWithBiometrics behaviour
     @Test
     fun `When authenticateWithBiometrics is called, Then authenticate function should be executed`() {
