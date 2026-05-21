@@ -16,11 +16,16 @@
 
 package eu.europa.ec.dashboardfeature.interactor
 
+import android.content.Context
+import eu.europa.ec.authenticationlogic.controller.authentication.BiometricsAvailability
+import eu.europa.ec.authenticationlogic.controller.authentication.DeviceAuthenticationResult
+import eu.europa.ec.authenticationlogic.model.BiometricCrypto
 import eu.europa.ec.businesslogic.config.ConfigLogic
 import eu.europa.ec.businesslogic.provider.UuidProvider
 import eu.europa.ec.commonfeature.interactor.DeviceAuthenticationInteractor
 import eu.europa.ec.corelogic.controller.DeleteAllDocumentsPartialState
 import eu.europa.ec.corelogic.controller.DeleteDocumentPartialState
+import eu.europa.ec.corelogic.controller.IssueDocumentsPartialState
 import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
 import eu.europa.ec.corelogic.model.ClaimDomain
 import eu.europa.ec.corelogic.model.ClaimPathDomain
@@ -51,6 +56,7 @@ import eu.europa.ec.testfeature.util.mockedFormattedExpirationDate
 import eu.europa.ec.testfeature.util.mockedFormattedIssuanceDate
 import eu.europa.ec.testfeature.util.mockedGenericErrorMessage
 import eu.europa.ec.testfeature.util.mockedMdlId
+import eu.europa.ec.testfeature.util.mockedNotifyOnAuthenticationFailure
 import eu.europa.ec.testfeature.util.mockedMdocPidNameSpace
 import eu.europa.ec.testfeature.util.mockedOldestPidId
 import eu.europa.ec.testfeature.util.mockedPidDocName
@@ -93,7 +99,13 @@ class TestDocumentDetailsInteractor {
     @Mock
     private lateinit var deviceAuthenticationInteractor: DeviceAuthenticationInteractor
 
+    @Mock
+    private lateinit var mockContext: Context
+
     private lateinit var interactor: DocumentDetailsInteractor
+
+    private val mockedReIssueIssuerId = "mockedReIssueIssuerId"
+    private val mockedReIssueUri = "mockedReIssueUri"
 
     private lateinit var closeable: AutoCloseable
 
@@ -487,6 +499,63 @@ class TestDocumentDetailsInteractor {
             }
         }
     }
+    // Case 9:
+    // Same as Case 1 but with wasIssuerDetailsExpanded = true → IssuerDetailsCardDataUi.isExpanded
+    // is true (covers the non-null branch of `wasIssuerDetailsExpanded ?: false`).
+    @Test
+    fun `Given Case 9, When getDocumentDetails is called with wasIssuerDetailsExpanded=true, Then issuerDetails#isExpanded is true`() {
+        coroutineRule.runTest {
+            // Given
+            mockGetDocumentDetailsStrings(resourceProvider = resourceProvider)
+            val mockedPidWithBasicFields = getMockedPidWithBasicFields()
+            mockGetDocumentByIdCall(response = mockedPidWithBasicFields)
+            mockIsDocumentLowOnCredentialsCall(response = false)
+            mockRetrieveBookmarkCall(response = false)
+            mockIsDocumentRevoked(isRevoked = false)
+
+            // When
+            interactor.getDocumentDetails(
+                documentId = mockedPidId,
+                wasIssuerDetailsExpanded = true,
+            ).runFlowTest {
+                // Then
+                val result = awaitItem()
+                kotlin.test.assertTrue(result is DocumentDetailsInteractorPartialState.Success)
+                result as DocumentDetailsInteractorPartialState.Success
+                assertEquals(true, result.issuerDetails.isExpanded)
+            }
+        }
+    }
+
+    // Case 10:
+    // isDocumentRevoked returns true → IssuerDetailsCardDataUi.documentState is Revoked.
+    @Test
+    fun `Given Case 10, When getDocumentDetails is called for a revoked document, Then DocumentState is Revoked`() {
+        coroutineRule.runTest {
+            // Given
+            mockGetDocumentDetailsStrings(resourceProvider = resourceProvider)
+            val mockedPidWithBasicFields = getMockedPidWithBasicFields()
+            mockGetDocumentByIdCall(response = mockedPidWithBasicFields)
+            mockIsDocumentLowOnCredentialsCall(response = false)
+            mockRetrieveBookmarkCall(response = false)
+            mockIsDocumentRevoked(isRevoked = true)
+
+            // When
+            interactor.getDocumentDetails(
+                documentId = mockedPidId,
+                wasIssuerDetailsExpanded = null,
+            ).runFlowTest {
+                // Then
+                val result = awaitItem()
+                kotlin.test.assertTrue(result is DocumentDetailsInteractorPartialState.Success)
+                result as DocumentDetailsInteractorPartialState.Success
+                assertEquals(
+                    IssuerDetailsCardDataUi.DocumentState.Revoked,
+                    result.issuerDetails.documentState
+                )
+            }
+        }
+    }
     //endregion
 
     //region deleteDocument
@@ -744,6 +813,52 @@ class TestDocumentDetailsInteractor {
     }
     //endregion
 
+    // Case 9 (deleteDocument):
+    // forcePidActivation=false → shouldDeleteAllDocuments=false (short-circuit on `&&`)
+    // → deleteDocument single-document path.
+    @Test
+    fun `Given Case 9, When deleteDocument is called with forcePidActivation false, Then SingleDocumentDeleted is returned`() {
+        coroutineRule.runTest {
+            // Given
+            whenever(configLogic.forcePidActivation).thenReturn(false)
+            val mockedPidWithBasicFields = getMockedPidWithBasicFields()
+            mockGetDocumentByIdCall(response = mockedPidWithBasicFields)
+            mockDeleteDocumentCall(response = DeleteDocumentPartialState.Success)
+
+            // When
+            interactor.deleteDocument(documentId = mockedPidId).runFlowTest {
+                // Then
+                assertEquals(
+                    DocumentDetailsInteractorDeleteDocumentPartialState.SingleDocumentDeleted,
+                    awaitItem()
+                )
+            }
+        }
+    }
+
+    // Case 10 (deleteDocument):
+    // The fetched document is non-PID (e.g., mDL) → shouldDeleteAllDocuments=false
+    // (short-circuit on docIdentifier check) → deleteDocument single-document path.
+    @Test
+    fun `Given Case 10, When deleteDocument is called for a non-PID document, Then SingleDocumentDeleted is returned`() {
+        coroutineRule.runTest {
+            // Given
+            val mockedMdlWithBasicFields = getMockedMdlWithBasicFields()
+            mockGetDocumentByIdCall(response = mockedMdlWithBasicFields)
+            mockDeleteDocumentCall(response = DeleteDocumentPartialState.Success)
+
+            // When
+            interactor.deleteDocument(documentId = mockedMdlId).runFlowTest {
+                // Then
+                assertEquals(
+                    DocumentDetailsInteractorDeleteDocumentPartialState.SingleDocumentDeleted,
+                    awaitItem()
+                )
+            }
+        }
+    }
+    //endregion
+
     //region storeBookmark()
     // Case 1:
     // 1. A valid bookmarkId is provided.
@@ -841,6 +956,288 @@ class TestDocumentDetailsInteractor {
                 )
             }
         }
+    }
+    //endregion
+
+    //region reIssueDocument
+
+    @Test
+    fun `Given controller emits DeferredSuccess, When reIssueDocument is called, Then Success is emitted`() {
+        coroutineRule.runTest {
+            // Given
+            whenever(
+                walletCoreDocumentsController.reIssueDocument(
+                    documentId = mockedPidId,
+                    issuerId = mockedReIssueIssuerId,
+                    allowAuthorizationFallback = true,
+                )
+            ).thenReturn(
+                IssueDocumentsPartialState.DeferredSuccess(deferredDocuments = emptyMap()).toFlow()
+            )
+
+            // When
+            interactor.reIssueDocument(documentId = mockedPidId, issuerId = mockedReIssueIssuerId)
+                .runFlowTest {
+                    // Then
+                    assertEquals(
+                        DocumentDetailsInteractorIssuancePartialState.Success,
+                        awaitItem()
+                    )
+                }
+        }
+    }
+
+    @Test
+    fun `Given controller emits Failure, When reIssueDocument is called, Then Failure with the same message is emitted`() {
+        coroutineRule.runTest {
+            // Given
+            whenever(
+                walletCoreDocumentsController.reIssueDocument(
+                    documentId = mockedPidId,
+                    issuerId = mockedReIssueIssuerId,
+                    allowAuthorizationFallback = true,
+                )
+            ).thenReturn(
+                IssueDocumentsPartialState.Failure(errorMessage = mockedPlainFailureMessage).toFlow()
+            )
+
+            // When
+            interactor.reIssueDocument(documentId = mockedPidId, issuerId = mockedReIssueIssuerId)
+                .runFlowTest {
+                    // Then
+                    assertEquals(
+                        DocumentDetailsInteractorIssuancePartialState.Failure(
+                            errorMessage = mockedPlainFailureMessage
+                        ),
+                        awaitItem()
+                    )
+                }
+        }
+    }
+
+    @Test
+    fun `Given controller emits Success, When reIssueDocument is called, Then Success is emitted`() {
+        coroutineRule.runTest {
+            // Given
+            whenever(
+                walletCoreDocumentsController.reIssueDocument(
+                    documentId = mockedPidId,
+                    issuerId = mockedReIssueIssuerId,
+                    allowAuthorizationFallback = true,
+                )
+            ).thenReturn(
+                IssueDocumentsPartialState.Success(documentIds = listOf(mockedPidId)).toFlow()
+            )
+
+            // When
+            interactor.reIssueDocument(documentId = mockedPidId, issuerId = mockedReIssueIssuerId)
+                .runFlowTest {
+                    // Then
+                    assertEquals(
+                        DocumentDetailsInteractorIssuancePartialState.Success,
+                        awaitItem()
+                    )
+                }
+        }
+    }
+
+    @Test
+    fun `Given controller emits PartialSuccess, When reIssueDocument is called, Then Success is emitted`() {
+        coroutineRule.runTest {
+            // Given
+            whenever(
+                walletCoreDocumentsController.reIssueDocument(
+                    documentId = mockedPidId,
+                    issuerId = mockedReIssueIssuerId,
+                    allowAuthorizationFallback = true,
+                )
+            ).thenReturn(
+                IssueDocumentsPartialState.PartialSuccess(
+                    documentIds = listOf(mockedPidId),
+                    nonIssuedDocuments = emptyMap(),
+                ).toFlow()
+            )
+
+            // When
+            interactor.reIssueDocument(documentId = mockedPidId, issuerId = mockedReIssueIssuerId)
+                .runFlowTest {
+                    // Then
+                    assertEquals(
+                        DocumentDetailsInteractorIssuancePartialState.Success,
+                        awaitItem()
+                    )
+                }
+        }
+    }
+
+    @Test
+    fun `Given controller emits UserAuthRequired, When reIssueDocument is called, Then UserAuthRequired is emitted`() {
+        coroutineRule.runTest {
+            // Given
+            val crypto = BiometricCrypto(cryptoObject = null)
+            val resultHandler = DeviceAuthenticationResult()
+            whenever(
+                walletCoreDocumentsController.reIssueDocument(
+                    documentId = mockedPidId,
+                    issuerId = mockedReIssueIssuerId,
+                    allowAuthorizationFallback = true,
+                )
+            ).thenReturn(
+                IssueDocumentsPartialState.UserAuthRequired(
+                    crypto = crypto,
+                    resultHandler = resultHandler,
+                ).toFlow()
+            )
+
+            // When
+            interactor.reIssueDocument(documentId = mockedPidId, issuerId = mockedReIssueIssuerId)
+                .runFlowTest {
+                    // Then
+                    assertEquals(
+                        DocumentDetailsInteractorIssuancePartialState.UserAuthRequired(
+                            crypto = crypto,
+                            resultHandler = resultHandler,
+                        ),
+                        awaitItem()
+                    )
+                }
+        }
+    }
+
+    @Test
+    fun `Given controller throws with message, When reIssueDocument is called, Then Failure with localized message is emitted`() {
+        coroutineRule.runTest {
+            // Given
+            whenever(
+                walletCoreDocumentsController.reIssueDocument(
+                    documentId = mockedPidId,
+                    issuerId = mockedReIssueIssuerId,
+                    allowAuthorizationFallback = true,
+                )
+            ).thenThrow(mockedExceptionWithMessage)
+
+            // When
+            interactor.reIssueDocument(documentId = mockedPidId, issuerId = mockedReIssueIssuerId)
+                .runFlowTest {
+                    // Then
+                    assertEquals(
+                        DocumentDetailsInteractorIssuancePartialState.Failure(
+                            errorMessage = mockedExceptionWithMessage.localizedMessage!!
+                        ),
+                        awaitItem()
+                    )
+                }
+        }
+    }
+
+    @Test
+    fun `Given controller throws without message, When reIssueDocument is called, Then Failure with generic message is emitted`() {
+        coroutineRule.runTest {
+            // Given
+            whenever(
+                walletCoreDocumentsController.reIssueDocument(
+                    documentId = mockedPidId,
+                    issuerId = mockedReIssueIssuerId,
+                    allowAuthorizationFallback = true,
+                )
+            ).thenThrow(mockedExceptionWithNoMessage)
+
+            // When
+            interactor.reIssueDocument(documentId = mockedPidId, issuerId = mockedReIssueIssuerId)
+                .runFlowTest {
+                    // Then
+                    assertEquals(
+                        DocumentDetailsInteractorIssuancePartialState.Failure(
+                            errorMessage = mockedGenericErrorMessage
+                        ),
+                        awaitItem()
+                    )
+                }
+        }
+    }
+    //endregion
+
+    //region handleUserAuth
+
+    @Test
+    fun `Given biometrics availability is CanAuthenticate, When handleUserAuth is called, Then authenticateWithBiometrics is invoked`() {
+        // Given
+        val context = mockContext
+        val crypto = BiometricCrypto(cryptoObject = null)
+        val resultHandler = DeviceAuthenticationResult()
+        whenever(deviceAuthenticationInteractor.getBiometricsAvailability())
+            .thenReturn(BiometricsAvailability.CanAuthenticate)
+
+        // When
+        interactor.handleUserAuth(
+            context = context,
+            crypto = crypto,
+            notifyOnAuthenticationFailure = mockedNotifyOnAuthenticationFailure,
+            resultHandler = resultHandler,
+        )
+
+        // Then
+        org.mockito.kotlin.verify(deviceAuthenticationInteractor, org.mockito.kotlin.times(1))
+            .authenticateWithBiometrics(
+                context,
+                crypto,
+                mockedNotifyOnAuthenticationFailure,
+                resultHandler,
+            )
+    }
+
+    @Test
+    fun `Given biometrics availability is NonEnrolled, When handleUserAuth is called, Then launchBiometricSystemScreen is invoked`() {
+        // Given
+        val crypto = BiometricCrypto(cryptoObject = null)
+        val resultHandler = DeviceAuthenticationResult()
+        whenever(deviceAuthenticationInteractor.getBiometricsAvailability())
+            .thenReturn(BiometricsAvailability.NonEnrolled)
+
+        // When
+        interactor.handleUserAuth(
+            context = mockContext,
+            crypto = crypto,
+            notifyOnAuthenticationFailure = mockedNotifyOnAuthenticationFailure,
+            resultHandler = resultHandler,
+        )
+
+        // Then
+        org.mockito.kotlin.verify(deviceAuthenticationInteractor, org.mockito.kotlin.times(1))
+            .launchBiometricSystemScreen()
+    }
+
+    @Test
+    fun `Given biometrics availability is Failure, When handleUserAuth is called, Then resultHandler#onAuthenticationFailure is invoked`() {
+        // Given
+        val onFailure = org.mockito.kotlin.mock<() -> Unit>()
+        val resultHandler = DeviceAuthenticationResult(onAuthenticationFailure = onFailure)
+        val crypto = BiometricCrypto(cryptoObject = null)
+        whenever(deviceAuthenticationInteractor.getBiometricsAvailability())
+            .thenReturn(BiometricsAvailability.Failure(errorMessage = mockedPlainFailureMessage))
+
+        // When
+        interactor.handleUserAuth(
+            context = mockContext,
+            crypto = crypto,
+            notifyOnAuthenticationFailure = mockedNotifyOnAuthenticationFailure,
+            resultHandler = resultHandler,
+        )
+
+        // Then
+        org.mockito.kotlin.verify(onFailure).invoke()
+    }
+    //endregion
+
+    //region resumeOpenId4VciWithAuthorization
+    @Test
+    fun `When resumeOpenId4VciWithAuthorization is called, Then it delegates to walletCoreDocumentsController`() {
+        // When
+        interactor.resumeOpenId4VciWithAuthorization(mockedReIssueUri)
+
+        // Then
+        org.mockito.kotlin.verify(walletCoreDocumentsController, org.mockito.kotlin.times(1))
+            .resumeOpenId4VciWithAuthorization(mockedReIssueUri)
     }
     //endregion
 

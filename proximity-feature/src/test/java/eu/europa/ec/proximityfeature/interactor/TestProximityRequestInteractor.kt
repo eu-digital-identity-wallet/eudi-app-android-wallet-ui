@@ -640,6 +640,93 @@ class TestProximityRequestInteractor {
                 }
         }
     }
+    // Case 13:
+    // RequestReceived with non-empty requestData, but every issued document is filtered out
+    // because isDocumentRevoked returns true for all. Exercises the
+    // `if (documentsDomain.isNotEmpty())` false branch which falls through to NoData.
+    @Test
+    fun `Given Case 13, When getRequestDocuments is called and all docs are revoked, Then NoData is returned`() =
+        coroutineRule.runTest {
+            // Given
+            val mockedPidWithBasicFields = getMockedPidWithBasicFields()
+            mockGetAllIssuedDocumentsCall(response = listOf(mockedPidWithBasicFields))
+            mockIsDocumentRevoked(isRevoked = true)
+            mockTransformToUiItemsStrings(resourceProvider = resourceProvider)
+            mockWalletCorePresentationControllerEventEmission(
+                event = TransferEventPartialState.RequestReceived(
+                    requestData = listOf(mockedValidPidWithBasicFieldsRequestDocument),
+                    verifierName = mockedVerifierName,
+                    verifierIsTrusted = mockedVerifierIsTrusted
+                )
+            )
+
+            // When
+            interactor.getRequestDocuments().runFlowTest {
+                // Then
+                assertEquals(
+                    ProximityRequestInteractorPartialState.NoData(
+                        verifierName = mockedVerifierName,
+                        verifierIsTrusted = mockedVerifierIsTrusted,
+                    ),
+                    awaitItem()
+                )
+            }
+        }
+
+    // Case 14:
+    // Disconnected event emitted via the shareIn pattern, ensuring Kover's branch tracker
+    // sees the `is Disconnected ->` arm covered.
+    @Test
+    fun `Given Case 14, When getRequestDocuments emits Disconnected, Then Disconnect is mapped`() {
+        coroutineRule.runTest {
+            // Given
+            whenever(walletCorePresentationController.events).thenReturn(
+                flow {
+                    emit(TransferEventPartialState.Disconnected)
+                }.shareIn(coroutineRule.testScope, SharingStarted.Lazily, 1)
+            )
+
+            // When
+            interactor.getRequestDocuments().runFlowTest {
+                // Then
+                assertEquals(ProximityRequestInteractorPartialState.Disconnect, awaitItem())
+            }
+        }
+    }
+
+    // Case 15:
+    // Emits Connecting (not-handled) FOLLOWED by Disconnected. The Connecting forces the
+    // `else -> null` arm to actually run before the Disconnected emission is observed.
+    @Test
+    fun `Given Case 15, When getRequestDocuments emits a not-handled event then Disconnected, Then Disconnect is mapped after else-null`() {
+        coroutineRule.runTest {
+            // Given
+            whenever(walletCorePresentationController.events).thenReturn(
+                flow {
+                    emit(TransferEventPartialState.Connecting)
+                    emit(TransferEventPartialState.Disconnected)
+                }.shareIn(coroutineRule.testScope, SharingStarted.Lazily, 2)
+            )
+
+            // When
+            interactor.getRequestDocuments().runFlowTest {
+                // Then
+                assertEquals(ProximityRequestInteractorPartialState.Disconnect, awaitItem())
+            }
+        }
+    }
+
+    // Constructor default
+    @Test
+    fun `When constructed without walletCorePresentationController, Then construction does not throw`() {
+        val newInteractor = ProximityRequestInteractorImpl(
+            resourceProvider = resourceProvider,
+            uuidProvider = uuidProvider,
+            walletCoreDocumentsController = walletCoreDocumentsController,
+        )
+
+        assertEquals("DefaultPresentationScopeId", newInteractor.presentationScopeId)
+    }
     //endregion
 
     //region stopPresentation

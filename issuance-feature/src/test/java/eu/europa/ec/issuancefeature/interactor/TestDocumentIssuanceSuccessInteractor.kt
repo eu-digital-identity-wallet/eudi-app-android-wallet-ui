@@ -480,6 +480,30 @@ class TestDocumentIssuanceSuccessInteractor {
         }
     }
 
+    // Case 7B:
+    // Same as Case 7 but the thrown exception has no message, exercising the
+    // `it.localizedMessage ?: genericErrorMsg` elvis fallback and the genericErrorMsg getter.
+    @Test
+    fun `Given Case 7B, When getUiItems is called with no-message exception, Then Failure with generic error is returned`() {
+        coroutineRule.runTest {
+            // Given
+            whenever(resourceProvider.getLocale()).thenThrow(RuntimeException())
+
+            // When
+            interactor.getUiItems(
+                documentIds = listOf(mockedPidId)
+            ).runFlowTest {
+                // Then
+                assertEquals(
+                    DocumentIssuanceSuccessInteractorGetUiItemsPartialState.Failed(
+                        errorMessage = mockedGenericErrorMessage
+                    ),
+                    awaitItem()
+                )
+            }
+        }
+    }
+
     // Case 8:
     // When getUiItems() is called with a list containing one DocumentId with valid metadata:
     // walletCoreDocumentsController.getDocumentById() returns a valid IssuedDocument,

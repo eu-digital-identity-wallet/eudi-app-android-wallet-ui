@@ -295,6 +295,47 @@ class TestProximityQRInteractor {
     }
     //endregion
 
+    // Case 8:
+    // Emits Connecting (not-handled) FOLLOWED by Connected, both via the shareIn-pattern
+    // flow with sufficient replay. Asserting on the Connected emission guarantees that the
+    // upstream flow had to process Connecting first, which forces the `else -> null` arm
+    // (and the negative `is Disconnected` check) to actually run.
+    @Test
+    fun `Given Case 8, When startQrEngagement is called, Then the not-handled event traverses the else arm before Connected is emitted`() {
+        coroutineRule.runTest {
+            // Given
+            whenever(walletCorePresentationController.events).thenReturn(
+                flow {
+                    emit(TransferEventPartialState.Connecting)
+                    emit(TransferEventPartialState.Connected)
+                }.shareIn(coroutineRule.testScope, SharingStarted.Lazily, 2)
+            )
+
+            // When
+            interactor.startQrEngagement().runFlowTest {
+                // Then — the Connected emission is the next mapped value (Connecting -> null
+                // via the else arm, then Connected -> ProximityQRPartialState.Connected).
+                assertEquals(ProximityQRPartialState.Connected, awaitItem())
+            }
+        }
+    }
+
+    //region constructor default
+    // Exercises the default `walletCorePresentationController = null` parameter branch of
+    // ScopedPresentationInteractorDelegate. The lazy Koin lookup is never triggered (we do not
+    // access the protected property), so this stays a pure construction smoke-test.
+    @Test
+    fun `When constructed without walletCorePresentationController, Then construction does not throw`() {
+        // When
+        val newInteractor = ProximityQRInteractorImpl(
+            resourceProvider = resourceProvider,
+        )
+
+        // Then
+        assertEquals("DefaultPresentationScopeId", newInteractor.presentationScopeId)
+    }
+    //endregion
+
     //region cancelTransfer
     @Test
     fun `Verify that cancelTransfer calls walletCorePresentationController#stopPresentation`() {

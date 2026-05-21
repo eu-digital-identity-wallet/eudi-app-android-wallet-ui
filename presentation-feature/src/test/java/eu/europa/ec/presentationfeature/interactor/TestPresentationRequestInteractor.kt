@@ -369,6 +369,100 @@ class TestPresentationRequestInteractor {
         }
     //endregion
 
+    // Case 9:
+    // RequestReceived with non-empty requestData, but all issued documents are filtered out
+    // because isDocumentRevoked returns true for every one. Exercises the
+    // `if (documentsDomain.isNotEmpty())` false branch which falls through to NoData.
+
+    // Case 9 Expected Result:
+    // PresentationRequestInteractorPartialState.NoData with the verifier name/isTrusted.
+    @Test
+    fun `Given Case 9, When getRequestDocuments is called and all docs are revoked, Then NoData is returned`() =
+        coroutineRule.runTest {
+            // Given
+            val mockedPidWithBasicFields = getMockedPidWithBasicFields()
+            mockGetAllIssuedDocumentsCall(response = listOf(mockedPidWithBasicFields))
+            mockIsDocumentRevoked(isRevoked = true)
+            mockTransformToUiItemsStrings(resourceProvider = resourceProvider)
+            mockWalletCorePresentationControllerEventEmission(
+                event = TransferEventPartialState.RequestReceived(
+                    requestData = listOf(mockedValidPidWithBasicFieldsRequestDocument),
+                    verifierName = mockedVerifierName,
+                    verifierIsTrusted = mockedVerifierIsTrusted
+                )
+            )
+
+            // When
+            interactor.getRequestDocuments().runFlowTest {
+                // Then
+                assertEquals(
+                    PresentationRequestInteractorPartialState.NoData(
+                        verifierName = mockedVerifierName,
+                        verifierIsTrusted = mockedVerifierIsTrusted,
+                    ),
+                    awaitItem()
+                )
+            }
+        }
+
+    // Case 10:
+    // Disconnected event via shareIn pattern, ensuring Kover's branch tracker
+    // sees the mapNotNull `is Disconnected ->` arm covered.
+    @Test
+    fun `Given Case 10, When getRequestDocuments emits Disconnected via shareIn, Then Disconnect is mapped`() {
+        coroutineRule.runTest {
+            // Given
+            whenever(walletCorePresentationController.events).thenReturn(
+                kotlinx.coroutines.flow.flow {
+                    emit(TransferEventPartialState.Disconnected)
+                }.shareIn(coroutineRule.testScope, SharingStarted.Lazily, 1)
+            )
+
+            // When
+            interactor.getRequestDocuments().runFlowTest {
+                // Then
+                assertEquals(PresentationRequestInteractorPartialState.Disconnect, awaitItem())
+            }
+        }
+    }
+
+    // Case 11:
+    // Connecting (not-handled) FOLLOWED by Disconnected, forces the `else -> null` arm to
+    // actually run before the Disconnected emission is observed.
+    @Test
+    fun `Given Case 11, When getRequestDocuments emits a not-handled event then Disconnected, Then Disconnect is mapped after else-null`() {
+        coroutineRule.runTest {
+            // Given
+            whenever(walletCorePresentationController.events).thenReturn(
+                kotlinx.coroutines.flow.flow {
+                    emit(TransferEventPartialState.Connecting)
+                    emit(TransferEventPartialState.Disconnected)
+                }.shareIn(coroutineRule.testScope, SharingStarted.Lazily, 2)
+            )
+
+            // When
+            interactor.getRequestDocuments().runFlowTest {
+                // Then
+                assertEquals(PresentationRequestInteractorPartialState.Disconnect, awaitItem())
+            }
+        }
+    }
+
+    // Constructor default
+    // Exercises the default `walletCorePresentationController = null` parameter branch of
+    // ScopedPresentationInteractorDelegate. Pure construction smoke-test.
+    @Test
+    fun `When constructed without walletCorePresentationController, Then construction does not throw`() {
+        val newInteractor = PresentationRequestInteractorImpl(
+            resourceProvider = resourceProvider,
+            uuidProvider = uuidProvider,
+            walletCoreDocumentsController = walletCoreDocumentsController,
+        )
+
+        assertEquals("DefaultPresentationScopeId", newInteractor.presentationScopeId)
+    }
+    //endregion
+
     //region updateRequestedDocuments
 
     // Case 1:

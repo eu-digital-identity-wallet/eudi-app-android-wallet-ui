@@ -30,11 +30,13 @@ import eu.europa.ec.corelogic.controller.DeleteDocumentPartialState
 import eu.europa.ec.corelogic.controller.IssueDeferredDocumentPartialState
 import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
 import eu.europa.ec.corelogic.model.DeferredDocumentDataDomain
+import eu.europa.ec.corelogic.model.DocumentCategories
 import eu.europa.ec.corelogic.model.DocumentCategory
 import eu.europa.ec.corelogic.model.DocumentIdentifier
 import eu.europa.ec.corelogic.model.FormatType
 import eu.europa.ec.dashboardfeature.ui.documents.detail.model.DocumentIssuanceStateUi
 import eu.europa.ec.dashboardfeature.ui.documents.list.model.DocumentUi
+import eu.europa.ec.dashboardfeature.ui.documents.list.model.DocumentsFilterableAttributes
 import eu.europa.ec.dashboardfeature.util.mockedPendingMdlUi
 import eu.europa.ec.dashboardfeature.util.mockedPendingPidUi
 import eu.europa.ec.eudi.wallet.document.Document
@@ -110,6 +112,24 @@ class TestDocumentsInteractor {
     fun after() {
         closeable.close()
     }
+
+    private fun documentsAttributes(
+        name: String = "PID",
+        issuedDate: java.time.Instant? = null,
+        expiryDate: java.time.Instant? = null,
+        issuer: String = "Issuer",
+        category: DocumentCategory = DocumentCategory.Government,
+        isRevoked: Boolean = false,
+    ): eu.europa.ec.dashboardfeature.ui.documents.list.model.DocumentsFilterableAttributes =
+        eu.europa.ec.dashboardfeature.ui.documents.list.model.DocumentsFilterableAttributes(
+            searchTags = emptyList(),
+            name = name,
+            expiryDate = expiryDate,
+            issuedDate = issuedDate,
+            issuer = issuer,
+            category = category,
+            isRevoked = isRevoked,
+        )
 
     // region deleteDocument
     // Case 1:
@@ -547,6 +567,576 @@ class TestDocumentsInteractor {
             }
         }
 
+    //endregion
+
+    //region getDocuments
+
+    @Test
+    fun `Given two issued documents, When getDocuments is called, Then Success with the documents is emitted`() {
+        coroutineRule.runTest {
+            // Given
+            val mockedFullDocuments = getMockedFullDocuments()
+            whenever(walletCoreDocumentsController.getMainPidDocument())
+                .thenReturn(mockedFullDocuments[0])
+            whenever(walletCoreDocumentsController.getAllDocuments())
+                .thenReturn(mockedFullDocuments)
+            whenever(walletCoreDocumentsController.getAllDocumentCategories())
+                .thenReturn(DocumentCategories(value = emptyMap()))
+            whenever(walletCoreDocumentsController.isDocumentRevoked(anyString())).thenReturn(false)
+            whenever(walletCoreDocumentsController.isDocumentLowOnCredentials(org.mockito.kotlin.any()))
+                .thenReturn(false)
+            whenever(resourceProvider.getLocale())
+                .thenReturn(eu.europa.ec.testfeature.util.mockedDefaultLocale)
+            whenever(resourceProvider.getString(org.mockito.kotlin.any()))
+                .thenReturn("mocked-string")
+            whenever(
+                resourceProvider.getString(
+                    org.mockito.kotlin.any(),
+                    org.mockito.kotlin.any<Int>(),
+                    org.mockito.kotlin.any<Int>()
+                )
+            ).thenReturn("mocked-credentials-info")
+            whenever(
+                resourceProvider.getString(
+                    org.mockito.kotlin.any(),
+                    org.mockito.kotlin.any<String>()
+                )
+            ).thenReturn("mocked-expiry-message")
+
+            // When
+            interactor.getDocuments().runFlowTest {
+                // Then
+                val state = awaitItem()
+                assertTrue(state is DocumentInteractorGetDocumentsPartialState.Success)
+                state as DocumentInteractorGetDocumentsPartialState.Success
+                assertEquals(true, state.shouldAllowUserInteraction)
+                assertEquals(mockedFullDocuments.size, state.allDocuments.items.size)
+            }
+        }
+    }
+
+    @Test
+    fun `Given a revoked document, When getDocuments is called, Then documentState is Revoked`() {
+        coroutineRule.runTest {
+            // Given
+            val mockedFullDocuments = getMockedFullDocuments()
+            whenever(walletCoreDocumentsController.getMainPidDocument())
+                .thenReturn(mockedFullDocuments[0])
+            whenever(walletCoreDocumentsController.getAllDocuments())
+                .thenReturn(mockedFullDocuments)
+            whenever(walletCoreDocumentsController.getAllDocumentCategories())
+                .thenReturn(DocumentCategories(value = emptyMap()))
+            whenever(walletCoreDocumentsController.isDocumentRevoked(anyString())).thenReturn(true)
+            whenever(walletCoreDocumentsController.isDocumentLowOnCredentials(org.mockito.kotlin.any()))
+                .thenReturn(false)
+            whenever(resourceProvider.getLocale())
+                .thenReturn(eu.europa.ec.testfeature.util.mockedDefaultLocale)
+            whenever(resourceProvider.getString(org.mockito.kotlin.any())).thenReturn("mocked")
+            whenever(
+                resourceProvider.getString(
+                    org.mockito.kotlin.any(),
+                    org.mockito.kotlin.any<Int>(),
+                    org.mockito.kotlin.any<Int>()
+                )
+            ).thenReturn("mocked-credentials-info")
+            whenever(
+                resourceProvider.getString(
+                    org.mockito.kotlin.any(),
+                    org.mockito.kotlin.any<String>()
+                )
+            ).thenReturn("mocked-expiry-message")
+
+            // When
+            interactor.getDocuments().runFlowTest {
+                // Then
+                val state = awaitItem()
+                assertTrue(state is DocumentInteractorGetDocumentsPartialState.Success)
+                state as DocumentInteractorGetDocumentsPartialState.Success
+                val firstItem = state.allDocuments.items.first()
+                val payload = firstItem.payload as DocumentUi
+                assertEquals(DocumentIssuanceStateUi.Revoked, payload.documentIssuanceState)
+            }
+        }
+    }
+
+    @Test
+    fun `Given a low-on-credentials document, When getDocuments is called, Then TextWithIcon trailing is set`() {
+        coroutineRule.runTest {
+            // Given
+            val mockedFullDocuments = getMockedFullDocuments()
+            whenever(walletCoreDocumentsController.getMainPidDocument())
+                .thenReturn(mockedFullDocuments[0])
+            whenever(walletCoreDocumentsController.getAllDocuments())
+                .thenReturn(mockedFullDocuments)
+            whenever(walletCoreDocumentsController.getAllDocumentCategories())
+                .thenReturn(DocumentCategories(value = emptyMap()))
+            whenever(walletCoreDocumentsController.isDocumentRevoked(anyString())).thenReturn(false)
+            whenever(walletCoreDocumentsController.isDocumentLowOnCredentials(org.mockito.kotlin.any()))
+                .thenReturn(true)
+            whenever(resourceProvider.getLocale())
+                .thenReturn(eu.europa.ec.testfeature.util.mockedDefaultLocale)
+            whenever(resourceProvider.getString(org.mockito.kotlin.any())).thenReturn("mocked")
+            whenever(
+                resourceProvider.getString(
+                    org.mockito.kotlin.any(),
+                    org.mockito.kotlin.any<Int>(),
+                    org.mockito.kotlin.any<Int>()
+                )
+            ).thenReturn("mocked-credentials-info")
+            whenever(
+                resourceProvider.getString(
+                    org.mockito.kotlin.any(),
+                    org.mockito.kotlin.any<String>()
+                )
+            ).thenReturn("mocked-expiry-message")
+
+            // When
+            interactor.getDocuments().runFlowTest {
+                // Then
+                val state = awaitItem()
+                assertTrue(state is DocumentInteractorGetDocumentsPartialState.Success)
+                state as DocumentInteractorGetDocumentsPartialState.Success
+                val firstItem = state.allDocuments.items.first()
+                val payload = firstItem.payload as DocumentUi
+                assertTrue(payload.uiData.trailingContentData is eu.europa.ec.uilogic.component.ListItemTrailingContentDataUi.TextWithIcon)
+            }
+        }
+    }
+
+    @Test
+    fun `Given no main PID document, When getDocuments is called, Then shouldAllowUserInteraction is false`() {
+        coroutineRule.runTest {
+            // Given
+            whenever(walletCoreDocumentsController.getMainPidDocument()).thenReturn(null)
+            whenever(walletCoreDocumentsController.getAllDocuments()).thenReturn(emptyList())
+            whenever(walletCoreDocumentsController.getAllDocumentCategories())
+                .thenReturn(DocumentCategories(value = emptyMap()))
+            whenever(resourceProvider.getLocale())
+                .thenReturn(eu.europa.ec.testfeature.util.mockedDefaultLocale)
+
+            // When
+            interactor.getDocuments().runFlowTest {
+                // Then
+                val state = awaitItem()
+                assertTrue(state is DocumentInteractorGetDocumentsPartialState.Success)
+                state as DocumentInteractorGetDocumentsPartialState.Success
+                assertEquals(false, state.shouldAllowUserInteraction)
+                assertEquals(0, state.allDocuments.items.size)
+            }
+        }
+    }
+
+    @Test
+    fun `Given getAllDocuments throws with message, When getDocuments is called, Then Failure is emitted`() {
+        coroutineRule.runTest {
+            // Given
+            whenever(walletCoreDocumentsController.getMainPidDocument()).thenReturn(null)
+            whenever(walletCoreDocumentsController.getAllDocuments())
+                .thenThrow(mockedExceptionWithMessage)
+            whenever(walletCoreDocumentsController.getAllDocumentCategories())
+                .thenReturn(DocumentCategories(value = emptyMap()))
+            whenever(resourceProvider.getLocale())
+                .thenReturn(eu.europa.ec.testfeature.util.mockedDefaultLocale)
+
+            // When
+            interactor.getDocuments().runFlowTest {
+                // Then
+                assertEquals(
+                    DocumentInteractorGetDocumentsPartialState.Failure(
+                        error = mockedExceptionWithMessage.localizedMessage!!
+                    ),
+                    awaitItem()
+                )
+            }
+        }
+    }
+
+    @Test
+    fun `Given getAllDocuments throws no message, When getDocuments is called, Then Failure with generic message is emitted`() {
+        coroutineRule.runTest {
+            // Given
+            whenever(walletCoreDocumentsController.getMainPidDocument()).thenReturn(null)
+            whenever(walletCoreDocumentsController.getAllDocuments())
+                .thenThrow(mockedExceptionWithNoMessage)
+            whenever(walletCoreDocumentsController.getAllDocumentCategories())
+                .thenReturn(DocumentCategories(value = emptyMap()))
+            whenever(resourceProvider.getLocale())
+                .thenReturn(eu.europa.ec.testfeature.util.mockedDefaultLocale)
+
+            // When
+            interactor.getDocuments().runFlowTest {
+                // Then
+                assertEquals(
+                    DocumentInteractorGetDocumentsPartialState.Failure(
+                        error = mockedGenericErrorMessage
+                    ),
+                    awaitItem()
+                )
+            }
+        }
+    }
+    //endregion
+
+    //region onFilterStateChange filter-group mapping
+
+    @Test
+    fun `Given a FilterApplyResult with all four group types, When onFilterStateChange emits it, Then Checkbox and RadioButton trailing types are mapped for each`() {
+        coroutineRule.runTest {
+            // Given
+            val multiple = FilterGroup.MultipleSelectionFilterGroup<DocumentsFilterableAttributes>(
+                id = "multi",
+                name = "Multi",
+                filters = listOf(FilterItem(id = "m1", name = "M1", selected = true)),
+                filterableAction = eu.europa.ec.businesslogic.validator.model.FilterMultipleAction { _, _ -> true },
+            )
+            val reversibleMultiple =
+                FilterGroup.ReversibleMultipleSelectionFilterGroup<DocumentsFilterableAttributes>(
+                    id = "rmulti",
+                    name = "RMulti",
+                    filters = listOf(FilterItem(id = "rm1", name = "RM1", selected = false)),
+                    filterableAction = eu.europa.ec.businesslogic.validator.model.FilterMultipleAction { _, _ -> true },
+                )
+            val single = FilterGroup.SingleSelectionFilterGroup(
+                id = "single",
+                name = "Single",
+                filters = listOf(FilterItem(id = "s1", name = "S1", selected = true)),
+            )
+            val reversibleSingle = FilterGroup.ReversibleSingleSelectionFilterGroup(
+                id = "rsingle",
+                name = "RSingle",
+                filters = listOf(FilterItem(id = "rs1", name = "RS1", selected = false)),
+            )
+
+            val updatedFilters = Filters(
+                filterGroups = listOf(multiple, reversibleMultiple, single, reversibleSingle),
+                sortOrder = SortOrder.Ascending(isDefault = true),
+            )
+
+            mockOnFilterChangedEvent(
+                FilterValidatorPartialState.FilterListResult.FilterApplyResult(
+                    filteredList = FilterableList(items = emptyList()),
+                    allDefaultFiltersAreSelected = true,
+                    updatedFilters = updatedFilters,
+                )
+            )
+
+            // When
+            interactor.onFilterStateChange().runFlowTest {
+                // Then
+                val state = awaitItem()
+                assertTrue(state is DocumentInteractorFilterPartialState.FilterApplyResult)
+                state as DocumentInteractorFilterPartialState.FilterApplyResult
+
+                val trailing = state.filters.flatMap { nested ->
+                    nested.nestedItems.map { it.header.trailingContentData }
+                }
+                assertTrue(trailing.any { it is eu.europa.ec.uilogic.component.ListItemTrailingContentDataUi.Checkbox })
+                assertTrue(trailing.any { it is eu.europa.ec.uilogic.component.ListItemTrailingContentDataUi.RadioButton })
+                assertEquals(
+                    eu.europa.ec.uilogic.component.DualSelectorButton.FIRST,
+                    state.sortOrder
+                )
+            }
+        }
+    }
+
+    @Test
+    fun `Given a FilterUpdateResult with descending sort, When onFilterStateChange emits it, Then sortOrder is SECOND and FilterUpdateResult is mapped`() {
+        coroutineRule.runTest {
+            // Given
+            val single = FilterGroup.SingleSelectionFilterGroup(
+                id = "single",
+                name = "Single",
+                filters = listOf(FilterItem(id = "s1", name = "S1", selected = true)),
+            )
+            val updatedFilters = Filters(
+                filterGroups = listOf(single),
+                sortOrder = SortOrder.Descending(),
+            )
+            mockOnFilterChangedEvent(
+                FilterValidatorPartialState.FilterUpdateResult(updatedFilters = updatedFilters)
+            )
+
+            // When
+            interactor.onFilterStateChange().runFlowTest {
+                // Then
+                val state = awaitItem()
+                assertTrue(state is DocumentInteractorFilterPartialState.FilterUpdateResult)
+                state as DocumentInteractorFilterPartialState.FilterUpdateResult
+                assertEquals(
+                    eu.europa.ec.uilogic.component.DualSelectorButton.SECOND,
+                    state.sortOrder
+                )
+            }
+        }
+    }
+    //endregion
+
+    //region initializeFilters
+
+    @Test
+    fun `When initializeFilters is called, Then filterValidator#initializeValidator is invoked`() {
+        // Given
+        whenever(resourceProvider.getString(org.mockito.kotlin.any())).thenReturn("mocked")
+        val list = FilterableList(items = emptyList())
+
+        // When
+        interactor.initializeFilters(filterableList = list)
+
+        // Then
+        org.mockito.kotlin.verify(filterValidator, org.mockito.kotlin.times(1))
+            .initializeValidator(
+                org.mockito.kotlin.any(),
+                org.mockito.kotlin.eq(list),
+            )
+    }
+    //endregion
+
+    //region getFilters lambdas
+
+    @Test
+    fun `When getFilters is called, Then the expected static filter groups are returned`() {
+        // Given
+        whenever(resourceProvider.getString(org.mockito.kotlin.any())).thenReturn("mocked")
+
+        // When
+        val filters = interactor.getFilters()
+
+        // Then
+        val ids = filters.filterGroups.map { it.id }
+        assertEquals(
+            listOf(
+                eu.europa.ec.dashboardfeature.ui.documents.list.model.DocumentFilterIds.FILTER_SORT_GROUP_ID,
+                eu.europa.ec.dashboardfeature.ui.documents.list.model.DocumentFilterIds.FILTER_BY_PERIOD_GROUP_ID,
+                eu.europa.ec.dashboardfeature.ui.documents.list.model.DocumentFilterIds.FILTER_BY_ISSUER_GROUP_ID,
+                eu.europa.ec.dashboardfeature.ui.documents.list.model.DocumentFilterIds.FILTER_BY_DOCUMENT_CATEGORY_GROUP_ID,
+                eu.europa.ec.dashboardfeature.ui.documents.list.model.DocumentFilterIds.FILTER_BY_STATE_GROUP_ID,
+            ),
+            ids
+        )
+    }
+
+    @Test
+    fun `When the sort filters' selectors are applied, Then they return name issuedDate and expiryDate respectively`() {
+        // Given
+        whenever(resourceProvider.getString(org.mockito.kotlin.any())).thenReturn("mocked")
+        val attrs = documentsAttributes(
+            name = "PID",
+            issuedDate = java.time.Instant.parse("2026-01-01T00:00:00Z"),
+            expiryDate = java.time.Instant.parse("2030-01-01T00:00:00Z"),
+        )
+        val sortGroup = interactor.getFilters().filterGroups.first {
+            it.id == eu.europa.ec.dashboardfeature.ui.documents.list.model.DocumentFilterIds.FILTER_SORT_GROUP_ID
+        }
+
+        @Suppress("UNCHECKED_CAST")
+        val defaultSort =
+            sortGroup.filters[0].filterableAction as eu.europa.ec.businesslogic.validator.model.FilterAction.Sort<eu.europa.ec.dashboardfeature.ui.documents.list.model.DocumentsFilterableAttributes, String>
+
+        @Suppress("UNCHECKED_CAST")
+        val issuedSort =
+            sortGroup.filters[1].filterableAction as eu.europa.ec.businesslogic.validator.model.FilterAction.Sort<eu.europa.ec.dashboardfeature.ui.documents.list.model.DocumentsFilterableAttributes, java.time.Instant>
+
+        @Suppress("UNCHECKED_CAST")
+        val expirySort =
+            sortGroup.filters[2].filterableAction as eu.europa.ec.businesslogic.validator.model.FilterAction.Sort<eu.europa.ec.dashboardfeature.ui.documents.list.model.DocumentsFilterableAttributes, java.time.Instant>
+
+        // When + Then
+        assertEquals("pid", defaultSort.selector(attrs))
+        assertEquals(attrs.issuedDate, issuedSort.selector(attrs))
+        assertEquals(attrs.expiryDate, expirySort.selector(attrs))
+    }
+
+    @Test
+    fun `When the issuer filter predicate is applied, Then it matches by issuer name`() {
+        // Given
+        whenever(resourceProvider.getString(org.mockito.kotlin.any())).thenReturn("mocked")
+        val group = interactor.getFilters().filterGroups.first {
+            it.id == eu.europa.ec.dashboardfeature.ui.documents.list.model.DocumentFilterIds.FILTER_BY_ISSUER_GROUP_ID
+        }
+
+        @Suppress("UNCHECKED_CAST")
+        val action =
+            (group as FilterGroup.MultipleSelectionFilterGroup<eu.europa.ec.dashboardfeature.ui.documents.list.model.DocumentsFilterableAttributes>)
+                .filterableAction
+        val acmeFilter =
+            FilterItem(id = "Acme", name = "Acme", selected = true, isDefault = false)
+        val otherFilter =
+            FilterItem(id = "Other", name = "Other", selected = true, isDefault = false)
+
+        // When + Then
+        assertTrue(action.predicate(documentsAttributes(issuer = "Acme"), acmeFilter))
+        assertTrue(!action.predicate(documentsAttributes(issuer = "Other"), acmeFilter))
+        assertTrue(action.predicate(documentsAttributes(issuer = "Other"), otherFilter))
+    }
+
+    @Test
+    fun `When the category filter predicate is applied, Then it matches by category id`() {
+        // Given
+        whenever(resourceProvider.getString(org.mockito.kotlin.any())).thenReturn("mocked")
+        val group = interactor.getFilters().filterGroups.first {
+            it.id == eu.europa.ec.dashboardfeature.ui.documents.list.model.DocumentFilterIds.FILTER_BY_DOCUMENT_CATEGORY_GROUP_ID
+        }
+
+        @Suppress("UNCHECKED_CAST")
+        val action =
+            (group as FilterGroup.MultipleSelectionFilterGroup<eu.europa.ec.dashboardfeature.ui.documents.list.model.DocumentsFilterableAttributes>)
+                .filterableAction
+        val category = DocumentCategory.Government
+        val matchFilter = FilterItem(
+            id = category.id.toString(),
+            name = "Government",
+            selected = true,
+            isDefault = false,
+        )
+        val nonMatchFilter = FilterItem(
+            id = "9999",
+            name = "Other",
+            selected = true,
+            isDefault = false,
+        )
+
+        // When + Then
+        assertTrue(action.predicate(documentsAttributes(category = category), matchFilter))
+        assertTrue(!action.predicate(documentsAttributes(category = category), nonMatchFilter))
+    }
+
+    @Test
+    fun `When the state filter predicate is applied, Then VALID EXPIRED REVOKED and else arms all evaluate`() {
+        // Given
+        whenever(resourceProvider.getString(org.mockito.kotlin.any())).thenReturn("mocked")
+        val group = interactor.getFilters().filterGroups.first {
+            it.id == eu.europa.ec.dashboardfeature.ui.documents.list.model.DocumentFilterIds.FILTER_BY_STATE_GROUP_ID
+        }
+
+        @Suppress("UNCHECKED_CAST")
+        val action =
+            (group as FilterGroup.MultipleSelectionFilterGroup<eu.europa.ec.dashboardfeature.ui.documents.list.model.DocumentsFilterableAttributes>)
+                .filterableAction
+        val validFilter = FilterItem(
+            id = eu.europa.ec.dashboardfeature.ui.documents.list.model.DocumentFilterIds.FILTER_BY_STATE_VALID,
+            name = "Valid",
+            selected = true,
+            isDefault = true,
+        )
+        val expiredFilter = FilterItem(
+            id = eu.europa.ec.dashboardfeature.ui.documents.list.model.DocumentFilterIds.FILTER_BY_STATE_EXPIRED,
+            name = "Expired",
+            selected = true,
+            isDefault = false,
+        )
+        val revokedFilter = FilterItem(
+            id = eu.europa.ec.dashboardfeature.ui.documents.list.model.DocumentFilterIds.FILTER_BY_STATE_REVOKED,
+            name = "Revoked",
+            selected = true,
+            isDefault = false,
+        )
+        val otherFilter = FilterItem(
+            id = "other",
+            name = "Other",
+            selected = true,
+            isDefault = false,
+        )
+        val nullExpiry = documentsAttributes(expiryDate = null, isRevoked = false)
+        val expired =
+            documentsAttributes(
+                expiryDate = java.time.Instant.parse("2020-01-01T00:00:00Z"),
+                isRevoked = false,
+            )
+        val valid =
+            documentsAttributes(
+                expiryDate = java.time.Instant.parse("2099-01-01T00:00:00Z"),
+                isRevoked = false,
+            )
+        val revoked = documentsAttributes(expiryDate = null, isRevoked = true)
+
+        // When + Then
+        assertTrue(action.predicate(valid, validFilter))
+        assertTrue(action.predicate(nullExpiry, validFilter))
+        assertTrue(!action.predicate(revoked, validFilter))
+
+        assertTrue(action.predicate(expired, expiredFilter))
+        assertTrue(!action.predicate(valid, expiredFilter))
+
+        assertTrue(action.predicate(revoked, revokedFilter))
+        assertTrue(!action.predicate(valid, revokedFilter))
+
+        assertTrue(action.predicate(valid, otherFilter))
+    }
+    //endregion
+
+    //region filterValidator delegation
+    // These tests verify the simple delegation methods to filterValidator.
+
+    @Test
+    fun `When updateLists is called, Then filterValidator#updateLists is invoked`() {
+        // Given
+        val list = FilterableList(items = emptyList())
+
+        // When
+        interactor.updateLists(filterableList = list)
+
+        // Then
+        org.mockito.kotlin.verify(filterValidator, org.mockito.kotlin.times(1)).updateLists(list)
+    }
+
+    @Test
+    fun `When applySearch is called, Then filterValidator#applySearch is invoked`() {
+        // When
+        interactor.applySearch(query = "abc")
+
+        // Then
+        org.mockito.kotlin.verify(filterValidator, org.mockito.kotlin.times(1)).applySearch("abc")
+    }
+
+    @Test
+    fun `When revertFilters is called, Then filterValidator#revertFilters is invoked`() {
+        // When
+        interactor.revertFilters()
+
+        // Then
+        org.mockito.kotlin.verify(filterValidator, org.mockito.kotlin.times(1)).revertFilters()
+    }
+
+    @Test
+    fun `When updateFilter is called, Then filterValidator#updateFilter is invoked`() {
+        // When
+        interactor.updateFilter(filterGroupId = "groupId", filterId = "filterId")
+
+        // Then
+        org.mockito.kotlin.verify(filterValidator, org.mockito.kotlin.times(1))
+            .updateFilter("groupId", "filterId")
+    }
+
+    @Test
+    fun `When updateSortOrder is called, Then filterValidator#updateSortOrder is invoked`() {
+        // Given
+        val order = SortOrder.Ascending(isDefault = false)
+
+        // When
+        interactor.updateSortOrder(sortOrder = order)
+
+        // Then
+        org.mockito.kotlin.verify(filterValidator, org.mockito.kotlin.times(1)).updateSortOrder(order)
+    }
+
+    @Test
+    fun `When applyFilters is called, Then filterValidator#applyFilters is invoked`() {
+        // When
+        interactor.applyFilters()
+
+        // Then
+        org.mockito.kotlin.verify(filterValidator, org.mockito.kotlin.times(1)).applyFilters()
+    }
+
+    @Test
+    fun `When resetFilters is called, Then filterValidator#resetFilters is invoked`() {
+        // When
+        interactor.resetFilters()
+
+        // Then
+        org.mockito.kotlin.verify(filterValidator, org.mockito.kotlin.times(1)).resetFilters()
+    }
     //endregion
 
     //region Mock Calls of the Dependencies

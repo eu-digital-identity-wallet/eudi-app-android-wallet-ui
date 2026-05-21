@@ -21,6 +21,7 @@ import eu.europa.ec.authenticationlogic.controller.authentication.BiometricAuthe
 import eu.europa.ec.authenticationlogic.controller.authentication.BiometricsAuthenticate
 import eu.europa.ec.authenticationlogic.controller.storage.BiometryStorageController
 import eu.europa.ec.authenticationlogic.controller.throttle.PinThrottleController
+import eu.europa.ec.authenticationlogic.provider.PinLockoutState
 import eu.europa.ec.authenticationlogic.secure.SecurePinImpl
 import eu.europa.ec.testfeature.util.mockedNotifyOnAuthenticationFailure
 import eu.europa.ec.testlogic.base.TestApplication
@@ -198,6 +199,61 @@ class TestBiometricInteractor {
             mockListener
         )
     }
+    //endregion
+
+    //region pin throttle delegation
+
+    @Test
+    fun `When maxFailedPinAttempts is accessed, Then it returns authenticationConfig#maxFailedPinAttempts`() {
+        // Given
+        whenever(authenticationConfig.maxFailedPinAttempts).thenReturn(5)
+
+        // When
+        val result = interactor.maxFailedPinAttempts
+
+        // Then
+        assertEquals(5, result)
+    }
+
+    @Test
+    fun `When getPinLockoutState is called, Then pinThrottleController#getState is invoked and its result is returned`() =
+        coroutineRule.runTest {
+            // Given
+            val expected = PinLockoutState.Idle
+            whenever(pinThrottleController.getState()).thenReturn(expected)
+
+            // When
+            val result = interactor.getPinLockoutState()
+
+            // Then
+            assertEquals(expected, result)
+            verify(pinThrottleController).getState()
+        }
+
+    @Test
+    fun `When recordPinFailure is called, Then pinThrottleController#recordFailure is invoked and its result is returned`() =
+        coroutineRule.runTest {
+            // Given
+            val expected = PinLockoutState.Idle
+            whenever(pinThrottleController.recordFailure()).thenReturn(expected)
+
+            // When
+            val result = interactor.recordPinFailure()
+
+            // Then
+            assertEquals(expected, result)
+            verify(pinThrottleController).recordFailure()
+        }
+
+    @Test
+    fun `When resetPinThrottle is called, Then pinThrottleController#recordSuccess is invoked`() =
+        coroutineRule.runTest {
+            // When
+            interactor.resetPinThrottle()
+
+            // Then
+            verify(pinThrottleController).recordSuccess()
+        }
     //endregion
 
     //region Mocked objects
