@@ -640,6 +640,7 @@ class TestProximityRequestInteractor {
                 }
         }
     }
+
     // Case 13:
     // RequestReceived with non-empty requestData, but every issued document is filtered out
     // because isDocumentRevoked returns true for all. Exercises the

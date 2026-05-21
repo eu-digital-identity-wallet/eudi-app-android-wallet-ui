@@ -24,6 +24,7 @@ import eu.europa.ec.businesslogic.validator.model.FilterMultipleAction
 import eu.europa.ec.businesslogic.validator.model.FilterableList
 import eu.europa.ec.businesslogic.validator.model.Filters
 import eu.europa.ec.businesslogic.validator.model.SortOrder
+import eu.europa.ec.businesslogic.validator.util.TestAttributes
 import eu.europa.ec.businesslogic.validator.util.filterItemsMultiple
 import eu.europa.ec.businesslogic.validator.util.filterItemsSingle
 import eu.europa.ec.businesslogic.validator.util.filterableList
@@ -34,7 +35,6 @@ import eu.europa.ec.businesslogic.validator.util.filtersWithMultipleSelectionSiz
 import eu.europa.ec.businesslogic.validator.util.filtersWithMultipleSelectionSize4
 import eu.europa.ec.businesslogic.validator.util.filtersWithSingleSelection
 import eu.europa.ec.businesslogic.validator.util.multipleSelectionGroup
-import eu.europa.ec.businesslogic.validator.util.TestAttributes
 import eu.europa.ec.businesslogic.validator.util.singleSelectionGroup
 import eu.europa.ec.testlogic.extension.runFlowTest
 import eu.europa.ec.testlogic.extension.runTest
@@ -476,15 +476,16 @@ class TestFilterValidator {
 
     //region updateFilter group-type coverage
 
-    private val multiSelectionGroupForUpdate = FilterGroup.MultipleSelectionFilterGroup<TestAttributes>(
-        id = "ms_for_update",
-        name = "Multi",
-        filters = listOf(
-            FilterElement.FilterItem(id = "ms1", name = "PID", selected = false),
-            FilterElement.FilterItem(id = "ms2", name = "mDL", selected = true),
-        ),
-        filterableAction = FilterMultipleAction { attrs, filter -> attrs.name == filter.name },
-    )
+    private val multiSelectionGroupForUpdate =
+        FilterGroup.MultipleSelectionFilterGroup<TestAttributes>(
+            id = "ms_for_update",
+            name = "Multi",
+            filters = listOf(
+                FilterElement.FilterItem(id = "ms1", name = "PID", selected = false),
+                FilterElement.FilterItem(id = "ms2", name = "mDL", selected = true),
+            ),
+            filterableAction = FilterMultipleAction { attrs, filter -> attrs.name == filter.name },
+        )
 
     private val filtersMultiForUpdate = Filters(
         filterGroups = listOf(multiSelectionGroupForUpdate),
@@ -568,6 +569,266 @@ class TestFilterValidator {
                 // second initializeValidator call.
                 val emitted = awaitItem()
                 assertTrue(emitted is FilterValidatorPartialState.FilterListResult)
+            }
+        }
+    //endregion
+
+    //region updateDateFilter on all 4 group types
+    // updateDateFilter routes through the (date-version) updateFilterInGroup which has its own
+    // `when (group)` over all 4 FilterGroup subtypes. Only the SingleSelection variant was
+    // covered above; this adds the other three.
+
+    @Test
+    fun `Given a MultipleSelectionFilterGroup containing a DateTimeRangeFilterItem, When updateDateFilter is called, Then the range is updated`() =
+        coroutineRule.runTest {
+            filterValidator.onFilterStateChange().runFlowTest {
+                // Given
+                val group = FilterGroup.MultipleSelectionFilterGroup<TestAttributes>(
+                    id = "multi_date",
+                    name = "Multi Date",
+                    filters = listOf(
+                        FilterElement.DateTimeRangeFilterItem(
+                            id = "mdr1",
+                            name = "Range",
+                            selected = true,
+                            isDefault = true,
+                            startDateTime = LocalDateTime.MIN,
+                            endDateTime = LocalDateTime.MAX,
+                        ),
+                    ),
+                    filterableAction = FilterMultipleAction { _, _ -> true },
+                )
+                val filters = Filters(
+                    filterGroups = listOf(group),
+                    sortOrder = SortOrder.Descending(isDefault = true),
+                )
+                filterValidator.initializeValidator(filters, filterableList)
+
+                // When
+                filterValidator.updateDateFilter(
+                    filterGroupId = group.id,
+                    filterId = "mdr1",
+                    lowerLimit = LocalDateTime.of(2026, 1, 1, 0, 0),
+                    upperLimit = LocalDateTime.of(2026, 12, 31, 0, 0),
+                )
+
+                // Then
+                val state = awaitItem()
+                assertTrue(state is FilterValidatorPartialState.FilterUpdateResult)
+            }
+        }
+
+    @Test
+    fun `Given a ReversibleSingleSelectionFilterGroup containing a DateTimeRangeFilterItem, When updateDateFilter is called, Then the range is updated`() =
+        coroutineRule.runTest {
+            filterValidator.onFilterStateChange().runFlowTest {
+                // Given
+                val group = FilterGroup.ReversibleSingleSelectionFilterGroup(
+                    id = "rsingle_date",
+                    name = "Rev Single Date",
+                    filters = listOf(
+                        FilterElement.DateTimeRangeFilterItem(
+                            id = "rsdr1",
+                            name = "Range",
+                            selected = true,
+                            isDefault = true,
+                            startDateTime = LocalDateTime.MIN,
+                            endDateTime = LocalDateTime.MAX,
+                        ),
+                    ),
+                )
+                val filters = Filters(
+                    filterGroups = listOf(group),
+                    sortOrder = SortOrder.Descending(isDefault = true),
+                )
+                filterValidator.initializeValidator(filters, filterableList)
+
+                // When
+                filterValidator.updateDateFilter(
+                    filterGroupId = group.id,
+                    filterId = "rsdr1",
+                    lowerLimit = LocalDateTime.of(2026, 1, 1, 0, 0),
+                    upperLimit = LocalDateTime.of(2026, 12, 31, 0, 0),
+                )
+
+                // Then
+                val state = awaitItem()
+                assertTrue(state is FilterValidatorPartialState.FilterUpdateResult)
+            }
+        }
+
+    @Test
+    fun `Given a ReversibleMultipleSelectionFilterGroup containing a DateTimeRangeFilterItem, When updateDateFilter is called, Then the range is updated`() =
+        coroutineRule.runTest {
+            filterValidator.onFilterStateChange().runFlowTest {
+                // Given
+                val group = FilterGroup.ReversibleMultipleSelectionFilterGroup<TestAttributes>(
+                    id = "rmulti_date",
+                    name = "Rev Multi Date",
+                    filters = listOf(
+                        FilterElement.DateTimeRangeFilterItem(
+                            id = "rmdr1",
+                            name = "Range",
+                            selected = true,
+                            isDefault = true,
+                            startDateTime = LocalDateTime.MIN,
+                            endDateTime = LocalDateTime.MAX,
+                        ),
+                    ),
+                    filterableAction = FilterMultipleAction { _, _ -> true },
+                )
+                val filters = Filters(
+                    filterGroups = listOf(group),
+                    sortOrder = SortOrder.Descending(isDefault = true),
+                )
+                filterValidator.initializeValidator(filters, filterableList)
+
+                // When
+                filterValidator.updateDateFilter(
+                    filterGroupId = group.id,
+                    filterId = "rmdr1",
+                    lowerLimit = LocalDateTime.of(2026, 1, 1, 0, 0),
+                    upperLimit = LocalDateTime.of(2026, 12, 31, 0, 0),
+                )
+
+                // Then
+                val state = awaitItem()
+                assertTrue(state is FilterValidatorPartialState.FilterUpdateResult)
+            }
+        }
+    //endregion
+
+    //region applyReversibleSingleSelectionFilter & applyReversibleMultipleSelectionFilter
+    // These cover the Sort early-return and null-selectedFilter paths.
+
+    @Test
+    fun `Given a ReversibleSingleSelectionFilterGroup with a Sort action and applyFilters, Then the apply path returns the original list`() =
+        coroutineRule.runTest {
+            filterValidator.onFilterStateChange().runFlowTest {
+                // Given
+                val group = FilterGroup.ReversibleSingleSelectionFilterGroup(
+                    id = "rev_single_sort",
+                    name = "Rev Sort",
+                    filters = listOf(
+                        FilterElement.FilterItem(
+                            id = "rss",
+                            name = "Sort by name",
+                            selected = true,
+                            isDefault = true,
+                            filterableAction = FilterAction.Sort<TestAttributes, String> { it.name },
+                        ),
+                    ),
+                )
+                val filters = Filters(
+                    filterGroups = listOf(group),
+                    sortOrder = SortOrder.Ascending(isDefault = true),
+                )
+                filterValidator.initializeValidator(filters, filterableList)
+
+                // When
+                filterValidator.applyFilters()
+
+                // Then
+                val state = awaitItem()
+                assertTrue(state is FilterValidatorPartialState.FilterListResult)
+            }
+        }
+
+    @Test
+    fun `Given a ReversibleSingleSelectionFilterGroup with no selected filter and applyFilters, Then the original list is returned`() =
+        coroutineRule.runTest {
+            filterValidator.onFilterStateChange().runFlowTest {
+                // Given — no filter is selected → selectedFilter is null
+                val group = FilterGroup.ReversibleSingleSelectionFilterGroup(
+                    id = "rev_single_empty",
+                    name = "Rev Empty",
+                    filters = listOf(
+                        FilterElement.FilterItem(
+                            id = "rse",
+                            name = "X",
+                            selected = false,
+                            isDefault = false,
+                        ),
+                    ),
+                )
+                val filters = Filters(
+                    filterGroups = listOf(group),
+                    sortOrder = SortOrder.Ascending(isDefault = true),
+                )
+                filterValidator.initializeValidator(filters, filterableList)
+
+                // When
+                filterValidator.applyFilters()
+
+                // Then
+                val state = awaitItem()
+                assertTrue(state is FilterValidatorPartialState.FilterListResult)
+            }
+        }
+
+    @Test
+    fun `Given a ReversibleMultipleSelectionFilterGroup with no selected filter and applyFilters, Then the original list is returned`() =
+        coroutineRule.runTest {
+            filterValidator.onFilterStateChange().runFlowTest {
+                // Given — no filter selected → applyReversibleMultipleSelectionFilter returns currentList
+                val group = FilterGroup.ReversibleMultipleSelectionFilterGroup<TestAttributes>(
+                    id = "rev_multi_empty",
+                    name = "Rev Multi Empty",
+                    filters = listOf(
+                        FilterElement.FilterItem(
+                            id = "rme",
+                            name = "X",
+                            selected = false,
+                            isDefault = false,
+                        ),
+                    ),
+                    filterableAction = FilterMultipleAction { _, _ -> true },
+                )
+                val filters = Filters(
+                    filterGroups = listOf(group),
+                    sortOrder = SortOrder.Ascending(isDefault = true),
+                )
+                filterValidator.initializeValidator(filters, filterableList)
+
+                // When
+                filterValidator.applyFilters()
+
+                // Then
+                val state = awaitItem()
+                assertTrue(state is FilterValidatorPartialState.FilterListResult)
+            }
+        }
+
+    @Test
+    fun `Given a ReversibleMultipleSelectionFilterGroup with selected filters and applyFilters, Then the filterableAction is applied`() =
+        coroutineRule.runTest {
+            filterValidator.onFilterStateChange().runFlowTest {
+                // Given
+                val group = FilterGroup.ReversibleMultipleSelectionFilterGroup<TestAttributes>(
+                    id = "rev_multi_apply",
+                    name = "Rev Multi Apply",
+                    filters = listOf(
+                        FilterElement.FilterItem(
+                            id = "rma",
+                            name = "PID",
+                            selected = true,
+                            isDefault = false,
+                        ),
+                    ),
+                    filterableAction = FilterMultipleAction { attrs, filter -> attrs.name == filter.name },
+                )
+                val filters = Filters(
+                    filterGroups = listOf(group),
+                    sortOrder = SortOrder.Ascending(isDefault = true),
+                )
+                filterValidator.initializeValidator(filters, filterableList)
+
+                // When
+                filterValidator.applyFilters()
+
+                // Then
+                val state = awaitItem()
+                assertTrue(state is FilterValidatorPartialState.FilterListResult)
             }
         }
     //endregion

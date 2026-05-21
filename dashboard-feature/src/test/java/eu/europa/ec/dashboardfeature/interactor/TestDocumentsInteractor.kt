@@ -43,6 +43,7 @@ import eu.europa.ec.eudi.wallet.document.Document
 import eu.europa.ec.eudi.wallet.document.DocumentId
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.testfeature.util.getMockedFullDocuments
+import eu.europa.ec.testfeature.util.getMockedFullPid
 import eu.europa.ec.testfeature.util.mockedExceptionWithMessage
 import eu.europa.ec.testfeature.util.mockedExceptionWithNoMessage
 import eu.europa.ec.testfeature.util.mockedGenericErrorMessage
@@ -54,6 +55,7 @@ import eu.europa.ec.testlogic.rule.CoroutineTestRule
 import eu.europa.ec.uilogic.component.ListItemDataUi
 import eu.europa.ec.uilogic.component.ListItemMainContentDataUi
 import junit.framework.TestCase.assertEquals
+import junit.framework.TestCase.assertNotNull
 import kotlinx.coroutines.flow.emptyFlow
 import org.junit.After
 import org.junit.Before
@@ -892,6 +894,159 @@ class TestDocumentsInteractor {
     }
     //endregion
 
+    //region getDocuments — UnsignedDocument & expired
+
+    @Test
+    fun `Given an UnsignedDocument among getAllDocuments, When getDocuments is called, Then it is mapped with Pending state`() {
+        coroutineRule.runTest {
+            // Given
+            val mockedFullDocuments = getMockedFullDocuments()
+            val unsignedDoc =
+                org.mockito.kotlin.mock<eu.europa.ec.eudi.wallet.document.UnsignedDocument>()
+            whenever(unsignedDoc.id).thenReturn("unsigned-id")
+            whenever(unsignedDoc.name).thenReturn("Unsigned Doc")
+            whenever(unsignedDoc.format).thenReturn(eu.europa.ec.testfeature.util.mockedMdocPidFormat)
+            whenever(unsignedDoc.issuerMetadata).thenReturn(null)
+
+            whenever(walletCoreDocumentsController.getMainPidDocument())
+                .thenReturn(mockedFullDocuments[0])
+            // Cast to List<Document> since both IssuedDocument and UnsignedDocument implement Document.
+            @Suppress("UNCHECKED_CAST")
+            whenever(walletCoreDocumentsController.getAllDocuments())
+                .thenReturn(mockedFullDocuments + listOf(unsignedDoc) as List<Document>)
+            whenever(walletCoreDocumentsController.getAllDocumentCategories())
+                .thenReturn(DocumentCategories(value = emptyMap()))
+            whenever(walletCoreDocumentsController.isDocumentRevoked(anyString())).thenReturn(false)
+            whenever(walletCoreDocumentsController.isDocumentLowOnCredentials(org.mockito.kotlin.any()))
+                .thenReturn(false)
+            whenever(resourceProvider.getLocale())
+                .thenReturn(eu.europa.ec.testfeature.util.mockedDefaultLocale)
+            whenever(resourceProvider.getString(org.mockito.kotlin.any())).thenReturn("mocked")
+            whenever(
+                resourceProvider.getString(
+                    org.mockito.kotlin.any(),
+                    org.mockito.kotlin.any<Int>(),
+                    org.mockito.kotlin.any<Int>()
+                )
+            ).thenReturn("mocked-credentials-info")
+            whenever(
+                resourceProvider.getString(
+                    org.mockito.kotlin.any(),
+                    org.mockito.kotlin.any<String>()
+                )
+            ).thenReturn("mocked-expiry-message")
+
+            // When
+            interactor.getDocuments().runFlowTest {
+                // Then
+                val state = awaitItem()
+                assertTrue(state is DocumentInteractorGetDocumentsPartialState.Success)
+                state as DocumentInteractorGetDocumentsPartialState.Success
+                val unsignedItem = state.allDocuments.items.firstOrNull {
+                    (it.payload as? DocumentUi)?.uiData?.itemId == "unsigned-id"
+                }
+                assertNotNull(unsignedItem)
+                val payload = unsignedItem!!.payload as DocumentUi
+                assertEquals(DocumentIssuanceStateUi.Pending, payload.documentIssuanceState)
+            }
+        }
+    }
+
+    @Test
+    fun `Given an expired IssuedDocument, When getDocuments is called, Then documentIssuanceState is Failed`() {
+        coroutineRule.runTest {
+            // Given
+            val mockedFullPid = getMockedFullPid()
+            val pidFormat = mockedFullPid.format
+            val pidData = mockedFullPid.data
+            // Override validUntil to a past date so documentHasExpired evaluates true.
+            val expiredPid =
+                org.mockito.kotlin.mock<eu.europa.ec.eudi.wallet.document.IssuedDocument>()
+            whenever(expiredPid.id).thenReturn("expired-pid-id")
+            whenever(expiredPid.name).thenReturn("Expired PID")
+            whenever(expiredPid.format).thenReturn(pidFormat)
+            whenever(expiredPid.data).thenReturn(pidData)
+            whenever(expiredPid.issuerMetadata).thenReturn(null)
+            whenever(expiredPid.getValidUntil()).thenReturn(
+                Result.success(java.time.Instant.parse("2020-01-01T00:00:00Z"))
+            )
+            whenever(expiredPid.credentialsCount()).thenReturn(3)
+            whenever(expiredPid.initialCredentialsCount()).thenReturn(5)
+
+            whenever(walletCoreDocumentsController.getMainPidDocument()).thenReturn(expiredPid)
+            whenever(walletCoreDocumentsController.getAllDocuments())
+                .thenReturn(listOf(expiredPid))
+            whenever(walletCoreDocumentsController.getAllDocumentCategories())
+                .thenReturn(DocumentCategories(value = emptyMap()))
+            whenever(walletCoreDocumentsController.isDocumentRevoked(anyString())).thenReturn(false)
+            whenever(walletCoreDocumentsController.isDocumentLowOnCredentials(org.mockito.kotlin.any()))
+                .thenReturn(false)
+            whenever(resourceProvider.getLocale())
+                .thenReturn(eu.europa.ec.testfeature.util.mockedDefaultLocale)
+            whenever(resourceProvider.getString(org.mockito.kotlin.any())).thenReturn("mocked")
+            whenever(
+                resourceProvider.getString(
+                    org.mockito.kotlin.any(),
+                    org.mockito.kotlin.any<Int>(),
+                    org.mockito.kotlin.any<Int>()
+                )
+            ).thenReturn("mocked-credentials-info")
+            whenever(
+                resourceProvider.getString(
+                    org.mockito.kotlin.any(),
+                    org.mockito.kotlin.any<String>()
+                )
+            ).thenReturn("mocked-expiry-message")
+
+            // When
+            interactor.getDocuments().runFlowTest {
+                // Then
+                val state = awaitItem()
+                assertTrue(state is DocumentInteractorGetDocumentsPartialState.Success)
+                state as DocumentInteractorGetDocumentsPartialState.Success
+                val payload = state.allDocuments.items.first().payload as DocumentUi
+                assertEquals(DocumentIssuanceStateUi.Failed, payload.documentIssuanceState)
+            }
+        }
+    }
+    //endregion
+
+    //region onFilterStateChange — non-DocumentUi payload
+
+    @Test
+    fun `Given a FilterApplyResult that contains a non-DocumentUi payload, When onFilterStateChange emits it, Then that item is filtered out`() {
+        coroutineRule.runTest {
+            // Given
+            val foreignItem = FilterableItem(
+                payload = ForeignDocPayload,
+                attributes = object : FilterableAttributes {
+                    override val searchTags: List<String> = emptyList()
+                },
+            )
+            mockOnFilterChangedEvent(
+                FilterValidatorPartialState.FilterListResult.FilterApplyResult(
+                    filteredList = FilterableList(items = listOf(foreignItem)),
+                    allDefaultFiltersAreSelected = true,
+                    updatedFilters = Filters.emptyFilters(),
+                )
+            )
+
+            // When
+            interactor.onFilterStateChange().runFlowTest {
+                // Then
+                val state = awaitItem()
+                assertTrue(state is DocumentInteractorFilterPartialState.FilterApplyResult)
+                state as DocumentInteractorFilterPartialState.FilterApplyResult
+                val total = state.documents.sumOf { it.second.size }
+                assertEquals(0, total)
+            }
+        }
+    }
+
+    private object ForeignDocPayload :
+        eu.europa.ec.businesslogic.validator.model.FilterableItemPayload
+    //endregion
+
     //region getFilters lambdas
 
     @Test
@@ -1065,6 +1220,120 @@ class TestDocumentsInteractor {
     }
     //endregion
 
+    //region addDynamicFilters default parameter
+    // The interface declares `filters: Filters = Filters.emptyFilters()`. Calling without
+    // the filters argument exercises the default-parameter synthetic.
+    @Test
+    fun `When addDynamicFilters is called without filters, Then the default emptyFilters is used`() {
+        // Given
+        whenever(resourceProvider.getString(org.mockito.kotlin.any())).thenReturn("mocked")
+        val documents = FilterableList(items = emptyList())
+
+        // When
+        val result = interactor.addDynamicFilters(documents = documents)
+
+        // Then
+        // Default filters is Filters.emptyFilters() which has empty filterGroups.
+        assertEquals(0, result.filterGroups.size)
+    }
+    //endregion
+
+    //region addDynamicFilters & period predicates
+
+    @Test
+    fun `Given a documents list with issuers and categories, When addDynamicFilters is called, Then the ISSUER and CATEGORY groups are populated`() {
+        // Given
+        whenever(resourceProvider.getString(org.mockito.kotlin.any())).thenReturn("mocked")
+        val itemAcme = FilterableItem(
+            payload = stubDocumentUi(),
+            attributes = documentsAttributes(
+                issuer = "Acme",
+                category = eu.europa.ec.corelogic.model.DocumentCategory.Government,
+            ),
+        )
+        val itemSchool = FilterableItem(
+            payload = stubDocumentUi(),
+            attributes = documentsAttributes(
+                issuer = "School",
+                category = eu.europa.ec.corelogic.model.DocumentCategory.Education,
+            ),
+        )
+        val documents = FilterableList(items = listOf(itemAcme, itemSchool))
+        val initialFilters = interactor.getFilters()
+
+        // When
+        val result = interactor.addDynamicFilters(documents, initialFilters)
+
+        // Then
+        val issuerGroup = result.filterGroups.first {
+            it.id == eu.europa.ec.dashboardfeature.ui.documents.list.model.DocumentFilterIds.FILTER_BY_ISSUER_GROUP_ID
+        }
+        val categoryGroup = result.filterGroups.first {
+            it.id == eu.europa.ec.dashboardfeature.ui.documents.list.model.DocumentFilterIds.FILTER_BY_DOCUMENT_CATEGORY_GROUP_ID
+        }
+        assertEquals(2, issuerGroup.filters.size)
+        assertEquals(2, categoryGroup.filters.size)
+    }
+
+    @Test
+    fun `When the period filter predicates are applied, Then default issuance and expiry-window predicates evaluate as expected`() {
+        // Given
+        whenever(resourceProvider.getString(org.mockito.kotlin.any())).thenReturn("mocked")
+        val periodGroup = interactor.getFilters().filterGroups.first {
+            it.id == eu.europa.ec.dashboardfeature.ui.documents.list.model.DocumentFilterIds.FILTER_BY_PERIOD_GROUP_ID
+        }
+
+        val defaultPred =
+            periodGroup.filters[0].filterableAction as eu.europa.ec.businesslogic.validator.model.FilterAction.Filter<DocumentsFilterableAttributes>
+        val next7Pred =
+            periodGroup.filters[1].filterableAction as eu.europa.ec.businesslogic.validator.model.FilterAction.Filter<DocumentsFilterableAttributes>
+        val next30Pred =
+            periodGroup.filters[2].filterableAction as eu.europa.ec.businesslogic.validator.model.FilterAction.Filter<DocumentsFilterableAttributes>
+        val beyond30Pred =
+            periodGroup.filters[3].filterableAction as eu.europa.ec.businesslogic.validator.model.FilterAction.Filter<DocumentsFilterableAttributes>
+        val expiredPred =
+            periodGroup.filters[4].filterableAction as eu.europa.ec.businesslogic.validator.model.FilterAction.Filter<DocumentsFilterableAttributes>
+
+        val dummyFilter = eu.europa.ec.businesslogic.validator.model.FilterElement.FilterItem(
+            id = "x", name = "x", selected = true, isDefault = false,
+        )
+
+        val expired = documentsAttributes(
+            expiryDate = java.time.Instant.parse("2020-01-01T00:00:00Z"),
+        )
+        val tomorrow = documentsAttributes(
+            expiryDate = java.time.Instant.now().plus(1, java.time.temporal.ChronoUnit.DAYS),
+        )
+        val nextMonth = documentsAttributes(
+            expiryDate = java.time.Instant.now().plus(20, java.time.temporal.ChronoUnit.DAYS),
+        )
+        val farFuture = documentsAttributes(
+            expiryDate = java.time.Instant.now().plus(365, java.time.temporal.ChronoUnit.DAYS),
+        )
+
+        // When + Then
+        assertTrue(defaultPred.predicate(expired, dummyFilter))
+        assertTrue(next7Pred.predicate(tomorrow, dummyFilter))
+        assertTrue(!next7Pred.predicate(farFuture, dummyFilter))
+        assertTrue(next30Pred.predicate(nextMonth, dummyFilter))
+        assertTrue(!next30Pred.predicate(farFuture, dummyFilter))
+        assertTrue(beyond30Pred.predicate(farFuture, dummyFilter))
+        assertTrue(!beyond30Pred.predicate(tomorrow, dummyFilter))
+        assertTrue(expiredPred.predicate(expired, dummyFilter))
+        assertTrue(!expiredPred.predicate(farFuture, dummyFilter))
+    }
+
+    private fun stubDocumentUi(): DocumentUi = DocumentUi(
+        documentIssuanceState = DocumentIssuanceStateUi.Issued,
+        uiData = ListItemDataUi(
+            itemId = "any",
+            mainContentData = ListItemMainContentDataUi.Text("any"),
+        ),
+        documentIdentifier = DocumentIdentifier.MdocPid,
+        documentCategory = eu.europa.ec.corelogic.model.DocumentCategory.Government,
+    )
+    //endregion
+
     //region filterValidator delegation
     // These tests verify the simple delegation methods to filterValidator.
 
@@ -1117,7 +1386,8 @@ class TestDocumentsInteractor {
         interactor.updateSortOrder(sortOrder = order)
 
         // Then
-        org.mockito.kotlin.verify(filterValidator, org.mockito.kotlin.times(1)).updateSortOrder(order)
+        org.mockito.kotlin.verify(filterValidator, org.mockito.kotlin.times(1))
+            .updateSortOrder(order)
     }
 
     @Test

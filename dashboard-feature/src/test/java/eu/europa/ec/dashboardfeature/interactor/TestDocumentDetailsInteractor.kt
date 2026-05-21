@@ -56,8 +56,8 @@ import eu.europa.ec.testfeature.util.mockedFormattedExpirationDate
 import eu.europa.ec.testfeature.util.mockedFormattedIssuanceDate
 import eu.europa.ec.testfeature.util.mockedGenericErrorMessage
 import eu.europa.ec.testfeature.util.mockedMdlId
-import eu.europa.ec.testfeature.util.mockedNotifyOnAuthenticationFailure
 import eu.europa.ec.testfeature.util.mockedMdocPidNameSpace
+import eu.europa.ec.testfeature.util.mockedNotifyOnAuthenticationFailure
 import eu.europa.ec.testfeature.util.mockedOldestPidId
 import eu.europa.ec.testfeature.util.mockedPidDocName
 import eu.europa.ec.testfeature.util.mockedPidId
@@ -499,6 +499,7 @@ class TestDocumentDetailsInteractor {
             }
         }
     }
+
     // Case 9:
     // Same as Case 1 but with wasIssuerDetailsExpanded = true → IssuerDetailsCardDataUi.isExpanded
     // is true (covers the non-null branch of `wasIssuerDetailsExpanded ?: false`).
@@ -859,6 +860,135 @@ class TestDocumentDetailsInteractor {
     }
     //endregion
 
+    // Case 11 (deleteDocument):
+    // The document is an SdJwt PID → the `docType` resolution falls through the
+    // `(format as? MsoMdocFormat)?.docType ?: (format as? SdJwtVcFormat)?.vct` chain to the
+    // SdJwt branch (line 598). With forcePidActivation=true and one SdJwt PID, the
+    // shouldDeleteAllDocuments branch returns true → deleteAllDocuments path.
+    @Test
+    fun `Given Case 11, When deleteDocument is called for an SdJwt PID, Then AllDocumentsDeleted is returned`() {
+        coroutineRule.runTest {
+            // Given
+            val sdJwtPid = eu.europa.ec.testfeature.util.getMockedSdJwtPidWithBasicFields()
+            mockGetAllDocumentsCall(response = listOf(sdJwtPid))
+            mockGetAllDocumentsWithTypeCall(response = listOf(sdJwtPid))
+            mockGetDocumentByIdCall(response = sdJwtPid)
+            mockDeleteAllDocumentsCall(response = DeleteAllDocumentsPartialState.Success)
+
+            // When
+            interactor.deleteDocument(documentId = sdJwtPid.id).runFlowTest {
+                // Then
+                assertEquals(
+                    DocumentDetailsInteractorDeleteDocumentPartialState.AllDocumentsDeleted,
+                    awaitItem()
+                )
+            }
+        }
+    }
+
+    // Case 12 (deleteDocument):
+    // Multiple PID documents exist; the document being deleted is NOT the main PID
+    // (allPidDocuments.count > 1 AND getMainPidDocument().id != documentId).
+    // → shouldDeleteAllDocuments evaluates false → single-document delete path.
+    @Test
+    fun `Given Case 12, When deleteDocument is called for a non-main PID with multiple PIDs, Then SingleDocumentDeleted is returned`() {
+        coroutineRule.runTest {
+            // Given
+            val mainPid = getMockedPidWithBasicFields()
+            val otherPid = getMockedOldestPidWithBasicFields()
+            mockGetAllDocumentsWithTypeCall(response = listOf(mainPid, otherPid))
+            mockGetDocumentByIdCall(response = otherPid)
+            mockGetMainPidDocument(response = mainPid)
+            mockDeleteDocumentCall(response = DeleteDocumentPartialState.Success)
+
+            // When
+            interactor.deleteDocument(documentId = otherPid.id).runFlowTest {
+                // Then
+                assertEquals(
+                    DocumentDetailsInteractorDeleteDocumentPartialState.SingleDocumentDeleted,
+                    awaitItem()
+                )
+            }
+        }
+    }
+    //endregion
+
+    // Case 13 (deleteDocument):
+    // forcePidActivation=true, doc is PID, allPidDocuments has exactly 1 entry → the
+    // `if (allPidDocuments.count() > 1)` false branch runs → `else true` returns true →
+    // shouldDeleteAllDocuments=true → deleteAllDocuments path with single PID present.
+    @Test
+    fun `Given Case 13, When deleteDocument is called for the single PID, Then AllDocumentsDeleted is returned`() {
+        coroutineRule.runTest {
+            // Given
+            val mainPid = getMockedPidWithBasicFields()
+            mockGetAllDocumentsWithTypeCall(response = listOf(mainPid))
+            mockGetDocumentByIdCall(response = mainPid)
+            mockDeleteAllDocumentsCall(response = DeleteAllDocumentsPartialState.Success)
+
+            // When
+            interactor.deleteDocument(documentId = mainPid.id).runFlowTest {
+                // Then
+                assertEquals(
+                    DocumentDetailsInteractorDeleteDocumentPartialState.AllDocumentsDeleted,
+                    awaitItem()
+                )
+            }
+        }
+    }
+
+    // Case 15 (deleteDocument):
+    // Multiple PIDs exist but getMainPidDocument returns null → the `?.id` safe-call returns
+    // null → `null == documentId` is false → shouldDeleteAllDocuments=false → SingleDocumentDeleted.
+    @Test
+    fun `Given Case 15, When deleteDocument is called and getMainPidDocument returns null, Then SingleDocumentDeleted is returned`() {
+        coroutineRule.runTest {
+            // Given
+            val pid1 = getMockedPidWithBasicFields()
+            val pid2 = getMockedOldestPidWithBasicFields()
+            mockGetAllDocumentsWithTypeCall(response = listOf(pid1, pid2))
+            mockGetDocumentByIdCall(response = pid1)
+            mockGetMainPidDocument(response = null)
+            mockDeleteDocumentCall(response = DeleteDocumentPartialState.Success)
+
+            // When
+            interactor.deleteDocument(documentId = pid1.id).runFlowTest {
+                // Then
+                assertEquals(
+                    DocumentDetailsInteractorDeleteDocumentPartialState.SingleDocumentDeleted,
+                    awaitItem()
+                )
+            }
+        }
+    }
+
+    // Case 14 (deleteDocument):
+    // forcePidActivation=true, doc is PID, multiple PIDs exist, AND getMainPidDocument().id
+    // matches the documentId being deleted → the inner `getMainPidDocument()?.id == documentId`
+    // branch evaluates true → shouldDeleteAllDocuments=true → deleteAllDocuments path.
+    @Test
+    fun `Given Case 14, When deleteDocument is called for the main PID with multiple PIDs, Then AllDocumentsDeleted is returned`() {
+        coroutineRule.runTest {
+            // Given
+            val mainPid = getMockedPidWithBasicFields()
+            val otherPid = getMockedOldestPidWithBasicFields()
+            mockGetAllDocumentsWithTypeCall(response = listOf(mainPid, otherPid))
+            mockGetDocumentByIdCall(response = mainPid)
+            mockGetMainPidDocument(response = mainPid)
+            mockDeleteAllDocumentsCall(response = DeleteAllDocumentsPartialState.Success)
+
+            // When
+            interactor.deleteDocument(documentId = mainPid.id).runFlowTest {
+                // Then
+                assertEquals(
+                    DocumentDetailsInteractorDeleteDocumentPartialState.AllDocumentsDeleted,
+                    awaitItem()
+                )
+            }
+        }
+    }
+    //endregion
+
     //region storeBookmark()
     // Case 1:
     // 1. A valid bookmarkId is provided.
@@ -998,7 +1128,8 @@ class TestDocumentDetailsInteractor {
                     allowAuthorizationFallback = true,
                 )
             ).thenReturn(
-                IssueDocumentsPartialState.Failure(errorMessage = mockedPlainFailureMessage).toFlow()
+                IssueDocumentsPartialState.Failure(errorMessage = mockedPlainFailureMessage)
+                    .toFlow()
             )
 
             // When

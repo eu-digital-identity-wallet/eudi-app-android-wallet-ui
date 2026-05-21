@@ -1078,17 +1078,26 @@ class TestFormValidator {
     }
 
     @Test
-    fun testValidateDuplicateCharacterNotInConsecutiveOrder_belowThreshold() = coroutineRule.runTest {
-        // maxTimesOfConsecutiveOrder < 2 → always returns true (always valid).
-        val rules = listOf(
-            Rule.ValidateDuplicateCharacterNotInConsecutiveOrder(
-                maxTimesOfConsecutiveOrder = 1,
-                errorMessage = plainErrorMessage,
+    fun testValidateDuplicateCharacterNotInConsecutiveOrder_belowThreshold() =
+        coroutineRule.runTest {
+            // maxTimesOfConsecutiveOrder < 2 → always returns true (always valid).
+            val rules = listOf(
+                Rule.ValidateDuplicateCharacterNotInConsecutiveOrder(
+                    maxTimesOfConsecutiveOrder = 1,
+                    errorMessage = plainErrorMessage,
+                )
             )
-        )
-        validateForm(rules = rules, value = "aaaa", expectedValidationResult = validationSuccess)
-        validateForm(rules = rules, value = "abcd", expectedValidationResult = validationSuccess)
-    }
+            validateForm(
+                rules = rules,
+                value = "aaaa",
+                expectedValidationResult = validationSuccess
+            )
+            validateForm(
+                rules = rules,
+                value = "abcd",
+                expectedValidationResult = validationSuccess
+            )
+        }
 
     @Test
     fun testValidateNumericNotInConsecutiveSequenceOrder_shortCircuitGuards() =
@@ -1104,7 +1113,11 @@ class TestFormValidator {
             // Empty value → first OR-arm true
             validateForm(rules = rules, value = "", expectedValidationResult = validationSuccess)
             // Non-numeric → third OR-arm true (toIntOrNull() == null)
-            validateForm(rules = rules, value = "abcd", expectedValidationResult = validationSuccess)
+            validateForm(
+                rules = rules,
+                value = "abcd",
+                expectedValidationResult = validationSuccess
+            )
             // Length mismatch → fourth OR-arm true
             validateForm(rules = rules, value = "123", expectedValidationResult = validationSuccess)
 

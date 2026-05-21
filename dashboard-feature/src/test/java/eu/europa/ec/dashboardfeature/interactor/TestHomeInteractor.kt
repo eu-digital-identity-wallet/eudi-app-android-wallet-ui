@@ -27,11 +27,11 @@ import eu.europa.ec.testfeature.util.mockedExceptionWithMessage
 import eu.europa.ec.testfeature.util.mockedExceptionWithNoMessage
 import eu.europa.ec.testfeature.util.mockedGenericErrorMessage
 import eu.europa.ec.testfeature.util.mockedUserFirstName
-import eu.europa.ec.testlogic.extension.runFlowTest
-import eu.europa.ec.testlogic.extension.runTest
 import eu.europa.ec.testfeature.walletcore.getMockedEudiWalletConfig
 import eu.europa.ec.testlogic.base.TestApplication
 import eu.europa.ec.testlogic.base.getMockedContext
+import eu.europa.ec.testlogic.extension.runFlowTest
+import eu.europa.ec.testlogic.extension.runTest
 import eu.europa.ec.testlogic.rule.CoroutineTestRule
 import junit.framework.TestCase.assertEquals
 import junit.framework.TestCase.assertTrue
