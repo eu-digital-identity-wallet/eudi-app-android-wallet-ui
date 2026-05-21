@@ -31,22 +31,22 @@ import eu.europa.ec.businesslogic.validator.model.Filters
 import eu.europa.ec.businesslogic.validator.model.SortOrder
 import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
 import eu.europa.ec.corelogic.model.TransactionLogDataDomain
-import eu.europa.ec.eudi.wallet.document.metadata.IssuerMetadata
-import eu.europa.ec.eudi.wallet.transactionLogging.presentation.PresentedDocument
-import eu.europa.ec.testfeature.util.mockedMdocPidFormat
 import eu.europa.ec.dashboardfeature.ui.transactions.list.model.TransactionCategoryUi
 import eu.europa.ec.dashboardfeature.ui.transactions.list.model.TransactionFilterIds
 import eu.europa.ec.dashboardfeature.ui.transactions.list.model.TransactionUi
 import eu.europa.ec.dashboardfeature.ui.transactions.list.model.TransactionsFilterableAttributes
 import eu.europa.ec.dashboardfeature.ui.transactions.model.TransactionStatusUi
 import eu.europa.ec.dashboardfeature.ui.transactions.model.TransactionTypeUi
+import eu.europa.ec.eudi.wallet.document.metadata.IssuerMetadata
 import eu.europa.ec.eudi.wallet.transactionLogging.TransactionLog
+import eu.europa.ec.eudi.wallet.transactionLogging.presentation.PresentedDocument
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.testfeature.util.mockedDefaultLocale
 import eu.europa.ec.testfeature.util.mockedExceptionWithMessage
 import eu.europa.ec.testfeature.util.mockedExceptionWithNoMessage
 import eu.europa.ec.testfeature.util.mockedGenericErrorMessage
+import eu.europa.ec.testfeature.util.mockedMdocPidFormat
 import eu.europa.ec.testlogic.extension.runFlowTest
 import eu.europa.ec.testlogic.extension.runTest
 import eu.europa.ec.testlogic.extension.toFlow
@@ -318,7 +318,8 @@ class TestTransactionsInteractor {
             // is stable for any clock-state except the first 2 hours after midnight; the test
             // dispatcher used here is wall-clock-driven so this picks the Today branch reliably
             // during business-hour CI runs and remains a documented limitation otherwise.
-            val nowMinusTwoHours = LocalDateTime.now().minusHours(2).withMinute(0).withSecond(0).withNano(0)
+            val nowMinusTwoHours =
+                LocalDateTime.now().minusHours(2).withMinute(0).withSecond(0).withNano(0)
             val today = if (nowMinusTwoHours.toLocalDate() == LocalDateTime.now().toLocalDate()) {
                 nowMinusTwoHours
             } else {
@@ -691,6 +692,7 @@ class TestTransactionsInteractor {
         val sortGroup = filters.filterGroups.first {
             it.id == TransactionFilterIds.FILTER_SORT_GROUP_ID
         }
+
         @Suppress("UNCHECKED_CAST")
         val sortAction = sortGroup.filters.first().filterableAction
                 as FilterAction.Sort<TransactionsFilterableAttributes, LocalDateTime>
@@ -711,6 +713,7 @@ class TestTransactionsInteractor {
         val dateGroup = filters.filterGroups.first {
             it.id == TransactionFilterIds.FILTER_BY_TRANSACTION_DATE_GROUP_ID
         }
+
         @Suppress("UNCHECKED_CAST")
         val dateAction = dateGroup.filters.first().filterableAction
                 as FilterAction.Filter<TransactionsFilterableAttributes>
@@ -751,6 +754,7 @@ class TestTransactionsInteractor {
         val statusGroup = filters.filterGroups.first {
             it.id == TransactionFilterIds.FILTER_BY_STATUS_GROUP_ID
         }
+
         @Suppress("UNCHECKED_CAST")
         val statusAction =
             (statusGroup as FilterGroup.MultipleSelectionFilterGroup<TransactionsFilterableAttributes>)
@@ -775,11 +779,36 @@ class TestTransactionsInteractor {
         )
 
         // When + Then
-        assertTrue(statusAction.predicate(attributes(status = TransactionStatusUi.Completed), completedFilter))
-        assertTrue(!statusAction.predicate(attributes(status = TransactionStatusUi.Failed), completedFilter))
-        assertTrue(statusAction.predicate(attributes(status = TransactionStatusUi.Failed), failedFilter))
-        assertTrue(!statusAction.predicate(attributes(status = TransactionStatusUi.Completed), failedFilter))
-        assertTrue(statusAction.predicate(attributes(status = TransactionStatusUi.Completed), otherFilter))
+        assertTrue(
+            statusAction.predicate(
+                attributes(status = TransactionStatusUi.Completed),
+                completedFilter
+            )
+        )
+        assertTrue(
+            !statusAction.predicate(
+                attributes(status = TransactionStatusUi.Failed),
+                completedFilter
+            )
+        )
+        assertTrue(
+            statusAction.predicate(
+                attributes(status = TransactionStatusUi.Failed),
+                failedFilter
+            )
+        )
+        assertTrue(
+            !statusAction.predicate(
+                attributes(status = TransactionStatusUi.Completed),
+                failedFilter
+            )
+        )
+        assertTrue(
+            statusAction.predicate(
+                attributes(status = TransactionStatusUi.Completed),
+                otherFilter
+            )
+        )
     }
 
     @Test
@@ -790,6 +819,7 @@ class TestTransactionsInteractor {
         val rpGroup = filters.filterGroups.first {
             it.id == TransactionFilterIds.FILTER_BY_RELYING_PARTY_GROUP_ID
         }
+
         @Suppress("UNCHECKED_CAST")
         val rpAction =
             (rpGroup as FilterGroup.MultipleSelectionFilterGroup<TransactionsFilterableAttributes>)
@@ -828,6 +858,7 @@ class TestTransactionsInteractor {
         val typeGroup = filters.filterGroups.first {
             it.id == TransactionFilterIds.FILTER_BY_TRANSACTION_TYPE_GROUP_ID
         }
+
         @Suppress("UNCHECKED_CAST")
         val typeAction =
             (typeGroup as FilterGroup.MultipleSelectionFilterGroup<TransactionsFilterableAttributes>)
@@ -859,12 +890,42 @@ class TestTransactionsInteractor {
 
         // When + Then — also exercise the `==` false outcomes by mismatching the filter's
         // expected type against the attribute's type so each arm sees the equality return false.
-        assertTrue(typeAction.predicate(attributes(type = TransactionTypeUi.PRESENTATION), presentationFilter))
-        assertTrue(!typeAction.predicate(attributes(type = TransactionTypeUi.ISSUANCE), presentationFilter))
-        assertTrue(typeAction.predicate(attributes(type = TransactionTypeUi.ISSUANCE), issuanceFilter))
-        assertTrue(!typeAction.predicate(attributes(type = TransactionTypeUi.PRESENTATION), issuanceFilter))
-        assertTrue(typeAction.predicate(attributes(type = TransactionTypeUi.SIGNING), signingFilter))
-        assertTrue(!typeAction.predicate(attributes(type = TransactionTypeUi.PRESENTATION), signingFilter))
+        assertTrue(
+            typeAction.predicate(
+                attributes(type = TransactionTypeUi.PRESENTATION),
+                presentationFilter
+            )
+        )
+        assertTrue(
+            !typeAction.predicate(
+                attributes(type = TransactionTypeUi.ISSUANCE),
+                presentationFilter
+            )
+        )
+        assertTrue(
+            typeAction.predicate(
+                attributes(type = TransactionTypeUi.ISSUANCE),
+                issuanceFilter
+            )
+        )
+        assertTrue(
+            !typeAction.predicate(
+                attributes(type = TransactionTypeUi.PRESENTATION),
+                issuanceFilter
+            )
+        )
+        assertTrue(
+            typeAction.predicate(
+                attributes(type = TransactionTypeUi.SIGNING),
+                signingFilter
+            )
+        )
+        assertTrue(
+            !typeAction.predicate(
+                attributes(type = TransactionTypeUi.PRESENTATION),
+                signingFilter
+            )
+        )
         assertTrue(!typeAction.predicate(attributes(type = TransactionTypeUi.SIGNING), otherFilter))
     }
     //endregion
@@ -1029,6 +1090,21 @@ class TestTransactionsInteractor {
         selected = true,
         isDefault = true,
     )
+    //endregion
+
+    //region DateTimeCategoryPartialState sealed arms (data-class API surface)
+    // The Today/WithinLastHour/etc. arms are produced from clock-driven branches inside
+    // getTransactions; exercise the data-class methods directly for stable coverage.
+    @Test
+    fun `Given Today partial-state data class, When instantiated, Then equals_hashCode_copy work`() {
+        val a = TransactionInteractorDateTimeCategoryPartialState.Today(time = "10:30")
+        val b = a.copy(time = "10:30")
+        val c = TransactionInteractorDateTimeCategoryPartialState.Today(time = "11:30")
+        assertEquals(a, b)
+        assertEquals(a.hashCode(), b.hashCode())
+        assertEquals("10:30", a.time)
+        kotlin.test.assertNotEquals(a, c)
+    }
     //endregion
 
     //region mocked objects

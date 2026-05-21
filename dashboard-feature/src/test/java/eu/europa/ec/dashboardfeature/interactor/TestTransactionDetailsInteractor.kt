@@ -530,6 +530,36 @@ class TestTransactionDetailsInteractor {
     }
     //endregion
 
+    //region sealed Failure arms (data-class API surface)
+    // The interactor only emits Success today, but the Failure arms are part of the sealed
+    // API surface so the data-class equals/hashCode/copy/toString need exercise.
+    @Test
+    fun `Given requestDataDeletion Failure data class, When instantiated, Then equals_hashCode_copy work`() {
+        val a =
+            TransactionDetailsInteractorRequestDataDeletionPartialState.Failure(errorMessage = "err")
+        val b = a.copy(errorMessage = "err")
+        val c =
+            TransactionDetailsInteractorRequestDataDeletionPartialState.Failure(errorMessage = "other")
+        assertEquals(a, b)
+        assertEquals(a.hashCode(), b.hashCode())
+        assertEquals("err", a.errorMessage)
+        kotlin.test.assertNotEquals(a, c)
+    }
+
+    @Test
+    fun `Given reportSuspiciousTransaction Failure data class, When instantiated, Then equals_hashCode_copy work`() {
+        val a =
+            TransactionDetailsInteractorReportSuspiciousTransactionPartialState.Failure(errorMessage = "err")
+        val b = a.copy(errorMessage = "err")
+        val c =
+            TransactionDetailsInteractorReportSuspiciousTransactionPartialState.Failure(errorMessage = "other")
+        assertEquals(a, b)
+        assertEquals(a.hashCode(), b.hashCode())
+        assertEquals("err", a.errorMessage)
+        kotlin.test.assertNotEquals(a, c)
+    }
+    //endregion
+
     //region helper functions
     private fun mockTransactionDetailsStrings() {
         whenever(resourceProvider.getString(R.string.transactions_screen_filters_filter_by_transaction_type_issuance))

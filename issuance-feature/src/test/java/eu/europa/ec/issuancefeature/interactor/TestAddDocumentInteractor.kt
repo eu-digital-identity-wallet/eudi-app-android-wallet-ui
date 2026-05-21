@@ -531,7 +531,8 @@ class TestAddDocumentInteractor {
                     issuerId = "issuerId",
                 )
             ).thenReturn(
-                IssueDocumentsPartialState.Failure(errorMessage = mockedPlainFailureMessage).toFlow()
+                IssueDocumentsPartialState.Failure(errorMessage = mockedPlainFailureMessage)
+                    .toFlow()
             )
 
             // When
@@ -860,6 +861,7 @@ class TestAddDocumentInteractor {
         val expectedResult = "SUCCESS?successConfig=$mockedRouteArguments"
         assertEquals(expectedResult, result)
     }
+
     // Case 3:
     // 1. uiSerializer.toBase64 returns null → the `.orEmpty()` fallback path is exercised,
     //    producing a route with an empty successConfig argument.

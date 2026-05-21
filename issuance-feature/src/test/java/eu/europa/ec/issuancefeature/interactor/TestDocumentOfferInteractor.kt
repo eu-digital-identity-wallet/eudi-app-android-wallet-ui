@@ -510,6 +510,112 @@ class TestDocumentOfferInteractor {
         }
     //endregion
 
+    // Case 11:
+    // Offer with txCodeSpec = null. The `safeLet` over `response.offer.txCodeSpec?.inputMode`
+    // and `?.length` returns null → both inner branches are skipped via the safe-call
+    // null path. Combined with hasMainPid = true, the rest of the flow continues to Success.
+    @Test
+    fun `Given Case 11, When resolveDocumentOffer is called with a null txCodeSpec, Then Success is returned`() =
+        coroutineRule.runTest {
+            // Given
+            val mockedOffer = mockOffer(
+                issuerName = mockedIssuerName,
+                offeredDocuments = mockedOfferedDocumentsList,
+                txCodeSpec = null,
+            )
+            mockGetMainPidDocumentCall(mainPid = getMockedMainPid())
+            mockWalletDocumentsControllerResolveOfferEventEmission(
+                event = ResolveDocumentOfferPartialState.Success(mockedOffer)
+            )
+
+            // When
+            interactor.resolveDocumentOffer(mockedUriPath1).runFlowTest {
+                // Then
+                val state = awaitItem()
+                org.junit.Assert.assertTrue(
+                    state is ResolveDocumentOfferInteractorPartialState.Success
+                )
+            }
+        }
+
+    // Case 12:
+    // Offer with txCodeSpec.inputMode = TEXT → the `inputMode == TxCodeInputMode.TEXT` arm of
+    // the `||` returns true → Failure with invalid-txcode-format message.
+    @Test
+    fun `Given Case 12, When resolveDocumentOffer is called with TEXT inputMode, Then Failure with invalid-format message is returned`() =
+        coroutineRule.runTest {
+            // Given
+            val mockedOffer = mockOffer(
+                issuerName = mockedIssuerName,
+                offeredDocuments = mockedOfferedDocumentsList,
+                txCodeSpec = mockOfferTxCodeSpec(
+                    inputMode = TxCodeInputMode.TEXT,
+                    length = 4,
+                ),
+            )
+            mockGetMainPidDocumentCall(mainPid = getMockedMainPid())
+            whenever(
+                resourceProvider.getString(
+                    R.string.issuance_document_offer_error_invalid_txcode_format,
+                    4,
+                    6,
+                )
+            ).thenReturn(mockedInvalidCodeFormatMessage)
+            mockWalletDocumentsControllerResolveOfferEventEmission(
+                event = ResolveDocumentOfferPartialState.Success(mockedOffer)
+            )
+
+            // When
+            interactor.resolveDocumentOffer(mockedUriPath1).runFlowTest {
+                // Then
+                assertEquals(
+                    ResolveDocumentOfferInteractorPartialState.Failure(
+                        errorMessage = mockedInvalidCodeFormatMessage
+                    ),
+                    awaitItem()
+                )
+            }
+        }
+
+    // Case 13:
+    // Offer with txCodeSpec.length out of [4..6] → the `length !in codeMinLength..codeMaxLength`
+    // arm returns true → Failure.
+    @Test
+    fun `Given Case 13, When resolveDocumentOffer is called with txCode length out of range, Then Failure is returned`() =
+        coroutineRule.runTest {
+            // Given
+            val mockedOffer = mockOffer(
+                issuerName = mockedIssuerName,
+                offeredDocuments = mockedOfferedDocumentsList,
+                txCodeSpec = mockOfferTxCodeSpec(
+                    inputMode = TxCodeInputMode.NUMERIC,
+                    length = 8,
+                ),
+            )
+            mockGetMainPidDocumentCall(mainPid = getMockedMainPid())
+            whenever(
+                resourceProvider.getString(
+                    R.string.issuance_document_offer_error_invalid_txcode_format,
+                    4,
+                    6,
+                )
+            ).thenReturn(mockedInvalidCodeFormatMessage)
+            mockWalletDocumentsControllerResolveOfferEventEmission(
+                event = ResolveDocumentOfferPartialState.Success(mockedOffer)
+            )
+
+            // When
+            interactor.resolveDocumentOffer(mockedUriPath1).runFlowTest {
+                // Then
+                assertEquals(
+                    ResolveDocumentOfferInteractorPartialState.Failure(
+                        errorMessage = mockedInvalidCodeFormatMessage
+                    ),
+                    awaitItem()
+                )
+            }
+        }
+
     //region issueDocuments
 
     // Case 1:
