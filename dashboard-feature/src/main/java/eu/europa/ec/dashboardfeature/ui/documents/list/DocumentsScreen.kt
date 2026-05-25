@@ -177,33 +177,11 @@ fun DocumentsScreen(
             )
         },
         fab = {
-            AnimatedVisibility(
+            AddDocumentFab(
                 visible = fabVisible,
-                enter = slideInVertically(
-                    animationSpec = tween(
-                        durationMillis = FAB_ENTER_DURATION_MILLIS,
-                        delayMillis = FAB_ENTER_DELAY_MILLIS,
-                    ),
-                    initialOffsetY = { fullHeight -> fullHeight }
-                ) + fadeIn(
-                    animationSpec = tween(
-                        durationMillis = FAB_ENTER_DURATION_MILLIS,
-                        delayMillis = FAB_ENTER_DELAY_MILLIS,
-                    )
-                ),
-                exit = ExitTransition.None,
-            ) {
-                WrapPrimaryExtendedFab(
-                    data = FabDataUi(
-                        text = { Text(text = stringResource(R.string.documents_screen_add_document_fab)) },
-                        icon = { WrapIcon(iconData = AppIcons.Add) },
-                        onClick = { viewModel.setEvent(Event.AddDocumentPressed) }
-                    ),
-                    modifier = Modifier.applyTestTag(TestTag.DocumentsScreen.PLUS_BUTTON),
-                    expanded = listScrollState.isScrollingUp(),
-                    shape = RoundedCornerShape(SIZE_MEDIUM.dp),
-                )
-            }
+                expanded = listScrollState.isScrollingUp(),
+                onClick = { viewModel.setEvent(Event.AddDocumentPressed) },
+            )
         },
         fabPosition = FabPosition.End,
         snackbarHost = { snackbarPaddings ->
@@ -257,6 +235,41 @@ fun DocumentsScreen(
                 )
             }
         }
+    }
+}
+
+@Composable
+private fun AddDocumentFab(
+    visible: Boolean,
+    expanded: Boolean,
+    onClick: () -> Unit,
+) {
+    AnimatedVisibility(
+        visible = visible,
+        enter = slideInVertically(
+            animationSpec = tween(
+                durationMillis = FAB_ENTER_DURATION_MILLIS,
+                delayMillis = FAB_ENTER_DELAY_MILLIS,
+            ),
+            initialOffsetY = { fullHeight -> fullHeight }
+        ) + fadeIn(
+            animationSpec = tween(
+                durationMillis = FAB_ENTER_DURATION_MILLIS,
+                delayMillis = FAB_ENTER_DELAY_MILLIS,
+            )
+        ),
+        exit = ExitTransition.None,
+    ) {
+        WrapPrimaryExtendedFab(
+            data = FabDataUi(
+                text = { Text(text = stringResource(R.string.documents_screen_add_document_fab)) },
+                icon = { WrapIcon(iconData = AppIcons.Add) },
+                onClick = onClick
+            ),
+            modifier = Modifier.applyTestTag(TestTag.DocumentsScreen.PLUS_BUTTON),
+            expanded = expanded,
+            shape = RoundedCornerShape(SIZE_MEDIUM.dp),
+        )
     }
 }
 
