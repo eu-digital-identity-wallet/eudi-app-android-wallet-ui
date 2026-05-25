@@ -17,6 +17,11 @@
 package eu.europa.ec.dashboardfeature.ui.documents.list
 
 import android.content.Context
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.ExitTransition
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.slideInVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -46,6 +51,7 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Alignment
@@ -124,6 +130,9 @@ import kotlinx.coroutines.launch
 typealias DashboardEvent = eu.europa.ec.dashboardfeature.ui.dashboard.Event
 typealias OpenSideMenuEvent = eu.europa.ec.dashboardfeature.ui.dashboard.Event.SideMenu.Open
 
+private const val FAB_ENTER_DELAY_MILLIS = 200
+private const val FAB_ENTER_DURATION_MILLIS = 300
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DocumentsScreen(
@@ -141,6 +150,21 @@ fun DocumentsScreen(
     )
 
     val listScrollState = rememberLazyListState()
+    var fabVisible by rememberSaveable { mutableStateOf(false) }
+
+    LifecycleEffect(
+        lifecycleOwner = LocalLifecycleOwner.current,
+        lifecycleEvent = Lifecycle.Event.ON_PAUSE
+    ) {
+        fabVisible = false
+    }
+
+    LifecycleEffect(
+        lifecycleOwner = LocalLifecycleOwner.current,
+        lifecycleEvent = Lifecycle.Event.ON_RESUME
+    ) {
+        fabVisible = true
+    }
 
     ContentScreen(
         isLoading = state.isLoading,
@@ -153,16 +177,33 @@ fun DocumentsScreen(
             )
         },
         fab = {
-            WrapPrimaryExtendedFab(
-                data = FabDataUi(
-                    text = { Text(text = stringResource(R.string.documents_screen_add_document_fab)) },
-                    icon = { WrapIcon(iconData = AppIcons.Add) },
-                    onClick = { viewModel.setEvent(Event.AddDocumentPressed) }
+            AnimatedVisibility(
+                visible = fabVisible,
+                enter = slideInVertically(
+                    animationSpec = tween(
+                        durationMillis = FAB_ENTER_DURATION_MILLIS,
+                        delayMillis = FAB_ENTER_DELAY_MILLIS,
+                    ),
+                    initialOffsetY = { fullHeight -> fullHeight }
+                ) + fadeIn(
+                    animationSpec = tween(
+                        durationMillis = FAB_ENTER_DURATION_MILLIS,
+                        delayMillis = FAB_ENTER_DELAY_MILLIS,
+                    )
                 ),
-                modifier = Modifier.applyTestTag(TestTag.DocumentsScreen.PLUS_BUTTON),
-                expanded = listScrollState.isScrollingUp(),
-                shape = RoundedCornerShape(SIZE_MEDIUM.dp),
-            )
+                exit = ExitTransition.None,
+            ) {
+                WrapPrimaryExtendedFab(
+                    data = FabDataUi(
+                        text = { Text(text = stringResource(R.string.documents_screen_add_document_fab)) },
+                        icon = { WrapIcon(iconData = AppIcons.Add) },
+                        onClick = { viewModel.setEvent(Event.AddDocumentPressed) }
+                    ),
+                    modifier = Modifier.applyTestTag(TestTag.DocumentsScreen.PLUS_BUTTON),
+                    expanded = listScrollState.isScrollingUp(),
+                    shape = RoundedCornerShape(SIZE_MEDIUM.dp),
+                )
+            }
         },
         fabPosition = FabPosition.End,
         snackbarHost = { snackbarPaddings ->

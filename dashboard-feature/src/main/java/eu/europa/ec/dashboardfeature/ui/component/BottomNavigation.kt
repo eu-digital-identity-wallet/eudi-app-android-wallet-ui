@@ -79,6 +79,10 @@ fun BottomNavigationBar(navController: NavController) {
         containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
     ) {
         navItems.forEach { screen ->
+            val selected = currentDestination?.hierarchy?.any {
+                it.route == screen.route
+            } == true
+
             NavigationBarItem(
                 modifier = Modifier.applyTestTag(
                     TestTag.DashboardScreen.bottomNavigationItem(
@@ -97,16 +101,16 @@ fun BottomNavigationBar(navController: NavController) {
                         selectedIconColor = MaterialTheme.colorScheme.onPrimary,
                         selectedTextColor = MaterialTheme.colorScheme.onSurface,
                     ),
-                selected = currentDestination?.hierarchy?.any {
-                    it.route == screen.route
-                } == true,
+                selected = selected,
                 onClick = {
-                    navController.navigate(screen.route) {
-                        popUpTo(navController.graph.findStartDestination().id) {
-                            saveState = true
+                    if (!selected) {
+                        navController.navigate(screen.route) {
+                            popUpTo(navController.graph.findStartDestination().id) {
+                                saveState = true
+                            }
+                            launchSingleTop = true
+                            restoreState = true
                         }
-                        launchSingleTop = true
-                        restoreState = true
                     }
                 }
             )
