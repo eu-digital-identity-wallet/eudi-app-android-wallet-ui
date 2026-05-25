@@ -394,7 +394,7 @@
 
     <!-- region Presentation Qr Scan -->
     <string name="presentation_qr_scan_title">Present document online</string>
-    <string name="presentation_qr_scan_subtitle">Scan a QR code provided from a Relying Party to present a digital document.</string>
+    <string name="presentation_qr_scan_subtitle">Scan a QR code provided from an interacting party to authenticate your identity.</string>
     <!--endregion-->
 
     <!-- region Signature Qr Scan -->
