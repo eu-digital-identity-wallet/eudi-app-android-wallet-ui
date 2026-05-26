@@ -73,8 +73,6 @@ import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.theme.values.success
 import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.DatePickerDialogType
-import eu.europa.ec.uilogic.component.DualSelectorButtonDataUi
-import eu.europa.ec.uilogic.component.DualSelectorButtons
 import eu.europa.ec.uilogic.component.FiltersDatePickerDialog
 import eu.europa.ec.uilogic.component.FiltersSearchBar
 import eu.europa.ec.uilogic.component.InlineSnackbar
@@ -177,7 +175,6 @@ fun TransactionsScreen(
                     sheetContent = state.sheetContent,
                     filtersUi = state.filtersUi,
                     snapshotFilterDateRangeData = state.snapshotFilterDateRangeSelectionUi,
-                    sortOrder = state.sortOrder,
                     onEventSent = {
                         viewModel.setEvent(it)
                     }
@@ -446,7 +443,6 @@ private fun TransactionsSheetContent(
     sheetContent: TransactionsBottomSheetContent,
     filtersUi: List<ExpandableListItemUi.NestedListItem>,
     snapshotFilterDateRangeData: FilterDateRangeSelectionUi,
-    sortOrder: DualSelectorButtonDataUi,
     onEventSent: (event: Event) -> Unit,
 ) {
     when (sheetContent) {
@@ -469,12 +465,6 @@ private fun TransactionsSheetContent(
                                 .padding(bottom = with(LocalDensity.current) { buttonsRowHeight.toDp() }),
                             verticalArrangement = Arrangement.spacedBy(SPACING_LARGE.dp)
                         ) {
-                            DualSelectorButtons(sortOrder) {
-                                onEventSent(
-                                    Event.OnSortingOrderChanged(it)
-                                )
-                            }
-
                             filtersUi.forEach { filter ->
                                 when {
                                     filter.header.itemId == TransactionFilterIds.FILTER_BY_TRANSACTION_DATE_GROUP_ID -> {

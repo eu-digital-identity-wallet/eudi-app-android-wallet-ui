@@ -20,7 +20,6 @@ import androidx.lifecycle.viewModelScope
 import eu.europa.ec.businesslogic.util.localDateToUtcMillis
 import eu.europa.ec.businesslogic.util.toLocalDateTime
 import eu.europa.ec.businesslogic.util.utcMillisToLocalDate
-import eu.europa.ec.businesslogic.validator.model.SortOrder
 import eu.europa.ec.dashboardfeature.interactor.TransactionInteractorFilterPartialState
 import eu.europa.ec.dashboardfeature.interactor.TransactionInteractorGetTransactionsPartialState
 import eu.europa.ec.dashboardfeature.interactor.TransactionsInteractor
@@ -28,12 +27,8 @@ import eu.europa.ec.dashboardfeature.ui.transactions.list.model.FilterDateRangeS
 import eu.europa.ec.dashboardfeature.ui.transactions.list.model.TransactionCategoryUi
 import eu.europa.ec.dashboardfeature.ui.transactions.list.model.TransactionFilterIds
 import eu.europa.ec.dashboardfeature.ui.transactions.list.model.TransactionUi
-import eu.europa.ec.resourceslogic.R
-import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.uilogic.component.DatePickerDialogConfig
 import eu.europa.ec.uilogic.component.DatePickerDialogType
-import eu.europa.ec.uilogic.component.DualSelectorButton
-import eu.europa.ec.uilogic.component.DualSelectorButtonDataUi
 import eu.europa.ec.uilogic.component.content.ContentErrorConfig
 import eu.europa.ec.uilogic.component.wrap.ExpandableListItemUi
 import eu.europa.ec.uilogic.extension.collapsedExpansionState
@@ -66,7 +61,6 @@ data class State(
     val transactionsUi: List<Pair<TransactionCategoryUi, List<TransactionUi>>> = emptyList(),
     val filtersUi: List<ExpandableListItemUi.NestedListItem> = emptyList(),
     val shouldRevertFilterChanges: Boolean = true,
-    val sortOrder: DualSelectorButtonDataUi,
     val isDatePickerDialogVisible: Boolean = false,
     val datePickerDialogConfig: DatePickerDialogConfig = DatePickerDialogConfig(
         type = DatePickerDialogType.SelectStartDate
@@ -90,7 +84,6 @@ sealed class Event : ViewEvent {
     data class OnFilterGroupExpansionChanged(val groupId: String) : Event()
     data object OnFiltersReset : Event()
     data object OnFiltersApply : Event()
-    data class OnSortingOrderChanged(val sortingOrder: DualSelectorButton) : Event()
     data object FiltersPressed : Event()
 
     data class TransactionItemPressed(val itemId: String) : Event()
@@ -132,16 +125,10 @@ sealed class TransactionsBottomSheetContent {
 @KoinViewModel
 class TransactionsViewModel(
     private val interactor: TransactionsInteractor,
-    private val resourceProvider: ResourceProvider
 ) : MviViewModel<Event, State, Effect>() {
     override fun setInitialState(): State {
         return State(
             isLoading = true,
-            sortOrder = DualSelectorButtonDataUi(
-                first = resourceProvider.getString(R.string.transactions_screen_filters_descending),
-                second = resourceProvider.getString(R.string.transactions_screen_filters_ascending),
-                selectedButton = DualSelectorButton.FIRST,
-            ),
             isFilteringActive = false,
         )
     }
@@ -187,10 +174,6 @@ class TransactionsViewModel(
 
             is Event.OnSearchQueryChanged -> {
                 applySearch(event.query)
-            }
-
-            is Event.OnSortingOrderChanged -> {
-                sortOrderChanged(event.sortingOrder)
             }
 
             is Event.TransactionItemPressed -> {
@@ -541,12 +524,6 @@ class TransactionsViewModel(
                                 showNoResultsFound = result.transactions.isEmpty(),
                                 filtersUi = result.filters.withExpansionStateFrom(
                                     currentItems = filtersUi
-                                ),
-                                sortOrder = sortOrder.copy(
-                                    selectedButton = when (result.sortOrder) {
-                                        is SortOrder.Descending -> DualSelectorButton.FIRST
-                                        is SortOrder.Ascending -> DualSelectorButton.SECOND
-                                    }
                                 )
                             )
                         }
@@ -557,12 +534,6 @@ class TransactionsViewModel(
                             copy(
                                 filtersUi = result.filters.withExpansionStateFrom(
                                     currentItems = filtersUi
-                                ),
-                                sortOrder = sortOrder.copy(
-                                    selectedButton = when (result.sortOrder) {
-                                        is SortOrder.Descending -> DualSelectorButton.FIRST
-                                        is SortOrder.Ascending -> DualSelectorButton.SECOND
-                                    }
                                 )
                             )
                         }
@@ -572,12 +543,4 @@ class TransactionsViewModel(
         }
     }
 
-    private fun sortOrderChanged(orderButton: DualSelectorButton) {
-        val sortOrder = when (orderButton) {
-            DualSelectorButton.FIRST -> SortOrder.Descending(isDefault = true)
-            DualSelectorButton.SECOND -> SortOrder.Ascending()
-        }
-        setState { copy(shouldRevertFilterChanges = true) }
-        interactor.updateSortOrder(sortOrder)
-    }
 }
