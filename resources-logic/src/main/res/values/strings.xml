@@ -45,8 +45,6 @@
     <string name="generic_filters_reset">Reset all</string>
     <string name="generic_filters_title">Filter</string>
     <string name="generic_filters_sort_by">Sort by</string>
-    <string name="generic_filters_ascending">Ascending</string>
-    <string name="generic_filters_descending">Descending</string>
     <string name="generic_search">Search</string>
     <!--endregion-->
 
@@ -271,14 +269,11 @@
     <string name="documents_screen_add_document_option_or">@string/generic_or</string>
     <string name="documents_screen_filters_title">@string/generic_filters_title</string>
     <string name="documents_screen_filters_sort_by">@string/generic_filters_sort_by</string>
-    <string name="documents_screen_filters_ascending">@string/generic_filters_ascending</string>
-    <string name="documents_screen_filters_descending">@string/generic_filters_descending</string>
     <string name="documents_screen_filters_sort_default">Default</string>
     <string name="documents_screen_filters_sort_date_issued">Date Issued</string>
     <string name="documents_screen_filters_sort_expiry_date">Expiry Date</string>
     <string name="documents_screen_filters_filter_by_issuer">Filter by Issuer</string>
     <string name="documents_screen_filters_filter_by_category">Filter by Category</string>
-    <string name="documents_screen_filters_filter_by_all">All</string>
     <string name="documents_screen_filters_filter_by_state">Filter by State</string>
     <string name="documents_screen_filters_filter_by_state_revoked">Revoked</string>
     <string name="documents_screen_filters_filter_by_state_valid">Valid</string>
@@ -308,8 +303,6 @@
     <!-- region Transactions Screen, Filter labels-->
     <string name="transactions_screen_filters_title">@string/generic_filters_title</string>
     <string name="transactions_screen_filters_sort_by">@string/generic_filters_sort_by</string>
-    <string name="transactions_screen_filters_ascending">@string/generic_filters_ascending</string>
-    <string name="transactions_screen_filters_descending">@string/generic_filters_descending</string>
     <string name="transactions_screen_filters_sort_transaction_date">Transaction Date</string>
     <string name="transactions_screen_filter_by_date_period">Filter by Transaction Date Period</string>
     <string name="transactions_screen_filter_by_status">Filter by Status</string>
