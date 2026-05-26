@@ -198,12 +198,12 @@ class DocumentsInteractorImpl(
 
             val filtersUi = result.updatedFilters.filterGroups.map { filterGroup ->
                 ExpandableListItemUi.NestedListItem(
-                    isExpanded = true,
+                    isExpanded = false,
                     header = ListItemDataUi(
                         itemId = filterGroup.id,
                         mainContentData = ListItemMainContentDataUi.Text(filterGroup.name),
                         trailingContentData = ListItemTrailingContentDataUi.Icon(
-                            iconData = AppIcons.KeyboardArrowRight
+                            iconData = AppIcons.KeyboardArrowDown
                         )
                     ),
                     nestedItems = filterGroup.filters.map { filterItem ->

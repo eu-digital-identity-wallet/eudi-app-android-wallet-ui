@@ -52,8 +52,10 @@ import eu.europa.ec.testlogic.extension.runFlowTest
 import eu.europa.ec.testlogic.extension.runTest
 import eu.europa.ec.testlogic.extension.toFlow
 import eu.europa.ec.testlogic.rule.CoroutineTestRule
+import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.ListItemDataUi
 import eu.europa.ec.uilogic.component.ListItemMainContentDataUi
+import eu.europa.ec.uilogic.component.ListItemTrailingContentDataUi
 import junit.framework.TestCase.assertEquals
 import junit.framework.TestCase.assertNotNull
 import kotlinx.coroutines.flow.emptyFlow
@@ -565,6 +567,13 @@ class TestDocumentsInteractor {
                 assertEquals(
                     state.filters.first().nestedItems.size,
                     mockFilters.filterGroups.first().filters.size
+                )
+                assertEquals(false, state.filters.first().isExpanded)
+                val trailingContent = state.filters.first().header.trailingContentData
+                val trailingIcon = trailingContent as ListItemTrailingContentDataUi.Icon
+                assertEquals(
+                    AppIcons.KeyboardArrowDown,
+                    trailingIcon.iconData
                 )
             }
         }

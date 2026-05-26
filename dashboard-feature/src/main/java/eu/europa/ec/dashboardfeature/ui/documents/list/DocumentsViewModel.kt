@@ -46,6 +46,9 @@ import eu.europa.ec.uilogic.component.ListItemTrailingContentDataUi
 import eu.europa.ec.uilogic.component.ModalOptionUi
 import eu.europa.ec.uilogic.component.content.ContentErrorConfig
 import eu.europa.ec.uilogic.component.wrap.ExpandableListItemUi
+import eu.europa.ec.uilogic.extension.collapsedExpansionState
+import eu.europa.ec.uilogic.extension.toggleExpansionState
+import eu.europa.ec.uilogic.extension.withExpansionStateFrom
 import eu.europa.ec.uilogic.mvi.MviViewModel
 import eu.europa.ec.uilogic.mvi.ViewEvent
 import eu.europa.ec.uilogic.mvi.ViewSideEffect
@@ -90,6 +93,7 @@ sealed class Event : ViewEvent {
     data class GoToDocumentDetails(val docId: DocumentId) : Event()
     data class OnSearchQueryChanged(val query: String) : Event()
     data class OnFilterSelectionChanged(val filterId: String, val groupId: String) : Event()
+    data class OnFilterGroupExpansionChanged(val groupId: String) : Event()
     data object OnFiltersReset : Event()
     data object OnFiltersApply : Event()
     data class OnSortingOrderChanged(val sortingOrder: DualSelectorButton) : Event()
@@ -216,6 +220,7 @@ class DocumentsViewModel(
 
             is Event.FiltersPressed -> {
                 stopDeferredIssuing()
+                collapseFilterGroups()
                 showBottomSheet(sheetContent = Filters(filters = emptyList()))
             }
 
@@ -225,6 +230,10 @@ class DocumentsViewModel(
 
             is Event.OnFilterSelectionChanged -> {
                 updateFilter(event.filterId, event.groupId)
+            }
+
+            is Event.OnFilterGroupExpansionChanged -> {
+                updateFilterGroupExpansion(event.groupId)
             }
 
             is Event.OnFiltersApply -> {
@@ -292,7 +301,9 @@ class DocumentsViewModel(
                                 isFilteringActive = !result.allDefaultFiltersAreSelected,
                                 documentsUi = result.documents,
                                 showNoResultsFound = result.documents.isEmpty(),
-                                filtersUi = result.filters,
+                                filtersUi = result.filters.withExpansionStateFrom(
+                                    currentItems = filtersUi
+                                ),
                                 sortOrder = sortOrder.copy(selectedButton = result.sortOrder)
                             )
                         }
@@ -301,7 +312,9 @@ class DocumentsViewModel(
                     is DocumentInteractorFilterPartialState.FilterUpdateResult -> {
                         setState {
                             copy(
-                                filtersUi = result.filters,
+                                filtersUi = result.filters.withExpansionStateFrom(
+                                    currentItems = filtersUi
+                                ),
                                 sortOrder = sortOrder.copy(selectedButton = result.sortOrder)
                             )
                         }
@@ -631,6 +644,21 @@ class DocumentsViewModel(
     private fun updateFilter(filterId: String, groupId: String) {
         setState { copy(shouldRevertFilterChanges = true) }
         interactor.updateFilter(filterGroupId = groupId, filterId = filterId)
+    }
+
+    private fun updateFilterGroupExpansion(groupId: String) {
+        setState {
+            copy(
+                filtersUi = filtersUi.toggleExpansionState(groupId)
+                    .filterIsInstance<ExpandableListItemUi.NestedListItem>()
+            )
+        }
+    }
+
+    private fun collapseFilterGroups() {
+        setState {
+            copy(filtersUi = filtersUi.collapsedExpansionState())
+        }
     }
 
     private fun applySelectedFilters() {

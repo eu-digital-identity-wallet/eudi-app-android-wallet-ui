@@ -53,7 +53,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.onGloballyPositioned
@@ -512,10 +511,6 @@ private fun DocumentsSheetContent(
                     )
                 },
                 bodyContent = {
-                    val expandStateList by remember {
-                        mutableStateOf(state.filtersUi.map { false }.toMutableStateList())
-                    }
-
                     var buttonsRowHeight by remember { mutableIntStateOf(0) }
 
                     Box {
@@ -529,14 +524,16 @@ private fun DocumentsSheetContent(
                             DualSelectorButtons(state.sortOrder) {
                                 onEventSent(Event.OnSortingOrderChanged(it))
                             }
-                            state.filtersUi.forEachIndexed { index, filter ->
+                            state.filtersUi.forEach { filter ->
                                 if (filter.nestedItems.isNotEmpty()) {
                                     WrapExpandableListItem(
                                         header = filter.header,
                                         data = filter.nestedItems,
-                                        isExpanded = expandStateList[index],
+                                        isExpanded = filter.isExpanded,
                                         onExpandedChange = {
-                                            expandStateList[index] = !expandStateList[index]
+                                            onEventSent(
+                                                Event.OnFilterGroupExpansionChanged(it.itemId)
+                                            )
                                         },
                                         onItemClick = {
                                             val id = it.itemId
