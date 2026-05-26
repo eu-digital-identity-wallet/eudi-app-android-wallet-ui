@@ -25,6 +25,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
@@ -128,6 +129,7 @@ fun WrapModalBottomSheet(
         onDismissRequest = onDismissRequest,
         modifier = Modifier
             .exposeTestTagsAsResourceId()
+            .statusBarsPadding()
             .then(modifier),
         sheetState = sheetState,
         shape = shape,
