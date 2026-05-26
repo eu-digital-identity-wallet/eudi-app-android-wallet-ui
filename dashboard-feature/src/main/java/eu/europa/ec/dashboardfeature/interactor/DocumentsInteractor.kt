@@ -29,6 +29,7 @@ import eu.europa.ec.businesslogic.validator.model.FilterAction
 import eu.europa.ec.businesslogic.validator.model.FilterElement.FilterItem
 import eu.europa.ec.businesslogic.validator.model.FilterGroup
 import eu.europa.ec.businesslogic.validator.model.FilterMultipleAction
+import eu.europa.ec.businesslogic.validator.model.FilterSort
 import eu.europa.ec.businesslogic.validator.model.FilterableItem
 import eu.europa.ec.businesslogic.validator.model.FilterableList
 import eu.europa.ec.businesslogic.validator.model.Filters
@@ -154,6 +155,8 @@ interface DocumentsInteractor {
     fun resetFilters()
     fun revertFilters()
     fun updateFilter(filterGroupId: String, filterId: String)
+    fun updateSort(filterId: String)
+    fun updateSortOrder(sortOrder: SortOrder)
     fun addDynamicFilters(
         documents: FilterableList,
         filters: Filters = Filters.emptyFilters(),
@@ -192,51 +195,47 @@ class DocumentsInteractorImpl(
                 it.documentCategory
             }.toList().sortedBy { it.first.order }
 
-            val filtersUi = result.updatedFilters.filterGroups
-                .filterNot { filterGroup ->
-                    filterGroup.id == DocumentFilterIds.FILTER_SORT_GROUP_ID
-                }
-                .map { filterGroup ->
-                    ExpandableListItemUi.NestedListItem(
-                        isExpanded = false,
-                        header = ListItemDataUi(
-                            itemId = filterGroup.id,
-                            mainContentData = ListItemMainContentDataUi.Text(filterGroup.name),
-                            trailingContentData = ListItemTrailingContentDataUi.Icon(
-                                iconData = AppIcons.KeyboardArrowDown
-                            )
-                        ),
-                        nestedItems = filterGroup.filters.map { filterItem ->
-                            ExpandableListItemUi.SingleListItem(
-                                header = ListItemDataUi(
-                                    itemId = filterItem.id,
-                                    mainContentData = ListItemMainContentDataUi.Text(filterItem.name),
-                                    trailingContentData = when (filterGroup) {
-                                        is FilterGroup.MultipleSelectionFilterGroup<*>,
-                                        is FilterGroup.ReversibleMultipleSelectionFilterGroup<*> -> {
-                                            ListItemTrailingContentDataUi.Checkbox(
-                                                checkboxData = CheckboxDataUi(
-                                                    isChecked = filterItem.selected,
-                                                    enabled = true
-                                                )
+            val filtersUi = result.updatedFilters.filterGroups.map { filterGroup ->
+                ExpandableListItemUi.NestedListItem(
+                    isExpanded = false,
+                    header = ListItemDataUi(
+                        itemId = filterGroup.id,
+                        mainContentData = ListItemMainContentDataUi.Text(filterGroup.name),
+                        trailingContentData = ListItemTrailingContentDataUi.Icon(
+                            iconData = AppIcons.KeyboardArrowDown
+                        )
+                    ),
+                    nestedItems = filterGroup.filters.map { filterItem ->
+                        ExpandableListItemUi.SingleListItem(
+                            header = ListItemDataUi(
+                                itemId = filterItem.id,
+                                mainContentData = ListItemMainContentDataUi.Text(filterItem.name),
+                                trailingContentData = when (filterGroup) {
+                                    is FilterGroup.MultipleSelectionFilterGroup<*>,
+                                    is FilterGroup.ReversibleMultipleSelectionFilterGroup<*> -> {
+                                        ListItemTrailingContentDataUi.Checkbox(
+                                            checkboxData = CheckboxDataUi(
+                                                isChecked = filterItem.selected,
+                                                enabled = true
                                             )
-                                        }
+                                        )
+                                    }
 
-                                        is FilterGroup.SingleSelectionFilterGroup,
-                                        is FilterGroup.ReversibleSingleSelectionFilterGroup -> {
-                                            ListItemTrailingContentDataUi.RadioButton(
-                                                radioButtonData = RadioButtonDataUi(
-                                                    isSelected = filterItem.selected,
-                                                    enabled = true
-                                                )
+                                    is FilterGroup.SingleSelectionFilterGroup,
+                                    is FilterGroup.ReversibleSingleSelectionFilterGroup -> {
+                                        ListItemTrailingContentDataUi.RadioButton(
+                                            radioButtonData = RadioButtonDataUi(
+                                                isSelected = filterItem.selected,
+                                                enabled = true
                                             )
-                                        }
-                                    },
-                                )
+                                        )
+                                    }
+                                },
                             )
-                        }
-                    )
-                }
+                        )
+                    }
+                )
+            }
 
             when (result) {
                 is FilterValidatorPartialState.FilterListResult -> {
@@ -271,6 +270,12 @@ class DocumentsInteractorImpl(
 
     override fun updateFilter(filterGroupId: String, filterId: String) =
         filterValidator.updateFilter(filterGroupId, filterId)
+
+    override fun updateSort(filterId: String) =
+        filterValidator.updateSort(filterId)
+
+    override fun updateSortOrder(sortOrder: SortOrder) =
+        filterValidator.updateSortOrder(sortOrder)
 
     override fun applyFilters() = filterValidator.applyFilters()
 
@@ -623,44 +628,12 @@ class DocumentsInteractorImpl(
                     }
                 }
             },
-            sortOrder = SortOrder.Ascending(isDefault = true)
+            sortOrder = filters.sortOrder
         )
     }
 
     override fun getFilters(): Filters = Filters(
         filterGroups = listOf(
-            // Sort
-            FilterGroup.SingleSelectionFilterGroup(
-                id = DocumentFilterIds.FILTER_SORT_GROUP_ID,
-                name = resourceProvider.getString(R.string.documents_screen_filters_sort_by),
-                filters = listOf(
-                    FilterItem(
-                        id = DocumentFilterIds.FILTER_SORT_DEFAULT,
-                        name = resourceProvider.getString(R.string.documents_screen_filters_sort_default),
-                        selected = true,
-                        isDefault = true,
-                        filterableAction = FilterAction.Sort<DocumentsFilterableAttributes, String> { attributes ->
-                            attributes.name.lowercase()
-                        }
-                    ),
-                    FilterItem(
-                        id = DocumentFilterIds.FILTER_SORT_DATE_ISSUED,
-                        name = resourceProvider.getString(R.string.documents_screen_filters_sort_date_issued),
-                        selected = false,
-                        filterableAction = FilterAction.Sort<DocumentsFilterableAttributes, Instant> { attributes ->
-                            attributes.issuedDate
-                        }
-                    ),
-                    FilterItem(
-                        id = DocumentFilterIds.FILTER_SORT_EXPIRY_DATE,
-                        name = resourceProvider.getString(R.string.documents_screen_filters_sort_expiry_date),
-                        selected = false,
-                        filterableAction = FilterAction.Sort<DocumentsFilterableAttributes, Instant> { attributes ->
-                            attributes.expiryDate
-                        }
-                    )
-                )
-            ),
             // Filter by expiry period
             FilterGroup.SingleSelectionFilterGroup(
                 id = DocumentFilterIds.FILTER_BY_PERIOD_GROUP_ID,
@@ -765,7 +738,38 @@ class DocumentsInteractorImpl(
                 }
             )
         ),
-        sortOrder = SortOrder.Ascending(isDefault = true)
+        sortOrder = SortOrder.Ascending(isDefault = true),
+        sort = FilterSort(
+            id = DocumentFilterIds.FILTER_SORT_GROUP_ID,
+            name = resourceProvider.getString(R.string.documents_screen_filters_sort_by),
+            filters = listOf(
+                FilterItem(
+                    id = DocumentFilterIds.FILTER_SORT_DEFAULT,
+                    name = resourceProvider.getString(R.string.documents_screen_filters_sort_default),
+                    selected = true,
+                    isDefault = true,
+                    filterableAction = FilterAction.Sort<DocumentsFilterableAttributes, String> { attributes ->
+                        attributes.name.lowercase()
+                    }
+                ),
+                FilterItem(
+                    id = DocumentFilterIds.FILTER_SORT_DATE_ISSUED,
+                    name = resourceProvider.getString(R.string.documents_screen_filters_sort_date_issued),
+                    selected = false,
+                    filterableAction = FilterAction.Sort<DocumentsFilterableAttributes, Instant> { attributes ->
+                        attributes.issuedDate
+                    }
+                ),
+                FilterItem(
+                    id = DocumentFilterIds.FILTER_SORT_EXPIRY_DATE,
+                    name = resourceProvider.getString(R.string.documents_screen_filters_sort_expiry_date),
+                    selected = false,
+                    filterableAction = FilterAction.Sort<DocumentsFilterableAttributes, Instant> { attributes ->
+                        attributes.expiryDate
+                    }
+                )
+            )
+        )
     )
 
     private fun addDocumentCategoryFilter(documents: FilterableList): List<FilterItem> {

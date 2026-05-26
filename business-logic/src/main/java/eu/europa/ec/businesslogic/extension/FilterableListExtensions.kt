@@ -35,8 +35,10 @@ fun FilterableList.filterByQuery(searchQuery: String): FilterableList {
 }
 
 internal fun FilterableList.applySort(filters: Filters): FilterableList {
-    return filters.filterGroups.flatMap { it.filters }
-        .firstOrNull { it.filterableAction is FilterAction.Sort<*, *> && it.selected }?.filterableAction?.applyFilter(
-            filters.sortOrder, this, FilterElement.FilterItem.emptyFilter()
-        ) ?: this
+    val selectedSort = filters.sort?.filters
+        ?.firstOrNull { it.filterableAction is FilterAction.Sort<*, *> && it.selected }
+
+    return selectedSort?.filterableAction?.applyFilter(
+        filters.sortOrder, this, FilterElement.FilterItem.emptyFilter()
+    ) ?: this
 }

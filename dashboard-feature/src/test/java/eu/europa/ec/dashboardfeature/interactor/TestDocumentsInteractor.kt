@@ -21,6 +21,7 @@ import eu.europa.ec.businesslogic.validator.FilterValidator
 import eu.europa.ec.businesslogic.validator.FilterValidatorPartialState
 import eu.europa.ec.businesslogic.validator.model.FilterElement.FilterItem
 import eu.europa.ec.businesslogic.validator.model.FilterGroup
+import eu.europa.ec.businesslogic.validator.model.FilterSort
 import eu.europa.ec.businesslogic.validator.model.FilterableAttributes
 import eu.europa.ec.businesslogic.validator.model.FilterableItem
 import eu.europa.ec.businesslogic.validator.model.FilterableList
@@ -848,10 +849,10 @@ class TestDocumentsInteractor {
     }
 
     @Test
-    fun `Given a FilterUpdateResult with the sort group, When onFilterStateChange emits it, Then the sort group is not exposed`() {
+    fun `Given a FilterUpdateResult with sort config, When onFilterStateChange emits it, Then only filter groups are exposed`() {
         coroutineRule.runTest {
             // Given
-            val sort = FilterGroup.SingleSelectionFilterGroup(
+            val sort = FilterSort(
                 id = eu.europa.ec.dashboardfeature.ui.documents.list.model.DocumentFilterIds.FILTER_SORT_GROUP_ID,
                 name = "Sort",
                 filters = listOf(FilterItem(id = "sort", name = "Sort", selected = true)),
@@ -862,8 +863,9 @@ class TestDocumentsInteractor {
                 filters = listOf(FilterItem(id = "s1", name = "S1", selected = true)),
             )
             val updatedFilters = Filters(
-                filterGroups = listOf(sort, single),
+                filterGroups = listOf(single),
                 sortOrder = SortOrder.Descending(),
+                sort = sort,
             )
             mockOnFilterChangedEvent(
                 FilterValidatorPartialState.FilterUpdateResult(updatedFilters = updatedFilters)
@@ -1071,13 +1073,16 @@ class TestDocumentsInteractor {
         val ids = filters.filterGroups.map { it.id }
         assertEquals(
             listOf(
-                eu.europa.ec.dashboardfeature.ui.documents.list.model.DocumentFilterIds.FILTER_SORT_GROUP_ID,
                 eu.europa.ec.dashboardfeature.ui.documents.list.model.DocumentFilterIds.FILTER_BY_PERIOD_GROUP_ID,
                 eu.europa.ec.dashboardfeature.ui.documents.list.model.DocumentFilterIds.FILTER_BY_ISSUER_GROUP_ID,
                 eu.europa.ec.dashboardfeature.ui.documents.list.model.DocumentFilterIds.FILTER_BY_DOCUMENT_CATEGORY_GROUP_ID,
                 eu.europa.ec.dashboardfeature.ui.documents.list.model.DocumentFilterIds.FILTER_BY_STATE_GROUP_ID,
             ),
             ids
+        )
+        assertEquals(
+            eu.europa.ec.dashboardfeature.ui.documents.list.model.DocumentFilterIds.FILTER_SORT_GROUP_ID,
+            filters.sort?.id
         )
     }
 
@@ -1090,21 +1095,19 @@ class TestDocumentsInteractor {
             issuedDate = java.time.Instant.parse("2026-01-01T00:00:00Z"),
             expiryDate = java.time.Instant.parse("2030-01-01T00:00:00Z"),
         )
-        val sortGroup = interactor.getFilters().filterGroups.first {
-            it.id == eu.europa.ec.dashboardfeature.ui.documents.list.model.DocumentFilterIds.FILTER_SORT_GROUP_ID
-        }
+        val sort = interactor.getFilters().sort!!
 
         @Suppress("UNCHECKED_CAST")
         val defaultSort =
-            sortGroup.filters[0].filterableAction as eu.europa.ec.businesslogic.validator.model.FilterAction.Sort<eu.europa.ec.dashboardfeature.ui.documents.list.model.DocumentsFilterableAttributes, String>
+            sort.filters[0].filterableAction as eu.europa.ec.businesslogic.validator.model.FilterAction.Sort<eu.europa.ec.dashboardfeature.ui.documents.list.model.DocumentsFilterableAttributes, String>
 
         @Suppress("UNCHECKED_CAST")
         val issuedSort =
-            sortGroup.filters[1].filterableAction as eu.europa.ec.businesslogic.validator.model.FilterAction.Sort<eu.europa.ec.dashboardfeature.ui.documents.list.model.DocumentsFilterableAttributes, java.time.Instant>
+            sort.filters[1].filterableAction as eu.europa.ec.businesslogic.validator.model.FilterAction.Sort<eu.europa.ec.dashboardfeature.ui.documents.list.model.DocumentsFilterableAttributes, java.time.Instant>
 
         @Suppress("UNCHECKED_CAST")
         val expirySort =
-            sortGroup.filters[2].filterableAction as eu.europa.ec.businesslogic.validator.model.FilterAction.Sort<eu.europa.ec.dashboardfeature.ui.documents.list.model.DocumentsFilterableAttributes, java.time.Instant>
+            sort.filters[2].filterableAction as eu.europa.ec.businesslogic.validator.model.FilterAction.Sort<eu.europa.ec.dashboardfeature.ui.documents.list.model.DocumentsFilterableAttributes, java.time.Instant>
 
         // When + Then
         assertEquals("pid", defaultSort.selector(attrs))
@@ -1385,6 +1388,29 @@ class TestDocumentsInteractor {
         // Then
         org.mockito.kotlin.verify(filterValidator, org.mockito.kotlin.times(1))
             .updateFilter("groupId", "filterId")
+    }
+
+    @Test
+    fun `When updateSort is called, Then filterValidator#updateSort is invoked`() {
+        // When
+        interactor.updateSort(filterId = "sortId")
+
+        // Then
+        org.mockito.kotlin.verify(filterValidator, org.mockito.kotlin.times(1))
+            .updateSort("sortId")
+    }
+
+    @Test
+    fun `When updateSortOrder is called, Then filterValidator#updateSortOrder is invoked`() {
+        // Given
+        val order = SortOrder.Ascending(isDefault = false)
+
+        // When
+        interactor.updateSortOrder(sortOrder = order)
+
+        // Then
+        org.mockito.kotlin.verify(filterValidator, org.mockito.kotlin.times(1))
+            .updateSortOrder(order)
     }
 
     @Test

@@ -209,6 +209,17 @@ class TestTransactionsInteractor {
     }
     //endregion
 
+    //region updateSort
+    @Test
+    fun `When updateSort is called, Then filterValidator#updateSort is invoked with the same id`() {
+        // When
+        interactor.updateSort(filterId = "sortId")
+
+        // Then
+        verify(filterValidator, times(1)).updateSort("sortId")
+    }
+    //endregion
+
     //region updateSortOrder
     @Test
     fun `When updateSortOrder is called, Then filterValidator#updateSortOrder is invoked with the same order`() {
@@ -488,7 +499,6 @@ class TestTransactionsInteractor {
         val groupIds = result.filterGroups.map { it.id }
         assertEquals(
             listOf(
-                TransactionFilterIds.FILTER_SORT_GROUP_ID,
                 TransactionFilterIds.FILTER_BY_TRANSACTION_DATE_GROUP_ID,
                 TransactionFilterIds.FILTER_BY_STATUS_GROUP_ID,
                 TransactionFilterIds.FILTER_BY_RELYING_PARTY_GROUP_ID,
@@ -497,6 +507,7 @@ class TestTransactionsInteractor {
             groupIds
         )
         assertEquals(SortOrder.Descending(isDefault = true), result.sortOrder)
+        assertEquals(TransactionFilterIds.FILTER_SORT_GROUP_ID, result.sort?.id)
     }
     //endregion
 
@@ -549,8 +560,8 @@ class TestTransactionsInteractor {
     fun `Given Case 2, When addDynamicFilters is called with a non-relying-party group, Then the group is left unchanged`() {
         // Given
         val unrelatedGroup = FilterGroup.SingleSelectionFilterGroup(
-            id = TransactionFilterIds.FILTER_SORT_GROUP_ID,
-            name = "Sort",
+            id = "unrelated_group",
+            name = "Unrelated",
             filters = listOf(
                 FilterItem(
                     id = "x",
@@ -700,12 +711,10 @@ class TestTransactionsInteractor {
         // Given
         mockGetFiltersStrings()
         val filters = interactor.getFilters()
-        val sortGroup = filters.filterGroups.first {
-            it.id == TransactionFilterIds.FILTER_SORT_GROUP_ID
-        }
+        val sort = filters.sort!!
 
         @Suppress("UNCHECKED_CAST")
-        val sortAction = sortGroup.filters.first().filterableAction
+        val sortAction = sort.filters.first().filterableAction
                 as FilterAction.Sort<TransactionsFilterableAttributes, LocalDateTime>
         val attrs = attributes(creationLocalDateTime = LocalDateTime.of(2026, 5, 1, 12, 0))
 
