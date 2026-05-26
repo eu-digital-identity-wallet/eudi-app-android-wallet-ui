@@ -43,7 +43,7 @@
     <string name="generic_or">OR</string>
     <string name="generic_filters_apply">Apply</string>
     <string name="generic_filters_reset">Reset all</string>
-    <string name="generic_filters_title">Filter</string>
+    <string name="generic_filters_title">Filter by</string>
     <string name="generic_filters_sort_by">Sort by</string>
     <string name="generic_search">Search</string>
     <!--endregion-->
@@ -270,15 +270,15 @@
     <string name="documents_screen_filters_title">@string/generic_filters_title</string>
     <string name="documents_screen_filters_sort_by">@string/generic_filters_sort_by</string>
     <string name="documents_screen_filters_sort_default">Default</string>
-    <string name="documents_screen_filters_sort_date_issued">Date Issued</string>
+    <string name="documents_screen_filters_sort_date_issued">Date</string>
     <string name="documents_screen_filters_sort_expiry_date">Expiry Date</string>
-    <string name="documents_screen_filters_filter_by_issuer">Filter by Issuer</string>
-    <string name="documents_screen_filters_filter_by_category">Filter by Category</string>
-    <string name="documents_screen_filters_filter_by_state">Filter by State</string>
+    <string name="documents_screen_filters_filter_by_issuer">Issuer</string>
+    <string name="documents_screen_filters_filter_by_category">Category</string>
+    <string name="documents_screen_filters_filter_by_state">State</string>
     <string name="documents_screen_filters_filter_by_state_revoked">Revoked</string>
     <string name="documents_screen_filters_filter_by_state_valid">Valid</string>
     <string name="documents_screen_filters_filter_by_state_expired">Expired</string>
-    <string name="documents_screen_filters_filter_by_expiry_period">Filter by Expiry Period</string>
+    <string name="documents_screen_filters_filter_by_expiry_period">Expiry Period</string>
     <string name="documents_screen_filters_filter_by_expiry_period_1">Next 7 days</string>
     <string name="documents_screen_filters_filter_by_expiry_period_2">Next 30 days</string>
     <string name="documents_screen_filters_filter_by_expiry_period_3">Beyond 30 days</string>
@@ -304,10 +304,10 @@
     <string name="transactions_screen_filters_title">@string/generic_filters_title</string>
     <string name="transactions_screen_filters_sort_by">@string/generic_filters_sort_by</string>
     <string name="transactions_screen_filters_sort_transaction_date">Transaction Date</string>
-    <string name="transactions_screen_filter_by_date_period">Filter by Transaction Date Period</string>
-    <string name="transactions_screen_filter_by_status">Filter by Status</string>
-    <string name="transactions_screen_filters_filter_by_relying_party">Filter by Relying Party</string>
-    <string name="transactions_screen_filters_filter_by_transaction_type">Filter by Transaction Type</string>
+    <string name="transactions_screen_filter_by_date_period">Date</string>
+    <string name="transactions_screen_filter_by_status">Status</string>
+    <string name="transactions_screen_filters_filter_by_relying_party">Relying Party</string>
+    <string name="transactions_screen_filters_filter_by_transaction_type">Transaction Type</string>
     <string name="transactions_screen_filters_filter_by_transaction_type_presentation">Presentation</string>
     <string name="transactions_screen_filters_filter_by_transaction_type_issuance">Issuance</string>
     <string name="transactions_screen_filters_filter_by_transaction_type_signing">Signing</string>

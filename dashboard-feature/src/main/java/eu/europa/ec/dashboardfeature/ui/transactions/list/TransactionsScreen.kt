@@ -32,6 +32,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
@@ -471,7 +472,7 @@ private fun TransactionsSheetContent(
                                         WrapExpandableCard(
                                             cardCollapsedContent = {
                                                 WrapListItem(
-                                                    mainContentVerticalPadding = SPACING_MEDIUM.dp,
+                                                    mainContentVerticalPadding = 18.dp,
                                                     item = filter.header,
                                                     onItemClick = {
                                                         onEventSent(
@@ -489,9 +490,12 @@ private fun TransactionsSheetContent(
                                             cardExpandedContent = {
                                                 Column(
                                                     modifier = Modifier.padding(
-                                                        start = SPACING_MEDIUM.dp,
-                                                        end = SPACING_MEDIUM.dp,
-                                                        bottom = SPACING_MEDIUM.dp
+                                                        start = 20.dp,
+                                                        end = 20.dp,
+                                                        bottom = 20.dp,
+                                                    ),
+                                                    verticalArrangement = Arrangement.spacedBy(
+                                                        SPACING_SMALL.dp
                                                     )
                                                 ) {
                                                     FiltersDatePickerField(
@@ -534,8 +538,9 @@ private fun TransactionsSheetContent(
                                                 )
                                             },
                                             addDivider = false,
-                                            collapsedMainContentVerticalPadding = SPACING_MEDIUM.dp,
-                                            expandedMainContentVerticalPadding = SPACING_MEDIUM.dp,
+                                            collapsedMainContentVerticalPadding = 18.dp,
+                                            expandedMainContentVerticalPadding = 18.dp,
+                                            shape = RoundedCornerShape(12.dp),
                                         )
                                     }
                                 }

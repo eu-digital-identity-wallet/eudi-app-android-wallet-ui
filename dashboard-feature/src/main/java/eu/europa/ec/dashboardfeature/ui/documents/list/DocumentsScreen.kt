@@ -535,8 +535,9 @@ private fun DocumentsSheetContent(
                                             onEventSent(Event.OnFilterSelectionChanged(id, groupId))
                                         },
                                         addDivider = false,
-                                        collapsedMainContentVerticalPadding = SPACING_MEDIUM.dp,
-                                        expandedMainContentVerticalPadding = SPACING_MEDIUM.dp,
+                                        collapsedMainContentVerticalPadding = 18.dp,
+                                        expandedMainContentVerticalPadding = 18.dp,
+                                        shape = RoundedCornerShape(12.dp),
                                     )
                                 }
                             }
