@@ -51,6 +51,7 @@ import eu.europa.ec.testlogic.extension.runFlowTest
 import eu.europa.ec.testlogic.extension.runTest
 import eu.europa.ec.testlogic.extension.toFlow
 import eu.europa.ec.testlogic.rule.CoroutineTestRule
+import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.ListItemDataUi
 import eu.europa.ec.uilogic.component.ListItemMainContentDataUi
 import eu.europa.ec.uilogic.component.ListItemTrailingContentDataUi
@@ -609,6 +610,16 @@ class TestTransactionsInteractor {
                 assertEquals(filtersFromValidator.sortOrder, state.sortOrder)
                 assertEquals(true, state.allDefaultFiltersAreSelected)
                 assertEquals(filtersFromValidator.filterGroups.size, state.filters.size)
+
+                state.filters.forEach { filter ->
+                    assertEquals(false, filter.isExpanded)
+                    val headerTrailingContent = filter.header.trailingContentData
+                    assertTrue(headerTrailingContent is ListItemTrailingContentDataUi.Icon)
+                    assertEquals(
+                        AppIcons.KeyboardArrowDown,
+                        (headerTrailingContent as ListItemTrailingContentDataUi.Icon).iconData
+                    )
+                }
 
                 val trailingTypes = state.filters.flatMap { nested ->
                     nested.nestedItems.map { it.header.trailingContentData }

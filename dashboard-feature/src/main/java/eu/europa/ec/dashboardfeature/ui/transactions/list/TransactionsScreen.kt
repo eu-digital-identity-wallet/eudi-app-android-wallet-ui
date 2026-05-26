@@ -44,11 +44,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.PointerEventPass
@@ -461,10 +459,6 @@ private fun TransactionsSheetContent(
                     )
                 },
                 bodyContent = {
-                    val expandStateList by remember {
-                        mutableStateOf(filtersUi.map { false }.toMutableStateList())
-                    }
-
                     var buttonsRowHeight by remember { mutableIntStateOf(0) }
 
                     Box {
@@ -481,7 +475,7 @@ private fun TransactionsSheetContent(
                                 )
                             }
 
-                            filtersUi.forEachIndexed { index, filter ->
+                            filtersUi.forEach { filter ->
                                 when {
                                     filter.header.itemId == TransactionFilterIds.FILTER_BY_TRANSACTION_DATE_GROUP_ID -> {
                                         WrapExpandableCard(
@@ -490,8 +484,11 @@ private fun TransactionsSheetContent(
                                                     mainContentVerticalPadding = SPACING_MEDIUM.dp,
                                                     item = filter.header,
                                                     onItemClick = {
-                                                        expandStateList[index] =
-                                                            !expandStateList[index]
+                                                        onEventSent(
+                                                            Event.OnFilterGroupExpansionChanged(
+                                                                filter.header.itemId
+                                                            )
+                                                        )
                                                     },
                                                     mainContentTextStyle = MaterialTheme.typography.bodyLarge.copy(
                                                         fontWeight = FontWeight.Bold,
@@ -522,7 +519,7 @@ private fun TransactionsSheetContent(
                                                     )
                                                 }
                                             },
-                                            isExpanded = expandStateList[index],
+                                            isExpanded = filter.isExpanded,
                                         )
                                     }
 
@@ -530,9 +527,11 @@ private fun TransactionsSheetContent(
                                         WrapExpandableListItem(
                                             header = filter.header,
                                             data = filter.nestedItems,
-                                            isExpanded = expandStateList[index],
+                                            isExpanded = filter.isExpanded,
                                             onExpandedChange = {
-                                                expandStateList[index] = !expandStateList[index]
+                                                onEventSent(
+                                                    Event.OnFilterGroupExpansionChanged(it.itemId)
+                                                )
                                             },
                                             onItemClick = {
                                                 val id = it.itemId
