@@ -18,7 +18,6 @@ package eu.europa.ec.dashboardfeature.ui.documents.list
 
 import androidx.lifecycle.viewModelScope
 import eu.europa.ec.businesslogic.validator.model.FilterableList
-import eu.europa.ec.businesslogic.validator.model.SortOrder
 import eu.europa.ec.commonfeature.config.IssuanceFlowType
 import eu.europa.ec.commonfeature.config.IssuanceUiConfig
 import eu.europa.ec.commonfeature.config.QrScanFlow
@@ -40,8 +39,6 @@ import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.resourceslogic.theme.values.ThemeColors
 import eu.europa.ec.uilogic.component.AppIcons
-import eu.europa.ec.uilogic.component.DualSelectorButton
-import eu.europa.ec.uilogic.component.DualSelectorButtonDataUi
 import eu.europa.ec.uilogic.component.ListItemTrailingContentDataUi
 import eu.europa.ec.uilogic.component.ModalOptionUi
 import eu.europa.ec.uilogic.component.content.ContentErrorConfig
@@ -80,7 +77,6 @@ data class State(
     val shouldRevertFilterChanges: Boolean = true,
 
     val filtersUi: List<ExpandableListItemUi.NestedListItem> = emptyList(),
-    val sortOrder: DualSelectorButtonDataUi,
     val isFilteringActive: Boolean,
 ) : ViewState
 
@@ -96,7 +92,6 @@ sealed class Event : ViewEvent {
     data class OnFilterGroupExpansionChanged(val groupId: String) : Event()
     data object OnFiltersReset : Event()
     data object OnFiltersApply : Event()
-    data class OnSortingOrderChanged(val sortingOrder: DualSelectorButton) : Event()
 
     data object AddDocumentPressed : Event()
     data object FiltersPressed : Event()
@@ -176,11 +171,6 @@ class DocumentsViewModel(
     override fun setInitialState(): State {
         return State(
             isLoading = true,
-            sortOrder = DualSelectorButtonDataUi(
-                first = resourceProvider.getString(R.string.documents_screen_filters_ascending),
-                second = resourceProvider.getString(R.string.documents_screen_filters_descending),
-                selectedButton = DualSelectorButton.FIRST,
-            ),
             isFilteringActive = false
         )
     }
@@ -244,10 +234,6 @@ class DocumentsViewModel(
                 resetFilters()
             }
 
-            is Event.OnSortingOrderChanged -> {
-                sortOrderChanged(event.sortingOrder)
-            }
-
             is Event.BottomSheet.UpdateBottomSheetState -> {
                 if (viewState.value.sheetContent is Filters
                     && !event.isOpen
@@ -303,8 +289,7 @@ class DocumentsViewModel(
                                 showNoResultsFound = result.documents.isEmpty(),
                                 filtersUi = result.filters.withExpansionStateFrom(
                                     currentItems = filtersUi
-                                ),
-                                sortOrder = sortOrder.copy(selectedButton = result.sortOrder)
+                                )
                             )
                         }
                     }
@@ -314,8 +299,7 @@ class DocumentsViewModel(
                             copy(
                                 filtersUi = result.filters.withExpansionStateFrom(
                                     currentItems = filtersUi
-                                ),
-                                sortOrder = sortOrder.copy(selectedButton = result.sortOrder)
+                                )
                             )
                         }
                     }
@@ -688,15 +672,6 @@ class DocumentsViewModel(
         setState {
             copy(isBottomSheetOpen = isOpening)
         }
-    }
-
-    private fun sortOrderChanged(orderButton: DualSelectorButton) {
-        val sortOrder = when (orderButton) {
-            DualSelectorButton.FIRST -> SortOrder.Ascending(isDefault = true)
-            DualSelectorButton.SECOND -> SortOrder.Descending()
-        }
-        setState { copy(shouldRevertFilterChanges = true) }
-        interactor.updateSortOrder(sortOrder)
     }
 
     private fun stopDeferredIssuing() {

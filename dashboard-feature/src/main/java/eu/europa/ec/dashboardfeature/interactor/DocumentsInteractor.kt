@@ -55,7 +55,6 @@ import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.resourceslogic.theme.values.ThemeColors
 import eu.europa.ec.uilogic.component.AppIcons
-import eu.europa.ec.uilogic.component.DualSelectorButton
 import eu.europa.ec.uilogic.component.ListItemDataUi
 import eu.europa.ec.uilogic.component.ListItemLeadingContentDataUi
 import eu.europa.ec.uilogic.component.ListItemMainContentDataUi
@@ -78,13 +77,11 @@ sealed class DocumentInteractorFilterPartialState {
     data class FilterApplyResult(
         val documents: List<Pair<DocumentCategory, List<DocumentUi>>>,
         val filters: List<ExpandableListItemUi.NestedListItem>,
-        val sortOrder: DualSelectorButton,
         val allDefaultFiltersAreSelected: Boolean,
     ) : DocumentInteractorFilterPartialState()
 
     data class FilterUpdateResult(
         val filters: List<ExpandableListItemUi.NestedListItem>,
-        val sortOrder: DualSelectorButton,
     ) : DocumentInteractorFilterPartialState()
 }
 
@@ -157,7 +154,6 @@ interface DocumentsInteractor {
     fun resetFilters()
     fun revertFilters()
     fun updateFilter(filterGroupId: String, filterId: String)
-    fun updateSortOrder(sortOrder: SortOrder)
     fun addDynamicFilters(
         documents: FilterableList,
         filters: Filters = Filters.emptyFilters(),
@@ -196,59 +192,57 @@ class DocumentsInteractorImpl(
                 it.documentCategory
             }.toList().sortedBy { it.first.order }
 
-            val filtersUi = result.updatedFilters.filterGroups.map { filterGroup ->
-                ExpandableListItemUi.NestedListItem(
-                    isExpanded = false,
-                    header = ListItemDataUi(
-                        itemId = filterGroup.id,
-                        mainContentData = ListItemMainContentDataUi.Text(filterGroup.name),
-                        trailingContentData = ListItemTrailingContentDataUi.Icon(
-                            iconData = AppIcons.KeyboardArrowDown
-                        )
-                    ),
-                    nestedItems = filterGroup.filters.map { filterItem ->
-                        ExpandableListItemUi.SingleListItem(
-                            header = ListItemDataUi(
-                                itemId = filterItem.id,
-                                mainContentData = ListItemMainContentDataUi.Text(filterItem.name),
-                                trailingContentData = when (filterGroup) {
-                                    is FilterGroup.MultipleSelectionFilterGroup<*>,
-                                    is FilterGroup.ReversibleMultipleSelectionFilterGroup<*> -> {
-                                        ListItemTrailingContentDataUi.Checkbox(
-                                            checkboxData = CheckboxDataUi(
-                                                isChecked = filterItem.selected,
-                                                enabled = true
-                                            )
-                                        )
-                                    }
-
-                                    is FilterGroup.SingleSelectionFilterGroup,
-                                    is FilterGroup.ReversibleSingleSelectionFilterGroup -> {
-                                        ListItemTrailingContentDataUi.RadioButton(
-                                            radioButtonData = RadioButtonDataUi(
-                                                isSelected = filterItem.selected,
-                                                enabled = true
-                                            )
-                                        )
-                                    }
-                                },
+            val filtersUi = result.updatedFilters.filterGroups
+                .filterNot { filterGroup ->
+                    filterGroup.id == DocumentFilterIds.FILTER_SORT_GROUP_ID
+                }
+                .map { filterGroup ->
+                    ExpandableListItemUi.NestedListItem(
+                        isExpanded = false,
+                        header = ListItemDataUi(
+                            itemId = filterGroup.id,
+                            mainContentData = ListItemMainContentDataUi.Text(filterGroup.name),
+                            trailingContentData = ListItemTrailingContentDataUi.Icon(
+                                iconData = AppIcons.KeyboardArrowDown
                             )
-                        )
-                    }
-                )
-            }
+                        ),
+                        nestedItems = filterGroup.filters.map { filterItem ->
+                            ExpandableListItemUi.SingleListItem(
+                                header = ListItemDataUi(
+                                    itemId = filterItem.id,
+                                    mainContentData = ListItemMainContentDataUi.Text(filterItem.name),
+                                    trailingContentData = when (filterGroup) {
+                                        is FilterGroup.MultipleSelectionFilterGroup<*>,
+                                        is FilterGroup.ReversibleMultipleSelectionFilterGroup<*> -> {
+                                            ListItemTrailingContentDataUi.Checkbox(
+                                                checkboxData = CheckboxDataUi(
+                                                    isChecked = filterItem.selected,
+                                                    enabled = true
+                                                )
+                                            )
+                                        }
 
-            val sortOrderUi = when (result.updatedFilters.sortOrder) {
-                is SortOrder.Ascending -> DualSelectorButton.FIRST
-                is SortOrder.Descending -> DualSelectorButton.SECOND
-            }
+                                        is FilterGroup.SingleSelectionFilterGroup,
+                                        is FilterGroup.ReversibleSingleSelectionFilterGroup -> {
+                                            ListItemTrailingContentDataUi.RadioButton(
+                                                radioButtonData = RadioButtonDataUi(
+                                                    isSelected = filterItem.selected,
+                                                    enabled = true
+                                                )
+                                            )
+                                        }
+                                    },
+                                )
+                            )
+                        }
+                    )
+                }
 
             when (result) {
                 is FilterValidatorPartialState.FilterListResult -> {
                     DocumentInteractorFilterPartialState.FilterApplyResult(
                         documents = documentsUi,
                         filters = filtersUi,
-                        sortOrder = sortOrderUi,
                         allDefaultFiltersAreSelected = result.allDefaultFiltersAreSelected
                     )
                 }
@@ -256,7 +250,6 @@ class DocumentsInteractorImpl(
                 is FilterValidatorPartialState.FilterUpdateResult -> {
                     DocumentInteractorFilterPartialState.FilterUpdateResult(
                         filters = filtersUi,
-                        sortOrder = sortOrderUi
                     )
                 }
             }
@@ -278,9 +271,6 @@ class DocumentsInteractorImpl(
 
     override fun updateFilter(filterGroupId: String, filterId: String) =
         filterValidator.updateFilter(filterGroupId, filterId)
-
-    override fun updateSortOrder(sortOrder: SortOrder) =
-        filterValidator.updateSortOrder(sortOrder)
 
     override fun applyFilters() = filterValidator.applyFilters()
 
@@ -633,7 +623,7 @@ class DocumentsInteractorImpl(
                     }
                 }
             },
-            sortOrder = filters.sortOrder
+            sortOrder = SortOrder.Ascending(isDefault = true)
         )
     }
 

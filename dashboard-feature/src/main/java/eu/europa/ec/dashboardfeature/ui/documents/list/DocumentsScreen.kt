@@ -76,9 +76,6 @@ import eu.europa.ec.dashboardfeature.util.TestTag
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.theme.values.warning
 import eu.europa.ec.uilogic.component.AppIcons
-import eu.europa.ec.uilogic.component.DualSelectorButton
-import eu.europa.ec.uilogic.component.DualSelectorButtonDataUi
-import eu.europa.ec.uilogic.component.DualSelectorButtons
 import eu.europa.ec.uilogic.component.FiltersSearchBar
 import eu.europa.ec.uilogic.component.InlineSnackbar
 import eu.europa.ec.uilogic.component.ListItemDataUi
@@ -521,9 +518,6 @@ private fun DocumentsSheetContent(
                                 .padding(bottom = with(LocalDensity.current) { buttonsRowHeight.toDp() }),
                             verticalArrangement = Arrangement.spacedBy(SPACING_LARGE.dp)
                         ) {
-                            DualSelectorButtons(state.sortOrder) {
-                                onEventSent(Event.OnSortingOrderChanged(it))
-                            }
                             state.filtersUi.forEach { filter ->
                                 if (filter.nestedItems.isNotEmpty()) {
                                     WrapExpandableListItem(
@@ -737,11 +731,6 @@ private fun DocumentsScreenPreview() {
                 state = State(
                     isLoading = false,
                     isFilteringActive = false,
-                    sortOrder = DualSelectorButtonDataUi(
-                        first = "first",
-                        second = "second",
-                        selectedButton = DualSelectorButton.FIRST,
-                    ),
                     documentsUi = documentsList.groupBy { it.documentCategory }.toList(),
                 ),
                 effectFlow = Channel<Effect>().receiveAsFlow(),

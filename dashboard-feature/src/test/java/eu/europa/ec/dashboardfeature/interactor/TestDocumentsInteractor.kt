@@ -843,25 +843,26 @@ class TestDocumentsInteractor {
                 }
                 assertTrue(trailing.any { it is eu.europa.ec.uilogic.component.ListItemTrailingContentDataUi.Checkbox })
                 assertTrue(trailing.any { it is eu.europa.ec.uilogic.component.ListItemTrailingContentDataUi.RadioButton })
-                assertEquals(
-                    eu.europa.ec.uilogic.component.DualSelectorButton.FIRST,
-                    state.sortOrder
-                )
             }
         }
     }
 
     @Test
-    fun `Given a FilterUpdateResult with descending sort, When onFilterStateChange emits it, Then sortOrder is SECOND and FilterUpdateResult is mapped`() {
+    fun `Given a FilterUpdateResult with the sort group, When onFilterStateChange emits it, Then the sort group is not exposed`() {
         coroutineRule.runTest {
             // Given
+            val sort = FilterGroup.SingleSelectionFilterGroup(
+                id = eu.europa.ec.dashboardfeature.ui.documents.list.model.DocumentFilterIds.FILTER_SORT_GROUP_ID,
+                name = "Sort",
+                filters = listOf(FilterItem(id = "sort", name = "Sort", selected = true)),
+            )
             val single = FilterGroup.SingleSelectionFilterGroup(
                 id = "single",
                 name = "Single",
                 filters = listOf(FilterItem(id = "s1", name = "S1", selected = true)),
             )
             val updatedFilters = Filters(
-                filterGroups = listOf(single),
+                filterGroups = listOf(sort, single),
                 sortOrder = SortOrder.Descending(),
             )
             mockOnFilterChangedEvent(
@@ -875,8 +876,8 @@ class TestDocumentsInteractor {
                 assertTrue(state is DocumentInteractorFilterPartialState.FilterUpdateResult)
                 state as DocumentInteractorFilterPartialState.FilterUpdateResult
                 assertEquals(
-                    eu.europa.ec.uilogic.component.DualSelectorButton.SECOND,
-                    state.sortOrder
+                    listOf("single"),
+                    state.filters.map { it.header.itemId }
                 )
             }
         }
@@ -1384,19 +1385,6 @@ class TestDocumentsInteractor {
         // Then
         org.mockito.kotlin.verify(filterValidator, org.mockito.kotlin.times(1))
             .updateFilter("groupId", "filterId")
-    }
-
-    @Test
-    fun `When updateSortOrder is called, Then filterValidator#updateSortOrder is invoked`() {
-        // Given
-        val order = SortOrder.Ascending(isDefault = false)
-
-        // When
-        interactor.updateSortOrder(sortOrder = order)
-
-        // Then
-        org.mockito.kotlin.verify(filterValidator, org.mockito.kotlin.times(1))
-            .updateSortOrder(order)
     }
 
     @Test
