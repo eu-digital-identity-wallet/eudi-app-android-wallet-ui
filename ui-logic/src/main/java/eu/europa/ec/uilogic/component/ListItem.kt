@@ -52,6 +52,7 @@ import eu.europa.ec.uilogic.component.wrap.CheckboxDataUi
 import eu.europa.ec.uilogic.component.wrap.RadioButtonDataUi
 import eu.europa.ec.uilogic.component.wrap.SwitchDataUi
 import eu.europa.ec.uilogic.component.wrap.TextConfig
+import eu.europa.ec.uilogic.component.wrap.TextStyleKey
 import eu.europa.ec.uilogic.component.wrap.WrapAsyncImage
 import eu.europa.ec.uilogic.component.wrap.WrapCheckbox
 import eu.europa.ec.uilogic.component.wrap.WrapIcon
@@ -349,7 +350,7 @@ fun ListItem(
                                 .padding(start = SIZE_MEDIUM.dp),
                             text = trailingContentData.text,
                             textConfig = TextConfig(
-                                style = MaterialTheme.typography.labelSmall,
+                                styleKey = TextStyleKey.LabelSmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 maxLines = Int.MAX_VALUE,
                             )

@@ -16,34 +16,41 @@
 
 package eu.europa.ec.commonfeature.config
 
-import com.google.gson.Gson
-import com.google.gson.GsonBuilder
 import eu.europa.ec.corelogic.controller.PresentationControllerConfig
 import eu.europa.ec.uilogic.navigation.helper.IntentAction
 import eu.europa.ec.uilogic.navigation.helper.IntentType
 import eu.europa.ec.uilogic.serializer.UiSerializable
 import eu.europa.ec.uilogic.serializer.UiSerializableParser
-import eu.europa.ec.uilogic.serializer.adapter.SerializableTypeAdapter
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
+@Serializable
 sealed interface PresentationMode {
     val scopeId: String
 
+    @Serializable
+    @SerialName("OpenId4Vp")
     data class OpenId4Vp(val uri: String, val initiatorRoute: String) : PresentationMode {
         override val scopeId: String
             get() = "vp_presentation_scope_id"
     }
 
+    @Serializable
+    @SerialName("Ble")
     data class Ble(val initiatorRoute: String) : PresentationMode {
         override val scopeId: String
             get() = "ble_presentation_scope_id"
     }
 
+    @Serializable
+    @SerialName("DcApi")
     data class DcApi(val initiatorRoute: String) : PresentationMode {
         override val scopeId: String
             get() = "dc_api_presentation_scope_id"
     }
 }
 
+@Serializable
 data class RequestUriConfig(
     val mode: PresentationMode
 ) : UiSerializable {
@@ -52,13 +59,6 @@ data class RequestUriConfig(
 
     companion object Parser : UiSerializableParser {
         override val serializedKeyName = "requestUriConfig"
-
-        override fun provideParser(): Gson {
-            return GsonBuilder().registerTypeAdapter(
-                PresentationMode::class.java,
-                SerializableTypeAdapter<PresentationMode>()
-            ).create()
-        }
     }
 }
 

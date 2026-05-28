@@ -28,6 +28,7 @@ import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
 import eu.europa.ec.uilogic.component.utils.SPACING_SMALL
 import eu.europa.ec.uilogic.component.wrap.TextConfig
+import eu.europa.ec.uilogic.component.wrap.TextStyleKey
 import eu.europa.ec.uilogic.component.wrap.WrapIconButton
 import eu.europa.ec.uilogic.component.wrap.WrapText
 
@@ -45,7 +46,7 @@ fun SectionTitle(
     modifier: Modifier,
     text: String,
     textConfig: TextConfig = TextConfig(
-        style = MaterialTheme.typography.labelSmall,
+        styleKey = TextStyleKey.LabelSmall,
         color = MaterialTheme.colorScheme.onSurfaceVariant,
     ),
     icon: IconDataUi? = null,

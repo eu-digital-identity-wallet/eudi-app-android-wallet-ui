@@ -20,7 +20,7 @@ import project.convention.logic.config.LibraryModule
 
 private const val KOIN = "*.ksp.*"
 private const val BUILD_CONFIG = "*BuildConfig*"
-private const val SCREEN_COMPOSABLES = "*Screen*"
+private const val SCREEN_COMPOSABLES = "*ScreenKt"
 private const val MODELS = "eu.europa.ec.*.model"
 private const val DOMAIN_MODELS = "eu.europa.ec.*.domain"
 private const val EXTENSIONS = "eu.europa.ec.*.extension"
@@ -102,8 +102,7 @@ sealed interface KoverExclusionRules {
             get() = commonPackages + listOf(
                 "eu.europa.ec.uilogic.container",
                 "eu.europa.ec.uilogic.mvi",
-                "eu.europa.ec.uilogic.navigation",
-                "eu.europa.ec.uilogic.serializer",
+                "eu.europa.ec.uilogic.navigation"
             )
     }
 

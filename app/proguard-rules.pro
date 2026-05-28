@@ -103,19 +103,13 @@
 # API Models
 -keep class eu.europa.ec.networklogic.model.** { *; }
 
-# Core Configuration
+# Wallet Core
 -keep interface eu.europa.ec.corelogic.config.WalletCoreConfig
 -keepclassmembers class * implements eu.europa.ec.corelogic.config.WalletCoreConfig { *; }
+-keep class eu.europa.ec.eudi.wallet.transactionLogging.** { *; }
 
 # Enum
 -keep enum * { *; }
-
-# UI Config
--keep interface eu.europa.ec.uilogic.serializer.UiSerializableParser
--keep interface eu.europa.ec.uilogic.serializer.UiSerializable
--keepclassmembers class * implements eu.europa.ec.uilogic.serializer.adapter.SerializableAdapterType { *; }
--keepclassmembers class * implements eu.europa.ec.uilogic.serializer.UiSerializableParser { *; }
--keepclassmembers class * implements eu.europa.ec.uilogic.serializer.UiSerializable { *; }
 
 # Bouncycastle
 -keep class org.bouncycastle.** { *; }
@@ -124,3 +118,18 @@
 # Core Libs
 -keep class com.nimbusds.jwt.**{ *; }
 -keep class com.nimbusds.jose.**{ *; }
+
+# R8 fullMode-specific rules (AGP 9+)
+-keepattributes Signature, InnerClasses, EnclosingMethod, *Annotation*
+-keepattributes SourceFile, LineNumberTable
+-renamesourcefileattribute SourceFile
+
+# kotlinx.serialization
+-keepclassmembers @kotlinx.serialization.Serializable class * {
+    static **$Companion Companion;
+    static **$* *;
+}
+-keep,includedescriptorclasses class **$$serializer { *; }
+-keepclassmembers class * {
+    @com.google.gson.annotations.SerializedName <fields>;
+}

@@ -16,14 +16,12 @@
 
 package eu.europa.ec.commonfeature.config
 
-import com.google.gson.Gson
-import com.google.gson.GsonBuilder
 import eu.europa.ec.uilogic.config.ConfigNavigation
-import eu.europa.ec.uilogic.config.NavigationType
 import eu.europa.ec.uilogic.serializer.UiSerializable
 import eu.europa.ec.uilogic.serializer.UiSerializableParser
-import eu.europa.ec.uilogic.serializer.adapter.SerializableTypeAdapter
+import kotlinx.serialization.Serializable
 
+@Serializable
 data class OfferCodeUiConfig(
     val offerUri: String,
     val txCodeLength: Int,
@@ -33,13 +31,5 @@ data class OfferCodeUiConfig(
 
     companion object Parser : UiSerializableParser {
         override val serializedKeyName = "offerCodeConfig"
-        override fun provideParser(): Gson {
-            return GsonBuilder()
-                .registerTypeAdapter(
-                    NavigationType::class.java,
-                    SerializableTypeAdapter<NavigationType>()
-                )
-                .create()
-        }
     }
 }

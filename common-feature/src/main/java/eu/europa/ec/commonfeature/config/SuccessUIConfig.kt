@@ -17,19 +17,19 @@
 package eu.europa.ec.commonfeature.config
 
 import androidx.compose.ui.graphics.Color
-import com.google.gson.Gson
-import com.google.gson.GsonBuilder
 import eu.europa.ec.resourceslogic.theme.values.ThemeColors
 import eu.europa.ec.uilogic.component.AppIconAndTextDataUi
 import eu.europa.ec.uilogic.component.IconDataUi
 import eu.europa.ec.uilogic.component.content.ContentHeaderConfig
 import eu.europa.ec.uilogic.component.utils.PERCENTAGE_60
 import eu.europa.ec.uilogic.config.ConfigNavigation
-import eu.europa.ec.uilogic.config.NavigationType
 import eu.europa.ec.uilogic.serializer.UiSerializable
 import eu.europa.ec.uilogic.serializer.UiSerializableParser
-import eu.europa.ec.uilogic.serializer.adapter.SerializableTypeAdapter
+import kotlinx.serialization.Contextual
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
+@Serializable
 data class SuccessUIConfig(
     val textElementsConfig: TextElementsConfig,
     val headerConfig: ContentHeaderConfig = ContentHeaderConfig(
@@ -41,46 +41,44 @@ data class SuccessUIConfig(
     val onBackScreenToNavigate: ConfigNavigation
 ) : UiSerializable {
 
+    @Serializable
     data class ImageConfig(
         val type: Type = Type.Default,
-        val tint: Color? = ThemeColors.success,
+        @Contextual val tint: Color? = ThemeColors.success,
         val screenPercentageSize: Float = PERCENTAGE_60,
     ) {
+        @Serializable
         sealed class Type {
+            @Serializable
+            @SerialName("Default")
             data object Default : Type()
+
+            @Serializable
+            @SerialName("Drawable")
             data class Drawable(val icon: IconDataUi) : Type()
         }
     }
 
+    @Serializable
     data class ButtonConfig(
         val text: String,
         val style: Style,
         val navigation: ConfigNavigation,
     ) {
+        @Serializable
         enum class Style {
             PRIMARY, OUTLINE
         }
     }
 
+    @Serializable
     data class TextElementsConfig(
         val text: String,
         val description: String,
-        val color: Color = ThemeColors.success
+        @Contextual val color: Color = ThemeColors.success
     )
 
     companion object Parser : UiSerializableParser {
         override val serializedKeyName = "successConfig"
-        override fun provideParser(): Gson {
-            return GsonBuilder()
-                .registerTypeAdapter(
-                    NavigationType::class.java,
-                    SerializableTypeAdapter<NavigationType>()
-                )
-                .registerTypeAdapter(
-                    ImageConfig.Type::class.java,
-                    SerializableTypeAdapter<ImageConfig.Type>()
-                )
-                .create()
-        }
     }
 }
