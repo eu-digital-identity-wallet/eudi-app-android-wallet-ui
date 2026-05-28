@@ -17,7 +17,6 @@
 package eu.europa.ec.businesslogic.validator
 
 import eu.europa.ec.businesslogic.controller.log.LogController
-import eu.europa.ec.testlogic.base.TestApplication
 import eu.europa.ec.testlogic.extension.runTest
 import eu.europa.ec.testlogic.rule.CoroutineTestRule
 import junit.framework.TestCase.assertEquals
@@ -27,10 +26,8 @@ import org.junit.runner.RunWith
 import org.mockito.Mock
 import org.mockito.MockitoAnnotations
 import org.robolectric.RobolectricTestRunner
-import org.robolectric.annotation.Config
 
 @RunWith(RobolectricTestRunner::class)
-@Config(application = TestApplication::class)
 class TestFormValidator {
 
     private val plainErrorMessage = "error message"
