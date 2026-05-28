@@ -17,6 +17,7 @@
 package eu.europa.ec.dashboardfeature.interactor
 
 import eu.europa.ec.businesslogic.config.ConfigLogic
+import eu.europa.ec.businesslogic.controller.storage.PrefKeys
 import eu.europa.ec.businesslogic.extension.isBeyondNextDays
 import eu.europa.ec.businesslogic.extension.isExpired
 import eu.europa.ec.businesslogic.extension.isValid
@@ -169,7 +170,8 @@ class DocumentsInteractorImpl(
     private val resourceProvider: ResourceProvider,
     private val walletCoreDocumentsController: WalletCoreDocumentsController,
     private val filterValidator: FilterValidator,
-    private val configLogic: ConfigLogic
+    private val configLogic: ConfigLogic,
+    private val prefKeys: PrefKeys,
 ) : DocumentsInteractor {
 
     private val genericErrorMsg
@@ -364,18 +366,11 @@ class DocumentsInteractorImpl(
                                 val documentLowOnCredentials = walletCoreDocumentsController
                                     .isDocumentLowOnCredentials(document)
 
-                                if (documentLowOnCredentials) {
-                                    ListItemTrailingContentDataUi.TextWithIcon(
-                                        text = documentCredentialsInfoUi.title,
-                                        iconData = AppIcons.ErrorFilled,
-                                        tint = ThemeColors.warning
-                                    )
-                                } else {
-                                    ListItemTrailingContentDataUi.TextWithIcon(
-                                        text = documentCredentialsInfoUi.title,
-                                        iconData = AppIcons.KeyboardArrowRight
-                                    )
-                                }
+                                createDocumentTrailingContentData(
+                                    documentCredentialsInfoUi = documentCredentialsInfoUi,
+                                    documentLowOnCredentials = documentLowOnCredentials,
+                                    showBatchIssuanceCounter = prefKeys.getShowBatchIssuanceCounter()
+                                )
                             }
 
                             FilterableItem(
@@ -477,6 +472,45 @@ class DocumentsInteractorImpl(
                 error = it.localizedMessage ?: genericErrorMsg
             )
         }
+
+    private fun createDocumentTrailingContentData(
+        documentCredentialsInfoUi: DocumentCredentialsInfoUi,
+        documentLowOnCredentials: Boolean,
+        showBatchIssuanceCounter: Boolean,
+    ): ListItemTrailingContentDataUi {
+        val lowOnCredentialsIcon = AppIcons.ErrorFilled
+        val lowOnCredentialsIconTint = ThemeColors.warning
+
+        return when {
+            showBatchIssuanceCounter && documentLowOnCredentials -> {
+                ListItemTrailingContentDataUi.TextWithIcon(
+                    text = documentCredentialsInfoUi.title,
+                    iconData = lowOnCredentialsIcon,
+                    tint = lowOnCredentialsIconTint
+                )
+            }
+
+            showBatchIssuanceCounter -> {
+                ListItemTrailingContentDataUi.TextWithIcon(
+                    text = documentCredentialsInfoUi.title,
+                    iconData = AppIcons.KeyboardArrowRight
+                )
+            }
+
+            documentLowOnCredentials -> {
+                ListItemTrailingContentDataUi.Icon(
+                    iconData = lowOnCredentialsIcon,
+                    tint = lowOnCredentialsIconTint
+                )
+            }
+
+            else -> {
+                ListItemTrailingContentDataUi.Icon(
+                    iconData = AppIcons.KeyboardArrowRight
+                )
+            }
+        }
+    }
 
     override fun tryIssuingDeferredDocumentsFlow(
         deferredDocuments: Map<DocumentId, FormatType>,

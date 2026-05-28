@@ -21,6 +21,7 @@ import eu.europa.ec.authenticationlogic.controller.authentication.BiometricsAvai
 import eu.europa.ec.authenticationlogic.controller.authentication.DeviceAuthenticationResult
 import eu.europa.ec.authenticationlogic.model.BiometricCrypto
 import eu.europa.ec.businesslogic.config.ConfigLogic
+import eu.europa.ec.businesslogic.controller.storage.PrefKeys
 import eu.europa.ec.businesslogic.extension.safeAsync
 import eu.europa.ec.businesslogic.provider.UuidProvider
 import eu.europa.ec.commonfeature.interactor.DeviceAuthenticationInteractor
@@ -61,7 +62,7 @@ sealed class DocumentDetailsInteractorPartialState {
         val issuerDetails: IssuerDetailsCardDataUi,
         val documentDetailsDomain: DocumentDetailsDomain,
         val documentIsBookmarked: Boolean,
-        val documentCredentialsInfoUi: DocumentCredentialsInfoUi,
+        val documentCredentialsInfoUi: DocumentCredentialsInfoUi?,
     ) : DocumentDetailsInteractorPartialState()
 
     data class Failure(val error: String) : DocumentDetailsInteractorPartialState()
@@ -126,7 +127,8 @@ class DocumentDetailsInteractorImpl(
     private val deviceAuthenticationInteractor: DeviceAuthenticationInteractor,
     private val resourceProvider: ResourceProvider,
     private val uuidProvider: UuidProvider,
-    private val configLogic: ConfigLogic
+    private val configLogic: ConfigLogic,
+    private val prefKeys: PrefKeys,
 ) : DocumentDetailsInteractor {
 
     private val genericErrorMsg
@@ -150,10 +152,14 @@ class DocumentDetailsInteractorImpl(
                     )
                 val documentDetailsDomain = documentDetailsDomainResult.getOrThrow()
 
-                val documentCredentialsInfo = createDocumentCredentialsInfoUi(
-                    document = safeIssuedDocument,
-                    resourceProvider = resourceProvider
-                )
+                val documentCredentialsInfo = if (prefKeys.getShowBatchIssuanceCounter()) {
+                    createDocumentCredentialsInfoUi(
+                        document = safeIssuedDocument,
+                        resourceProvider = resourceProvider
+                    )
+                } else {
+                    null
+                }
 
                 val userLocale = resourceProvider.getLocale()
                 val issuerName = safeIssuedDocument.localizedIssuerMetadata(userLocale)?.name
