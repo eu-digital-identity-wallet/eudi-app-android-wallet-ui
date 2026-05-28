@@ -36,9 +36,12 @@ import eu.europa.ec.uilogic.component.preview.TextLengthPreviewProvider
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
 import eu.europa.ec.uilogic.component.utils.VSpacer
 import eu.europa.ec.uilogic.component.wrap.TextConfig
+import eu.europa.ec.uilogic.component.wrap.TextStyleKey
 import eu.europa.ec.uilogic.component.wrap.WrapAsyncImage
 import eu.europa.ec.uilogic.component.wrap.WrapIcon
 import eu.europa.ec.uilogic.component.wrap.WrapText
+import kotlinx.serialization.Contextual
+import kotlinx.serialization.Serializable
 import java.net.URI
 
 /**
@@ -51,8 +54,9 @@ import java.net.URI
  * @property description An optional description of the Relying Party.
  * @property descriptionTextConfig Optional [TextConfig] for styling the description text.
  */
+@Serializable
 data class RelyingPartyDataUi(
-    val logo: URI? = null,
+    @Contextual val logo: URI? = null,
     val isVerified: Boolean,
     val name: String,
     val nameTextConfig: TextConfig? = null,
@@ -98,7 +102,7 @@ fun RelyingParty(
                     modifier = Modifier.wrapContentWidth(),
                     text = name,
                     textConfig = nameTextConfig ?: TextConfig(
-                        style = MaterialTheme.typography.titleMedium,
+                        styleKey = TextStyleKey.TitleMedium,
                         textAlign = commonTextAlign,
                     )
                 )
@@ -109,7 +113,7 @@ fun RelyingParty(
                     modifier = Modifier.fillMaxWidth(),
                     text = safeDescription,
                     textConfig = descriptionTextConfig ?: TextConfig(
-                        style = MaterialTheme.typography.bodySmall,
+                        styleKey = TextStyleKey.BodySmall,
                         textAlign = commonTextAlign,
                     )
                 )

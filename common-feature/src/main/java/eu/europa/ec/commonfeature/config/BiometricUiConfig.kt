@@ -16,21 +16,24 @@
 
 package eu.europa.ec.commonfeature.config
 
-import com.google.gson.Gson
-import com.google.gson.GsonBuilder
 import eu.europa.ec.uilogic.config.ConfigNavigation
-import eu.europa.ec.uilogic.config.NavigationType
 import eu.europa.ec.uilogic.serializer.UiSerializable
 import eu.europa.ec.uilogic.serializer.UiSerializableParser
-import eu.europa.ec.uilogic.serializer.adapter.SerializableTypeAdapter
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
+@Serializable
 sealed interface BiometricMode {
+    @Serializable
+    @SerialName("Default")
     data class Default(
         val descriptionWhenBiometricsEnabled: String,
         val descriptionWhenBiometricsNotEnabled: String,
         val textAbovePin: String,
     ) : BiometricMode
 
+    @Serializable
+    @SerialName("Login")
     data class Login(
         val title: String,
         val subTitleWhenBiometricsEnabled: String,
@@ -38,6 +41,7 @@ sealed interface BiometricMode {
     ) : BiometricMode
 }
 
+@Serializable
 data class BiometricUiConfig(
     val mode: BiometricMode,
     val isPreAuthorization: Boolean = false,
@@ -48,21 +52,10 @@ data class BiometricUiConfig(
 
     companion object Parser : UiSerializableParser {
         override val serializedKeyName = "biometricConfig"
-        override fun provideParser(): Gson {
-            return GsonBuilder()
-                .registerTypeAdapter(
-                    NavigationType::class.java,
-                    SerializableTypeAdapter<NavigationType>()
-                )
-                .registerTypeAdapter(
-                    BiometricMode::class.java,
-                    SerializableTypeAdapter<BiometricMode>()
-                )
-                .create()
-        }
     }
 }
 
+@Serializable
 data class OnBackNavigationConfig(
     val onBackNavigation: ConfigNavigation?,
     private val hasToolbarBackIcon: Boolean

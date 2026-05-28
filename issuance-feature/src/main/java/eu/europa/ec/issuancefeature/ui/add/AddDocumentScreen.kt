@@ -78,6 +78,7 @@ import eu.europa.ec.uilogic.component.utils.VSpacer
 import eu.europa.ec.uilogic.component.wrap.ButtonConfig
 import eu.europa.ec.uilogic.component.wrap.ButtonType
 import eu.europa.ec.uilogic.component.wrap.TextConfig
+import eu.europa.ec.uilogic.component.wrap.TextStyleKey
 import eu.europa.ec.uilogic.component.wrap.WrapButton
 import eu.europa.ec.uilogic.component.wrap.WrapImage
 import eu.europa.ec.uilogic.component.wrap.WrapListItem
@@ -288,7 +289,7 @@ private fun Options(
                         .padding(bottom = SPACING_MEDIUM.dp),
                     text = issuerId,
                     textConfig = TextConfig(
-                        style = MaterialTheme.typography.labelSmall,
+                        styleKey = TextStyleKey.LabelSmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 )

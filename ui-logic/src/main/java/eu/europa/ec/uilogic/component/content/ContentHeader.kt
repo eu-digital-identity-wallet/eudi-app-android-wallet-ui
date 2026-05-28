@@ -19,11 +19,9 @@ package eu.europa.ec.uilogic.component.content
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.dp
@@ -39,8 +37,10 @@ import eu.europa.ec.uilogic.component.utils.SPACING_LARGE
 import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
 import eu.europa.ec.uilogic.component.utils.SPACING_SMALL
 import eu.europa.ec.uilogic.component.wrap.TextConfig
+import eu.europa.ec.uilogic.component.wrap.TextStyleKey
 import eu.europa.ec.uilogic.component.wrap.WrapText
 import eu.europa.ec.uilogic.extension.optionalTestTag
+import kotlinx.serialization.Serializable
 
 /**
  * Data class representing the configuration for a content header.
@@ -54,6 +54,7 @@ import eu.europa.ec.uilogic.extension.optionalTestTag
  * @property mainTextConfig Configuration for the appearance of the main text.
  * @property relyingPartyData Data for displaying information about the relying party, if applicable.
  */
+@Serializable
 data class ContentHeaderConfig(
     val appIconAndTextData: AppIconAndTextDataUi = AppIconAndTextDataUi(),
     val description: String?,
@@ -102,7 +103,7 @@ fun ContentHeader(
                         .padding(vertical = SPACING_SMALL.dp),
                     text = safeDescription,
                     textConfig = descriptionTextConfig ?: TextConfig(
-                        style = MaterialTheme.typography.bodyLarge,
+                        styleKey = TextStyleKey.BodyLarge,
                         textAlign = commonTextAlign,
                         maxLines = 3,
                     )
@@ -117,9 +118,7 @@ fun ContentHeader(
                         .padding(vertical = SPACING_MEDIUM.dp),
                     text = safeMainText,
                     textConfig = mainTextConfig ?: TextConfig(
-                        style = MaterialTheme.typography.bodyLarge.copy(
-                            fontWeight = FontWeight.W600
-                        ),
+                        styleKey = TextStyleKey.BodyLargeBold,
                         textAlign = commonTextAlign,
                     )
                 )

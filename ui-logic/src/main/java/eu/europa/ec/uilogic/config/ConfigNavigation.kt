@@ -17,30 +17,51 @@
 package eu.europa.ec.uilogic.config
 
 import eu.europa.ec.uilogic.navigation.Screen
+import kotlinx.serialization.Contextual
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
+@Serializable
 data class ConfigNavigation(
     val navigationType: NavigationType,
     val indicateFlowCompletion: FlowCompletion = FlowCompletion.NONE
 )
 
+@Serializable
 sealed interface NavigationType {
+    @Serializable
+    @SerialName("Pop")
     data object Pop : NavigationType
+
+    @Serializable
+    @SerialName("Finish")
     data object Finish : NavigationType
+
+    @Serializable
+    @SerialName("PushScreen")
     data class PushScreen(
-        val screen: Screen,
+        @Contextual val screen: Screen,
         val arguments: Map<String, String?> = emptyMap(),
-        val popUpToScreen: Screen? = null
+        @Contextual val popUpToScreen: Screen? = null
     ) : NavigationType
 
+    @Serializable
+    @SerialName("PushRoute")
     data class PushRoute(
         val route: String,
         val popUpToRoute: String? = null
     ) : NavigationType
 
-    data class PopTo(val screen: Screen) : NavigationType
+    @Serializable
+    @SerialName("PopTo")
+    data class PopTo(@Contextual val screen: Screen) : NavigationType
+
+    @Serializable
+    @SerialName("Deeplink")
     data class Deeplink(val link: String, val routeToPop: String? = null) : NavigationType
 }
 
+@Serializable
 enum class FlowCompletion {
     CANCEL,
     SUCCESS,
