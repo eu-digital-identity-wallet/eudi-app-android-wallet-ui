@@ -28,7 +28,6 @@ import eu.europa.ec.testfeature.util.mockedExceptionWithNoMessage
 import eu.europa.ec.testfeature.util.mockedGenericErrorMessage
 import eu.europa.ec.testfeature.util.mockedUserFirstName
 import eu.europa.ec.testfeature.walletcore.getMockedEudiWalletConfig
-import eu.europa.ec.testlogic.base.TestApplication
 import eu.europa.ec.testlogic.base.getMockedContext
 import eu.europa.ec.testlogic.extension.runFlowTest
 import eu.europa.ec.testlogic.extension.runTest
@@ -45,11 +44,9 @@ import org.mockito.MockitoAnnotations
 import org.mockito.kotlin.whenever
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.Shadows
-import org.robolectric.annotation.Config
 import org.robolectric.shadows.ShadowBluetoothAdapter
 
 @RunWith(RobolectricTestRunner::class)
-@Config(application = TestApplication::class)
 class TestHomeInteractor {
 
     @get:Rule

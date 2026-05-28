@@ -24,7 +24,6 @@ import eu.europa.ec.authenticationlogic.controller.throttle.PinThrottleControlle
 import eu.europa.ec.authenticationlogic.provider.PinLockoutState
 import eu.europa.ec.authenticationlogic.secure.SecurePinImpl
 import eu.europa.ec.testfeature.util.mockedNotifyOnAuthenticationFailure
-import eu.europa.ec.testlogic.base.TestApplication
 import eu.europa.ec.testlogic.base.getMockedContext
 import eu.europa.ec.testlogic.extension.runFlowTest
 import eu.europa.ec.testlogic.extension.runTest
@@ -42,10 +41,8 @@ import org.mockito.MockitoAnnotations
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.robolectric.RobolectricTestRunner
-import org.robolectric.annotation.Config
 
 @RunWith(RobolectricTestRunner::class)
-@Config(application = TestApplication::class)
 class TestBiometricInteractor {
 
     @get:Rule
