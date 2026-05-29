@@ -100,7 +100,7 @@
     <string name="content_description_home_icon">Home</string>
     <string name="content_description_in_progress_icon">In progress</string>
     <string name="content_description_notifications_icon">Notifications</string>
-    <string name="content_description_transactions_icon">Transactions</string>
+    <string name="content_description_transactions_icon">History</string>
     <string name="content_description_wallet_activated_icon">Wallet activated</string>
     <string name="content_description_wallet_secured_icon">Wallet secured</string>
     <string name="content_description_info_icon">Info</string>
@@ -290,7 +290,7 @@
     <!--endregion-->
 
     <!-- region Transactions Screen -->
-    <string name="transactions_screen_title">Transactions</string>
+    <string name="transactions_screen_title">History</string>
     <string name="transactions_screen_search_label">@string/generic_search</string>
     <string name="transactions_screen_search_no_results">No transactions found. Try changing your search query or filters.</string>
     <string name="transactions_screen_0_minutes_ago_message">Just now</string>
