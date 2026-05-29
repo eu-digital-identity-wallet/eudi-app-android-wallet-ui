@@ -1076,13 +1076,11 @@ class TestDocumentsInteractor {
     }
 
     @Test
-    fun `When the sort filters' selectors are applied, Then they return name issuedDate and expiryDate respectively`() {
+    fun `When the default sort selector is applied, Then it returns the normalized document name`() {
         // Given
         whenever(resourceProvider.getString(any())).thenReturn("mocked")
         val attrs = documentsAttributes(
             name = "PID",
-            issuedDate = Instant.parse("2026-01-01T00:00:00Z"),
-            expiryDate = Instant.parse("2030-01-01T00:00:00Z"),
         )
         val sort = interactor.getFilters().sort!!
 
@@ -1090,18 +1088,12 @@ class TestDocumentsInteractor {
         val defaultSort =
             sort.filters[0].filterableAction as FilterAction.Sort<DocumentsFilterableAttributes, String>
 
-        @Suppress("UNCHECKED_CAST")
-        val issuedSort =
-            sort.filters[1].filterableAction as FilterAction.Sort<DocumentsFilterableAttributes, Instant>
-
-        @Suppress("UNCHECKED_CAST")
-        val expirySort =
-            sort.filters[2].filterableAction as FilterAction.Sort<DocumentsFilterableAttributes, Instant>
-
         // When + Then
+        assertEquals(
+            listOf(DocumentFilterIds.FILTER_SORT_DEFAULT),
+            sort.filters.map { it.id },
+        )
         assertEquals("pid", defaultSort.selector(attrs))
-        assertEquals(attrs.issuedDate, issuedSort.selector(attrs))
-        assertEquals(attrs.expiryDate, expirySort.selector(attrs))
     }
 
     @Test

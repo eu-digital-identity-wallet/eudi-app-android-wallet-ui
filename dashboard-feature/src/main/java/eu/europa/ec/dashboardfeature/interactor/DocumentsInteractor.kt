@@ -73,7 +73,6 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.lastOrNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
-import java.time.Instant
 
 sealed class DocumentInteractorFilterPartialState {
     data class FilterApplyResult(
@@ -786,22 +785,6 @@ class DocumentsInteractorImpl(
                         attributes.name.lowercase()
                     }
                 ),
-                FilterItem(
-                    id = DocumentFilterIds.FILTER_SORT_DATE_ISSUED,
-                    name = resourceProvider.getString(R.string.documents_screen_filters_sort_date_issued),
-                    selected = false,
-                    filterableAction = FilterAction.Sort<DocumentsFilterableAttributes, Instant> { attributes ->
-                        attributes.issuedDate
-                    }
-                ),
-                FilterItem(
-                    id = DocumentFilterIds.FILTER_SORT_EXPIRY_DATE,
-                    name = resourceProvider.getString(R.string.documents_screen_filters_sort_expiry_date),
-                    selected = false,
-                    filterableAction = FilterAction.Sort<DocumentsFilterableAttributes, Instant> { attributes ->
-                        attributes.expiryDate
-                    }
-                )
             )
         )
     )
