@@ -185,7 +185,7 @@ private fun Content(
                     collapsedMainContentVerticalPadding = SPACING_MEDIUM.dp,
                     expandedMainContentVerticalPadding = SPACING_MEDIUM.dp,
                     colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.tertiary,
+                        containerColor = MaterialTheme.colorScheme.tertiaryContainer,
                     )
                 )
             }

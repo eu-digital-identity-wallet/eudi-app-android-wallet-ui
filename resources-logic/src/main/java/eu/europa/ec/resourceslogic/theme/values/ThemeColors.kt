@@ -123,7 +123,7 @@ class ThemeColors {
         private const val eudiw_theme_dark_inverseSurface: Long = 0xFFE5E2E1
         private const val eudiw_theme_dark_inverseOnSurface: Long = 0xFF313030
         private const val eudiw_theme_dark_inversePrimary: Long = 0xFF1B55CF
-        private const val eudiw_theme_dark_surfaceDim: Long = 0xFF131313
+        private const val eudiw_theme_dark_surfaceDim: Long = 0xFF1E1E38
         private const val eudiw_theme_dark_surfaceBright: Long = 0xFF3A3939
         private const val eudiw_theme_dark_surfaceContainerLowest: Long = 0xFF0E0E0E
         private const val eudiw_theme_dark_surfaceContainerLow: Long = 0xFF1C1B1C

@@ -25,6 +25,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CardColors
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -188,7 +189,8 @@ fun IssuerDetailsCard(
                     onExpandedChange()
                 },
                 mainContentVerticalPadding = SPACING_MEDIUM.dp,
-                supportingTextColor = supportingTextColor
+                supportingTextColor = supportingTextColor,
+                colors = colors,
             )
         },
         cardExpandedContent = {
@@ -325,7 +327,10 @@ private fun IssuerDetailsCardPreview() {
                     onExpandedChange = {
                         isExpanded = !isExpanded
                     },
-                    onActionButtonClick = {}
+                    onActionButtonClick = {},
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.surfaceDim,
+                    ),
                 )
             }
         }
