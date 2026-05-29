@@ -220,20 +220,6 @@ class TestTransactionsInteractor {
     }
     //endregion
 
-    //region updateSortOrder
-    @Test
-    fun `When updateSortOrder is called, Then filterValidator#updateSortOrder is invoked with the same order`() {
-        // Given
-        val sortOrder = SortOrder.Ascending(isDefault = false)
-
-        // When
-        interactor.updateSortOrder(sortOrder = sortOrder)
-
-        // Then
-        verify(filterValidator, times(1)).updateSortOrder(sortOrder)
-    }
-    //endregion
-
     //region initializeFilters
     @Test
     fun `When initializeFilters is called, Then filterValidator#initializeValidator is invoked with some Filters and the source list`() {

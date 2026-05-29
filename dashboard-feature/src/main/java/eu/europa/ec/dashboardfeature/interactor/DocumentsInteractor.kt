@@ -156,7 +156,6 @@ interface DocumentsInteractor {
     fun revertFilters()
     fun updateFilter(filterGroupId: String, filterId: String)
     fun updateSort(filterId: String)
-    fun updateSortOrder(sortOrder: SortOrder)
     fun addDynamicFilters(
         documents: FilterableList,
         filters: Filters = Filters.emptyFilters(),
@@ -275,9 +274,6 @@ class DocumentsInteractorImpl(
     override fun updateSort(filterId: String) =
         filterValidator.updateSort(filterId)
 
-    override fun updateSortOrder(sortOrder: SortOrder) =
-        filterValidator.updateSortOrder(sortOrder)
-
     override fun applyFilters() = filterValidator.applyFilters()
 
     override fun resetFilters() = filterValidator.resetFilters()
@@ -290,6 +286,8 @@ class DocumentsInteractorImpl(
             val documentCategories = walletCoreDocumentsController.getAllDocumentCategories()
 
             val userLocale = resourceProvider.getLocale()
+
+            val showBatchIssuanceCounter = prefKeys.getShowBatchIssuanceCounter()
 
             val allDocuments = FilterableList(
                 items = walletCoreDocumentsController.getAllDocuments().map { document ->
@@ -368,7 +366,7 @@ class DocumentsInteractorImpl(
                                 createDocumentTrailingContentData(
                                     documentCredentialsInfoUi = documentCredentialsInfoUi,
                                     documentLowOnCredentials = documentLowOnCredentials,
-                                    showBatchIssuanceCounter = prefKeys.getShowBatchIssuanceCounter()
+                                    showBatchIssuanceCounter = showBatchIssuanceCounter
                                 )
                             }
 

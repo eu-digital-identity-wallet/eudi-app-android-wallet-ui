@@ -271,8 +271,6 @@
     <string name="documents_screen_filters_title">@string/generic_filters_title</string>
     <string name="documents_screen_filters_sort_by">@string/generic_filters_sort_by</string>
     <string name="documents_screen_filters_sort_default">Default</string>
-    <string name="documents_screen_filters_sort_date_issued">Date</string>
-    <string name="documents_screen_filters_sort_expiry_date">Expiry Date</string>
     <string name="documents_screen_filters_filter_by_issuer">Issuer</string>
     <string name="documents_screen_filters_filter_by_category">Category</string>
     <string name="documents_screen_filters_filter_by_state">State</string>

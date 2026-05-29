@@ -707,6 +707,7 @@ class TestDocumentsInteractor {
     fun `Given no main PID document, When getDocuments is called, Then shouldAllowUserInteraction is false`() {
         coroutineRule.runTest {
             // Given
+            mockShowBatchIssuanceCounterPreference(response = true)
             whenever(walletCoreDocumentsController.getMainPidDocument()).thenReturn(null)
             whenever(walletCoreDocumentsController.getAllDocuments()).thenReturn(emptyList())
             whenever(walletCoreDocumentsController.getAllDocumentCategories())
@@ -730,6 +731,7 @@ class TestDocumentsInteractor {
     fun `Given getAllDocuments throws with message, When getDocuments is called, Then Failure is emitted`() {
         coroutineRule.runTest {
             // Given
+            mockShowBatchIssuanceCounterPreference(response = true)
             whenever(walletCoreDocumentsController.getMainPidDocument()).thenReturn(null)
             whenever(walletCoreDocumentsController.getAllDocuments())
                 .thenThrow(mockedExceptionWithMessage)
@@ -755,6 +757,7 @@ class TestDocumentsInteractor {
     fun `Given getAllDocuments throws no message, When getDocuments is called, Then Failure with generic message is emitted`() {
         coroutineRule.runTest {
             // Given
+            mockShowBatchIssuanceCounterPreference(response = true)
             whenever(walletCoreDocumentsController.getMainPidDocument()).thenReturn(null)
             whenever(walletCoreDocumentsController.getAllDocuments())
                 .thenThrow(mockedExceptionWithNoMessage)
@@ -1379,19 +1382,6 @@ class TestDocumentsInteractor {
         // Then
         verify(filterValidator, times(1))
             .updateSort("sortId")
-    }
-
-    @Test
-    fun `When updateSortOrder is called, Then filterValidator#updateSortOrder is invoked`() {
-        // Given
-        val order = SortOrder.Ascending(isDefault = false)
-
-        // When
-        interactor.updateSortOrder(sortOrder = order)
-
-        // Then
-        verify(filterValidator, times(1))
-            .updateSortOrder(order)
     }
 
     @Test

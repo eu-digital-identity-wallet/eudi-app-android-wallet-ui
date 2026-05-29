@@ -122,7 +122,6 @@ interface TransactionsInteractor {
     fun resetFilters()
     fun onFilterStateChange(): Flow<TransactionInteractorFilterPartialState>
     fun updateSort(filterId: String)
-    fun updateSortOrder(sortOrder: SortOrder)
     fun revertFilters()
     fun updateLists(filterableList: FilterableList)
 }
@@ -488,9 +487,6 @@ class TransactionsInteractorImpl(
             upperLimitDate
         )
     }
-
-    override fun updateSortOrder(sortOrder: SortOrder) =
-        filterValidator.updateSortOrder(sortOrder)
 
     override fun updateSort(filterId: String) =
         filterValidator.updateSort(filterId)
