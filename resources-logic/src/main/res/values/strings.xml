@@ -380,14 +380,14 @@
     <!--endregion-->
 
     <!-- region Proximity QR -->
-    <string name="proximity_qr_title">Present document in person</string>
-    <string name="proximity_qr_subtitle">Show this QR code to a Relying Party to present a digital document.</string>
-    <string name="proximity_qr_use_nfc">Or share via NFC</string>
+    <string name="proximity_qr_title">Authenticate my identity</string>
+    <string name="proximity_qr_subtitle">Show this QR code to an interacting party within close proximity to authenticate your identity.</string>
+    <string name="proximity_qr_use_nfc">Connect via NFC</string>
     <string name="proximity_qr_hold_near_reader">Hold your phone near reader to scan.</string>
     <!--endregion-->
 
     <!-- region Presentation Qr Scan -->
-    <string name="presentation_qr_scan_title">Present document online</string>
+    <string name="presentation_qr_scan_title">Authenticate my identity</string>
     <string name="presentation_qr_scan_subtitle">Scan a QR code provided from an interacting party to authenticate your identity.</string>
     <!--endregion-->
 
