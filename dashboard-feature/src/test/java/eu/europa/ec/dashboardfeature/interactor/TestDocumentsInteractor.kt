@@ -610,7 +610,6 @@ class TestDocumentsInteractor {
                 // Then
                 val state = awaitItem()
                 assertTrue(state is DocumentInteractorGetDocumentsPartialState.Success)
-                state as DocumentInteractorGetDocumentsPartialState.Success
                 assertEquals(true, state.shouldAllowUserInteraction)
                 assertEquals(mockedFullDocuments.size, state.allDocuments.items.size)
             }
@@ -653,7 +652,6 @@ class TestDocumentsInteractor {
                 // Then
                 val state = awaitItem()
                 assertTrue(state is DocumentInteractorGetDocumentsPartialState.Success)
-                state as DocumentInteractorGetDocumentsPartialState.Success
                 val firstItem = state.allDocuments.items.first()
                 val payload = firstItem.payload as DocumentUi
                 assertEquals(DocumentIssuanceStateUi.Revoked, payload.documentIssuanceState)
@@ -697,7 +695,6 @@ class TestDocumentsInteractor {
                 // Then
                 val state = awaitItem()
                 assertTrue(state is DocumentInteractorGetDocumentsPartialState.Success)
-                state as DocumentInteractorGetDocumentsPartialState.Success
                 val firstItem = state.allDocuments.items.first()
                 val payload = firstItem.payload as DocumentUi
                 assertTrue(payload.uiData.trailingContentData is eu.europa.ec.uilogic.component.ListItemTrailingContentDataUi.TextWithIcon)
@@ -721,7 +718,6 @@ class TestDocumentsInteractor {
                 // Then
                 val state = awaitItem()
                 assertTrue(state is DocumentInteractorGetDocumentsPartialState.Success)
-                state as DocumentInteractorGetDocumentsPartialState.Success
                 assertEquals(false, state.shouldAllowUserInteraction)
                 assertEquals(0, state.allDocuments.items.size)
             }
@@ -827,7 +823,6 @@ class TestDocumentsInteractor {
                 // Then
                 val state = awaitItem()
                 assertTrue(state is DocumentInteractorFilterPartialState.FilterApplyResult)
-                state as DocumentInteractorFilterPartialState.FilterApplyResult
 
                 val trailing = state.filters.flatMap { nested ->
                     nested.nestedItems.map { it.header.trailingContentData }
@@ -864,7 +859,6 @@ class TestDocumentsInteractor {
                 // Then
                 val state = awaitItem()
                 assertTrue(state is DocumentInteractorFilterPartialState.FilterUpdateResult)
-                state as DocumentInteractorFilterPartialState.FilterUpdateResult
                 assertEquals(
                     eu.europa.ec.uilogic.component.DualSelectorButton.SECOND,
                     state.sortOrder
@@ -941,7 +935,6 @@ class TestDocumentsInteractor {
                 // Then
                 val state = awaitItem()
                 assertTrue(state is DocumentInteractorGetDocumentsPartialState.Success)
-                state as DocumentInteractorGetDocumentsPartialState.Success
                 val unsignedItem = state.allDocuments.items.firstOrNull {
                     (it.payload as? DocumentUi)?.uiData?.itemId == "unsigned-id"
                 }
@@ -1003,7 +996,6 @@ class TestDocumentsInteractor {
                 // Then
                 val state = awaitItem()
                 assertTrue(state is DocumentInteractorGetDocumentsPartialState.Success)
-                state as DocumentInteractorGetDocumentsPartialState.Success
                 val payload = state.allDocuments.items.first().payload as DocumentUi
                 assertEquals(DocumentIssuanceStateUi.Failed, payload.documentIssuanceState)
             }
@@ -1036,7 +1028,6 @@ class TestDocumentsInteractor {
                 // Then
                 val state = awaitItem()
                 assertTrue(state is DocumentInteractorFilterPartialState.FilterApplyResult)
-                state as DocumentInteractorFilterPartialState.FilterApplyResult
                 val total = state.documents.sumOf { it.second.size }
                 assertEquals(0, total)
             }
@@ -1276,6 +1267,7 @@ class TestDocumentsInteractor {
     }
 
     @Test
+    @Suppress("UNCHECKED_CAST") // FilterAction.Filter<T> is erased at runtime — the test asserts the predicate type from the filter group definition.
     fun `When the period filter predicates are applied, Then default issuance and expiry-window predicates evaluate as expected`() {
         // Given
         whenever(resourceProvider.getString(org.mockito.kotlin.any())).thenReturn("mocked")

@@ -20,7 +20,7 @@ import project.convention.logic.config.LibraryModule
 
 private const val KOIN = "*.ksp.*"
 private const val BUILD_CONFIG = "*BuildConfig*"
-private const val SCREEN_COMPOSABLES = "*ScreenKt"
+private const val SCREEN_COMPOSABLES = "*ScreenKt*"
 private const val MODELS = "eu.europa.ec.*.model"
 private const val DOMAIN_MODELS = "eu.europa.ec.*.domain"
 private const val EXTENSIONS = "eu.europa.ec.*.extension"
