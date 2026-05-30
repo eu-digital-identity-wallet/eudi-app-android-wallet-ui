@@ -522,7 +522,6 @@ class TestDocumentDetailsInteractor {
                 // Then
                 val result = awaitItem()
                 kotlin.test.assertTrue(result is DocumentDetailsInteractorPartialState.Success)
-                result as DocumentDetailsInteractorPartialState.Success
                 assertEquals(true, result.issuerDetails.isExpanded)
             }
         }
@@ -549,7 +548,6 @@ class TestDocumentDetailsInteractor {
                 // Then
                 val result = awaitItem()
                 kotlin.test.assertTrue(result is DocumentDetailsInteractorPartialState.Success)
-                result as DocumentDetailsInteractorPartialState.Success
                 assertEquals(
                     IssuerDetailsCardDataUi.DocumentState.Revoked,
                     result.issuerDetails.documentState
