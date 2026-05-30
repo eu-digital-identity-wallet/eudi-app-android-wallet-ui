@@ -542,8 +542,7 @@ class TestDocumentDetailsInteractor {
             ).runFlowTest {
                 // Then
                 val result = awaitItem()
-                assertTrue(result is DocumentDetailsInteractorPartialState.Success)
-                result as DocumentDetailsInteractorPartialState.Success
+                kotlin.test.assertTrue(result is DocumentDetailsInteractorPartialState.Success)
                 assertEquals(true, result.issuerDetails.isExpanded)
             }
         }
@@ -571,8 +570,7 @@ class TestDocumentDetailsInteractor {
             ).runFlowTest {
                 // Then
                 val result = awaitItem()
-                assertTrue(result is DocumentDetailsInteractorPartialState.Success)
-                result as DocumentDetailsInteractorPartialState.Success
+                kotlin.test.assertTrue(result is DocumentDetailsInteractorPartialState.Success)
                 assertEquals(
                     IssuerDetailsCardDataUi.DocumentState.Revoked,
                     result.issuerDetails.documentState
