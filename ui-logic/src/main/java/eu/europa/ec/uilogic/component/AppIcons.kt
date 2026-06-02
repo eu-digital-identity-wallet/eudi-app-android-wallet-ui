@@ -310,6 +310,10 @@ enum class AppIconKey(
         resourceId = R.drawable.ic_settings,
         contentDescriptionId = R.string.content_description_settings_icon,
     ),
+    BatchIssuanceCounter(
+        resourceId = R.drawable.ic_batch_issuance_counter,
+        contentDescriptionId = R.string.content_description_batch_issuance_counter_icon,
+    )
     ;
 
     init {
@@ -381,4 +385,5 @@ object AppIcons {
     val OpenInBrowser: IconDataUi = IconDataUi(AppIconKey.OpenInBrowser)
     val DateRange: IconDataUi = IconDataUi(AppIconKey.DateRange)
     val Settings: IconDataUi = IconDataUi(AppIconKey.Settings)
+    val BatchIssuanceCounter: IconDataUi = IconDataUi(AppIconKey.BatchIssuanceCounter)
 }

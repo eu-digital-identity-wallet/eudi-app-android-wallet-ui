@@ -95,6 +95,9 @@ class SettingsInteractorImpl(
                         mainContentData = ListItemMainContentDataUi.Text(
                             text = resourceProvider.getString(R.string.settings_screen_option_show_batch_issuance_counter)
                         ),
+                        leadingContentData = ListItemLeadingContentDataUi.Icon(
+                            iconData = AppIcons.BatchIssuanceCounter
+                        ),
                         trailingContentData = ListItemTrailingContentDataUi.Switch(
                             switchData = SwitchDataUi(
                                 isChecked = getCurrentShowBatchIssuanceCounter(),
