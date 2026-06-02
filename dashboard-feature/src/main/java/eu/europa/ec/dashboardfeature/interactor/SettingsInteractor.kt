@@ -39,7 +39,6 @@ interface SettingsInteractor : BiometricInteractor {
     fun retrieveLogFileUris(): ArrayList<Uri>
     suspend fun getSettingsItemsUi(changelogUrl: String?): List<SettingsItemUi>
     suspend fun toggleBiometricsAuthentication()
-    suspend fun getShowBatchIssuanceCounter(): Boolean
     suspend fun toggleShowBatchIssuanceCounter()
 }
 
@@ -78,7 +77,7 @@ class SettingsInteractorImpl(
                             ),
                             trailingContentData = ListItemTrailingContentDataUi.Switch(
                                 switchData = SwitchDataUi(
-                                    isChecked = biometricInteractor.getBiometricUserSelection(),
+                                    isChecked = getBiometricUsageDecision(),
                                     enabled = true,
                                 )
                             )
@@ -100,7 +99,7 @@ class SettingsInteractorImpl(
                         ),
                         trailingContentData = ListItemTrailingContentDataUi.Switch(
                             switchData = SwitchDataUi(
-                                isChecked = getCurrentShowBatchIssuanceCounter(),
+                                isChecked = getShowBatchIssuanceCounter(),
                                 enabled = true,
                             )
                         )
@@ -150,21 +149,21 @@ class SettingsInteractorImpl(
 
     override suspend fun toggleBiometricsAuthentication() {
         biometricInteractor.storeBiometricsUsageDecision(
-            shouldUseBiometrics = !biometricInteractor.getBiometricUserSelection()
+            shouldUseBiometrics = !getBiometricUsageDecision()
         )
-    }
-
-    override suspend fun getShowBatchIssuanceCounter(): Boolean {
-        return getCurrentShowBatchIssuanceCounter()
     }
 
     override suspend fun toggleShowBatchIssuanceCounter() {
         prefKeys.setShowBatchIssuanceCounter(
-            value = !getCurrentShowBatchIssuanceCounter()
+            value = !getShowBatchIssuanceCounter()
         )
     }
 
-    private suspend fun getCurrentShowBatchIssuanceCounter(): Boolean {
+    private suspend fun getBiometricUsageDecision(): Boolean {
+        return biometricInteractor.getBiometricUserSelection()
+    }
+
+    private suspend fun getShowBatchIssuanceCounter(): Boolean {
         return prefKeys.getShowBatchIssuanceCounter()
     }
 
