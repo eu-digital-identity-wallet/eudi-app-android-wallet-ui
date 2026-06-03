@@ -692,7 +692,6 @@ class TestDocumentsInteractor {
                 // Then
                 val state = awaitItem()
                 assertTrue(state is DocumentInteractorGetDocumentsPartialState.Success)
-                state as DocumentInteractorGetDocumentsPartialState.Success
                 val firstItem = state.allDocuments.items.first()
                 val payload = firstItem.payload as DocumentUi
                 assertTrue(payload.uiData.trailingContentData is ListItemTrailingContentDataUi.Icon)
