@@ -120,7 +120,7 @@ data class ThemeColorsTemplate(
             onSecondaryFixed = Color(onSecondaryFixed),
             onSecondaryFixedVariant = Color(onSecondaryFixedVariant),
             tertiaryFixed = Color(tertiaryFixed),
-            tertiaryFixedDim = Color(tertiaryFixed),
+            tertiaryFixedDim = Color(tertiaryFixedDim),
             onTertiaryFixed = Color(onTertiaryFixed),
             onTertiaryFixedVariant = Color(onTertiaryFixedVariant)
         )

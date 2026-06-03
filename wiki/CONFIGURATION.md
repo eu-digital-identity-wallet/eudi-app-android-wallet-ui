@@ -504,15 +504,24 @@ search for `TrustAll`, `X509TrustManager`, `HostnameVerifier { _, _ -> true }`, 
 
 ## Theme configuration
 
-The application allows the configuration of:
+Branding and theming are split across three layers:
 
-1. Colors
-2. Images
-3. Shape
-4. Fonts
-5. Dimension
+1. **The Compose theme** (`resources-logic` module) — colors, typography, fonts, shapes, and
+   dimensions, all driven by `ThemeManager`.
+2. **Branding assets** — in-app logos, launcher icon, app display name, package id, and splash
+   screen.
+3. **Sub-SDK theming** — the RQES signing UI carries its own theme and translations (see the RQES
+   subsection under [General configuration](#general-configuration)).
 
-Via *ThemeManager.Builder()*.
+> The theme is applied at runtime through `ThemeManager.instance`, which builds itself from the
+> reference values in
+> `resources-logic/src/main/java/eu/europa/ec/resourceslogic/theme/values/`. The
+> `ThemeManager.Builder()` API exists for advanced/white-label setups but is **not** wired by
+> default — for most rebrands you edit the `values/*.kt` files directly.
+
+For a complete, step-by-step rebranding and retheming guide — covering every file you need to
+change, a quick-start checklist, the light/dark palettes, logos, launcher icon, app name, splash
+screen, RQES theming, and a production/accessibility checklist — see **[THEMING.md](THEMING.md)**.
 
 ## Pin Storage configuration
 
