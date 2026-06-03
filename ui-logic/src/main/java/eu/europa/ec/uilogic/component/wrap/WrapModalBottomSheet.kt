@@ -58,7 +58,6 @@ import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
 import eu.europa.ec.uilogic.component.utils.ALPHA_DISABLED
 import eu.europa.ec.uilogic.component.utils.ALPHA_ENABLED
-import eu.europa.ec.uilogic.component.utils.DEFAULT_BIG_ICON_SIZE
 import eu.europa.ec.uilogic.component.utils.DEFAULT_ICON_SIZE
 import eu.europa.ec.uilogic.component.utils.HSpacer
 import eu.europa.ec.uilogic.component.utils.SIZE_SMALL
@@ -364,7 +363,6 @@ fun <T : ViewEvent> BottomSheetWithTwoBigIcons(
                             item.leadingIcon?.let { safeLeadingIcon ->
                                 WrapImage(
                                     modifier = Modifier
-                                        .size(DEFAULT_BIG_ICON_SIZE.dp)
                                         .alpha(
                                             alpha = ALPHA_ENABLED.takeIf { item.enabled }
                                                 ?: ALPHA_DISABLED
