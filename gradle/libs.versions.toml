@@ -91,7 +91,7 @@ kover = "0.9.8"
 owaspDependencyCheck = "12.2.2"
 protobufPlugin = "0.10.0"
 secrets = "2.0.1"
-sonar = "7.3.0.8198"
+sonar = "7.3.1.8318"
 
 [libraries]
 # Kotlin
