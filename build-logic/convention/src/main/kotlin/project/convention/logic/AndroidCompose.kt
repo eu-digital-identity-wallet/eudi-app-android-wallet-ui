@@ -65,6 +65,9 @@ internal fun Project.configureAndroidCompose(
         testOptions.unitTests.apply {
             isIncludeAndroidResources = true
             isReturnDefaultValues = true
+            all { test ->
+                test.systemProperty("user.timezone", "UTC")
+            }
         }
     }
 
