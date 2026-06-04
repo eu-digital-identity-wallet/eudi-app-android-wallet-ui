@@ -161,6 +161,12 @@ isolated and reviewable.
 
 ### 1. Add `Prod` To `AppFlavor`
 
+> Note: there are **two** distinct `AppFlavor` enums in different modules — the Gradle one in
+> `build-logic` (`Dev`, `Demo`; declares the product flavors) and a separate runtime one in
+> `business-logic` (`ConfigLogic.kt`: `DEV`, `DEMO`; read by app code). Update **both** when adding a
+> production flavor. This step covers the `build-logic` enum; [step 2](#2-add-production-config-source-sets)
+> covers the `business-logic` enum.
+
 Edit:
 
 `build-logic/convention/src/main/kotlin/project/convention/logic/AppFlavor.kt`
@@ -934,6 +940,10 @@ DocumentIssuanceConfig(
 )
 ```
 
+The snippet above reflects the `demo` flavor. The `dev` flavor requests a larger batch
+(`numberOfCredentials = 60`) for both PID document types. Confirm the batch size you actually ship
+per flavor.
+
 Meaning:
 
 | Field | Meaning | Production decision |
@@ -981,10 +991,12 @@ Production rules:
 
 ## Revocation And Status Checking
 
-Current default:
+Current default — an interface-level default getter on `WalletCoreConfig`
+(`core-logic/src/main/java/eu/europa/ec/corelogic/config/WalletCoreConfig.kt`), not a per-flavor
+`override`. A production flavor may override it in its `WalletCoreConfigImpl`:
 
 ```kotlin
-override val revocationInterval: Duration get() = Duration.ofMinutes(15)
+val revocationInterval: Duration get() = Duration.ofMinutes(15)
 ```
 
 The app enqueues `RevocationWorkManager`, which:
@@ -1329,8 +1341,8 @@ Default policy (`AuthenticationConfigImpl`):
 
 Lockout counters are persisted in the encrypted DataStore, not just in
 UI state. The PIN input is disabled in both the login screen
-(`BiometricViewModel`) and the change-PIN validation step
-(`PinViewModel`) while locked. The biometric icon on the login screen
+(`BiometricViewModel`, via `BiometricInteractor`) and the change-PIN
+validation step (`PinViewModel`, via `QuickPinInteractor`) while locked. The biometric icon on the login screen
 stays enabled during PIN lockout and acts as an escape hatch — a
 successful biometric authentication clears the throttle.
 
@@ -1781,8 +1793,9 @@ Production rules:
 * Keep only what reflection, serialization, Koin, SDKs, and platform callbacks require.
 * Verify release artifact behavior after minification.
 * Store mapping files securely.
-* Consider enabling R8 full mode after compatibility testing. The repo currently sets
-  `android.enableR8.fullMode=false`.
+* Consider enabling R8 full mode after compatibility testing. The repo does not set
+  `android.enableR8.fullMode`, so it uses the Android Gradle Plugin default. Set it explicitly in
+  `gradle.properties` once you have verified compatibility.
 
 ## OWASP MASVS Production Alignment
 

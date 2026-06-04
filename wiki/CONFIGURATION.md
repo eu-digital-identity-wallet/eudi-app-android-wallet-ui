@@ -77,8 +77,10 @@ Each flavor can use different issuer configs, wallet provider hosts, and trust s
         )
     ```
 
-   Adjust the configuration per flavor in the corresponding `WalletCoreConfigImpl`. The `order`
-   property controls how issuers are displayed in the add-document flow.
+   The URLs above are the `dev` flavor's values, shown as an example; the `demo` flavor uses
+   `https://issuer.eudiw.dev` and `https://issuer-backend.eudiw.dev`. Adjust the configuration per
+   flavor in the corresponding `WalletCoreConfigImpl`. The `order` property controls how issuers are
+   displayed in the add-document flow.
 
 2. Wallet Provider Host
 
@@ -102,6 +104,10 @@ Each flavor can use different issuer configs, wallet provider hosts, and trust s
        configureReaderTrustStore(context, R.raw.pidissuerca02_ut)
     }
     ```
+
+   The call accepts multiple resources; the reference `WalletCoreConfigImpl` actually registers
+   several CA resources (for example `pidissuerca02_ut`, `pidissuerca02_eu`, `dc4eu`, `multipaz`, and
+   others). Pass whichever trust anchors your environment requires.
 
    The application's IACA certificates are
    located [here](https://github.com/eu-digital-identity-wallet/eudi-app-android-wallet-ui/tree/main/resources-logic/src/main/res/raw)
@@ -181,7 +187,7 @@ Each flavor can use different issuer configs, wallet provider hosts, and trust s
             get() = listOf(
                 QtspData(
                     name = "your_name",
-                    endpoint = "your_endpoint".toUri(),
+                    endpoint = "your_endpoint".toUriOrEmpty(),
                     tsaUrl = "your_tsaUrl",
                     clientId = "your_clientid",
                     clientSecret = "your_secret_or_non_confidential_demo_value",
@@ -388,7 +394,7 @@ Android Manifest (inside assembly-logic module):
 </intent-filter>
 ```
 
-DeepLinkType (DeepLinkHelper Object inside ui-logic module):
+DeepLinkType (enum in `ui-logic/src/main/java/eu/europa/ec/uilogic/navigation/helper/DeepLinkAction.kt`):
 
 ```kotlin
 enum class DeepLinkType(val schemas: List<String>, val host: String? = null) {
@@ -671,8 +677,9 @@ fun provideAuthenticationConfig(): AuthenticationConfig = AuthenticationConfigIm
 ```
 
 The lockout is enforced through the *PinThrottleController* and applied
-in both the login screen (`BiometricViewModel`) and the change-PIN
-validation step (`PinViewModel`). The PIN input is disabled while
+in both the login screen (`BiometricViewModel`, via `BiometricInteractor`)
+and the change-PIN validation step (`PinViewModel`, via `QuickPinInteractor`).
+The PIN input is disabled while
 locked, and the existing inline error slot of the PIN composable
 displays a countdown message formatted from the
 `quick_pin_locked_out` string resource. The message takes two format
