@@ -7,6 +7,7 @@ It complements:
 
 * [How to build](HOW_TO_BUILD.md)
 * [How to configure the application](CONFIGURATION.md)
+* [Theming and branding guide](THEMING.md)
 * [Main README](../README.md)
 
 The reference application is not production ready as delivered. It uses demo services, demo trust
@@ -70,6 +71,7 @@ Use this checklist before the first production release.
 | Area | Required production outcome |
 | --- | --- |
 | App identity | Final application ID, app name, icon, signing key, Play Console or alternative distribution identity are defined. |
+| Branding and theme | App name, launcher icon, in-app logos, light and dark color palette, splash screen, and any sub-SDK (RQES) theme are replaced with the production brand; no EUDI reference assets remain; text/background contrast meets accessibility targets. See [THEMING.md](THEMING.md). |
 | Build variants | A dedicated production flavor exists, for example `prodRelease`; `dev` and `demo` remain non-production only. |
 | Signing | Release keys are generated, stored in HSM/KMS or CI secret storage, rotated according to policy, and never committed. |
 | Issuers | All OpenID4VCI issuer URLs point to production issuer services controlled or approved by the implementer. |
@@ -148,6 +150,9 @@ Keep these files under strict review:
 | `authentication-logic/src/main/java/eu/europa/ec/authenticationlogic/storage/PrefsPinThrottleProvider.kt` | Persisted PIN failure counter, lockout level, lockout window timestamps; clock-rollback detection. |
 | `business-logic/src/main/java/eu/europa/ec/businesslogic/controller/storage/PrefsController.kt` | Encrypted DataStore and database key storage. |
 | `storage-logic/src/main/java/eu/europa/ec/storagelogic/di/LogicStorageModule.kt` | SQLCipher database setup and migration behavior. |
+| `resources-logic/src/main/java/eu/europa/ec/resourceslogic/theme/values/ThemeColors.kt` | Brand color palette (light and dark) plus extra semantic colors. See [THEMING.md](THEMING.md). |
+| `resources-logic/src/main/res/drawable/ic_logo_full.xml`, `ic_logo_plain.xml`, `ic_logo_text.xml` | In-app brand logos used on the splash and content headers. |
+| `resources-logic/src/<flavor>/res/mipmap-*` | Per-flavor launcher icons. |
 
 ## Create A Production Flavor
 
@@ -278,6 +283,32 @@ Recommended:
 * Ensure app display names make non-production builds obvious.
 * Maintain a release manifest showing version name, version code, Git commit, signing certificate
   fingerprint, and dependency versions.
+
+## Branding And Theme
+
+The reference app ships with EUDI visual identity; a production wallet must replace it. App name and
+launcher icon are covered under [Application Identity](#application-identity). The remaining theme and
+branding surfaces are documented in **[THEMING.md](THEMING.md)**.
+
+Surfaces to review before release:
+
+| Surface | Where | Notes |
+| --- | --- | --- |
+| Color palette (light and dark) | `resources-logic/.../theme/values/ThemeColors.kt` | Both palettes plus the extra `success`/`warning`/`pending`/`divider` roles. Verify contrast in both modes. |
+| Typography and fonts | `resources-logic/src/main/res/font/` and `.../theme/values/ThemeTypography.kt` | Replace the bundled Roboto fonts and the type scale if your brand requires it. |
+| Shapes | `resources-logic/.../theme/values/ThemeShapes.kt` | Corner radii. |
+| In-app logos | `resources-logic/src/main/res/drawable/ic_logo_full.xml`, `ic_logo_plain.xml`, `ic_logo_text.xml` | Used on the splash and content headers; brand colors are baked into the vectors. |
+| Splash screen | `resources-logic/src/main/res/values-v31/themes.xml` and the in-app `SplashScreen` | System window splash plus the Compose splash logo. |
+| System bars | `assembly-logic/.../ui/MainActivity.kt` (`enableEdgeToEdge`) | Edge-to-edge; controlled here, not by the XML theme. |
+| RQES signing UI | `business-logic/src/<flavor>/.../RQESConfigImpl.kt` | The RQES SDK carries its own theme; a wallet rebrand does not restyle it unless you override `themeManager`. |
+
+Requirements:
+
+* No EUDI reference branding (name, icon, logos, colors, splash) remains in the production artifact.
+* Light and dark palettes are both rebranded and meet WCAG AA contrast for text.
+* The signing (RQES) flow either matches your brand or the SDK default is explicitly accepted.
+* Run the verification steps and the production checklist in
+  [THEMING.md](THEMING.md#production-and-accessibility-checklist).
 
 ## Release Signing
 
