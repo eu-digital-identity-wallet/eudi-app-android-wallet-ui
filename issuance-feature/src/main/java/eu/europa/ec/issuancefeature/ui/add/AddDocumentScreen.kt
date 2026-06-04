@@ -18,12 +18,9 @@ package eu.europa.ec.issuancefeature.ui.add
 
 import android.content.Context
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.calculateEndPadding
-import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -32,21 +29,14 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
@@ -68,19 +58,16 @@ import eu.europa.ec.uilogic.component.content.BroadcastAction
 import eu.europa.ec.uilogic.component.content.ContentScreen
 import eu.europa.ec.uilogic.component.content.ContentTitle
 import eu.europa.ec.uilogic.component.content.ScreenNavigateAction
+import eu.europa.ec.uilogic.component.content.ToolbarActionUi
+import eu.europa.ec.uilogic.component.content.ToolbarConfig
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
 import eu.europa.ec.uilogic.component.utils.LifecycleEffect
-import eu.europa.ec.uilogic.component.utils.SIZE_LARGE
 import eu.europa.ec.uilogic.component.utils.SPACING_LARGE
 import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
 import eu.europa.ec.uilogic.component.utils.VSpacer
-import eu.europa.ec.uilogic.component.wrap.ButtonConfig
-import eu.europa.ec.uilogic.component.wrap.ButtonType
 import eu.europa.ec.uilogic.component.wrap.TextConfig
 import eu.europa.ec.uilogic.component.wrap.TextStyleKey
-import eu.europa.ec.uilogic.component.wrap.WrapButton
-import eu.europa.ec.uilogic.component.wrap.WrapImage
 import eu.europa.ec.uilogic.component.wrap.WrapListItem
 import eu.europa.ec.uilogic.component.wrap.WrapText
 import eu.europa.ec.uilogic.extension.applyTestTag
@@ -103,8 +90,19 @@ fun AddDocumentScreen(
     val state: State by viewModel.viewState.collectAsStateWithLifecycle()
     val context = LocalContext.current
 
+    val toolbarConfig = ToolbarConfig(
+        actions = listOf(
+            ToolbarActionUi(
+                icon = AppIcons.QrScanner,
+                enabled = !state.isLoading,
+                onClick = { viewModel.setEvent(Event.GoToQrScan) }
+            )
+        )
+    )
+
     ContentScreen(
         isLoading = state.isLoading,
+        toolBarConfig = toolbarConfig,
         navigatableAction = state.navigatableAction,
         onBack = state.onBackAction,
         contentErrorConfig = state.error,
@@ -179,38 +177,14 @@ private fun Content(
     paddingValues: PaddingValues,
     context: Context
 ) {
-    val layoutDirection = LocalLayoutDirection.current
-
-    Column(
-        modifier = Modifier.fillMaxSize()
-    ) {
-        MainContent(
-            modifier = Modifier
-                .fillMaxWidth()
-                .weight(1f)
-                .paddingFrom(paddingValues, bottom = false),
-            state = state,
-            onEventSend = onEventSend,
-            context = context,
-        )
-
-        if (state.showFooterScanner) {
-            VSpacer.ExtraSmall()
-            Footer(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(topStart = SIZE_LARGE.dp, topEnd = SIZE_LARGE.dp))
-                    .background(MaterialTheme.colorScheme.surfaceContainer)
-                    .padding(
-                        top = SPACING_MEDIUM.dp,
-                        start = paddingValues.calculateStartPadding(layoutDirection),
-                        end = paddingValues.calculateEndPadding(layoutDirection),
-                        bottom = paddingValues.calculateBottomPadding()
-                    ),
-                onEventSend = onEventSend,
-            )
-        }
-    }
+    MainContent(
+        modifier = Modifier
+            .fillMaxSize()
+            .paddingFrom(paddingValues, bottom = false),
+        state = state,
+        onEventSend = onEventSend,
+        context = context,
+    )
 
     LaunchedEffect(Unit) {
         effectFlow.onEach { effect ->
@@ -250,7 +224,6 @@ private fun MainContent(
             Options(
                 options = state.options,
                 modifier = Modifier.fillMaxSize(),
-                footerIsShown = state.showFooterScanner,
                 onOptionClicked = { itemIds, issuerId ->
                     onEventSend(
                         Event.IssueDocument(
@@ -269,7 +242,6 @@ private fun MainContent(
 @Composable
 private fun Options(
     options: List<Pair<String, List<AddDocumentUi>>>,
-    footerIsShown: Boolean,
     modifier: Modifier = Modifier,
     onOptionClicked: (itemIds: List<String>, issuerId: String) -> Unit,
 ) {
@@ -328,49 +300,8 @@ private fun Options(
             Spacer(
                 modifier = Modifier
                     .padding(bottom = SPACING_MEDIUM.dp)
-                    .then(if (!footerIsShown) Modifier.navigationBarsPadding() else Modifier)
+                    .navigationBarsPadding()
             )
-        }
-    }
-}
-
-
-@Composable
-private fun Footer(
-    modifier: Modifier = Modifier,
-    onEventSend: (Event) -> Unit,
-) {
-    Column(
-        modifier = modifier,
-        verticalArrangement = Arrangement.spacedBy(SPACING_MEDIUM.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Text(
-            modifier = Modifier.fillMaxWidth(),
-            text = stringResource(R.string.issuance_add_document_scan_qr_footer_text),
-            style = MaterialTheme.typography.bodyMedium.copy(
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            ),
-            textAlign = TextAlign.Center
-        )
-
-        WrapImage(
-            iconData = AppIcons.AddDocumentFromQr
-        )
-
-        WrapButton(
-            modifier = Modifier.fillMaxWidth(),
-            buttonConfig = ButtonConfig(
-                type = ButtonType.SECONDARY,
-                buttonColors = ButtonDefaults.outlinedButtonColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceContainerLowest
-                ),
-                onClick = {
-                    onEventSend(Event.GoToQrScan)
-                }
-            )
-        ) {
-            Text(text = stringResource(R.string.issuance_add_document_scan_qr_footer_button_text))
         }
     }
 }
@@ -384,7 +315,6 @@ private fun IssuanceAddDocumentScreenPreview() {
                 issuanceConfig = IssuanceUiConfig(
                     flowType = IssuanceFlowType.NoDocument
                 ),
-                showFooterScanner = true,
                 navigatableAction = ScreenNavigateAction.NONE,
                 title = stringResource(R.string.issuance_add_document_title),
                 subtitle = stringResource(R.string.issuance_add_document_subtitle),
@@ -443,7 +373,6 @@ private fun DashboardAddDocumentScreenPreview() {
                         formatType = null
                     )
                 ),
-                showFooterScanner = false,
                 navigatableAction = ScreenNavigateAction.BACKABLE,
                 title = stringResource(R.string.issuance_add_document_title),
                 subtitle = stringResource(R.string.issuance_add_document_subtitle),

@@ -24,6 +24,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SheetState
@@ -286,6 +287,9 @@ private fun DisplayRequestItems(
                         hideSensitiveContent = false,
                         collapsedMainContentVerticalPadding = SPACING_MEDIUM.dp,
                         expandedMainContentVerticalPadding = SPACING_MEDIUM.dp,
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.surfaceDim,
+                        ),
                     )
                 }
             }

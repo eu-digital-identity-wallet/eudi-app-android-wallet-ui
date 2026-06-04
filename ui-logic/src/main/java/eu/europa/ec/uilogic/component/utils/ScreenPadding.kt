@@ -25,6 +25,8 @@ import androidx.compose.ui.unit.dp
 private const val BOTTOM_SCREEN_PADDING = SPACING_MEDIUM
 private const val HORIZONTAL_SCREEN_PADDING = SPACING_LARGE
 
+private const val SNACKBAR_BOTTOM_PADDING = SPACING_EXTRA_SMALL
+
 enum class TopSpacing {
     WithToolbar, WithoutToolbar
 }
@@ -60,3 +62,9 @@ private fun calculateTopSpacing(topSpacing: TopSpacing): Int = when (topSpacing)
     TopSpacing.WithToolbar -> SPACING_SMALL
     TopSpacing.WithoutToolbar -> SPACING_XX_LARGE
 }
+
+internal fun snackbarHostPaddings() = PaddingValues(
+    start = HORIZONTAL_SCREEN_PADDING.dp,
+    end = HORIZONTAL_SCREEN_PADDING.dp,
+    bottom = SNACKBAR_BOTTOM_PADDING.dp,
+)

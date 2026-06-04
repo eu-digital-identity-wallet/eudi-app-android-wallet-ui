@@ -17,6 +17,7 @@
 package eu.europa.ec.dashboardfeature.interactor
 
 import eu.europa.ec.businesslogic.config.ConfigLogic
+import eu.europa.ec.businesslogic.controller.storage.PrefKeys
 import eu.europa.ec.businesslogic.extension.isBeyondNextDays
 import eu.europa.ec.businesslogic.extension.isExpired
 import eu.europa.ec.businesslogic.extension.isValid
@@ -29,6 +30,7 @@ import eu.europa.ec.businesslogic.validator.model.FilterAction
 import eu.europa.ec.businesslogic.validator.model.FilterElement.FilterItem
 import eu.europa.ec.businesslogic.validator.model.FilterGroup
 import eu.europa.ec.businesslogic.validator.model.FilterMultipleAction
+import eu.europa.ec.businesslogic.validator.model.FilterSort
 import eu.europa.ec.businesslogic.validator.model.FilterableItem
 import eu.europa.ec.businesslogic.validator.model.FilterableList
 import eu.europa.ec.businesslogic.validator.model.Filters
@@ -55,7 +57,6 @@ import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.resourceslogic.theme.values.ThemeColors
 import eu.europa.ec.uilogic.component.AppIcons
-import eu.europa.ec.uilogic.component.DualSelectorButton
 import eu.europa.ec.uilogic.component.ListItemDataUi
 import eu.europa.ec.uilogic.component.ListItemLeadingContentDataUi
 import eu.europa.ec.uilogic.component.ListItemMainContentDataUi
@@ -72,19 +73,16 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.lastOrNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
-import java.time.Instant
 
 sealed class DocumentInteractorFilterPartialState {
     data class FilterApplyResult(
         val documents: List<Pair<DocumentCategory, List<DocumentUi>>>,
         val filters: List<ExpandableListItemUi.NestedListItem>,
-        val sortOrder: DualSelectorButton,
         val allDefaultFiltersAreSelected: Boolean,
     ) : DocumentInteractorFilterPartialState()
 
     data class FilterUpdateResult(
         val filters: List<ExpandableListItemUi.NestedListItem>,
-        val sortOrder: DualSelectorButton,
     ) : DocumentInteractorFilterPartialState()
 }
 
@@ -157,7 +155,7 @@ interface DocumentsInteractor {
     fun resetFilters()
     fun revertFilters()
     fun updateFilter(filterGroupId: String, filterId: String)
-    fun updateSortOrder(sortOrder: SortOrder)
+    fun updateSort(filterId: String)
     fun addDynamicFilters(
         documents: FilterableList,
         filters: Filters = Filters.emptyFilters(),
@@ -170,7 +168,8 @@ class DocumentsInteractorImpl(
     private val resourceProvider: ResourceProvider,
     private val walletCoreDocumentsController: WalletCoreDocumentsController,
     private val filterValidator: FilterValidator,
-    private val configLogic: ConfigLogic
+    private val configLogic: ConfigLogic,
+    private val prefKeys: PrefKeys,
 ) : DocumentsInteractor {
 
     private val genericErrorMsg
@@ -198,12 +197,12 @@ class DocumentsInteractorImpl(
 
             val filtersUi = result.updatedFilters.filterGroups.map { filterGroup ->
                 ExpandableListItemUi.NestedListItem(
-                    isExpanded = true,
+                    isExpanded = false,
                     header = ListItemDataUi(
                         itemId = filterGroup.id,
                         mainContentData = ListItemMainContentDataUi.Text(filterGroup.name),
                         trailingContentData = ListItemTrailingContentDataUi.Icon(
-                            iconData = AppIcons.KeyboardArrowRight
+                            iconData = AppIcons.KeyboardArrowDown
                         )
                     ),
                     nestedItems = filterGroup.filters.map { filterItem ->
@@ -238,17 +237,11 @@ class DocumentsInteractorImpl(
                 )
             }
 
-            val sortOrderUi = when (result.updatedFilters.sortOrder) {
-                is SortOrder.Ascending -> DualSelectorButton.FIRST
-                is SortOrder.Descending -> DualSelectorButton.SECOND
-            }
-
             when (result) {
                 is FilterValidatorPartialState.FilterListResult -> {
                     DocumentInteractorFilterPartialState.FilterApplyResult(
                         documents = documentsUi,
                         filters = filtersUi,
-                        sortOrder = sortOrderUi,
                         allDefaultFiltersAreSelected = result.allDefaultFiltersAreSelected
                     )
                 }
@@ -256,7 +249,6 @@ class DocumentsInteractorImpl(
                 is FilterValidatorPartialState.FilterUpdateResult -> {
                     DocumentInteractorFilterPartialState.FilterUpdateResult(
                         filters = filtersUi,
-                        sortOrder = sortOrderUi
                     )
                 }
             }
@@ -279,8 +271,8 @@ class DocumentsInteractorImpl(
     override fun updateFilter(filterGroupId: String, filterId: String) =
         filterValidator.updateFilter(filterGroupId, filterId)
 
-    override fun updateSortOrder(sortOrder: SortOrder) =
-        filterValidator.updateSortOrder(sortOrder)
+    override fun updateSort(filterId: String) =
+        filterValidator.updateSort(filterId)
 
     override fun applyFilters() = filterValidator.applyFilters()
 
@@ -294,6 +286,8 @@ class DocumentsInteractorImpl(
             val documentCategories = walletCoreDocumentsController.getAllDocumentCategories()
 
             val userLocale = resourceProvider.getLocale()
+
+            val showBatchIssuanceCounter = prefKeys.getShowBatchIssuanceCounter()
 
             val allDocuments = FilterableList(
                 items = walletCoreDocumentsController.getAllDocuments().map { document ->
@@ -369,18 +363,11 @@ class DocumentsInteractorImpl(
                                 val documentLowOnCredentials = walletCoreDocumentsController
                                     .isDocumentLowOnCredentials(document)
 
-                                if (documentLowOnCredentials) {
-                                    ListItemTrailingContentDataUi.TextWithIcon(
-                                        text = documentCredentialsInfoUi.title,
-                                        iconData = AppIcons.ErrorFilled,
-                                        tint = ThemeColors.warning
-                                    )
-                                } else {
-                                    ListItemTrailingContentDataUi.TextWithIcon(
-                                        text = documentCredentialsInfoUi.title,
-                                        iconData = AppIcons.KeyboardArrowRight
-                                    )
-                                }
+                                createDocumentTrailingContentData(
+                                    documentCredentialsInfoUi = documentCredentialsInfoUi,
+                                    documentLowOnCredentials = documentLowOnCredentials,
+                                    showBatchIssuanceCounter = showBatchIssuanceCounter
+                                )
                             }
 
                             FilterableItem(
@@ -482,6 +469,45 @@ class DocumentsInteractorImpl(
                 error = it.localizedMessage ?: genericErrorMsg
             )
         }
+
+    private fun createDocumentTrailingContentData(
+        documentCredentialsInfoUi: DocumentCredentialsInfoUi,
+        documentLowOnCredentials: Boolean,
+        showBatchIssuanceCounter: Boolean,
+    ): ListItemTrailingContentDataUi {
+        val lowOnCredentialsIcon = AppIcons.ErrorFilled
+        val lowOnCredentialsIconTint = ThemeColors.warning
+
+        return when {
+            showBatchIssuanceCounter && documentLowOnCredentials -> {
+                ListItemTrailingContentDataUi.TextWithIcon(
+                    text = documentCredentialsInfoUi.title,
+                    iconData = lowOnCredentialsIcon,
+                    tint = lowOnCredentialsIconTint
+                )
+            }
+
+            showBatchIssuanceCounter -> {
+                ListItemTrailingContentDataUi.TextWithIcon(
+                    text = documentCredentialsInfoUi.title,
+                    iconData = AppIcons.KeyboardArrowRight
+                )
+            }
+
+            documentLowOnCredentials -> {
+                ListItemTrailingContentDataUi.Icon(
+                    iconData = lowOnCredentialsIcon,
+                    tint = lowOnCredentialsIconTint
+                )
+            }
+
+            else -> {
+                ListItemTrailingContentDataUi.Icon(
+                    iconData = AppIcons.KeyboardArrowRight
+                )
+            }
+        }
+    }
 
     override fun tryIssuingDeferredDocumentsFlow(
         deferredDocuments: Map<DocumentId, FormatType>,
@@ -639,38 +665,6 @@ class DocumentsInteractorImpl(
 
     override fun getFilters(): Filters = Filters(
         filterGroups = listOf(
-            // Sort
-            FilterGroup.SingleSelectionFilterGroup(
-                id = DocumentFilterIds.FILTER_SORT_GROUP_ID,
-                name = resourceProvider.getString(R.string.documents_screen_filters_sort_by),
-                filters = listOf(
-                    FilterItem(
-                        id = DocumentFilterIds.FILTER_SORT_DEFAULT,
-                        name = resourceProvider.getString(R.string.documents_screen_filters_sort_default),
-                        selected = true,
-                        isDefault = true,
-                        filterableAction = FilterAction.Sort<DocumentsFilterableAttributes, String> { attributes ->
-                            attributes.name.lowercase()
-                        }
-                    ),
-                    FilterItem(
-                        id = DocumentFilterIds.FILTER_SORT_DATE_ISSUED,
-                        name = resourceProvider.getString(R.string.documents_screen_filters_sort_date_issued),
-                        selected = false,
-                        filterableAction = FilterAction.Sort<DocumentsFilterableAttributes, Instant> { attributes ->
-                            attributes.issuedDate
-                        }
-                    ),
-                    FilterItem(
-                        id = DocumentFilterIds.FILTER_SORT_EXPIRY_DATE,
-                        name = resourceProvider.getString(R.string.documents_screen_filters_sort_expiry_date),
-                        selected = false,
-                        filterableAction = FilterAction.Sort<DocumentsFilterableAttributes, Instant> { attributes ->
-                            attributes.expiryDate
-                        }
-                    )
-                )
-            ),
             // Filter by expiry period
             FilterGroup.SingleSelectionFilterGroup(
                 id = DocumentFilterIds.FILTER_BY_PERIOD_GROUP_ID,
@@ -775,7 +769,22 @@ class DocumentsInteractorImpl(
                 }
             )
         ),
-        sortOrder = SortOrder.Ascending(isDefault = true)
+        sortOrder = SortOrder.Ascending(isDefault = true),
+        sort = FilterSort(
+            id = DocumentFilterIds.FILTER_SORT_GROUP_ID,
+            name = resourceProvider.getString(R.string.documents_screen_filters_sort_by),
+            filters = listOf(
+                FilterItem(
+                    id = DocumentFilterIds.FILTER_SORT_DEFAULT,
+                    name = resourceProvider.getString(R.string.documents_screen_filters_sort_default),
+                    selected = true,
+                    isDefault = true,
+                    filterableAction = FilterAction.Sort<DocumentsFilterableAttributes, String> { attributes ->
+                        attributes.name.lowercase()
+                    }
+                ),
+            )
+        )
     )
 
     private fun addDocumentCategoryFilter(documents: FilterableList): List<FilterItem> {

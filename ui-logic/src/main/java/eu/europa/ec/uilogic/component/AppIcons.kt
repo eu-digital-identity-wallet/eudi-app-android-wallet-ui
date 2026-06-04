@@ -130,17 +130,13 @@ enum class AppIconKey(
         resourceId = R.drawable.ic_id_stroke,
         contentDescriptionId = R.string.content_description_id_stroke_icon,
     ),
-    LogoFull(
-        resourceId = R.drawable.ic_logo_full,
-        contentDescriptionId = R.string.content_description_logo_full_icon,
+    LogoIcon(
+        resourceId = R.drawable.ic_logo_icon,
+        contentDescriptionId = R.string.content_description_logo_icon,
     ),
-    LogoPlain(
-        resourceId = R.drawable.ic_logo_plain,
-        contentDescriptionId = R.string.content_description_logo_plain_icon,
-    ),
-    LogoText(
-        resourceId = R.drawable.ic_logo_text,
-        contentDescriptionId = R.string.content_description_logo_text_icon,
+    LogoIconAndText(
+        resourceId = R.drawable.ic_logo_icon_and_text,
+        contentDescriptionId = R.string.content_description_logo_icon_and_text,
     ),
     KeyboardArrowDown(
         contentDescriptionId = R.string.content_description_arrow_down_icon,
@@ -314,6 +310,10 @@ enum class AppIconKey(
         resourceId = R.drawable.ic_settings,
         contentDescriptionId = R.string.content_description_settings_icon,
     ),
+    BatchIssuanceCounter(
+        resourceId = R.drawable.ic_batch_issuance_counter,
+        contentDescriptionId = R.string.content_description_batch_issuance_counter_icon,
+    )
     ;
 
     init {
@@ -340,9 +340,8 @@ object AppIcons {
     val User: IconDataUi = IconDataUi(AppIconKey.User)
     val Id: IconDataUi = IconDataUi(AppIconKey.Id)
     val IdStroke: IconDataUi = IconDataUi(AppIconKey.IdStroke)
-    val LogoFull: IconDataUi = IconDataUi(AppIconKey.LogoFull)
-    val LogoPlain: IconDataUi = IconDataUi(AppIconKey.LogoPlain)
-    val LogoText: IconDataUi = IconDataUi(AppIconKey.LogoText)
+    val LogoIcon: IconDataUi = IconDataUi(AppIconKey.LogoIcon)
+    val LogoIconAndText: IconDataUi = IconDataUi(AppIconKey.LogoIconAndText)
     val KeyboardArrowDown: IconDataUi = IconDataUi(AppIconKey.KeyboardArrowDown)
     val KeyboardArrowUp: IconDataUi = IconDataUi(AppIconKey.KeyboardArrowUp)
     val Visibility: IconDataUi = IconDataUi(AppIconKey.Visibility)
@@ -386,4 +385,5 @@ object AppIcons {
     val OpenInBrowser: IconDataUi = IconDataUi(AppIconKey.OpenInBrowser)
     val DateRange: IconDataUi = IconDataUi(AppIconKey.DateRange)
     val Settings: IconDataUi = IconDataUi(AppIconKey.Settings)
+    val BatchIssuanceCounter: IconDataUi = IconDataUi(AppIconKey.BatchIssuanceCounter)
 }

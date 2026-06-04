@@ -22,6 +22,7 @@ import eu.europa.ec.businesslogic.validator.model.FilterAction
 import eu.europa.ec.businesslogic.validator.model.FilterElement
 import eu.europa.ec.businesslogic.validator.model.FilterElement.FilterItem
 import eu.europa.ec.businesslogic.validator.model.FilterGroup
+import eu.europa.ec.businesslogic.validator.model.FilterSort
 import eu.europa.ec.businesslogic.validator.model.FilterableList
 import eu.europa.ec.businesslogic.validator.model.Filters
 import eu.europa.ec.businesslogic.validator.model.SortOrder
@@ -79,6 +80,7 @@ interface FilterValidator {
         upperLimit: LocalDateTime
     )
 
+    fun updateSort(filterId: String)
     fun updateSortOrder(sortOrder: SortOrder)
 }
 
@@ -129,7 +131,15 @@ class FilterValidatorImpl(
 
         appliedFilters = filters.copy(
             sortOrder = if (appliedFilters.isEmpty) filters.sortOrder else appliedFilters.sortOrder,
-            filterGroups = mergedFilterGroups
+            filterGroups = mergedFilterGroups,
+            sort = if (appliedFilters.isEmpty) {
+                filters.sort
+            } else {
+                mergeSort(
+                    newSort = filters.sort,
+                    existingSort = appliedFilters.sort
+                )
+            }
         )
         this.initialList = filterableList
     }
@@ -309,6 +319,33 @@ class FilterValidatorImpl(
         }
     }
 
+    override fun updateSort(filterId: String) {
+        scope.launch {
+            val filtersToUpdate = if (snapshotFilters.isEmpty) appliedFilters else snapshotFilters
+            val updatedSort = filtersToUpdate.sort?.copy(
+                filters = filtersToUpdate.sort.filters.map { filter ->
+                    when (filter) {
+                        is FilterItem -> {
+                            filter.copy(selected = filter.id == filterId)
+                        }
+
+                        is FilterElement.DateTimeRangeFilterItem -> {
+                            filter.copy(selected = filter.id == filterId)
+                        }
+                    }
+                }
+            )
+
+            snapshotFilters = filtersToUpdate.copy(sort = updatedSort)
+
+            emissionMutableFlow.emit(
+                FilterValidatorPartialState.FilterUpdateResult(
+                    updatedFilters = snapshotFilters
+                )
+            )
+        }
+    }
+
     override fun applyFilters() {
         scope.launch {
             if (snapshotFilters.isNotEmpty) {
@@ -316,8 +353,11 @@ class FilterValidatorImpl(
                 snapshotFilters = Filters.emptyFilters()
             }
 
-            // Flatten all filters from all filter groups into a single list
-            val allFilters = appliedFilters.filterGroups.flatMap { it.filters }
+            // Flatten all user filters and sort selectors into a single list
+            val allFilters = buildList {
+                addAll(appliedFilters.filterGroups.flatMap { it.filters })
+                addAll(appliedFilters.sort?.filters.orEmpty())
+            }
 
             // Check if all selected filters are default filters
             val allSelectedAreDefault = allFilters
@@ -452,46 +492,10 @@ class FilterValidatorImpl(
         newFilterGroup: FilterGroup,
         existingFilterGroup: FilterGroup,
     ): FilterGroup {
-        val newFilters = newFilterGroup.filters
-        val existingFilters = existingFilterGroup.filters
-        val mergedFilters = mutableListOf<FilterElement>()
-
-        // Iterate over the filters in the new group to merge selection states from existing filters
-        newFilters.forEach { newFilter ->
-            val existingFilter = existingFilters.find { it.id == newFilter.id }
-
-            if (existingFilter != null) {
-                // Filter exists in both new and existing groups, copy selection state
-                when (newFilter) {
-                    is FilterItem -> {
-                        // For simple filters, just copy selection state
-                        mergedFilters.add(newFilter.copy(selected = existingFilter.selected))
-                    }
-
-                    is FilterElement.DateTimeRangeFilterItem -> {
-                        // Attempt to smart cast existing filter to DateTimeRangeFilterItem
-                        val existingDateFilter =
-                            existingFilter as? FilterElement.DateTimeRangeFilterItem
-                        if (existingDateFilter != null) {
-                            // Copy selection state and also preserve the selected date range
-                            mergedFilters.add(
-                                newFilter.copy(
-                                    selected = existingDateFilter.selected,
-                                    startDateTime = existingDateFilter.startDateTime,
-                                    endDateTime = existingDateFilter.endDateTime
-                                )
-                            )
-                        } else {
-                            // Fallback: type mismatch, retain new filter as-is
-                            mergedFilters.add(newFilter)
-                        }
-                    }
-                }
-            } else {
-                // Filter is new, add it directly without any changes
-                mergedFilters.add(newFilter)
-            }
-        }
+        val mergedFilters = mergeFilterElements(
+            newFilters = newFilterGroup.filters,
+            existingFilters = existingFilterGroup.filters
+        )
 
         // Reconstruct and return the appropriate FilterGroup subtype with merged filters
         return when (newFilterGroup) {
@@ -511,6 +515,61 @@ class FilterValidatorImpl(
                 newFilterGroup.copy(filters = mergedFilters)
             }
         }
+    }
+
+    private fun mergeSort(
+        newSort: FilterSort?,
+        existingSort: FilterSort?,
+    ): FilterSort? {
+        return when {
+            newSort == null -> null
+            existingSort == null -> newSort
+            else -> newSort.copy(
+                filters = mergeFilterElements(
+                    newFilters = newSort.filters,
+                    existingFilters = existingSort.filters
+                )
+            )
+        }
+    }
+
+    private fun mergeFilterElements(
+        newFilters: List<FilterElement>,
+        existingFilters: List<FilterElement>,
+    ): List<FilterElement> {
+        val mergedFilters = mutableListOf<FilterElement>()
+
+        newFilters.forEach { newFilter ->
+            val existingFilter = existingFilters.find { it.id == newFilter.id }
+
+            if (existingFilter != null) {
+                when (newFilter) {
+                    is FilterItem -> {
+                        mergedFilters.add(newFilter.copy(selected = existingFilter.selected))
+                    }
+
+                    is FilterElement.DateTimeRangeFilterItem -> {
+                        val existingDateFilter =
+                            existingFilter as? FilterElement.DateTimeRangeFilterItem
+                        if (existingDateFilter != null) {
+                            mergedFilters.add(
+                                newFilter.copy(
+                                    selected = existingDateFilter.selected,
+                                    startDateTime = existingDateFilter.startDateTime,
+                                    endDateTime = existingDateFilter.endDateTime
+                                )
+                            )
+                        } else {
+                            mergedFilters.add(newFilter)
+                        }
+                    }
+                }
+            } else {
+                mergedFilters.add(newFilter)
+            }
+        }
+
+        return mergedFilters
     }
 
 }

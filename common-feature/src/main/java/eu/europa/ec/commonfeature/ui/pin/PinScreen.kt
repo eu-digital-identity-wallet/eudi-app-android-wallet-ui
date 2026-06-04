@@ -41,6 +41,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
+import eu.europa.ec.authenticationlogic.secure.SecurePin
 import eu.europa.ec.commonfeature.model.PinFlow
 import eu.europa.ec.commonfeature.util.TestTag
 import eu.europa.ec.resourceslogic.R
@@ -54,25 +55,19 @@ import eu.europa.ec.uilogic.component.utils.OneTimeLaunchedEffect
 import eu.europa.ec.uilogic.component.utils.SPACING_LARGE
 import eu.europa.ec.uilogic.component.utils.SPACING_SMALL
 import eu.europa.ec.uilogic.component.wrap.BottomSheetTextDataUi
-import eu.europa.ec.uilogic.component.wrap.ButtonConfig
-import eu.europa.ec.uilogic.component.wrap.ButtonType
 import eu.europa.ec.uilogic.component.wrap.DialogBottomSheet
 import eu.europa.ec.uilogic.component.wrap.SecurePinTextFieldState
-import eu.europa.ec.uilogic.component.wrap.StickyBottomConfig
-import eu.europa.ec.uilogic.component.wrap.StickyBottomType
 import eu.europa.ec.uilogic.component.wrap.WrapModalBottomSheet
 import eu.europa.ec.uilogic.component.wrap.WrapSecurePinTextField
-import eu.europa.ec.uilogic.component.wrap.WrapStickyBottomContent
 import eu.europa.ec.uilogic.component.wrap.rememberSecurePinTextFieldState
 import eu.europa.ec.uilogic.extension.applyTestTag
 import eu.europa.ec.uilogic.extension.finish
 import eu.europa.ec.uilogic.navigation.CommonScreens
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -98,33 +93,6 @@ fun PinScreen(
         navigatableAction = state.action,
         onBack = { viewModel.setEvent(state.onBackEvent) },
         imePaddingConfig = ImePaddingConfig.ONLY_CONTENT,
-        stickyBottom = { paddingValues ->
-            WrapStickyBottomContent(
-                modifier = Modifier
-                    .applyTestTag(TestTag.PinScreen.BUTTON)
-                    .fillMaxWidth()
-                    .padding(paddingValues),
-                stickyBottomConfig = StickyBottomConfig(
-                    type = StickyBottomType.OneButton(
-                        config = ButtonConfig(
-                            type = ButtonType.PRIMARY,
-                            enabled = state.isButtonEnabled && pinInputState.isComplete,
-                            onClick = {
-                                if (pinInputState.isComplete) {
-                                    viewModel.setEvent(
-                                        Event.NextButtonPressed(
-                                            pin = pinInputState.toSecurePinAndClear()
-                                        )
-                                    )
-                                }
-                            }
-                        )
-                    )
-                )
-            ) {
-                Text(text = state.buttonText)
-            }
-        }
     ) { paddingValues ->
         Content(
             state = state,
@@ -241,12 +209,23 @@ private fun Content(
                 .padding(top = SPACING_LARGE.dp),
             verticalArrangement = Arrangement.spacedBy(SPACING_SMALL.dp, Alignment.Top)
         ) {
+            state.pinInputLabel?.let { safePinInputLabel ->
+                Text(
+                    text = safePinInputLabel,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    style = MaterialTheme.typography.titleMedium,
+                )
+            }
+
             PinFieldLayout(
                 modifier = Modifier.fillMaxWidth(),
                 state = state,
                 pinInputState = pinInputState,
-                onPinInput = { quickPin ->
-                    onEventSend(Event.OnQuickPinLengthChanged(quickPin))
+                onPinInput = {
+                    onEventSend(Event.OnQuickPinLengthChanged)
+                },
+                onPinComplete = { pin ->
+                    onEventSend(Event.PinEntered(pin = pin))
                 }
             )
         }
@@ -297,11 +276,13 @@ private fun PinFieldLayout(
     state: State,
     pinInputState: SecurePinTextFieldState,
     onPinInput: (Int) -> Unit,
+    onPinComplete: (SecurePin) -> Unit,
 ) {
     WrapSecurePinTextField(
         modifier = modifier,
         state = pinInputState,
         onPinLengthChanged = onPinInput,
+        onPinComplete = onPinComplete,
         hasError = !state.quickPinError.isNullOrEmpty() || state.isLockedOut,
         errorMessage = state.lockoutMessage ?: state.quickPinError,
         pinWidth = 42.dp,
@@ -321,7 +302,7 @@ private fun PinScreenEmptyPreview() {
                 pinFlow = PinFlow.CREATE_WITH_ACTIVATION,
                 pinState = PinValidationState.ENTER
             ),
-            effectFlow = Channel<Effect>().receiveAsFlow(),
+            effectFlow = emptyFlow(),
             onEventSend = {},
             onNavigationRequested = {},
             paddingValues = PaddingValues(10.dp),

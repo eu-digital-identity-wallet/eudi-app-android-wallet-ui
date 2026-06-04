@@ -20,6 +20,7 @@ import android.net.Uri
 import eu.europa.ec.authenticationlogic.controller.authentication.BiometricsAvailability
 import eu.europa.ec.businesslogic.config.ConfigLogic
 import eu.europa.ec.businesslogic.controller.log.LogController
+import eu.europa.ec.businesslogic.controller.storage.PrefKeys
 import eu.europa.ec.commonfeature.interactor.BiometricInteractor
 import eu.europa.ec.dashboardfeature.ui.settings.model.SettingsItemUi
 import eu.europa.ec.dashboardfeature.ui.settings.model.SettingsMenuItemType
@@ -38,6 +39,7 @@ interface SettingsInteractor : BiometricInteractor {
     fun retrieveLogFileUris(): ArrayList<Uri>
     suspend fun getSettingsItemsUi(changelogUrl: String?): List<SettingsItemUi>
     suspend fun toggleBiometricsAuthentication()
+    suspend fun toggleShowBatchIssuanceCounter()
 }
 
 class SettingsInteractorImpl(
@@ -45,6 +47,7 @@ class SettingsInteractorImpl(
     private val configLogic: ConfigLogic,
     private val logController: LogController,
     private val resourceProvider: ResourceProvider,
+    private val prefKeys: PrefKeys,
 ) : SettingsInteractor,
     BiometricInteractor by biometricInteractor {
 
@@ -74,7 +77,7 @@ class SettingsInteractorImpl(
                             ),
                             trailingContentData = ListItemTrailingContentDataUi.Switch(
                                 switchData = SwitchDataUi(
-                                    isChecked = biometricInteractor.getBiometricUserSelection(),
+                                    isChecked = getBiometricUsageDecision(),
                                     enabled = true,
                                 )
                             )
@@ -82,6 +85,27 @@ class SettingsInteractorImpl(
                     )
                 )
             }
+
+            add(
+                SettingsItemUi(
+                    type = SettingsMenuItemType.SHOW_BATCH_ISSUANCE_COUNTER,
+                    data = ListItemDataUi(
+                        itemId = SettingsMenuItemType.SHOW_BATCH_ISSUANCE_COUNTER.itemId,
+                        mainContentData = ListItemMainContentDataUi.Text(
+                            text = resourceProvider.getString(R.string.settings_screen_option_show_batch_issuance_counter)
+                        ),
+                        leadingContentData = ListItemLeadingContentDataUi.Icon(
+                            iconData = AppIcons.BatchIssuanceCounter
+                        ),
+                        trailingContentData = ListItemTrailingContentDataUi.Switch(
+                            switchData = SwitchDataUi(
+                                isChecked = getShowBatchIssuanceCounter(),
+                                enabled = true,
+                            )
+                        )
+                    )
+                )
+            )
 
             add(
                 SettingsItemUi(
@@ -125,8 +149,22 @@ class SettingsInteractorImpl(
 
     override suspend fun toggleBiometricsAuthentication() {
         biometricInteractor.storeBiometricsUsageDecision(
-            shouldUseBiometrics = !biometricInteractor.getBiometricUserSelection()
+            shouldUseBiometrics = !getBiometricUsageDecision()
         )
+    }
+
+    override suspend fun toggleShowBatchIssuanceCounter() {
+        prefKeys.setShowBatchIssuanceCounter(
+            value = !getShowBatchIssuanceCounter()
+        )
+    }
+
+    private suspend fun getBiometricUsageDecision(): Boolean {
+        return biometricInteractor.getBiometricUserSelection()
+    }
+
+    private suspend fun getShowBatchIssuanceCounter(): Boolean {
+        return prefKeys.getShowBatchIssuanceCounter()
     }
 
     private fun deviceSupportsBiometrics(): Boolean {

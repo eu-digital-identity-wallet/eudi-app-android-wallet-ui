@@ -21,6 +21,7 @@ import eu.europa.ec.businesslogic.validator.model.FilterAction
 import eu.europa.ec.businesslogic.validator.model.FilterElement
 import eu.europa.ec.businesslogic.validator.model.FilterGroup
 import eu.europa.ec.businesslogic.validator.model.FilterMultipleAction
+import eu.europa.ec.businesslogic.validator.model.FilterSort
 import eu.europa.ec.businesslogic.validator.model.FilterableList
 import eu.europa.ec.businesslogic.validator.model.Filters
 import eu.europa.ec.businesslogic.validator.model.SortOrder
@@ -263,6 +264,85 @@ class TestFilterValidator {
                 val emittedState = awaitItem()
                 assertTrue(emittedState is FilterValidatorPartialState.FilterUpdateResult)
                 assertTrue(emittedState.updatedFilters.sortOrder == SortOrder.Descending())
+            }
+        }
+
+    @Test
+    fun `Given a different sort, When updateSort is called, Then FilterUpdateResult is emitted`() =
+        coroutineRule.runTest {
+            filterValidator.onFilterStateChange().runFlowTest {
+                // Given
+                val filters = filtersWithSingleSelection.copy(
+                    sort = FilterSort(
+                        id = "sort",
+                        name = "Sort",
+                        filters = listOf(
+                            FilterElement.FilterItem(
+                                id = "name",
+                                name = "Name",
+                                selected = true,
+                                isDefault = true,
+                                filterableAction = FilterAction.Sort<TestAttributes, String> { it.name },
+                            ),
+                            FilterElement.FilterItem(
+                                id = "name_desc",
+                                name = "Name Desc",
+                                selected = false,
+                                isDefault = false,
+                                filterableAction = FilterAction.Sort<TestAttributes, String> { it.name },
+                            ),
+                        )
+                    )
+                )
+                filterValidator.initializeValidator(filters, filterableList)
+
+                // When
+                filterValidator.updateSort("name_desc")
+
+                // Then
+                val emittedState = awaitItem()
+                assertTrue(emittedState is FilterValidatorPartialState.FilterUpdateResult)
+                assertTrue(
+                    emittedState.updatedFilters.sort?.filters
+                        ?.first { it.id == "name_desc" }
+                        ?.selected == true
+                )
+            }
+        }
+
+    @Test
+    fun `Given sort config, When applyFilters is called, Then selected sort is applied`() =
+        coroutineRule.runTest {
+            filterValidator.onFilterStateChange().runFlowTest {
+                // Given
+                val filters = filtersWithMultipleSelectionAllSelected.copy(
+                    sort = FilterSort(
+                        id = "sort",
+                        name = "Sort",
+                        filters = listOf(
+                            FilterElement.FilterItem(
+                                id = "name",
+                                name = "Name",
+                                selected = true,
+                                isDefault = true,
+                                filterableAction = FilterAction.Sort<TestAttributes, String> { it.name },
+                            )
+                        )
+                    )
+                )
+                filterValidator.initializeValidator(filters, filterableList)
+
+                // When
+                filterValidator.applyFilters()
+
+                // Then
+                val emittedState = awaitItem()
+                assertTrue(emittedState is FilterValidatorPartialState.FilterListResult.FilterApplyResult)
+                emittedState as FilterValidatorPartialState.FilterListResult.FilterApplyResult
+                val names = emittedState.filteredList.items.map {
+                    (it.attributes as TestAttributes).name
+                }
+                assertEquals(names.sorted(), names)
             }
         }
 

@@ -17,6 +17,7 @@
 package eu.europa.ec.uilogic.extension
 
 import eu.europa.ec.uilogic.component.AppIcons
+import eu.europa.ec.uilogic.component.ListItemDataUi
 import eu.europa.ec.uilogic.component.ListItemTrailingContentDataUi
 import eu.europa.ec.uilogic.component.wrap.ExpandableListItemUi
 
@@ -128,22 +129,10 @@ fun List<ExpandableListItemUi>.toggleExpansionState(id: String): List<Expandable
         when (nestedItem) {
             is ExpandableListItemUi.NestedListItem -> {
                 if (nestedItem.header.itemId == id && nestedItem.header.trailingContentData is ListItemTrailingContentDataUi.Icon) {
-                    val currentTrailingContent =
-                        nestedItem.header.trailingContentData
-
                     val newIsExpanded = !nestedItem.isExpanded
-                    val newCollapsed = nestedItem.header.copy(
-                        trailingContentData = currentTrailingContent.copy(
-                            iconData = if (newIsExpanded) {
-                                AppIcons.KeyboardArrowUp
-                            } else {
-                                AppIcons.KeyboardArrowDown
-                            }
-                        )
-                    )
 
                     nestedItem.copy(
-                        header = newCollapsed,
+                        header = nestedItem.header.withExpansionIcon(newIsExpanded),
                         isExpanded = newIsExpanded
                     )
                 } else {
@@ -158,4 +147,123 @@ fun List<ExpandableListItemUi>.toggleExpansionState(id: String): List<Expandable
             }
         }
     }
+}
+
+/**
+ * Applies the expanded/collapsed state from [currentItems] to this list of nested items.
+ *
+ * This is useful when fresh [ExpandableListItemUi.NestedListItem] models are rebuilt from a
+ * data source, but the UI should keep the user's current expansion choices. Matching is done by
+ * each nested item's `header.itemId`.
+ *
+ * The function also updates each expandable header icon to match the applied state:
+ * [AppIcons.KeyboardArrowUp] for expanded items and [AppIcons.KeyboardArrowDown] for collapsed
+ * items.
+ *
+ * @param currentItems The current item tree whose expansion state should be copied.
+ * @return A new list with expansion state and icons copied from [currentItems] where item IDs match.
+ */
+fun List<ExpandableListItemUi.NestedListItem>.withExpansionStateFrom(
+    currentItems: List<ExpandableListItemUi.NestedListItem>,
+): List<ExpandableListItemUi.NestedListItem> {
+    val expansionStateById = currentItems.collectExpansionStateById()
+
+    return map { item ->
+        item.withExpansionStateFrom(expansionStateById)
+    }
+}
+
+/**
+ * Collapses all [ExpandableListItemUi.NestedListItem] entries in this list.
+ *
+ * The function preserves the immutable list-item structure while setting every expandable item to
+ * `isExpanded = false` and replacing expandable header icons with [AppIcons.KeyboardArrowDown].
+ *
+ * @return A new list where all nested items are collapsed.
+ */
+fun List<ExpandableListItemUi.NestedListItem>.collapsedExpansionState(): List<ExpandableListItemUi.NestedListItem> {
+    return map { item ->
+        item.collapsedExpansionState()
+    }
+}
+
+/**
+ * Returns a copy of this [ListItemDataUi] with its trailing expansion icon set for [isExpanded].
+ *
+ * If the list item has no icon trailing content, it is returned unchanged.
+ *
+ * @param isExpanded Whether the item should show an expanded or collapsed indicator.
+ * @return A copy with [AppIcons.KeyboardArrowUp] when expanded, or [AppIcons.KeyboardArrowDown]
+ * when collapsed.
+ */
+fun ListItemDataUi.withExpansionIcon(isExpanded: Boolean): ListItemDataUi {
+    val trailingContent = trailingContentData
+    return if (trailingContent is ListItemTrailingContentDataUi.Icon) {
+        copy(
+            trailingContentData = trailingContent.copy(
+                iconData = if (isExpanded) {
+                    AppIcons.KeyboardArrowUp
+                } else {
+                    AppIcons.KeyboardArrowDown
+                }
+            )
+        )
+    } else {
+        this
+    }
+}
+
+private fun List<ExpandableListItemUi.NestedListItem>.collectExpansionStateById(): Map<String, Boolean> {
+    return flatMap { item ->
+        item.collectExpansionStateById()
+    }.toMap()
+}
+
+private fun ExpandableListItemUi.NestedListItem.collectExpansionStateById(): List<Pair<String, Boolean>> {
+    return listOf(header.itemId to isExpanded) + nestedItems.flatMap { item ->
+        when (item) {
+            is ExpandableListItemUi.NestedListItem -> item.collectExpansionStateById()
+            is ExpandableListItemUi.SingleListItem -> emptyList()
+        }
+    }
+}
+
+private fun ExpandableListItemUi.NestedListItem.withExpansionStateFrom(
+    expansionStateById: Map<String, Boolean>,
+): ExpandableListItemUi.NestedListItem {
+    val appliedIsExpanded = expansionStateById[header.itemId] ?: isExpanded
+
+    return copy(
+        header = header.withExpansionIcon(appliedIsExpanded),
+        isExpanded = appliedIsExpanded,
+        nestedItems = nestedItems.map { item ->
+            when (item) {
+                is ExpandableListItemUi.NestedListItem -> {
+                    item.withExpansionStateFrom(expansionStateById)
+                }
+
+                is ExpandableListItemUi.SingleListItem -> {
+                    item
+                }
+            }
+        }
+    )
+}
+
+private fun ExpandableListItemUi.NestedListItem.collapsedExpansionState(): ExpandableListItemUi.NestedListItem {
+    return copy(
+        header = header.withExpansionIcon(isExpanded = false),
+        isExpanded = false,
+        nestedItems = nestedItems.map { item ->
+            when (item) {
+                is ExpandableListItemUi.NestedListItem -> {
+                    item.collapsedExpansionState()
+                }
+
+                is ExpandableListItemUi.SingleListItem -> {
+                    item
+                }
+            }
+        }
+    )
 }

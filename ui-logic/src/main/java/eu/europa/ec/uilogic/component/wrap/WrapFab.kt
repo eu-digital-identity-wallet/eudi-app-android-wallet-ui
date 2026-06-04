@@ -16,10 +16,11 @@
 
 package eu.europa.ec.uilogic.component.wrap
 
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.material3.contentColorFor
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -36,21 +37,13 @@ private val primaryFabContainerColor: Color
     @Composable get() = MaterialTheme.colorScheme.primary
 
 private val primaryFabContentColor: Color
-    @Composable get() = if (isSystemInDarkTheme()) {
-        Color.White
-    } else {
-        MaterialTheme.colorScheme.surface
-    }
+    @Composable get() = contentColorFor(primaryFabContainerColor)
 
 private val secondaryFabContainerColor: Color
-    @Composable get() = if (isSystemInDarkTheme()) {
-        Color.DarkGray
-    } else {
-        MaterialTheme.colorScheme.surface
-    }
+    @Composable get() = MaterialTheme.colorScheme.secondary
 
 private val secondaryFabContentColor: Color
-    @Composable get() = MaterialTheme.colorScheme.onSurface
+    @Composable get() = contentColorFor(secondaryFabContainerColor)
 
 /**
  * Data class that is used to construct and initialize a fab button.
@@ -104,12 +97,14 @@ fun WrapSecondaryFab(
 fun WrapPrimaryExtendedFab(
     data: FabDataUi,
     modifier: Modifier = Modifier,
+    expanded: Boolean = true,
     shape: Shape = fabShape,
     containerColor: Color = primaryFabContainerColor,
     contentColor: Color = primaryFabContentColor,
 ) {
     ExtendedFloatingActionButton(
         modifier = modifier,
+        expanded = expanded,
         shape = shape,
         containerColor = containerColor,
         contentColor = contentColor,
@@ -123,6 +118,7 @@ fun WrapPrimaryExtendedFab(
 fun WrapSecondaryExtendedFab(
     data: FabDataUi,
     modifier: Modifier = Modifier,
+    expanded: Boolean = true,
     shape: Shape = fabShape,
     containerColor: Color = secondaryFabContainerColor,
     contentColor: Color = secondaryFabContentColor,
@@ -130,6 +126,7 @@ fun WrapSecondaryExtendedFab(
     WrapPrimaryExtendedFab(
         data = data,
         modifier = modifier,
+        expanded = expanded,
         shape = shape,
         containerColor = containerColor,
         contentColor = contentColor,
@@ -142,6 +139,47 @@ private fun WrapPrimaryFabPreview() {
     PreviewTheme {
         WrapPrimaryFab(
             data = FabDataUi(
+                icon = { WrapIcon(iconData = AppIcons.Add) },
+                onClick = {}
+            )
+        )
+    }
+}
+
+@ThemeModePreviews
+@Composable
+private fun WrapPrimaryExtendedFabPreview() {
+    PreviewTheme {
+        WrapPrimaryExtendedFab(
+            data = FabDataUi(
+                text = { Text(text = "Primary Extended FAB") },
+                icon = { WrapIcon(iconData = AppIcons.Add) },
+                onClick = {}
+            )
+        )
+    }
+}
+
+@ThemeModePreviews
+@Composable
+private fun WrapSecondaryFabPreview() {
+    PreviewTheme {
+        WrapSecondaryFab(
+            data = FabDataUi(
+                icon = { WrapIcon(iconData = AppIcons.Add) },
+                onClick = {}
+            )
+        )
+    }
+}
+
+@ThemeModePreviews
+@Composable
+private fun WrapSecondaryExtendedFabPreview() {
+    PreviewTheme {
+        WrapSecondaryExtendedFab(
+            data = FabDataUi(
+                text = { Text(text = "Secondary Extended FAB") },
                 icon = { WrapIcon(iconData = AppIcons.Add) },
                 onClick = {}
             )

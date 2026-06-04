@@ -89,23 +89,23 @@ The project ships two build flavors, `dev` and `demo` (see
 
 The minimum set of files to change for a full rebrand. Each row links to its detailed section below.
 
-| Brand element | File(s) to change | Notes |
-| --- | --- | --- |
-| Brand colors (light) | [`theme/values/ThemeColors.kt`](../resources-logic/src/main/java/eu/europa/ec/resourceslogic/theme/values/ThemeColors.kt) — `lightColors` + light constants | 48 Material 3 roles. See [Colors](#colors). |
-| Brand colors (dark) | same file — `darkColors` + dark constants | Don't forget dark mode. |
-| Extra semantic colors | same file — `success`, `warning`, `pending`, `divider` | Not part of Material 3. |
-| Fonts | [`res/font/`](../resources-logic/src/main/res/font) + [`theme/values/ThemeTypography.kt`](../resources-logic/src/main/java/eu/europa/ec/resourceslogic/theme/values/ThemeTypography.kt) | See [Typography and fonts](#typography-and-fonts). |
-| Type scale | [`theme/values/ThemeTypography.kt`](../resources-logic/src/main/java/eu/europa/ec/resourceslogic/theme/values/ThemeTypography.kt) | 15 Material 3 text styles. |
-| Corner shapes | [`theme/values/ThemeShapes.kt`](../resources-logic/src/main/java/eu/europa/ec/resourceslogic/theme/values/ThemeShapes.kt) | See [Shapes](#shapes). |
-| In-app logos | [`res/drawable/ic_logo_full.xml`](../resources-logic/src/main/res/drawable/ic_logo_full.xml), `ic_logo_plain.xml`, `ic_logo_text.xml` | Brand colors are baked into the vectors. See [Logos](#logos-and-in-app-imagery). |
-| Launcher icon | `resources-logic/src/demo/res/mipmap-*` **and** `resources-logic/src/dev/res/mipmap-*` (foreground per flavor) + shared [`ic_launcher_background.xml`](../resources-logic/src/main/res/values/ic_launcher_background.xml) | Icon bitmaps per flavor; background color is shared. See [Launcher icon](#launcher-icon). |
-| App display name | [`assembly-logic/build.gradle.kts`](../assembly-logic/build.gradle.kts) (`appName`) + [`AppFlavor.kt`](../build-logic/convention/src/main/kotlin/project/convention/logic/AppFlavor.kt) (suffix) | See [App name](#app-name-and-package-identity). |
-| Package / application id | `app/build.gradle.kts` (`applicationId`) + `AppFlavor.kt` (`.dev` suffix) | Don't change after public release. |
-| Splash (OS window) | [`res/values-v31/themes.xml`](../resources-logic/src/main/res/values-v31/themes.xml) | See [Splash screen](#splash-screen). |
-| Brand strings (product name in UI) | [`res/values/strings.xml`](../resources-logic/src/main/res/values/strings.xml) (+ localized variants) | Search for `EUDI`/`Wallet`. See [Brand strings](#brand-strings). |
-| System bars (status/navigation) | [`MainActivity.kt`](../assembly-logic/src/main/java/eu/europa/ec/assemblylogic/ui/MainActivity.kt) (`enableEdgeToEdge`) | Edge-to-edge — **not** the XML theme. See [Window chrome](#window-chrome-and-system-bars). |
-| Host XML theme | [`res/values/themes.xml`](../resources-logic/src/main/res/values/themes.xml) (`Theme.EUDIWallet`) | Cold-start window background only (Compose app, no action bar). |
-| RQES signing UI | Optional `themeManager` override in [`RQESConfigImpl`](../business-logic/src/demo/java/eu/europa/ec/businesslogic/config/RQESConfigImpl.kt) (+ `dev`) | Separate SDK theme; **not** overridden by default. See [Sub-SDK theming](#sub-sdk-theming-rqes). |
+| Brand element                      | File(s) to change                                                                                                                                                                                                         | Notes                                                                                            |
+|------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------|
+| Brand colors (light)               | [`theme/values/ThemeColors.kt`](../resources-logic/src/main/java/eu/europa/ec/resourceslogic/theme/values/ThemeColors.kt) — `lightColors` + light constants                                                               | 48 Material 3 roles. See [Colors](#colors).                                                      |
+| Brand colors (dark)                | same file — `darkColors` + dark constants                                                                                                                                                                                 | Don't forget dark mode.                                                                          |
+| Extra semantic colors              | same file — `success`, `warning`, `pending`, `divider`                                                                                                                                                                    | Not part of Material 3.                                                                          |
+| Fonts                              | [`res/font/`](../resources-logic/src/main/res/font) + [`theme/values/ThemeTypography.kt`](../resources-logic/src/main/java/eu/europa/ec/resourceslogic/theme/values/ThemeTypography.kt)                                   | See [Typography and fonts](#typography-and-fonts).                                               |
+| Type scale                         | [`theme/values/ThemeTypography.kt`](../resources-logic/src/main/java/eu/europa/ec/resourceslogic/theme/values/ThemeTypography.kt)                                                                                         | 15 Material 3 text styles.                                                                       |
+| Corner shapes                      | [`theme/values/ThemeShapes.kt`](../resources-logic/src/main/java/eu/europa/ec/resourceslogic/theme/values/ThemeShapes.kt)                                                                                                 | See [Shapes](#shapes).                                                                           |
+| In-app logos                       | [`res/drawable/ic_logo_icon.xml`](../resources-logic/src/main/res/drawable/ic_logo_icon.xml), `ic_logo_icon_and_text.xml`                                                                                                 | Brand colors are baked into the vectors. See [Logos](#logos-and-in-app-imagery).                 |
+| Launcher icon                      | `resources-logic/src/demo/res/mipmap-*` **and** `resources-logic/src/dev/res/mipmap-*` (foreground per flavor) + shared [`ic_launcher_background.xml`](../resources-logic/src/main/res/values/ic_launcher_background.xml) | Icon bitmaps per flavor; background color is shared. See [Launcher icon](#launcher-icon).        |
+| App display name                   | [`assembly-logic/build.gradle.kts`](../assembly-logic/build.gradle.kts) (`appName`) + [`AppFlavor.kt`](../build-logic/convention/src/main/kotlin/project/convention/logic/AppFlavor.kt) (suffix)                          | See [App name](#app-name-and-package-identity).                                                  |
+| Package / application id           | `app/build.gradle.kts` (`applicationId`) + `AppFlavor.kt` (`.dev` suffix)                                                                                                                                                 | Don't change after public release.                                                               |
+| Splash (OS window)                 | [`res/values-v31/themes.xml`](../resources-logic/src/main/res/values-v31/themes.xml)                                                                                                                                      | See [Splash screen](#splash-screen).                                                             |
+| Brand strings (product name in UI) | [`res/values/strings.xml`](../resources-logic/src/main/res/values/strings.xml) (+ localized variants)                                                                                                                     | Search for `EUDI`/`Wallet`. See [Brand strings](#brand-strings).                                 |
+| System bars (status/navigation)    | [`MainActivity.kt`](../assembly-logic/src/main/java/eu/europa/ec/assemblylogic/ui/MainActivity.kt) (`enableEdgeToEdge`)                                                                                                   | Edge-to-edge — **not** the XML theme. See [Window chrome](#window-chrome-and-system-bars).       |
+| Host XML theme                     | [`res/values/themes.xml`](../resources-logic/src/main/res/values/themes.xml) (`Theme.EUDIWallet`)                                                                                                                         | Cold-start window background only (Compose app, no action bar).                                  |
+| RQES signing UI                    | Optional `themeManager` override in [`RQESConfigImpl`](../business-logic/src/demo/java/eu/europa/ec/businesslogic/config/RQESConfigImpl.kt) (+ `dev`)                                                                     | Separate SDK theme; **not** overridden by default. See [Sub-SDK theming](#sub-sdk-theming-rqes). |
 
 ## Colors
 
@@ -175,17 +175,23 @@ Each has a light and a dark value in `ThemeColors.kt` (e.g. `eudiw_theme_light_s
 builds a
 [`ThemeTypographyTemplate`](../resources-logic/src/main/java/eu/europa/ec/resourceslogic/theme/templates/ThemeTypographyTemplate.kt)
 covering all 15 Material 3 styles (`displayLarge` … `labelSmall`). Each style is a `ThemeTextStyle`
-where you can set `fontFamily`, `fontSize`, `fontWeight`, `fontStyle`, `letterSpacing`, `textAlign`,
-and more:
+where you can set `fontFamily`, `fontSize`, `lineHeight`, `fontWeight`, `fontStyle`,
+`letterSpacing`,
+`textAlign`, and more:
 
 ```kotlin
 titleMedium = ThemeTextStyle(
     fontFamily = listOf(BrandMedium),
     fontSize = 16,
+    lineHeight = 24,
     letterSpacing = 0.15f,
     textAlign = ThemeTextAlign.Start
 ),
 ```
+
+`fontSize` and `lineHeight` are whole-number `sp` values. The reference type scale sets an explicit
+`lineHeight` on every style (e.g. `displayLarge` is `57`/`64` and `titleMedium` is `16`/`24`); leave
+`lineHeight` unset (`null`) to fall back to the font's default line spacing.
 
 ## Shapes
 
@@ -226,23 +232,22 @@ theme. Treat the theme's `screenPadding` as advisory only.
 
 ## Logos and in-app imagery
 
-### The three brand logos
+### The two brand logos
 
-The wallet uses three vector logos in
+The wallet uses two vector logos in
 [`resources-logic/src/main/res/drawable/`](../resources-logic/src/main/res/drawable):
 
-| Drawable | `AppIcons` key | Where it appears |
-| --- | --- | --- |
-| `ic_logo_full.xml` | `AppIcons.LogoFull` | [Splash screen](../startup-feature/src/main/java/eu/europa/ec/startupfeature/ui/splash/SplashScreen.kt) |
-| `ic_logo_plain.xml` | `AppIcons.LogoPlain` | Content header / [`AppIconAndText`](../ui-logic/src/main/java/eu/europa/ec/uilogic/component/AppIconAndText.kt) |
-| `ic_logo_text.xml` | `AppIcons.LogoText` | Next to the plain logo in the header |
+| Drawable                    | `AppIcons` key             | Where it appears                                                                                                                                                |
+|-----------------------------|----------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `ic_logo_icon.xml`          | `AppIcons.LogoIcon`        | [Splash screen](../startup-feature/src/main/java/eu/europa/ec/startupfeature/ui/splash/SplashScreen.kt) — the icon-only mark                                    |
+| `ic_logo_icon_and_text.xml` | `AppIcons.LogoIconAndText` | Content header, via [`AppIconAndText`](../ui-logic/src/main/java/eu/europa/ec/uilogic/component/AppIconAndText.kt) — a single combined icon-plus-wordmark image |
 
 The mapping from key to drawable lives in
 [`AppIcons.kt`](../ui-logic/src/main/java/eu/europa/ec/uilogic/component/AppIcons.kt).
 
 ### How to swap them
 
-The simplest path is to **replace the contents of the three `ic_logo_*.xml`** drawables with your
+The simplest path is to **replace the contents of the two `ic_logo_*.xml`** drawables with your
 own vectors (keep the file names so the `AppIcons` mapping and all call sites keep working).
 
 > **Gotcha — logo colors are baked in.** The reference logos hardcode their brand colors inside the
@@ -313,7 +318,13 @@ resources for `EUDI`/`Wallet` and review at least:
   `biometric_login_biometrics_enabled_subtitle` ("…access the EUDI Wallet.").
 * The side-menu title `dashboard_side_menu_title` ("My EU Wallet").
 * The NFC service description `nfc_engagement_service_desc`, shown by the OS in tap-to-pay/NFC
-  settings (referenced from the manifest `<service android:label=...>`).
+  settings. Unlike the strings above, this one is **not** defined in this project — its default
+  value ("NFC Device Engagement") is provided by a library dependency and only *referenced* from the
+  `NfcEngagementService` declaration in
+  [`AndroidManifest.xml`](../assembly-logic/src/main/AndroidManifest.xml)
+  (`android:label="@string/nfc_engagement_service_desc"`). To rebrand it, add your own
+  `<string name="nfc_engagement_service_desc">…</string>` to your app's `strings.xml`; the app
+  resource overrides the library default through resource merging.
 
 Keep the launcher label ([App name](#app-name-and-package-identity)) and these in-copy names
 consistent.
@@ -337,8 +348,8 @@ There are two distinct pieces:
 
 2. **In-app Compose splash** —
    [`SplashScreen.kt`](../startup-feature/src/main/java/eu/europa/ec/startupfeature/ui/splash/SplashScreen.kt)
-   renders `AppIcons.LogoFull` (i.e. `ic_logo_full.xml`) on the theme `surface` color with a fade
-   animation. Rebranding `ic_logo_full.xml` and your `surface` color updates it automatically.
+   renders `AppIcons.LogoIcon` (i.e. `ic_logo_icon.xml`) on the theme `surface` color with a fade
+   animation. Rebranding `ic_logo_icon.xml` and your `surface` color updates it automatically.
 
 ### Window chrome and system bars
 
@@ -428,7 +439,7 @@ is the only optional input. After `build()`, `ThemeManager.instance` returns you
 
 * [ ] Light **and** dark palettes rebranded, including the extra `success`/`warning`/`pending`/`divider` roles.
 * [ ] Text/background color pairs meet contrast guidance (WCAG AA: 4.5:1 for body text).
-* [ ] All three `ic_logo_*` drawables replaced; no leftover EUDI logo paths/colors.
+* [ ] Both `ic_logo_*` drawables replaced; no leftover EUDI logo paths/colors.
 * [ ] Launcher icon replaced for every flavor; legible at small sizes and on the adaptive background.
 * [ ] App display name set; localized if you ship multiple locales.
 * [ ] Brand strings in `strings.xml` reviewed (product name in onboarding, side menu, NFC service label).

@@ -17,6 +17,11 @@
 package eu.europa.ec.dashboardfeature.ui.documents.list
 
 import android.content.Context
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.ExitTransition
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.slideInVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -27,10 +32,14 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FabPosition
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SheetState
 import androidx.compose.material3.Text
@@ -42,8 +51,8 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.onGloballyPositioned
@@ -67,9 +76,6 @@ import eu.europa.ec.dashboardfeature.util.TestTag
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.theme.values.warning
 import eu.europa.ec.uilogic.component.AppIcons
-import eu.europa.ec.uilogic.component.DualSelectorButton
-import eu.europa.ec.uilogic.component.DualSelectorButtonDataUi
-import eu.europa.ec.uilogic.component.DualSelectorButtons
 import eu.europa.ec.uilogic.component.FiltersSearchBar
 import eu.europa.ec.uilogic.component.InlineSnackbar
 import eu.europa.ec.uilogic.component.ListItemDataUi
@@ -84,7 +90,7 @@ import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
 import eu.europa.ec.uilogic.component.utils.HSpacer
 import eu.europa.ec.uilogic.component.utils.LifecycleEffect
 import eu.europa.ec.uilogic.component.utils.OneTimeLaunchedEffect
-import eu.europa.ec.uilogic.component.utils.SPACING_EXTRA_SMALL
+import eu.europa.ec.uilogic.component.utils.SIZE_MEDIUM
 import eu.europa.ec.uilogic.component.utils.SPACING_LARGE
 import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
 import eu.europa.ec.uilogic.component.utils.SPACING_SMALL
@@ -95,14 +101,19 @@ import eu.europa.ec.uilogic.component.wrap.BottomSheetWithTwoBigIcons
 import eu.europa.ec.uilogic.component.wrap.ButtonConfig
 import eu.europa.ec.uilogic.component.wrap.ButtonType
 import eu.europa.ec.uilogic.component.wrap.DialogBottomSheet
+import eu.europa.ec.uilogic.component.wrap.FabDataUi
 import eu.europa.ec.uilogic.component.wrap.GenericBottomSheet
 import eu.europa.ec.uilogic.component.wrap.WrapButton
 import eu.europa.ec.uilogic.component.wrap.WrapExpandableListItem
+import eu.europa.ec.uilogic.component.wrap.WrapIcon
 import eu.europa.ec.uilogic.component.wrap.WrapIconButton
 import eu.europa.ec.uilogic.component.wrap.WrapListItem
+import eu.europa.ec.uilogic.component.wrap.WrapListItemDefaults
 import eu.europa.ec.uilogic.component.wrap.WrapModalBottomSheet
+import eu.europa.ec.uilogic.component.wrap.WrapPrimaryExtendedFab
 import eu.europa.ec.uilogic.extension.applyTestTag
 import eu.europa.ec.uilogic.extension.finish
+import eu.europa.ec.uilogic.extension.isScrollingUp
 import eu.europa.ec.uilogic.extension.paddingFrom
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.Channel
@@ -114,6 +125,9 @@ import kotlinx.coroutines.launch
 
 typealias DashboardEvent = eu.europa.ec.dashboardfeature.ui.dashboard.Event
 typealias OpenSideMenuEvent = eu.europa.ec.dashboardfeature.ui.dashboard.Event.SideMenu.Open
+
+private const val FAB_ENTER_DELAY_MILLIS = 200
+private const val FAB_ENTER_DURATION_MILLIS = 300
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -131,6 +145,23 @@ fun DocumentsScreen(
         skipPartiallyExpanded = true
     )
 
+    val listScrollState = rememberLazyListState()
+    var fabVisible by rememberSaveable { mutableStateOf(false) }
+
+    LifecycleEffect(
+        lifecycleOwner = LocalLifecycleOwner.current,
+        lifecycleEvent = Lifecycle.Event.ON_PAUSE
+    ) {
+        fabVisible = false
+    }
+
+    LifecycleEffect(
+        lifecycleOwner = LocalLifecycleOwner.current,
+        lifecycleEvent = Lifecycle.Event.ON_RESUME
+    ) {
+        fabVisible = true
+    }
+
     ContentScreen(
         isLoading = state.isLoading,
         navigatableAction = ScreenNavigateAction.NONE,
@@ -138,9 +169,24 @@ fun DocumentsScreen(
         contentErrorConfig = null,
         topBar = {
             TopBar(
-                onEventSend = { viewModel.setEvent(it) },
                 onDashboardEventSent = onDashboardEventSent
             )
+        },
+        fab = {
+            AddDocumentFab(
+                visible = fabVisible,
+                expanded = listScrollState.isScrollingUp(),
+                onClick = { viewModel.setEvent(Event.AddDocumentPressed) },
+            )
+        },
+        fabPosition = FabPosition.End,
+        snackbarHost = { snackbarPaddings ->
+            state.error?.let { error ->
+                InlineSnackbar(
+                    error = error,
+                    modifier = Modifier.padding(snackbarPaddings),
+                )
+            }
         },
         broadcastAction = BroadcastAction(
             intentFilters = listOf(
@@ -159,6 +205,7 @@ fun DocumentsScreen(
             onNavigationRequested = { navigationEffect ->
                 handleNavigationEffect(navigationEffect, navHostController, context)
             },
+            scrollState = listScrollState,
             paddingValues = paddingValues,
             coroutineScope = scope,
             modalBottomSheetState = bottomSheetState
@@ -187,6 +234,41 @@ fun DocumentsScreen(
     }
 }
 
+@Composable
+private fun AddDocumentFab(
+    visible: Boolean,
+    expanded: Boolean,
+    onClick: () -> Unit,
+) {
+    AnimatedVisibility(
+        visible = visible,
+        enter = slideInVertically(
+            animationSpec = tween(
+                durationMillis = FAB_ENTER_DURATION_MILLIS,
+                delayMillis = FAB_ENTER_DELAY_MILLIS,
+            ),
+            initialOffsetY = { fullHeight -> fullHeight }
+        ) + fadeIn(
+            animationSpec = tween(
+                durationMillis = FAB_ENTER_DURATION_MILLIS,
+                delayMillis = FAB_ENTER_DELAY_MILLIS,
+            )
+        ),
+        exit = ExitTransition.None,
+    ) {
+        WrapPrimaryExtendedFab(
+            data = FabDataUi(
+                text = { Text(text = stringResource(R.string.documents_screen_add_document_fab)) },
+                icon = { WrapIcon(iconData = AppIcons.Add) },
+                onClick = onClick
+            ),
+            modifier = Modifier.applyTestTag(TestTag.DocumentsScreen.PLUS_BUTTON),
+            expanded = expanded,
+            shape = RoundedCornerShape(SIZE_MEDIUM.dp),
+        )
+    }
+}
+
 private fun handleNavigationEffect(
     navigationEffect: Effect.Navigation,
     navController: NavController,
@@ -206,7 +288,6 @@ private fun handleNavigationEffect(
 
 @Composable
 private fun TopBar(
-    onEventSend: (Event) -> Unit,
     onDashboardEventSent: (DashboardEvent) -> Unit,
 ) {
     Box(
@@ -231,16 +312,6 @@ private fun TopBar(
             style = MaterialTheme.typography.headlineMedium,
             text = stringResource(R.string.documents_screen_title)
         )
-
-        WrapIconButton(
-            modifier = Modifier
-                .applyTestTag(TestTag.DocumentsScreen.PLUS_BUTTON)
-                .align(Alignment.CenterEnd),
-            iconData = AppIcons.Add,
-            customTint = MaterialTheme.colorScheme.onSurfaceVariant,
-        ) {
-            onEventSend(Event.AddDocumentPressed)
-        }
     }
 }
 
@@ -251,6 +322,7 @@ private fun Content(
     effectFlow: Flow<Effect>,
     onEventSend: (Event) -> Unit,
     onNavigationRequested: (navigationEffect: Effect.Navigation) -> Unit,
+    scrollState: LazyListState,
     paddingValues: PaddingValues,
     coroutineScope: CoroutineScope,
     modalBottomSheetState: SheetState,
@@ -262,6 +334,7 @@ private fun Content(
     ) {
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
+            state = scrollState,
             contentPadding = PaddingValues(bottom = SPACING_MEDIUM.dp),
         ) {
             item {
@@ -296,15 +369,6 @@ private fun Content(
                     }
                 }
             }
-        }
-
-        if (state.error != null) {
-            InlineSnackbar(
-                error = state.error,
-                modifier = Modifier
-                    .align(Alignment.BottomCenter)
-                    .padding(bottom = SPACING_EXTRA_SMALL.dp)
-            )
         }
     }
 
@@ -373,31 +437,40 @@ private fun DocumentCategory(
             text = stringResource(category.stringResId)
         )
 
-        documents.forEach { documentItem: DocumentUi ->
-            WrapListItem(
-                modifier = Modifier.fillMaxWidth(),
-                item = documentItem.uiData,
-                onItemClick = {
-                    val onItemClickEvent = if (
-                        documentItem.documentIssuanceState == DocumentIssuanceStateUi.Pending
-                        || documentItem.documentIssuanceState == DocumentIssuanceStateUi.Failed
-                    ) {
-                        Event.BottomSheet.DeferredDocument.DeferredNotReadyYet.DocumentSelected(
-                            documentId = documentItem.uiData.itemId
-                        )
-                    } else {
-                        Event.GoToDocumentDetails(documentItem.uiData.itemId)
-                    }
-                    onEventSend(onItemClickEvent)
-                },
-                supportingTextColor = when (documentItem.documentIssuanceState) {
-                    DocumentIssuanceStateUi.Issued -> null
-                    DocumentIssuanceStateUi.Pending -> MaterialTheme.colorScheme.warning
-                    DocumentIssuanceStateUi.Failed -> MaterialTheme.colorScheme.error
-                    DocumentIssuanceStateUi.Expired -> MaterialTheme.colorScheme.error
-                    DocumentIssuanceStateUi.Revoked -> MaterialTheme.colorScheme.error
-                }
-            )
+        Column(
+            modifier = Modifier.fillMaxWidth(),
+            verticalArrangement = Arrangement.spacedBy(WrapListItemDefaults.GroupedItemSpacing)
+        ) {
+            documents.forEachIndexed { index, documentItem: DocumentUi ->
+                WrapListItem(
+                    modifier = Modifier.fillMaxWidth(),
+                    item = documentItem.uiData,
+                    onItemClick = {
+                        val onItemClickEvent = if (
+                            documentItem.documentIssuanceState == DocumentIssuanceStateUi.Pending
+                            || documentItem.documentIssuanceState == DocumentIssuanceStateUi.Failed
+                        ) {
+                            Event.BottomSheet.DeferredDocument.DeferredNotReadyYet.DocumentSelected(
+                                documentId = documentItem.uiData.itemId
+                            )
+                        } else {
+                            Event.GoToDocumentDetails(documentItem.uiData.itemId)
+                        }
+                        onEventSend(onItemClickEvent)
+                    },
+                    supportingTextColor = when (documentItem.documentIssuanceState) {
+                        DocumentIssuanceStateUi.Issued -> null
+                        DocumentIssuanceStateUi.Pending -> MaterialTheme.colorScheme.warning
+                        DocumentIssuanceStateUi.Failed -> MaterialTheme.colorScheme.error
+                        DocumentIssuanceStateUi.Expired -> MaterialTheme.colorScheme.error
+                        DocumentIssuanceStateUi.Revoked -> MaterialTheme.colorScheme.error
+                    },
+                    shape = WrapListItemDefaults.groupedShape(
+                        index = index,
+                        itemCount = documents.size
+                    ),
+                )
+            }
         }
     }
 }
@@ -435,10 +508,6 @@ private fun DocumentsSheetContent(
                     )
                 },
                 bodyContent = {
-                    val expandStateList by remember {
-                        mutableStateOf(state.filtersUi.map { false }.toMutableStateList())
-                    }
-
                     var buttonsRowHeight by remember { mutableIntStateOf(0) }
 
                     Box {
@@ -449,17 +518,16 @@ private fun DocumentsSheetContent(
                                 .padding(bottom = with(LocalDensity.current) { buttonsRowHeight.toDp() }),
                             verticalArrangement = Arrangement.spacedBy(SPACING_LARGE.dp)
                         ) {
-                            DualSelectorButtons(state.sortOrder) {
-                                onEventSent(Event.OnSortingOrderChanged(it))
-                            }
-                            state.filtersUi.forEachIndexed { index, filter ->
+                            state.filtersUi.forEach { filter ->
                                 if (filter.nestedItems.isNotEmpty()) {
                                     WrapExpandableListItem(
                                         header = filter.header,
                                         data = filter.nestedItems,
-                                        isExpanded = expandStateList[index],
+                                        isExpanded = filter.isExpanded,
                                         onExpandedChange = {
-                                            expandStateList[index] = !expandStateList[index]
+                                            onEventSent(
+                                                Event.OnFilterGroupExpansionChanged(it.itemId)
+                                            )
                                         },
                                         onItemClick = {
                                             val id = it.itemId
@@ -467,8 +535,9 @@ private fun DocumentsSheetContent(
                                             onEventSent(Event.OnFilterSelectionChanged(id, groupId))
                                         },
                                         addDivider = false,
-                                        collapsedMainContentVerticalPadding = SPACING_MEDIUM.dp,
-                                        expandedMainContentVerticalPadding = SPACING_MEDIUM.dp,
+                                        collapsedMainContentVerticalPadding = 18.dp,
+                                        expandedMainContentVerticalPadding = 18.dp,
+                                        shape = RoundedCornerShape(12.dp),
                                     )
                                 }
                             }
@@ -599,7 +668,6 @@ private fun DocumentsScreenPreview() {
             onBack = { },
             topBar = {
                 TopBar(
-                    onEventSend = { },
                     onDashboardEventSent = {}
                 )
             },
@@ -664,16 +732,12 @@ private fun DocumentsScreenPreview() {
                 state = State(
                     isLoading = false,
                     isFilteringActive = false,
-                    sortOrder = DualSelectorButtonDataUi(
-                        first = "first",
-                        second = "second",
-                        selectedButton = DualSelectorButton.FIRST,
-                    ),
                     documentsUi = documentsList.groupBy { it.documentCategory }.toList(),
                 ),
                 effectFlow = Channel<Effect>().receiveAsFlow(),
                 onEventSend = {},
                 onNavigationRequested = {},
+                scrollState = rememberLazyListState(),
                 paddingValues = paddingValues,
                 coroutineScope = scope,
                 modalBottomSheetState = bottomSheetState,

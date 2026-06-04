@@ -179,6 +179,8 @@ class PrefsControllerImpl(
 }
 
 interface PrefKeys {
+    suspend fun getShowBatchIssuanceCounter(): Boolean
+    suspend fun setShowBatchIssuanceCounter(value: Boolean)
     suspend fun getCryptoAlias(): String
     suspend fun setCryptoAlias(value: String)
     suspend fun setSessionId(value: String)
@@ -190,6 +192,14 @@ interface PrefKeys {
 class PrefKeysImpl(
     private val prefsController: PrefsController
 ) : PrefKeys {
+
+    override suspend fun getShowBatchIssuanceCounter(): Boolean {
+        return prefsController.getBool("ShowBatchIssuanceCounter", true)
+    }
+
+    override suspend fun setShowBatchIssuanceCounter(value: Boolean) {
+        prefsController.setBool("ShowBatchIssuanceCounter", value)
+    }
 
     override suspend fun getCryptoAlias(): String {
         return prefsController.getString("CryptoAlias", "")

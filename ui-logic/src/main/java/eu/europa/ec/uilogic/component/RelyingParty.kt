@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.material3.MaterialTheme
@@ -34,6 +35,7 @@ import eu.europa.ec.resourceslogic.theme.values.success
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.TextLengthPreviewProvider
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
+import eu.europa.ec.uilogic.component.utils.SPACING_EXTRA_SMALL
 import eu.europa.ec.uilogic.component.utils.VSpacer
 import eu.europa.ec.uilogic.component.wrap.TextConfig
 import eu.europa.ec.uilogic.component.wrap.TextStyleKey
@@ -93,7 +95,9 @@ fun RelyingParty(
             ) {
                 if (isVerified) {
                     WrapIcon(
-                        modifier = Modifier.size(20.dp),
+                        modifier = Modifier
+                            .padding(end = SPACING_EXTRA_SMALL.dp)
+                            .size(20.dp),
                         iconData = AppIcons.Verified,
                         customTint = MaterialTheme.colorScheme.success,
                     )
