@@ -132,27 +132,27 @@ For production, add and use a dedicated `prodRelease` variant.
 
 Keep these files under strict review:
 
-| File | Why it matters |
-| --- | --- |
-| `build-logic/convention/src/main/kotlin/project/convention/logic/AppFlavor.kt` | Defines product flavors and application ID suffixes. |
-| `app/build.gradle.kts` | Defines app ID, signing config, release minification, version code. |
-| `assembly-logic/build.gradle.kts` | Defines app display name placeholder. |
-| `assembly-logic/src/main/AndroidManifest.xml` | Defines exported components, permissions, backups, deep links, NFC service, network security config. |
-| `core-logic/src/<flavor>/java/eu/europa/ec/corelogic/config/WalletCoreConfigImpl.kt` | Main wallet network, trust, issuer, document, and presentation configuration. |
-| `business-logic/src/<flavor>/java/eu/europa/ec/businesslogic/config/ConfigLogicImpl.kt` | Flavor identity, changelog URL, app behavior toggles. |
-| `business-logic/src/<flavor>/java/eu/europa/ec/businesslogic/config/RQESConfigImpl.kt` | RQES QTSP/TSA/client config and document retrieval trust config. |
-| `network-logic/src/main/java/eu/europa/ec/networklogic/di/NetworkModule.kt` | Ktor client behavior and release logging. |
-| `network-logic/src/main/res/xml/network_security_config.xml` | Cleartext and certificate trust policy. |
-| `business-logic/src/main/res/xml/backup_rules.xml` | Auto Backup policy for Android 11 and below. |
-| `business-logic/src/main/res/xml/data_extraction_rules.xml` | Cloud backup and device transfer policy for Android 12 and above. |
-| `authentication-logic/src/main/java/eu/europa/ec/authenticationlogic/storage/PrefsPinStorageProvider.kt` | PIN hashing, salt, iteration count, constant-time comparison. |
-| `authentication-logic/src/main/java/eu/europa/ec/authenticationlogic/config/AuthenticationConfig.kt` | PIN lockout policy (max failed attempts, escalating lockout durations). |
-| `authentication-logic/src/main/java/eu/europa/ec/authenticationlogic/storage/PrefsPinThrottleProvider.kt` | Persisted PIN failure counter, lockout level, lockout window timestamps; clock-rollback detection. |
-| `business-logic/src/main/java/eu/europa/ec/businesslogic/controller/storage/PrefsController.kt` | Encrypted DataStore and database key storage. |
-| `storage-logic/src/main/java/eu/europa/ec/storagelogic/di/LogicStorageModule.kt` | SQLCipher database setup and migration behavior. |
-| `resources-logic/src/main/java/eu/europa/ec/resourceslogic/theme/values/ThemeColors.kt` | Brand color palette (light and dark) plus extra semantic colors. See [THEMING.md](THEMING.md). |
-| `resources-logic/src/main/res/drawable/ic_logo_full.xml`, `ic_logo_plain.xml`, `ic_logo_text.xml` | In-app brand logos used on the splash and content headers. |
-| `resources-logic/src/<flavor>/res/mipmap-*` | Per-flavor launcher icons. |
+| File                                                                                                      | Why it matters                                                                                       |
+|-----------------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------|
+| `build-logic/convention/src/main/kotlin/project/convention/logic/AppFlavor.kt`                            | Defines product flavors and application ID suffixes.                                                 |
+| `app/build.gradle.kts`                                                                                    | Defines app ID, signing config, release minification, version code.                                  |
+| `assembly-logic/build.gradle.kts`                                                                         | Defines app display name placeholder.                                                                |
+| `assembly-logic/src/main/AndroidManifest.xml`                                                             | Defines exported components, permissions, backups, deep links, NFC service, network security config. |
+| `core-logic/src/<flavor>/java/eu/europa/ec/corelogic/config/WalletCoreConfigImpl.kt`                      | Main wallet network, trust, issuer, document, and presentation configuration.                        |
+| `business-logic/src/<flavor>/java/eu/europa/ec/businesslogic/config/ConfigLogicImpl.kt`                   | Flavor identity, changelog URL, app behavior toggles.                                                |
+| `business-logic/src/<flavor>/java/eu/europa/ec/businesslogic/config/RQESConfigImpl.kt`                    | RQES QTSP/TSA/client config and document retrieval trust config.                                     |
+| `network-logic/src/main/java/eu/europa/ec/networklogic/di/NetworkModule.kt`                               | Ktor client behavior and release logging.                                                            |
+| `network-logic/src/main/res/xml/network_security_config.xml`                                              | Cleartext and certificate trust policy.                                                              |
+| `business-logic/src/main/res/xml/backup_rules.xml`                                                        | Auto Backup policy for Android 11 and below.                                                         |
+| `business-logic/src/main/res/xml/data_extraction_rules.xml`                                               | Cloud backup and device transfer policy for Android 12 and above.                                    |
+| `authentication-logic/src/main/java/eu/europa/ec/authenticationlogic/storage/PrefsPinStorageProvider.kt`  | PIN hashing, salt, iteration count, constant-time comparison.                                        |
+| `authentication-logic/src/main/java/eu/europa/ec/authenticationlogic/config/AuthenticationConfig.kt`      | PIN lockout policy (max failed attempts, escalating lockout durations).                              |
+| `authentication-logic/src/main/java/eu/europa/ec/authenticationlogic/storage/PrefsPinThrottleProvider.kt` | Persisted PIN failure counter, lockout level, lockout window timestamps; clock-rollback detection.   |
+| `business-logic/src/main/java/eu/europa/ec/businesslogic/controller/storage/PrefsController.kt`           | Encrypted DataStore and database key storage.                                                        |
+| `storage-logic/src/main/java/eu/europa/ec/storagelogic/di/LogicStorageModule.kt`                          | SQLCipher database setup and migration behavior.                                                     |
+| `resources-logic/src/main/java/eu/europa/ec/resourceslogic/theme/values/ThemeColors.kt`                   | Brand color palette (light and dark) plus extra semantic colors. See [THEMING.md](THEMING.md).       |
+| `resources-logic/src/main/res/drawable/ic_logo_icon.xml`, `ic_logo_icon_and_text.xml`                     | In-app brand logos used on the splash and content headers.                                           |
+| `resources-logic/src/<flavor>/res/mipmap-*`                                                               | Per-flavor launcher icons.                                                                           |
 
 ## Create A Production Flavor
 
@@ -265,16 +265,16 @@ requires an APK.
 
 Production identity values must be final before external testing.
 
-| Setting | Current location | Production guidance |
-| --- | --- | --- |
-| `applicationId` | `app/build.gradle.kts` | Use a final reverse-DNS ID owned by the implementer, for example `eu.example.wallet`. Changing it after release creates a different app. |
-| `namespace` | `app/build.gradle.kts` and modules | Can remain internal package names, but align with your code ownership and policy. |
-| App name | `assembly-logic/build.gradle.kts`, manifest placeholder `appName` | Use the official wallet name approved for the Member State or wallet provider. |
-| App icon | `assembly-logic/src/main/AndroidManifest.xml`, mipmap resources | Replace reference icons with production brand assets. |
-| Version name | `version.properties` | Replace `yyyy.mm.v` with your release versioning scheme. |
-| Version code | `app/build.gradle.kts` or CI mutation | Must monotonically increase for app stores. |
-| Min SDK | `build-logic/.../KotlinAndroid.kt` | Current `minSdk` is 29. Confirm with your device support policy. |
-| Target SDK | `build-logic/.../AndroidApplicationConventionPlugin.kt` | Current `targetSdk` is 36. Keep current with Android policy. |
+| Setting         | Current location                                                  | Production guidance                                                                                                                      |
+|-----------------|-------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------|
+| `applicationId` | `app/build.gradle.kts`                                            | Use a final reverse-DNS ID owned by the implementer, for example `eu.example.wallet`. Changing it after release creates a different app. |
+| `namespace`     | `app/build.gradle.kts` and modules                                | Can remain internal package names, but align with your code ownership and policy.                                                        |
+| App name        | `assembly-logic/build.gradle.kts`, manifest placeholder `appName` | Use the official wallet name approved for the Member State or wallet provider.                                                           |
+| App icon        | `assembly-logic/src/main/AndroidManifest.xml`, mipmap resources   | Replace reference icons with production brand assets.                                                                                    |
+| Version name    | `version.properties`                                              | Replace `yyyy.mm.v` with your release versioning scheme.                                                                                 |
+| Version code    | `app/build.gradle.kts` or CI mutation                             | Must monotonically increase for app stores.                                                                                              |
+| Min SDK         | `build-logic/.../KotlinAndroid.kt`                                | Current `minSdk` is 29. Confirm with your device support policy.                                                                         |
+| Target SDK      | `build-logic/.../AndroidApplicationConventionPlugin.kt`           | Current `targetSdk` is 37. Keep current with Android policy.                                                                             |
 
 Recommended:
 
@@ -292,15 +292,15 @@ branding surfaces are documented in **[THEMING.md](THEMING.md)**.
 
 Surfaces to review before release:
 
-| Surface | Where | Notes |
-| --- | --- | --- |
-| Color palette (light and dark) | `resources-logic/.../theme/values/ThemeColors.kt` | Both palettes plus the extra `success`/`warning`/`pending`/`divider` roles. Verify contrast in both modes. |
-| Typography and fonts | `resources-logic/src/main/res/font/` and `.../theme/values/ThemeTypography.kt` | Replace the bundled Roboto fonts and the type scale if your brand requires it. |
-| Shapes | `resources-logic/.../theme/values/ThemeShapes.kt` | Corner radii. |
-| In-app logos | `resources-logic/src/main/res/drawable/ic_logo_full.xml`, `ic_logo_plain.xml`, `ic_logo_text.xml` | Used on the splash and content headers; brand colors are baked into the vectors. |
-| Splash screen | `resources-logic/src/main/res/values-v31/themes.xml` and the in-app `SplashScreen` | System window splash plus the Compose splash logo. |
-| System bars | `assembly-logic/.../ui/MainActivity.kt` (`enableEdgeToEdge`) | Edge-to-edge; controlled here, not by the XML theme. |
-| RQES signing UI | `business-logic/src/<flavor>/.../RQESConfigImpl.kt` | The RQES SDK carries its own theme; a wallet rebrand does not restyle it unless you override `themeManager`. |
+| Surface                        | Where                                                                                 | Notes                                                                                                        |
+|--------------------------------|---------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------|
+| Color palette (light and dark) | `resources-logic/.../theme/values/ThemeColors.kt`                                     | Both palettes plus the extra `success`/`warning`/`pending`/`divider` roles. Verify contrast in both modes.   |
+| Typography and fonts           | `resources-logic/src/main/res/font/` and `.../theme/values/ThemeTypography.kt`        | Replace the bundled Roboto fonts and the type scale if your brand requires it.                               |
+| Shapes                         | `resources-logic/.../theme/values/ThemeShapes.kt`                                     | Corner radii.                                                                                                |
+| In-app logos                   | `resources-logic/src/main/res/drawable/ic_logo_icon.xml`, `ic_logo_icon_and_text.xml` | Used on the splash and content headers; brand colors are baked into the vectors.                             |
+| Splash screen                  | `resources-logic/src/main/res/values-v31/themes.xml` and the in-app `SplashScreen`    | System window splash plus the Compose splash logo.                                                           |
+| System bars                    | `assembly-logic/.../ui/MainActivity.kt` (`enableEdgeToEdge`)                          | Edge-to-edge; controlled here, not by the XML theme.                                                         |
+| RQES signing UI                | `business-logic/src/<flavor>/.../RQESConfigImpl.kt`                                   | The RQES SDK carries its own theme; a wallet rebrand does not restyle it unless you override `themeManager`. |
 
 Requirements:
 

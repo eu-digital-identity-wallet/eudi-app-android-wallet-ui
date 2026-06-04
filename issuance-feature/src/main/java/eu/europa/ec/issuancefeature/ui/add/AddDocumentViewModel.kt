@@ -73,7 +73,6 @@ data class State(
     val subtitle: String = "",
     val options: List<Pair<String, List<AddDocumentUi>>> = emptyList(),
     val noOptions: Boolean = false,
-    val showFooterScanner: Boolean,
 ) : ViewState
 
 sealed class Event : ViewEvent {
@@ -125,7 +124,6 @@ class AddDocumentViewModel(
             onBackAction = getOnBackAction(deserializedConfig.flowType),
             title = resourceProvider.getString(R.string.issuance_add_document_title),
             subtitle = resourceProvider.getString(R.string.issuance_add_document_subtitle),
-            showFooterScanner = shouldShowFooterScanner(deserializedConfig.flowType),
         )
     }
 
@@ -219,9 +217,6 @@ class AddDocumentViewModel(
                                 error = null,
                                 options = response.options,
                                 noOptions = false,
-                                showFooterScanner = shouldShowFooterScanner(
-                                    flowType = viewState.value.issuanceConfig.flowType
-                                ),
                                 isInitialised = true,
                                 isLoading = false
                             )
@@ -246,7 +241,6 @@ class AddDocumentViewModel(
                                 },
                                 options = emptyList(),
                                 noOptions = false,
-                                showFooterScanner = false,
                                 isInitialised = true,
                                 isLoading = false
                             )
@@ -262,7 +256,6 @@ class AddDocumentViewModel(
                                 error = null,
                                 options = emptyList(),
                                 noOptions = true,
-                                showFooterScanner = true,
                                 isInitialised = true,
                                 isLoading = false
                             )
@@ -420,13 +413,6 @@ class AddDocumentViewModel(
                 ),
                 inclusive = false
             )
-        }
-    }
-
-    private fun shouldShowFooterScanner(flowType: IssuanceFlowType): Boolean {
-        return when (flowType) {
-            is IssuanceFlowType.NoDocument -> true
-            is IssuanceFlowType.ExtraDocument -> false
         }
     }
 

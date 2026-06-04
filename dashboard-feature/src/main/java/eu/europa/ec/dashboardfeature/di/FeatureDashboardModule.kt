@@ -18,6 +18,7 @@ package eu.europa.ec.dashboardfeature.di
 
 import eu.europa.ec.businesslogic.config.ConfigLogic
 import eu.europa.ec.businesslogic.controller.log.LogController
+import eu.europa.ec.businesslogic.controller.storage.PrefKeys
 import eu.europa.ec.businesslogic.provider.UuidProvider
 import eu.europa.ec.businesslogic.validator.FilterValidator
 import eu.europa.ec.commonfeature.interactor.BiometricInteractor
@@ -64,11 +65,13 @@ fun provideSettingsInteractor(
     configLogic: ConfigLogic,
     logController: LogController,
     resourceProvider: ResourceProvider,
+    prefKeys: PrefKeys,
 ): SettingsInteractor = SettingsInteractorImpl(
     biometricInteractor,
     configLogic,
     logController,
     resourceProvider,
+    prefKeys,
 )
 
 @Factory
@@ -87,13 +90,15 @@ fun provideDocumentsInteractor(
     resourceProvider: ResourceProvider,
     documentsController: WalletCoreDocumentsController,
     filterValidator: FilterValidator,
-    configLogic: ConfigLogic
+    configLogic: ConfigLogic,
+    prefKeys: PrefKeys,
 ): DocumentsInteractor =
     DocumentsInteractorImpl(
         resourceProvider,
         documentsController,
         filterValidator,
-        configLogic
+        configLogic,
+        prefKeys,
     )
 
 @Factory
@@ -120,14 +125,16 @@ fun provideDocumentDetailsInteractor(
     deviceAuthenticationInteractor: DeviceAuthenticationInteractor,
     resourceProvider: ResourceProvider,
     uuidProvider: UuidProvider,
-    configLogic: ConfigLogic
+    configLogic: ConfigLogic,
+    prefKeys: PrefKeys,
 ): DocumentDetailsInteractor =
     DocumentDetailsInteractorImpl(
         walletCoreDocumentsController,
         deviceAuthenticationInteractor,
         resourceProvider,
         uuidProvider,
-        configLogic
+        configLogic,
+        prefKeys,
     )
 
 @Factory

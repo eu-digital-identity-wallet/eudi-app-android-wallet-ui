@@ -32,6 +32,7 @@ import eu.europa.ec.businesslogic.validator.model.FilterElement
 import eu.europa.ec.businesslogic.validator.model.FilterElement.FilterItem
 import eu.europa.ec.businesslogic.validator.model.FilterGroup
 import eu.europa.ec.businesslogic.validator.model.FilterMultipleAction
+import eu.europa.ec.businesslogic.validator.model.FilterSort
 import eu.europa.ec.businesslogic.validator.model.FilterableItem
 import eu.europa.ec.businesslogic.validator.model.FilterableList
 import eu.europa.ec.businesslogic.validator.model.Filters
@@ -120,7 +121,7 @@ interface TransactionsInteractor {
     fun getFilters(): Filters
     fun resetFilters()
     fun onFilterStateChange(): Flow<TransactionInteractorFilterPartialState>
-    fun updateSortOrder(sortOrder: SortOrder)
+    fun updateSort(filterId: String)
     fun revertFilters()
     fun updateLists(filterableList: FilterableList)
 }
@@ -167,12 +168,12 @@ class TransactionsInteractorImpl(
 
             val filtersUi = result.updatedFilters.filterGroups.map { filterGroup ->
                 ExpandableListItemUi.NestedListItem(
-                    isExpanded = true,
+                    isExpanded = false,
                     header = ListItemDataUi(
                         itemId = filterGroup.id,
                         mainContentData = ListItemMainContentDataUi.Text(filterGroup.name),
                         trailingContentData = ListItemTrailingContentDataUi.Icon(
-                            iconData = AppIcons.KeyboardArrowRight
+                            iconData = AppIcons.KeyboardArrowDown
                         )
                     ),
                     nestedItems = filterGroup.filters.map { filterItem ->
@@ -333,23 +334,6 @@ class TransactionsInteractorImpl(
     override fun getFilters(): Filters = Filters(
         sortOrder = SortOrder.Descending(isDefault = true),
         filterGroups = listOf(
-            // Sort, descending/ascending buttons will be displayed within this group, identified by group id
-            FilterGroup.SingleSelectionFilterGroup(
-                id = TransactionFilterIds.FILTER_SORT_GROUP_ID,
-                name = resourceProvider.getString(R.string.transactions_screen_filters_sort_by),
-                filters = listOf(
-                    FilterItem(
-                        id = TransactionFilterIds.FILTER_SORT_TRANSACTION_DATE,
-                        name = resourceProvider.getString(R.string.transactions_screen_filters_sort_transaction_date),
-                        selected = true,
-                        isDefault = true,
-                        filterableAction = FilterAction.Sort<TransactionsFilterableAttributes, LocalDateTime> { attributes ->
-                            attributes.creationLocalDateTime
-                        }
-                    ),
-                )
-            ),
-
             // Filter by Transaction date
             FilterGroup.SingleSelectionFilterGroup(
                 id = TransactionFilterIds.FILTER_BY_TRANSACTION_DATE_GROUP_ID,
@@ -467,6 +451,21 @@ class TransactionsInteractorImpl(
                     }
                 }
             )
+        ),
+        sort = FilterSort(
+            id = TransactionFilterIds.FILTER_SORT_GROUP_ID,
+            name = resourceProvider.getString(R.string.transactions_screen_filters_sort_by),
+            filters = listOf(
+                FilterItem(
+                    id = TransactionFilterIds.FILTER_SORT_TRANSACTION_DATE,
+                    name = resourceProvider.getString(R.string.transactions_screen_filters_sort_transaction_date),
+                    selected = true,
+                    isDefault = true,
+                    filterableAction = FilterAction.Sort<TransactionsFilterableAttributes, LocalDateTime> { attributes ->
+                        attributes.creationLocalDateTime
+                    }
+                ),
+            )
         )
     )
 
@@ -489,8 +488,8 @@ class TransactionsInteractorImpl(
         )
     }
 
-    override fun updateSortOrder(sortOrder: SortOrder) =
-        filterValidator.updateSortOrder(sortOrder)
+    override fun updateSort(filterId: String) =
+        filterValidator.updateSort(filterId)
 
     private fun LocalDateTime.toDateTimeState(): TransactionInteractorDateTimeCategoryPartialState {
         return when {

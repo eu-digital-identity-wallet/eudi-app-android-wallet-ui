@@ -58,11 +58,10 @@ enum class PinValidationState {
 data class State(
     private val pinFlow: PinFlow,
     val isLoading: Boolean = false,
-    val isButtonEnabled: Boolean = false,
     val quickPinError: String? = null,
     val subtitle: String = "",
     val title: String = "",
-    val buttonText: String = "",
+    val pinInputLabel: String? = null,
     val resetPin: Boolean = false,
     val pinState: PinValidationState,
     val isBottomSheetOpen: Boolean = false,
@@ -89,8 +88,8 @@ data class State(
 
 sealed class Event : ViewEvent {
     data object Init : Event()
-    data class NextButtonPressed(val pin: SecurePin) : Event()
-    data class OnQuickPinLengthChanged(val length: Int) : Event()
+    data class PinEntered(val pin: SecurePin) : Event()
+    data object OnQuickPinLengthChanged : Event()
     data object CancelPressed : Event()
     data object Finish : Event()
     sealed class BottomSheet : Event() {
@@ -130,15 +129,15 @@ class PinViewModel(
     override fun setInitialState(): State {
         val title: String
         val subtitle: String
+        val pinInputLabel: String?
         val pinState: PinValidationState
-        val buttonText: String
 
         when (pinFlow) {
             PinFlow.CREATE_WITH_ACTIVATION, PinFlow.CREATE_WITHOUT_ACTIVATION -> {
                 title = resourceProvider.getString(R.string.quick_pin_create_title)
-                subtitle = resourceProvider.getString(R.string.quick_pin_create_enter_subtitle)
+                subtitle = resourceProvider.getString(R.string.quick_pin_create_subtitle)
                 pinState = PinValidationState.ENTER
-                buttonText = calculateButtonText(pinState)
+                pinInputLabel = calculatePinInputLabel(pinState)
             }
 
             PinFlow.UPDATE -> {
@@ -146,7 +145,7 @@ class PinViewModel(
                 subtitle =
                     resourceProvider.getString(R.string.quick_pin_change_validate_current_subtitle)
                 pinState = PinValidationState.VALIDATE
-                buttonText = calculateButtonText(pinState)
+                pinInputLabel = calculatePinInputLabel(pinState)
             }
         }
 
@@ -154,8 +153,8 @@ class PinViewModel(
             isLoading = false,
             title = title,
             subtitle = subtitle,
+            pinInputLabel = pinInputLabel,
             pinState = pinState,
-            buttonText = buttonText,
             pinFlow = pinFlow
         )
     }
@@ -174,10 +173,10 @@ class PinViewModel(
 
             is Event.OnQuickPinLengthChanged -> {
                 if (viewState.value.isLockedOut) return
-                validatePinLength(event.length)
+                handleQuickPinLengthChanged()
             }
 
-            is Event.NextButtonPressed -> {
+            is Event.PinEntered -> {
                 val state = viewState.value
                 if (state.isLockedOut) {
                     event.pin.close()
@@ -202,7 +201,6 @@ class PinViewModel(
             }
 
             is Event.CancelPressed -> {
-                clearPendingPin()
                 showBottomSheet()
             }
 
@@ -220,7 +218,7 @@ class PinViewModel(
                 viewModelScope.launch {
                     clearPendingPin()
                     hideBottomSheet()
-                    delay(200L)
+                    artificialDelay(time = 200L)
                     setEffect { Effect.Navigation.Pop }
                 }
             }
@@ -247,6 +245,7 @@ class PinViewModel(
             ).collect {
                 when (it) {
                     is QuickPinInteractorPinValidPartialState.Failed -> {
+                        artificialDelay()
                         when (val lockoutState = interactor.recordPinFailure()) {
                             is PinLockoutState.Active -> {
                                 setState { copy(isLoading = false) }
@@ -280,28 +279,34 @@ class PinViewModel(
             copy(
                 quickPinError = null,
                 pinState = newPinState,
-                buttonText = calculateButtonText(newPinState),
-                isButtonEnabled = false,
                 resetPin = true,
                 subtitle = calculateSubtitle(newPinState),
+                pinInputLabel = calculatePinInputLabel(newPinState),
                 isLoading = false
             )
         }
     }
 
     private fun setupReenterPhase(enteredPin: SecurePin) {
-        val newPinState = PinValidationState.REENTER
-        replacePendingPin(enteredPin)
-        setState {
-            copy(
-                quickPinError = null,
-                pinState = PinValidationState.REENTER,
-                buttonText = calculateButtonText(newPinState),
-                isButtonEnabled = false,
-                resetPin = true,
-                subtitle = calculateSubtitle(newPinState),
-                isLoading = false
-            )
+        viewModelScope.launch {
+            setState {
+                copy(isLoading = true)
+            }
+
+            artificialDelay()
+
+            val newPinState = PinValidationState.REENTER
+            replacePendingPin(enteredPin)
+            setState {
+                copy(
+                    quickPinError = null,
+                    pinState = PinValidationState.REENTER,
+                    resetPin = true,
+                    subtitle = calculateSubtitle(newPinState),
+                    pinInputLabel = calculatePinInputLabel(newPinState),
+                    isLoading = false
+                )
+            }
         }
     }
 
@@ -321,6 +326,7 @@ class PinViewModel(
             ).collect {
                 when (it) {
                     is QuickPinInteractorSetPinPartialState.Failed -> {
+                        artificialDelay()
                         setState {
                             copy(
                                 quickPinError = it.errorMessage,
@@ -340,10 +346,9 @@ class PinViewModel(
         }
     }
 
-    private fun validatePinLength(length: Int) {
+    private fun handleQuickPinLengthChanged() {
         setState {
             copy(
-                isButtonEnabled = length == quickPinSize && !isLockedOut,
                 quickPinError = null,
                 resetPin = false
             )
@@ -361,7 +366,6 @@ class PinViewModel(
                 isLockedOut = true,
                 isLoading = false,
                 quickPinError = null,
-                isButtonEnabled = false,
                 lockoutMessage = buildLockoutMessage(initialRemainingMs)
             )
         }
@@ -412,22 +416,36 @@ class PinViewModel(
                 }
             }
 
-            PinFlow.CREATE_WITH_ACTIVATION, PinFlow.CREATE_WITHOUT_ACTIVATION -> {
-                when (pinState) {
-                    PinValidationState.ENTER -> resourceProvider.getString(R.string.quick_pin_create_enter_subtitle)
-                    PinValidationState.REENTER -> resourceProvider.getString(R.string.quick_pin_create_reenter_subtitle)
-                    PinValidationState.VALIDATE -> viewState.value.subtitle
-                }
+            PinFlow.CREATE_WITH_ACTIVATION,
+            PinFlow.CREATE_WITHOUT_ACTIVATION -> {
+                resourceProvider.getString(R.string.quick_pin_create_subtitle)
             }
         }
     }
 
-    private fun calculateButtonText(pinState: PinValidationState): String {
-        return when (pinState) {
-            PinValidationState.ENTER -> resourceProvider.getString(R.string.generic_next_capitalized)
-            PinValidationState.REENTER -> resourceProvider.getString(R.string.generic_confirm_capitalized)
-            PinValidationState.VALIDATE -> resourceProvider.getString(R.string.generic_next_capitalized)
+    private fun calculatePinInputLabel(pinState: PinValidationState): String? {
+        return when (pinFlow) {
+            PinFlow.CREATE_WITHOUT_ACTIVATION,
+            PinFlow.CREATE_WITH_ACTIVATION -> {
+                when (pinState) {
+                    PinValidationState.ENTER -> resourceProvider.getString(R.string.quick_pin_create_enter_pin_input_label)
+                    PinValidationState.REENTER -> resourceProvider.getString(R.string.quick_pin_create_reenter_pin_input_label)
+                    PinValidationState.VALIDATE -> null
+                }
+            }
+
+            PinFlow.UPDATE -> null
         }
+    }
+
+    /**
+     * Suspends the coroutine for a specified amount of time to simulate processing or
+     * to ensure UI transitions occur at a natural pace.
+     *
+     * @param time The duration of the delay in milliseconds. Defaults to 500ms.
+     */
+    private suspend fun artificialDelay(time: Long = 500L) {
+        delay(time)
     }
 
     private fun getNextScreenRoute(): String {

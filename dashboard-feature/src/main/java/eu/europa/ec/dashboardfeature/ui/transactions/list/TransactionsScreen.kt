@@ -32,6 +32,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
@@ -44,11 +45,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.PointerEventPass
@@ -75,8 +74,6 @@ import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.theme.values.success
 import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.DatePickerDialogType
-import eu.europa.ec.uilogic.component.DualSelectorButtonDataUi
-import eu.europa.ec.uilogic.component.DualSelectorButtons
 import eu.europa.ec.uilogic.component.FiltersDatePickerDialog
 import eu.europa.ec.uilogic.component.FiltersSearchBar
 import eu.europa.ec.uilogic.component.InlineSnackbar
@@ -89,7 +86,6 @@ import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
 import eu.europa.ec.uilogic.component.utils.HSpacer
 import eu.europa.ec.uilogic.component.utils.LifecycleEffect
 import eu.europa.ec.uilogic.component.utils.OneTimeLaunchedEffect
-import eu.europa.ec.uilogic.component.utils.SPACING_EXTRA_SMALL
 import eu.europa.ec.uilogic.component.utils.SPACING_LARGE
 import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
 import eu.europa.ec.uilogic.component.utils.SPACING_SMALL
@@ -104,7 +100,7 @@ import eu.europa.ec.uilogic.component.wrap.WrapExpandableListItem
 import eu.europa.ec.uilogic.component.wrap.WrapIcon
 import eu.europa.ec.uilogic.component.wrap.WrapIconButton
 import eu.europa.ec.uilogic.component.wrap.WrapListItem
-import eu.europa.ec.uilogic.component.wrap.WrapListItems
+import eu.europa.ec.uilogic.component.wrap.WrapListItemDefaults
 import eu.europa.ec.uilogic.component.wrap.WrapModalBottomSheet
 import eu.europa.ec.uilogic.extension.finish
 import eu.europa.ec.uilogic.extension.paddingFrom
@@ -143,7 +139,15 @@ fun TransactionsScreen(
             TopBar(
                 onDashboardEventSent = onDashboardEventSent
             )
-        }
+        },
+        snackbarHost = { snackbarPaddings ->
+            state.error?.let { error ->
+                InlineSnackbar(
+                    error = error,
+                    modifier = Modifier.padding(snackbarPaddings),
+                )
+            }
+        },
     ) { paddingValues ->
         Content(
             state = state,
@@ -172,7 +176,6 @@ fun TransactionsScreen(
                     sheetContent = state.sheetContent,
                     filtersUi = state.filtersUi,
                     snapshotFilterDateRangeData = state.snapshotFilterDateRangeSelectionUi,
-                    sortOrder = state.sortOrder,
                     onEventSent = {
                         viewModel.setEvent(it)
                     }
@@ -270,15 +273,6 @@ private fun Content(
                 }
             }
         }
-
-        if (state.error != null) {
-            InlineSnackbar(
-                error = state.error,
-                modifier = Modifier
-                    .align(Alignment.BottomCenter)
-                    .padding(bottom = SPACING_EXTRA_SMALL.dp)
-            )
-        }
     }
 
     LifecycleEffect(
@@ -357,36 +351,43 @@ private fun TransactionCategory(
             text = category.displayName ?: stringResource(category.stringResId)
         )
 
-        val transactionItems = remember(key1 = transactions) {
-            transactions.map { it.uiData }
-        }
         val transactionMap = remember(key1 = transactions) {
             transactions.associateBy { it.uiData.header.itemId }
         }
 
-        WrapListItems(
+        Column(
             modifier = Modifier.fillMaxWidth(),
-            items = transactionItems,
-            onItemClick = { item ->
-                onEventSend(
-                    Event.TransactionItemPressed(itemId = item.itemId)
-                )
-            },
-            onExpandedChange = null,
-            overlineTextStyle = { item ->
-                val transactionUi = transactionMap[item.itemId]
+            verticalArrangement = Arrangement.spacedBy(WrapListItemDefaults.GroupedItemSpacing)
+        ) {
+            transactions.forEachIndexed { index, transactionItem: TransactionUi ->
+                WrapListItem(
+                    modifier = Modifier.fillMaxWidth(),
+                    item = transactionItem.uiData.header,
+                    onItemClick = { item ->
+                        onEventSend(
+                            Event.TransactionItemPressed(itemId = item.itemId)
+                        )
+                    },
+                    overlineTextStyle = { item ->
+                        val transactionUi = transactionMap[item.itemId]
 
-                val overlineTextColor = when (transactionUi?.uiStatus) {
-                    TransactionStatusUi.Completed -> MaterialTheme.colorScheme.success
-                    TransactionStatusUi.Failed -> MaterialTheme.colorScheme.error
-                    null -> MaterialTheme.colorScheme.onSurfaceVariant
-                }
+                        val overlineTextColor = when (transactionUi?.uiStatus) {
+                            TransactionStatusUi.Completed -> MaterialTheme.colorScheme.success
+                            TransactionStatusUi.Failed -> MaterialTheme.colorScheme.error
+                            null -> MaterialTheme.colorScheme.onSurfaceVariant
+                        }
 
-                MaterialTheme.typography.labelMedium.copy(
-                    color = overlineTextColor
+                        MaterialTheme.typography.labelMedium.copy(
+                            color = overlineTextColor
+                        )
+                    },
+                    shape = WrapListItemDefaults.groupedShape(
+                        index = index,
+                        itemCount = transactions.size
+                    ),
                 )
             }
-        )
+        }
     }
 }
 
@@ -443,7 +444,6 @@ private fun TransactionsSheetContent(
     sheetContent: TransactionsBottomSheetContent,
     filtersUi: List<ExpandableListItemUi.NestedListItem>,
     snapshotFilterDateRangeData: FilterDateRangeSelectionUi,
-    sortOrder: DualSelectorButtonDataUi,
     onEventSent: (event: Event) -> Unit,
 ) {
     when (sheetContent) {
@@ -456,10 +456,6 @@ private fun TransactionsSheetContent(
                     )
                 },
                 bodyContent = {
-                    val expandStateList by remember {
-                        mutableStateOf(filtersUi.map { false }.toMutableStateList())
-                    }
-
                     var buttonsRowHeight by remember { mutableIntStateOf(0) }
 
                     Box {
@@ -470,23 +466,20 @@ private fun TransactionsSheetContent(
                                 .padding(bottom = with(LocalDensity.current) { buttonsRowHeight.toDp() }),
                             verticalArrangement = Arrangement.spacedBy(SPACING_LARGE.dp)
                         ) {
-                            DualSelectorButtons(sortOrder) {
-                                onEventSent(
-                                    Event.OnSortingOrderChanged(it)
-                                )
-                            }
-
-                            filtersUi.forEachIndexed { index, filter ->
+                            filtersUi.forEach { filter ->
                                 when {
                                     filter.header.itemId == TransactionFilterIds.FILTER_BY_TRANSACTION_DATE_GROUP_ID -> {
                                         WrapExpandableCard(
                                             cardCollapsedContent = {
                                                 WrapListItem(
-                                                    mainContentVerticalPadding = SPACING_MEDIUM.dp,
+                                                    mainContentVerticalPadding = 18.dp,
                                                     item = filter.header,
                                                     onItemClick = {
-                                                        expandStateList[index] =
-                                                            !expandStateList[index]
+                                                        onEventSent(
+                                                            Event.OnFilterGroupExpansionChanged(
+                                                                filter.header.itemId
+                                                            )
+                                                        )
                                                     },
                                                     mainContentTextStyle = MaterialTheme.typography.bodyLarge.copy(
                                                         fontWeight = FontWeight.Bold,
@@ -497,9 +490,12 @@ private fun TransactionsSheetContent(
                                             cardExpandedContent = {
                                                 Column(
                                                     modifier = Modifier.padding(
-                                                        start = SPACING_MEDIUM.dp,
-                                                        end = SPACING_MEDIUM.dp,
-                                                        bottom = SPACING_MEDIUM.dp
+                                                        start = 20.dp,
+                                                        end = 20.dp,
+                                                        bottom = 20.dp,
+                                                    ),
+                                                    verticalArrangement = Arrangement.spacedBy(
+                                                        SPACING_SMALL.dp
                                                     )
                                                 ) {
                                                     FiltersDatePickerField(
@@ -517,7 +513,7 @@ private fun TransactionsSheetContent(
                                                     )
                                                 }
                                             },
-                                            isExpanded = expandStateList[index],
+                                            isExpanded = filter.isExpanded,
                                         )
                                     }
 
@@ -525,9 +521,11 @@ private fun TransactionsSheetContent(
                                         WrapExpandableListItem(
                                             header = filter.header,
                                             data = filter.nestedItems,
-                                            isExpanded = expandStateList[index],
+                                            isExpanded = filter.isExpanded,
                                             onExpandedChange = {
-                                                expandStateList[index] = !expandStateList[index]
+                                                onEventSent(
+                                                    Event.OnFilterGroupExpansionChanged(it.itemId)
+                                                )
                                             },
                                             onItemClick = {
                                                 val id = it.itemId
@@ -540,8 +538,9 @@ private fun TransactionsSheetContent(
                                                 )
                                             },
                                             addDivider = false,
-                                            collapsedMainContentVerticalPadding = SPACING_MEDIUM.dp,
-                                            expandedMainContentVerticalPadding = SPACING_MEDIUM.dp,
+                                            collapsedMainContentVerticalPadding = 18.dp,
+                                            expandedMainContentVerticalPadding = 18.dp,
+                                            shape = RoundedCornerShape(12.dp),
                                         )
                                     }
                                 }

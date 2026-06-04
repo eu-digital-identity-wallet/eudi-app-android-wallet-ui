@@ -22,11 +22,12 @@ import java.time.LocalDateTime
 data class Filters(
     val filterGroups: List<FilterGroup>,
     val sortOrder: SortOrder,
+    val sort: FilterSort? = null,
 ) {
     val isEmpty: Boolean
-        get() = filterGroups.isEmpty()
+        get() = filterGroups.isEmpty() && sort == null
     val isNotEmpty: Boolean
-        get() = filterGroups.isNotEmpty()
+        get() = !isEmpty
 
     companion object {
         fun emptyFilters(): Filters {
@@ -34,6 +35,12 @@ data class Filters(
         }
     }
 }
+
+data class FilterSort(
+    val id: String,
+    val name: String,
+    val filters: List<FilterElement>,
+)
 
 sealed class FilterGroup {
     abstract val id: String

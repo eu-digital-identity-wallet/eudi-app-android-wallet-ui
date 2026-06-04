@@ -51,6 +51,7 @@ import eu.europa.ec.testlogic.extension.runFlowTest
 import eu.europa.ec.testlogic.extension.runTest
 import eu.europa.ec.testlogic.extension.toFlow
 import eu.europa.ec.testlogic.rule.CoroutineTestRule
+import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.ListItemDataUi
 import eu.europa.ec.uilogic.component.ListItemMainContentDataUi
 import eu.europa.ec.uilogic.component.ListItemTrailingContentDataUi
@@ -208,17 +209,14 @@ class TestTransactionsInteractor {
     }
     //endregion
 
-    //region updateSortOrder
+    //region updateSort
     @Test
-    fun `When updateSortOrder is called, Then filterValidator#updateSortOrder is invoked with the same order`() {
-        // Given
-        val sortOrder = SortOrder.Ascending(isDefault = false)
-
+    fun `When updateSort is called, Then filterValidator#updateSort is invoked with the same id`() {
         // When
-        interactor.updateSortOrder(sortOrder = sortOrder)
+        interactor.updateSort(filterId = "sortId")
 
         // Then
-        verify(filterValidator, times(1)).updateSortOrder(sortOrder)
+        verify(filterValidator, times(1)).updateSort("sortId")
     }
     //endregion
 
@@ -487,7 +485,6 @@ class TestTransactionsInteractor {
         val groupIds = result.filterGroups.map { it.id }
         assertEquals(
             listOf(
-                TransactionFilterIds.FILTER_SORT_GROUP_ID,
                 TransactionFilterIds.FILTER_BY_TRANSACTION_DATE_GROUP_ID,
                 TransactionFilterIds.FILTER_BY_STATUS_GROUP_ID,
                 TransactionFilterIds.FILTER_BY_RELYING_PARTY_GROUP_ID,
@@ -496,6 +493,7 @@ class TestTransactionsInteractor {
             groupIds
         )
         assertEquals(SortOrder.Descending(isDefault = true), result.sortOrder)
+        assertEquals(TransactionFilterIds.FILTER_SORT_GROUP_ID, result.sort?.id)
     }
     //endregion
 
@@ -548,8 +546,8 @@ class TestTransactionsInteractor {
     fun `Given Case 2, When addDynamicFilters is called with a non-relying-party group, Then the group is left unchanged`() {
         // Given
         val unrelatedGroup = FilterGroup.SingleSelectionFilterGroup(
-            id = TransactionFilterIds.FILTER_SORT_GROUP_ID,
-            name = "Sort",
+            id = "unrelated_group",
+            name = "Unrelated",
             filters = listOf(
                 FilterItem(
                     id = "x",
@@ -609,6 +607,16 @@ class TestTransactionsInteractor {
                 assertEquals(filtersFromValidator.sortOrder, state.sortOrder)
                 assertEquals(true, state.allDefaultFiltersAreSelected)
                 assertEquals(filtersFromValidator.filterGroups.size, state.filters.size)
+
+                state.filters.forEach { filter ->
+                    assertEquals(false, filter.isExpanded)
+                    val headerTrailingContent = filter.header.trailingContentData
+                    assertTrue(headerTrailingContent is ListItemTrailingContentDataUi.Icon)
+                    assertEquals(
+                        AppIcons.KeyboardArrowDown,
+                        (headerTrailingContent as ListItemTrailingContentDataUi.Icon).iconData
+                    )
+                }
 
                 val trailingTypes = state.filters.flatMap { nested ->
                     nested.nestedItems.map { it.header.trailingContentData }
@@ -689,12 +697,10 @@ class TestTransactionsInteractor {
         // Given
         mockGetFiltersStrings()
         val filters = interactor.getFilters()
-        val sortGroup = filters.filterGroups.first {
-            it.id == TransactionFilterIds.FILTER_SORT_GROUP_ID
-        }
+        val sort = filters.sort!!
 
         @Suppress("UNCHECKED_CAST")
-        val sortAction = sortGroup.filters.first().filterableAction
+        val sortAction = sort.filters.first().filterableAction
                 as FilterAction.Sort<TransactionsFilterableAttributes, LocalDateTime>
         val attrs = attributes(creationLocalDateTime = LocalDateTime.of(2026, 5, 1, 12, 0))
 

@@ -22,6 +22,8 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -93,10 +95,15 @@ internal fun DashboardScreen(
     Scaffold(
         bottomBar = { BottomNavigationBar(bottomNavigationController) }
     ) { padding ->
+        val paddingValues = PaddingValues(
+            bottom = padding.calculateBottomPadding()
+        )
+
         NavHost(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(bottom = padding.calculateBottomPadding()),
+                .padding(paddingValues)
+                .consumeWindowInsets(paddingValues),
             navController = bottomNavigationController,
             startDestination = BottomNavigationItem.Home.route
         ) {

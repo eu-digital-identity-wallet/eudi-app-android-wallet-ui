@@ -25,6 +25,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
@@ -57,7 +58,6 @@ import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
 import eu.europa.ec.uilogic.component.utils.ALPHA_DISABLED
 import eu.europa.ec.uilogic.component.utils.ALPHA_ENABLED
-import eu.europa.ec.uilogic.component.utils.DEFAULT_BIG_ICON_SIZE
 import eu.europa.ec.uilogic.component.utils.DEFAULT_ICON_SIZE
 import eu.europa.ec.uilogic.component.utils.HSpacer
 import eu.europa.ec.uilogic.component.utils.SIZE_SMALL
@@ -128,6 +128,7 @@ fun WrapModalBottomSheet(
         onDismissRequest = onDismissRequest,
         modifier = Modifier
             .exposeTestTagsAsResourceId()
+            .statusBarsPadding()
             .then(modifier),
         sheetState = sheetState,
         shape = shape,
@@ -362,7 +363,6 @@ fun <T : ViewEvent> BottomSheetWithTwoBigIcons(
                             item.leadingIcon?.let { safeLeadingIcon ->
                                 WrapImage(
                                     modifier = Modifier
-                                        .size(DEFAULT_BIG_ICON_SIZE.dp)
                                         .alpha(
                                             alpha = ALPHA_ENABLED.takeIf { item.enabled }
                                                 ?: ALPHA_DISABLED

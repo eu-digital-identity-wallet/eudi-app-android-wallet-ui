@@ -68,6 +68,7 @@ import eu.europa.ec.uilogic.component.utils.SPACING_XX_LARGE
 import eu.europa.ec.uilogic.component.utils.TopSpacing
 import eu.europa.ec.uilogic.component.utils.Z_STICKY
 import eu.europa.ec.uilogic.component.utils.screenPaddings
+import eu.europa.ec.uilogic.component.utils.snackbarHostPaddings
 import eu.europa.ec.uilogic.component.utils.stickyBottomPaddings
 import eu.europa.ec.uilogic.component.wrap.WrapIcon
 import eu.europa.ec.uilogic.component.wrap.WrapIconButton
@@ -111,7 +112,7 @@ fun ContentScreen(
     stickyBottom: @Composable ((PaddingValues) -> Unit)? = null,
     fab: @Composable () -> Unit = {},
     fabPosition: FabPosition = FabPosition.End,
-    snackbarHost: @Composable () -> Unit = {},
+    snackbarHost: @Composable (PaddingValues) -> Unit = { _ -> },
     contentErrorConfig: ContentErrorConfig? = null,
     broadcastAction: BroadcastAction? = null,
     imePaddingConfig: ImePaddingConfig = ImePaddingConfig.NO_PADDING,
@@ -165,7 +166,9 @@ fun ContentScreen(
         },
         floatingActionButton = fab,
         floatingActionButtonPosition = fabPosition,
-        snackbarHost = snackbarHost,
+        snackbarHost = {
+            snackbarHost(snackbarHostPaddings())
+        },
     ) { padding ->
 
         val screenPaddingsIgnoringSticky = screenPaddings(

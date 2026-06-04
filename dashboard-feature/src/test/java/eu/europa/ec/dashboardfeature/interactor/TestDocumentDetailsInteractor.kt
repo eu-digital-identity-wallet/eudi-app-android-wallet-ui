@@ -21,6 +21,7 @@ import eu.europa.ec.authenticationlogic.controller.authentication.BiometricsAvai
 import eu.europa.ec.authenticationlogic.controller.authentication.DeviceAuthenticationResult
 import eu.europa.ec.authenticationlogic.model.BiometricCrypto
 import eu.europa.ec.businesslogic.config.ConfigLogic
+import eu.europa.ec.businesslogic.controller.storage.PrefKeys
 import eu.europa.ec.businesslogic.provider.UuidProvider
 import eu.europa.ec.commonfeature.interactor.DeviceAuthenticationInteractor
 import eu.europa.ec.corelogic.controller.DeleteAllDocumentsPartialState
@@ -68,6 +69,7 @@ import eu.europa.ec.testlogic.extension.toFlow
 import eu.europa.ec.testlogic.rule.CoroutineTestRule
 import eu.europa.ec.uilogic.component.IssuerDetailsCardDataUi
 import junit.framework.TestCase.assertEquals
+import junit.framework.TestCase.assertTrue
 import org.junit.After
 import org.junit.Before
 import org.junit.Rule
@@ -76,6 +78,9 @@ import org.mockito.ArgumentMatchers
 import org.mockito.Mock
 import org.mockito.MockitoAnnotations
 import org.mockito.kotlin.any
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.times
+import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import java.net.URI
 
@@ -95,6 +100,9 @@ class TestDocumentDetailsInteractor {
 
     @Mock
     private lateinit var configLogic: ConfigLogic
+
+    @Mock
+    private lateinit var prefKeys: PrefKeys
 
     @Mock
     private lateinit var deviceAuthenticationInteractor: DeviceAuthenticationInteractor
@@ -118,7 +126,8 @@ class TestDocumentDetailsInteractor {
             deviceAuthenticationInteractor = deviceAuthenticationInteractor,
             resourceProvider = resourceProvider,
             uuidProvider = uuidProvider,
-            configLogic = configLogic
+            configLogic = configLogic,
+            prefKeys = prefKeys,
         )
 
         whenever(resourceProvider.genericErrorMessage()).thenReturn(mockedGenericErrorMessage)
@@ -137,15 +146,17 @@ class TestDocumentDetailsInteractor {
     // 1. walletCoreDocumentsController.getDocumentById() returns a PID document.
     // 2. walletCoreDocumentsController.isDocumentBookmarked() returns false.
     // 3. walletCoreDocumentsController.isDocumentLowOnCredentials() returns false.
+    // 4. prefKeys.getShowBatchIssuanceCounter() returns true.
 
     // Case 1 Expected Result:
     // DocumentDetailsInteractorPartialState.Success state, with a PID document item and
-    // documentIsBookmarked is false.
+    // documentIsBookmarked is false and document credentials info is returned.
     @Test
     fun `Given Case 1, When getDocumentDetails is called, Then Case 1 Expected Result is returned`() {
         coroutineRule.runTest {
             // Given
             val mockedDocIsLowOnCredentials = false
+            mockShowBatchIssuanceCounterPreference(response = true)
             mockGetDocumentDetailsStrings(
                 resourceProvider = resourceProvider,
             )
@@ -186,15 +197,17 @@ class TestDocumentDetailsInteractor {
     // 1. walletCoreDocumentsController.getDocumentById() returns a PID document.
     // 2. walletCoreDocumentsController.isDocumentBookmarked() returns false.
     // 3. walletCoreDocumentsController.isDocumentLowOnCredentials() returns true.
+    // 4. prefKeys.getShowBatchIssuanceCounter() returns true.
 
     // Case 2 Expected Result:
     // DocumentDetailsInteractorPartialState.Success state, with
-    // a PID document item.
+    // a PID document item and document credentials info is returned.
     @Test
     fun `Given Case 2, When getDocumentDetails is called, Then Case 2 Expected Result is returned`() {
         coroutineRule.runTest {
             // Given
             val mockedDocIsLowOnCredentials = true
+            mockShowBatchIssuanceCounterPreference(response = true)
             mockGetDocumentDetailsStrings(
                 resourceProvider = resourceProvider,
             )
@@ -235,15 +248,17 @@ class TestDocumentDetailsInteractor {
     // 1. walletCoreDocumentsController.getDocumentById() returns a PID document.
     // 2. walletCoreDocumentsController.isDocumentBookmarked() returns true.
     // 3. walletCoreDocumentsController.isDocumentLowOnCredentials() returns false.
+    // 4. prefKeys.getShowBatchIssuanceCounter() returns true.
 
     // Case 3 Expected Result:
     // DocumentDetailsInteractorPartialState.Success state, with a PID document item and
-    // documentIsBookmarked is true.
+    // documentIsBookmarked is true and document credentials info is returned.
     @Test
     fun `Given Case 3, When getDocumentDetails is called, Then Case 3 Expected Result is returned`() {
         coroutineRule.runTest {
             // Given
             val mockedDocIsLowOnCredentials = false
+            mockShowBatchIssuanceCounterPreference(response = true)
             mockGetDocumentDetailsStrings(
                 resourceProvider = resourceProvider,
             )
@@ -284,15 +299,17 @@ class TestDocumentDetailsInteractor {
     // 1. walletCoreDocumentsController.getDocumentById() returns an mDL document.
     // 2. walletCoreDocumentsController.isDocumentBookmarked() returns false.
     // 3. walletCoreDocumentsController.isDocumentLowOnCredentials() returns false.
+    // 4. prefKeys.getShowBatchIssuanceCounter() returns true.
 
     // Case 4 Expected Result:
     // DocumentDetailsInteractorPartialState.Success state, with an mDL document item and
-    // documentIsBookmarked is false.
+    // documentIsBookmarked is false and document credentials info is returned.
     @Test
     fun `Given Case 4, When getDocumentDetails is called, Then Case 4 Expected Result is returned`() {
         coroutineRule.runTest {
             // Given
             val mockedDocIsLowOnCredentials = false
+            mockShowBatchIssuanceCounterPreference(response = true)
             mockGetDocumentDetailsStrings(
                 resourceProvider = resourceProvider,
             )
@@ -364,15 +381,17 @@ class TestDocumentDetailsInteractor {
     // no user name.
     // 2. walletCoreDocumentsController.isDocumentBookmarked() returns false.
     // 3. walletCoreDocumentsController.isDocumentLowOnCredentials() returns false.
+    // 4. prefKeys.getShowBatchIssuanceCounter() returns true.
 
     // Case 6 Expected Result:
     // DocumentDetailsInteractorPartialState.Success state, with a PID document item, with:
-    // documentIsBookmarked is false.
+    // documentIsBookmarked is false and document credentials info is returned.
     @Test
     fun `Given Case 6, When getDocumentDetails is called, Then Case 6 Expected Result is returned`() {
         coroutineRule.runTest {
             // Given
             val mockedDocIsLowOnCredentials = false
+            mockShowBatchIssuanceCounterPreference(response = true)
             mockGetDocumentDetailsStrings(
                 resourceProvider = resourceProvider,
             )
@@ -503,10 +522,12 @@ class TestDocumentDetailsInteractor {
     // Case 9:
     // Same as Case 1 but with wasIssuerDetailsExpanded = true → IssuerDetailsCardDataUi.isExpanded
     // is true (covers the non-null branch of `wasIssuerDetailsExpanded ?: false`).
+    // prefKeys.getShowBatchIssuanceCounter() returns true.
     @Test
     fun `Given Case 9, When getDocumentDetails is called with wasIssuerDetailsExpanded=true, Then issuerDetails#isExpanded is true`() {
         coroutineRule.runTest {
             // Given
+            mockShowBatchIssuanceCounterPreference(response = true)
             mockGetDocumentDetailsStrings(resourceProvider = resourceProvider)
             val mockedPidWithBasicFields = getMockedPidWithBasicFields()
             mockGetDocumentByIdCall(response = mockedPidWithBasicFields)
@@ -528,11 +549,13 @@ class TestDocumentDetailsInteractor {
     }
 
     // Case 10:
+    // prefKeys.getShowBatchIssuanceCounter() returns true.
     // isDocumentRevoked returns true → IssuerDetailsCardDataUi.documentState is Revoked.
     @Test
     fun `Given Case 10, When getDocumentDetails is called for a revoked document, Then DocumentState is Revoked`() {
         coroutineRule.runTest {
             // Given
+            mockShowBatchIssuanceCounterPreference(response = true)
             mockGetDocumentDetailsStrings(resourceProvider = resourceProvider)
             val mockedPidWithBasicFields = getMockedPidWithBasicFields()
             mockGetDocumentByIdCall(response = mockedPidWithBasicFields)
@@ -552,6 +575,37 @@ class TestDocumentDetailsInteractor {
                     IssuerDetailsCardDataUi.DocumentState.Revoked,
                     result.issuerDetails.documentState
                 )
+            }
+        }
+    }
+
+    // Case 11:
+    // prefKeys.getShowBatchIssuanceCounter() returns false.
+    //
+    // Case 11 Expected Result:
+    // DocumentDetailsInteractorPartialState.Success state, with document credentials info hidden.
+    @Test
+    fun `Given show batch issuance counter preference is false, When getDocumentDetails is called, Then credentials info is hidden`() {
+        coroutineRule.runTest {
+            // Given
+            mockShowBatchIssuanceCounterPreference(response = false)
+            mockGetDocumentDetailsStrings(resourceProvider = resourceProvider)
+            val mockedPidWithBasicFields = getMockedPidWithBasicFields()
+            mockGetDocumentByIdCall(response = mockedPidWithBasicFields)
+            mockIsDocumentLowOnCredentialsCall(response = false)
+            mockRetrieveBookmarkCall(response = false)
+            mockIsDocumentRevoked(isRevoked = false)
+
+            // When
+            interactor.getDocumentDetails(
+                documentId = mockedPidId,
+                wasIssuerDetailsExpanded = null,
+            ).runFlowTest {
+                // Then
+                val result = awaitItem()
+                assertTrue(result is DocumentDetailsInteractorPartialState.Success)
+                result as DocumentDetailsInteractorPartialState.Success
+                assertEquals(null, result.documentCredentialsInfoUi)
             }
         }
     }
@@ -1306,7 +1360,7 @@ class TestDocumentDetailsInteractor {
         )
 
         // Then
-        org.mockito.kotlin.verify(deviceAuthenticationInteractor, org.mockito.kotlin.times(1))
+        verify(deviceAuthenticationInteractor, times(1))
             .authenticateWithBiometrics(
                 context,
                 crypto,
@@ -1332,14 +1386,14 @@ class TestDocumentDetailsInteractor {
         )
 
         // Then
-        org.mockito.kotlin.verify(deviceAuthenticationInteractor, org.mockito.kotlin.times(1))
+        verify(deviceAuthenticationInteractor, times(1))
             .launchBiometricSystemScreen()
     }
 
     @Test
     fun `Given biometrics availability is Failure, When handleUserAuth is called, Then resultHandler#onAuthenticationFailure is invoked`() {
         // Given
-        val onFailure = org.mockito.kotlin.mock<() -> Unit>()
+        val onFailure = mock<() -> Unit>()
         val resultHandler = DeviceAuthenticationResult(onAuthenticationFailure = onFailure)
         val crypto = BiometricCrypto(cryptoObject = null)
         whenever(deviceAuthenticationInteractor.getBiometricsAvailability())
@@ -1354,7 +1408,7 @@ class TestDocumentDetailsInteractor {
         )
 
         // Then
-        org.mockito.kotlin.verify(onFailure).invoke()
+        verify(onFailure).invoke()
     }
     //endregion
 
@@ -1365,7 +1419,7 @@ class TestDocumentDetailsInteractor {
         interactor.resumeOpenId4VciWithAuthorization(mockedReIssueUri)
 
         // Then
-        org.mockito.kotlin.verify(walletCoreDocumentsController, org.mockito.kotlin.times(1))
+        verify(walletCoreDocumentsController, times(1))
             .resumeOpenId4VciWithAuthorization(mockedReIssueUri)
     }
     //endregion
@@ -1429,6 +1483,10 @@ class TestDocumentDetailsInteractor {
     private suspend fun mockIsDocumentLowOnCredentialsCall(response: Boolean) {
         whenever(walletCoreDocumentsController.isDocumentLowOnCredentials(any()))
             .thenReturn(response)
+    }
+
+    private fun mockShowBatchIssuanceCounterPreference(response: Boolean) {
+        whenever(suspend { prefKeys.getShowBatchIssuanceCounter() }).thenReturn(response)
     }
 
     private fun getMockedDocumentCredentialsInfoUi(

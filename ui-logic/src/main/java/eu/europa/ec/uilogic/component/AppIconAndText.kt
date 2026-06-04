@@ -30,8 +30,7 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class AppIconAndTextDataUi(
-    val appIcon: IconDataUi = AppIcons.LogoPlain,
-    val appText: IconDataUi = AppIcons.LogoText,
+    val appIcon: IconDataUi = AppIcons.LogoIconAndText,
 )
 
 @Composable
@@ -48,7 +47,6 @@ fun AppIconAndText(
         verticalAlignment = Alignment.Top
     ) {
         WrapImage(iconData = appIconAndTextData.appIcon)
-        WrapImage(iconData = appIconAndTextData.appText)
     }
 }
 
@@ -57,10 +55,7 @@ fun AppIconAndText(
 private fun AppIconAndTextPreview() {
     PreviewTheme {
         AppIconAndText(
-            appIconAndTextData = AppIconAndTextDataUi(
-                appIcon = AppIcons.LogoPlain,
-                appText = AppIcons.LogoText,
-            )
+            appIconAndTextData = AppIconAndTextDataUi()
         )
     }
 }
