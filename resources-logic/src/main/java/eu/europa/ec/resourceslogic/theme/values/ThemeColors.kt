@@ -105,7 +105,7 @@ class ThemeColors {
         private const val eudiw_theme_dark_onSecondaryContainer: Long = 0xFF3A3E57
         private const val eudiw_theme_dark_tertiary: Long = 0xFF1F2B25
         private const val eudiw_theme_dark_onTertiary: Long = 0xFF29322E
-        private const val eudiw_theme_dark_tertiaryContainer: Long = 0xFFCDD7D0
+        private const val eudiw_theme_dark_tertiaryContainer: Long = 0xFF1F2B25
         private const val eudiw_theme_dark_onTertiaryContainer: Long = 0xFF38413D
         private const val eudiw_theme_dark_error: Long = 0xFFFFB4AA
         private const val eudiw_theme_dark_onError: Long = 0xFF690003
