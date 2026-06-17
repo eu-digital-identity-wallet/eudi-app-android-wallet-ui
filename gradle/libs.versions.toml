@@ -1,6 +1,6 @@
 [versions]
 # Kotlin
-kotlin = "2.3.21"
+kotlin = "2.4.0"
 kotlinxCoroutines = "1.11.0"
 kotlinxDatetime = "0.8.0"
 kotlinxSerializationJson = "1.11.0"
@@ -12,7 +12,7 @@ androidxAppAuth = "1.0.0"
 androidxAppCompat = "1.7.1"
 androidxBiometric = "1.4.0-alpha07"
 androidxBrowser = "1.10.0"
-androidxCore = "1.18.0"
+androidxCore = "1.19.0"
 androidxCoreSplashscreen = "1.2.0"
 androidxCredentials = "1.0.0-alpha04"
 androidxLifecycle = "2.10.0"
@@ -38,7 +38,7 @@ materialIcons = "1.7.8"
 cameraCore = "1.6.1"
 
 # Coil (image loading)
-coil = "3.4.0"
+coil = "3.5.0"
 
 # Ktor (networking)
 ktor = "3.5.0"
@@ -46,7 +46,7 @@ ktor = "3.5.0"
 # Koin (dependency injection)
 koin = "4.2.1"
 koinAnnotations = "4.2.1"
-koinPlugin = "1.0.0"
+koinPlugin = "1.0.1"
 
 # EUDI wallet SDKs
 eudiWalletCore = "0.28.1"
@@ -59,11 +59,11 @@ treessence = "1.1.2"
 
 # Other libraries
 androidDesugarJdkLibs = "2.1.5"
-googlePhoneNumber = "9.0.31"
+googlePhoneNumber = "9.0.32"
 gson = "2.14.0"
 lint = "32.2.1"
 material = "1.14.0"
-protobuf = "4.35.0"
+protobuf = "4.35.1"
 sqlcipher = "4.16.0"
 zxing = "3.5.4"
 
@@ -86,12 +86,12 @@ turbine = "1.2.1"
 androidGradlePlugin = "9.2.1"
 baselineprofile = "1.5.0-alpha06"
 dependencyGraphPlugin = "0.13.0"
-gmsPlugin = "4.4.4"
+gmsPlugin = "4.5.0"
 kover = "0.9.8"
 owaspDependencyCheck = "12.2.2"
 protobufPlugin = "0.10.0"
 secrets = "2.0.1"
-sonar = "7.3.0.8198"
+sonar = "7.3.1.8318"
 
 [libraries]
 # Kotlin
