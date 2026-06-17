@@ -1,7 +1,7 @@
 # EUDI Android Wallet reference application
 
 [![License: EUPL 1.2](https://img.shields.io/badge/License-EUPL%201.2-blue.svg)](https://joinup.ec.europa.eu/software/page/eupl)
-[![Kotlin](https://img.shields.io/badge/Kotlin-2.3.21-7F52FF.svg?logo=kotlin)](https://kotlinlang.org)
+[![Kotlin](https://img.shields.io/badge/Kotlin-2.4.0-7F52FF.svg?logo=kotlin)](https://kotlinlang.org)
 [![Jetpack Compose](https://img.shields.io/badge/Jetpack%20Compose-2026.05.01-4285F4.svg?logo=jetpackcompose)](https://developer.android.com/jetpack/compose)
 [![Android API](https://img.shields.io/badge/Android%20API-29%2B-3DDC84.svg?logo=android)](https://developer.android.com/about/versions/10)
 [![SonarCloud](https://img.shields.io/badge/SonarCloud-enabled-F3702A.svg?logo=sonarcloud)](https://sonarcloud.io)
