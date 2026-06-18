@@ -51,6 +51,9 @@ koinPlugin = "1.0.1"
 eudiWalletCore = "0.28.1"
 rqesUiSDK = "0.3.9"
 
+# STWO ZK SDK (eu-id) — resolved from mavenLocal()
+euIdZkSdk = "0.1.0"
+
 # Logging
 slf4j = "2.0.18"
 timber = "5.0.1"
@@ -174,6 +177,8 @@ koin-workmanager = { group = "io.insert-koin", name = "koin-androidx-workmanager
 # EUDI wallet SDKs
 eudi-wallet-core = { group = "eu.europa.ec.eudi", name = "eudi-lib-android-wallet-core", version.ref = "eudiWalletCore" }
 rqes-ui-sdk = { group = "eu.europa.ec.eudi", name = "eudi-lib-android-rqes-ui", version.ref = "rqesUiSDK" }
+euid-zk-sdk = { group = "com.kss", name = "eu-id-zk-sdk", version.ref = "euIdZkSdk" }
+euid-zk-sdk-jvm = { group = "com.kss", name = "eu-id-zk-sdk-jvm", version.ref = "euIdZkSdk" }
 
 # Logging
 slf4j = { group = "org.slf4j", name = "slf4j-simple", version.ref = "slf4j" }

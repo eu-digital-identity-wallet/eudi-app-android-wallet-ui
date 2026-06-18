@@ -26,6 +26,7 @@ import eu.europa.ec.eudi.wallet.issue.openid4vci.dpop.DPopConfig
 import eu.europa.ec.eudi.wallet.transfer.openId4vp.ClientIdScheme
 import eu.europa.ec.eudi.wallet.transfer.openId4vp.Format
 import eu.europa.ec.resourceslogic.R
+import eu.europa.ec.zkplogic.StwoZkSystemRepository
 import java.time.Duration
 import kotlin.time.Duration.Companion.seconds
 
@@ -81,6 +82,10 @@ internal class WalletCoreConfigImpl(
                         R.raw.r45_staging,
                         R.raw.multipaz,
                     )
+
+                    // Enable the STWO ZK system (predicate proofs). No-op unless a verifier
+                    // requests our system name; otherwise the wallet falls back to plaintext mdoc.
+                    configureZkp(StwoZkSystemRepository(context).build())
                 }
             }
             return _config!!

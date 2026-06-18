@@ -16,36 +16,34 @@
 
 import com.android.build.api.dsl.LibraryExtension
 import project.convention.logic.config.LibraryModule
-import project.convention.logic.kover.KoverExclusionRules
-import project.convention.logic.kover.excludeFromKoverReport
 
 plugins {
     id("project.android.library")
+    // Brings eudi-wallet-core (api) + Multipaz transitively, so this module can implement
+    // org.multipaz.mdoc.zkp.ZkSystem and consume MdocDocument — same setup as :core-logic.
     id("project.wallet.core")
 }
 
 extensions.configure<LibraryExtension>("android") {
-    namespace = "eu.europa.ec.corelogic"
+    namespace = "eu.europa.ec.zkplogic"
+
+    testOptions {
+        // Host JVM unit tests load the SDK's host-native via JNA; don't fail on incidental
+        // Android API calls.
+        unitTests.isReturnDefaultValues = true
+    }
 }
 
 moduleConfig {
-    module = LibraryModule.CoreLogic
+    module = LibraryModule.ZkpLogic
 }
 
 dependencies {
-    implementation(project(LibraryModule.ResourcesLogic.path))
-    implementation(project(LibraryModule.BusinessLogic.path))
-    implementation(project(LibraryModule.StorageLogic.path))
-    implementation(project(LibraryModule.AuthenticationLogic.path))
-    implementation(project(LibraryModule.NetworkLogic.path))
-    implementation(project(LibraryModule.ZkpLogic.path))
+    // The Rust STWO ZK SDK (UniFFI/JNA + native .so bundled in the AAR). Resolved from mavenLocal().
+    implementation(libs.euid.zk.sdk)
 
-    implementation(libs.androidx.biometric)
-
-    testImplementation(project(LibraryModule.TestLogic.path))
+    // Host JVM unit tests: the same SDK with native libs for desktop platforms (mac/linux/win),
+    // so JNA loads the real (stubbed) prover/verifier on the host — no emulator needed.
+    testImplementation(libs.junit4)
+    testImplementation(libs.euid.zk.sdk.jvm)
 }
-
-excludeFromKoverReport(
-    excludedClasses = KoverExclusionRules.CoreLogic.classes,
-    excludedPackages = KoverExclusionRules.CoreLogic.packages,
-)
