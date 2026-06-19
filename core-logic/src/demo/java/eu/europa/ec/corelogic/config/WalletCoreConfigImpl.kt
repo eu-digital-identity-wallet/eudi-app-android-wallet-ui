@@ -19,6 +19,7 @@ package eu.europa.ec.corelogic.config
 import android.content.Context
 import eu.europa.ec.corelogic.BuildConfig
 import eu.europa.ec.corelogic.model.DocumentIdentifier
+import eu.europa.ec.eudi.iso18013.transfer.zkp.ZkResponsePolicy
 import eu.europa.ec.eudi.wallet.EudiWalletConfig
 import eu.europa.ec.eudi.wallet.document.CreateDocumentSettings.CredentialPolicy
 import eu.europa.ec.eudi.wallet.issue.openid4vci.OpenId4VciManager
@@ -83,9 +84,13 @@ internal class WalletCoreConfigImpl(
                         R.raw.multipaz,
                     )
 
-                    // Enable the STWO ZK system (predicate proofs). No-op unless a verifier
-                    // requests our system name; otherwise the wallet falls back to plaintext mdoc.
-                    configureZkp(StwoZkSystemRepository(context).build())
+                    // Enable the STWO ZK system (predicate proofs). Strict policy: if a proof cannot
+                    // be produced for a ZK request, the response fails rather than silently
+                    // disclosing the underlying value in plaintext.
+                    configureZkp(
+                        zkSystemRepository = StwoZkSystemRepository(context).build(),
+                        zkResponsePolicy = ZkResponsePolicy.Strict,
+                    )
                 }
             }
             return _config!!
