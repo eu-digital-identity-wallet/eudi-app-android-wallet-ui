@@ -265,6 +265,18 @@ private fun DisplayRequestItems(
                 informativeText = stringResource(id = R.string.request_no_data),
             )
         } else {
+            if (requestDocuments.all { it.domainPayload.isZeroKnowledge }) {
+                SectionTitle(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = SPACING_MEDIUM.dp),
+                    text = stringResource(R.string.request_zkp_disclaimer),
+                    textConfig = TextConfig(
+                        styleKey = TextStyleKey.LabelLarge,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                )
+            }
             Column(
                 modifier = Modifier.fillMaxSize(),
                 verticalArrangement = Arrangement.spacedBy(SPACING_MEDIUM.dp)

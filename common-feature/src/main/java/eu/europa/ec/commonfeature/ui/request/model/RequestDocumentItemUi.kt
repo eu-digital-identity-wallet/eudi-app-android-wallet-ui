@@ -47,4 +47,7 @@ data class DocumentPayloadDomain(
     val docId: DocumentId,
     val domainDocFormat: DomainDocumentFormat,
     val docClaimsDomain: List<ClaimDomain>,
+    // True when the verifier requested this document with a zero-knowledge predicate: its claims are
+    // proven without disclosing the underlying values.
+    val isZeroKnowledge: Boolean = false,
 )

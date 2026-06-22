@@ -124,6 +124,13 @@
 -keepattributes SourceFile, LineNumberTable
 -renamesourcefileattribute SourceFile
 
+# ZK request detection reads RequestedDocument.zkRequestSystemSpecs reflectively (the field is
+# internal in the data-transfer library). Keep the backing field so the ZK banner still works in
+# minified builds; without it the detection safely degrades to false.
+-keepclassmembers class eu.europa.ec.eudi.iso18013.transfer.response.RequestedDocument {
+    *** zkRequestSystemSpecs;
+}
+
 # kotlinx.serialization
 -keepclassmembers @kotlinx.serialization.Serializable class * {
     static **$Companion Companion;

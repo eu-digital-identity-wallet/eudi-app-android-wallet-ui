@@ -175,6 +175,7 @@
     <string name="request_relying_party_default_name">@string/generic_default_relying_party_name</string>
     <string name="request_relying_party_description">requests the following</string>
     <string name="request_warning_text">Please review carefully before sharing your data.</string>
+    <string name="request_zkp_disclaimer">The following will not be disclosed but verified with zero-knowledge.</string>
     <string name="request_collapsed_supporting_text">@string/generic_view_details</string>
     <string name="request_no_data">The requested document is not available in your EUDI Wallet.
         Please contact the authorised issuer for further information.</string>
