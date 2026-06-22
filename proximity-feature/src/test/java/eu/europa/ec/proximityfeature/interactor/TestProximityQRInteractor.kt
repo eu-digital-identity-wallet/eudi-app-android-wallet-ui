@@ -296,10 +296,7 @@ class TestProximityQRInteractor {
     //endregion
 
     // Case 8:
-    // Emits Connecting (not-handled) FOLLOWED by Connected, both via the shareIn-pattern
-    // flow with sufficient replay. Asserting on the Connected emission guarantees that the
-    // upstream flow had to process Connecting first, which forces the `else -> null` arm
-    // (and the negative `is Disconnected` check) to actually run.
+    // A not-handled event (Connecting) followed by Connected still maps to Connected.
     @Test
     fun `Given Case 8, When startQrEngagement is called, Then the not-handled event traverses the else arm before Connected is emitted`() {
         coroutineRule.runTest {
@@ -313,17 +310,14 @@ class TestProximityQRInteractor {
 
             // When
             interactor.startQrEngagement().runFlowTest {
-                // Then — the Connected emission is the next mapped value (Connecting -> null
-                // via the else arm, then Connected -> ProximityQRPartialState.Connected).
+                // Then
                 assertEquals(ProximityQRPartialState.Connected, awaitItem())
             }
         }
     }
 
     //region constructor default
-    // Exercises the default `walletCorePresentationController = null` parameter branch of
-    // ScopedPresentationInteractorDelegate. The lazy Koin lookup is never triggered (we do not
-    // access the protected property), so this stays a pure construction smoke-test.
+    // the null-controller default: construction must not trigger the lazy Koin lookup
     @Test
     fun `When constructed without walletCorePresentationController, Then construction does not throw`() {
         // When
@@ -446,7 +440,7 @@ class TestProximityQRInteractor {
                     emit(TransferEventPartialState.Connecting)
                     emit(
                         TransferEventPartialState.RequestReceived(
-                            requestData = emptyList(),
+                            combinationsDomain = emptyList(),
                             verifierName = null,
                             verifierIsTrusted = false
                         )

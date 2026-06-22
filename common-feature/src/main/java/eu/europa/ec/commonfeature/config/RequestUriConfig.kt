@@ -28,25 +28,50 @@ import kotlinx.serialization.Serializable
 sealed interface PresentationMode {
     val scopeId: String
 
+    /**
+     * Whether the user may select/deselect individual claims (checkboxes) during disclosure.
+     * When `false` the requested claims are all-or-nothing — accepted or rejected as a whole.
+     */
+    val allowsClaimSelection: Boolean
+
     @Serializable
     @SerialName("OpenId4Vp")
-    data class OpenId4Vp(val uri: String, val initiatorRoute: String) : PresentationMode {
+    data class OpenId4Vp(
+        val uri: String,
+        val initiatorRoute: String,
+    ) : PresentationMode {
+
         override val scopeId: String
             get() = "vp_presentation_scope_id"
+
+        override val allowsClaimSelection: Boolean
+            get() = false
     }
 
     @Serializable
     @SerialName("Ble")
-    data class Ble(val initiatorRoute: String) : PresentationMode {
+    data class Ble(
+        val initiatorRoute: String,
+    ) : PresentationMode {
+
         override val scopeId: String
             get() = "ble_presentation_scope_id"
+
+        override val allowsClaimSelection: Boolean
+            get() = true
     }
 
     @Serializable
     @SerialName("DcApi")
-    data class DcApi(val initiatorRoute: String) : PresentationMode {
+    data class DcApi(
+        val initiatorRoute: String,
+    ) : PresentationMode {
+
         override val scopeId: String
             get() = "dc_api_presentation_scope_id"
+
+        override val allowsClaimSelection: Boolean
+            get() = true
     }
 }
 

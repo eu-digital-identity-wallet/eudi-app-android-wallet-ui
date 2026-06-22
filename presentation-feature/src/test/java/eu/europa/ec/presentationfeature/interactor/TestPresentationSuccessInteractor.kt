@@ -20,17 +20,20 @@ import android.content.Intent
 import eu.europa.ec.businesslogic.provider.UuidProvider
 import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
 import eu.europa.ec.corelogic.controller.WalletCorePresentationController
-import eu.europa.ec.eudi.iso18013.transfer.response.DisclosedDocument
-import eu.europa.ec.eudi.iso18013.transfer.response.device.MsoMdocItem
+import eu.europa.ec.corelogic.model.ClaimItemId
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.testfeature.util.StringResourceProviderMocker.mockTransformToUiItemsStrings
 import eu.europa.ec.testfeature.util.getMockedFullPid
+import eu.europa.ec.testfeature.util.getMockedSdJwtFullPid
 import eu.europa.ec.testfeature.util.mockedExceptionWithMessage
 import eu.europa.ec.testfeature.util.mockedExceptionWithNoMessage
 import eu.europa.ec.testfeature.util.mockedGenericErrorMessage
 import eu.europa.ec.testfeature.util.mockedMdocPidNameSpace
+import eu.europa.ec.testfeature.util.mockedMdocPresentationSelection
 import eu.europa.ec.testfeature.util.mockedPidId
+import eu.europa.ec.testfeature.util.mockedSdJwtPidId
+import eu.europa.ec.testfeature.util.mockedSdJwtPresentationSelection
 import eu.europa.ec.testfeature.util.mockedUuid
 import eu.europa.ec.testfeature.util.mockedVerifierName
 import eu.europa.ec.testlogic.extension.runFlowTest
@@ -41,6 +44,7 @@ import eu.europa.ec.uilogic.component.ListItemMainContentDataUi
 import eu.europa.ec.uilogic.component.ListItemTrailingContentDataUi
 import eu.europa.ec.uilogic.component.RelyingPartyDataUi
 import eu.europa.ec.uilogic.component.content.ContentHeaderConfig
+import eu.europa.ec.uilogic.component.wrap.ExpandableListItemUi
 import junit.framework.TestCase.assertEquals
 import junit.framework.TestCase.assertTrue
 import org.junit.After
@@ -166,9 +170,7 @@ class TestPresentationSuccessInteractor {
     //endregion
 
     //region constructor default
-    // Exercises the default `walletCorePresentationController = null` parameter branch of
-    // ScopedPresentationInteractorDelegate. The lazy Koin lookup is never triggered (we do not
-    // access the protected property), so this stays a pure construction smoke-test.
+    // the null-controller default: construction must not trigger the lazy Koin lookup
     @Test
     fun `When constructed without walletCorePresentationController, Then construction does not throw`() {
         // When
@@ -241,15 +243,10 @@ class TestPresentationSuccessInteractor {
         coroutineRule.runTest {
             // Given
             val pid = getMockedFullPid()
-            val disclosedDocument = DisclosedDocument(
+            val disclosedDocument = mockedMdocPresentationSelection(
                 documentId = mockedPidId,
-                disclosedItems = listOf(
-                    MsoMdocItem(
-                        namespace = mockedMdocPidNameSpace,
-                        elementIdentifier = "family_name"
-                    )
-                ),
-                keyUnlockData = null,
+                namespace = mockedMdocPidNameSpace,
+                dataElements = listOf("family_name"),
             )
 
             whenever(walletCorePresentationController.disclosedDocuments)
@@ -271,7 +268,13 @@ class TestPresentationSuccessInteractor {
 
                 assertEquals(1, result.documentsUi.size)
                 val docUi = result.documentsUi.first()
-                assertEquals(mockedPidId, docUi.header.itemId)
+                assertEquals(
+                    ClaimItemId.DocumentHeader(
+                        docId = mockedPidId,
+                        queryId = null
+                    ).encode(),
+                    docUi.header.itemId
+                )
                 assertEquals(
                     ListItemMainContentDataUi.Text(text = pid.name),
                     docUi.header.mainContentData
@@ -313,10 +316,10 @@ class TestPresentationSuccessInteractor {
         coroutineRule.runTest {
             // Given
             val pid = getMockedFullPid()
-            val disclosedDocument = DisclosedDocument(
+            val disclosedDocument = mockedMdocPresentationSelection(
                 documentId = mockedPidId,
-                disclosedItems = emptyList(),
-                keyUnlockData = null,
+                namespace = mockedMdocPidNameSpace,
+                dataElements = emptyList(),
             )
 
             whenever(walletCorePresentationController.disclosedDocuments)
@@ -358,15 +361,10 @@ class TestPresentationSuccessInteractor {
     fun `Given Case 4, When getUiItems is called, Then Case 4 Expected Result is returned`() {
         coroutineRule.runTest {
             // Given
-            val disclosedDocument = DisclosedDocument(
+            val disclosedDocument = mockedMdocPresentationSelection(
                 documentId = mockedPidId,
-                disclosedItems = listOf(
-                    MsoMdocItem(
-                        namespace = mockedMdocPidNameSpace,
-                        elementIdentifier = "family_name"
-                    )
-                ),
-                keyUnlockData = null,
+                namespace = mockedMdocPidNameSpace,
+                dataElements = listOf("family_name"),
             )
 
             whenever(walletCorePresentationController.disclosedDocuments)
@@ -446,9 +444,134 @@ class TestPresentationSuccessInteractor {
         }
     }
 
+    // Case 7:
+    // 1. walletCorePresentationController.disclosedDocuments returns two selections for the
+    //    SAME physical document, originating from two different DCQL queries.
+    // 2. walletCoreDocumentsController.getDocumentById returns the mocked PID for both.
+
+    // Case 7 Expected Result:
+    // Success state with two documentsUi cards whose header item ids are distinct —
+    // identity is (docId, queryId), so expand/collapse state cannot couple across the two cards.
+    @Test
+    fun `Given Case 7, When getUiItems is called, Then two same-document cards get distinct header ids`() {
+        coroutineRule.runTest {
+            // Given
+            val pid = getMockedFullPid()
+            val selectionQuery1 = mockedMdocPresentationSelection(
+                documentId = mockedPidId,
+                namespace = mockedMdocPidNameSpace,
+                dataElements = listOf("family_name"),
+                queryId = "query-1",
+            )
+            val selectionQuery2 = mockedMdocPresentationSelection(
+                documentId = mockedPidId,
+                namespace = mockedMdocPidNameSpace,
+                dataElements = listOf("given_name"),
+                queryId = "query-2",
+            )
+
+            whenever(walletCorePresentationController.disclosedDocuments)
+                .thenReturn(mutableListOf(selectionQuery1, selectionQuery2))
+            whenever(walletCoreDocumentsController.getDocumentById(documentId = mockedPidId))
+                .thenReturn(pid)
+            whenever(walletCorePresentationController.verifierName).thenReturn(mockedVerifierName)
+            whenever(walletCorePresentationController.verifierIsTrusted).thenReturn(true)
+            mockSuccessHeaderStrings()
+            mockTransformToUiItemsStrings(resourceProvider)
+            whenever(uuidProvider.provideUuid()).thenReturn(mockedUuid)
+
+            // When
+            interactor.getUiItems().runFlowTest {
+                // Then
+                val result = awaitItem()
+                assertTrue(result is PresentationSuccessInteractorGetUiItemsPartialState.Success)
+                result as PresentationSuccessInteractorGetUiItemsPartialState.Success
+
+                assertEquals(2, result.documentsUi.size)
+                assertEquals(
+                    listOf(
+                        ClaimItemId.DocumentHeader(
+                            docId = mockedPidId,
+                            queryId = "query-1"
+                        ).encode(),
+                        ClaimItemId.DocumentHeader(
+                            docId = mockedPidId,
+                            queryId = "query-2"
+                        ).encode(),
+                    ),
+                    result.documentsUi.map { it.header.itemId }
+                )
+            }
+        }
+    }
+
+    // Case 8:
+    // 1. walletCorePresentationController.disclosedDocuments returns two selections for the
+    //    SAME SD-JWT document, originating from two different DCQL queries, both disclosing
+    //    the same nested claim (place_of_birth -> locality).
+    // 2. walletCoreDocumentsController.getDocumentById returns the mocked SD-JWT PID for both.
+
+    // Case 8 Expected Result:
+    // Success state with two documentsUi cards where EVERY rendered item id — card headers,
+    // nested group headers AND claim leaves — is unique across the whole screen. Nested ids are
+    // (docId, queryId)-scoped, so expanding the place_of_birth group on one card cannot
+    // co-expand its twin on the other.
+    @Test
+    fun `Given Case 8, When getUiItems is called, Then nested item ids are distinct across same-document cards`() {
+        coroutineRule.runTest {
+            // Given
+            val sdJwtPid = getMockedSdJwtFullPid()
+            val selectionQuery1 = mockedSdJwtPresentationSelection(
+                documentId = mockedSdJwtPidId,
+                claimPaths = listOf(listOf("place_of_birth", "locality")),
+                queryId = "query-1",
+            )
+            val selectionQuery2 = mockedSdJwtPresentationSelection(
+                documentId = mockedSdJwtPidId,
+                claimPaths = listOf(listOf("place_of_birth", "locality")),
+                queryId = "query-2",
+            )
+
+            whenever(walletCorePresentationController.disclosedDocuments)
+                .thenReturn(mutableListOf(selectionQuery1, selectionQuery2))
+            whenever(walletCoreDocumentsController.getDocumentById(documentId = mockedSdJwtPidId))
+                .thenReturn(sdJwtPid)
+            whenever(walletCorePresentationController.verifierName).thenReturn(mockedVerifierName)
+            whenever(walletCorePresentationController.verifierIsTrusted).thenReturn(true)
+            mockSuccessHeaderStrings()
+            mockTransformToUiItemsStrings(resourceProvider)
+            whenever(uuidProvider.provideUuid()).thenReturn(mockedUuid)
+
+            // When
+            interactor.getUiItems().runFlowTest {
+                // Then
+                val result = awaitItem()
+                assertTrue(result is PresentationSuccessInteractorGetUiItemsPartialState.Success)
+                result as PresentationSuccessInteractorGetUiItemsPartialState.Success
+
+                assertEquals(2, result.documentsUi.size)
+                result.documentsUi.forEach { docUi ->
+                    assertTrue(docUi.nestedItems.isNotEmpty())
+                }
+                val allItemIds = result.documentsUi.flatMap { collectItemIds(it) }
+                assertEquals(allItemIds.size, allItemIds.toSet().size)
+            }
+        }
+    }
+
     //endregion
 
     //region helper functions
+    /** Collects the item id of [item] and of every item nested under it, depth-first. */
+    private fun collectItemIds(item: ExpandableListItemUi): List<String> {
+        return when (item) {
+            is ExpandableListItemUi.SingleListItem -> listOf(item.header.itemId)
+
+            is ExpandableListItemUi.NestedListItem ->
+                listOf(item.header.itemId) + item.nestedItems.flatMap { collectItemIds(it) }
+        }
+    }
+
     private fun mockSuccessHeaderStrings() {
         whenever(resourceProvider.getString(R.string.document_success_header_description_when_error))
             .thenReturn(mockedErrorDescription)

@@ -20,7 +20,7 @@ import eu.europa.ec.commonfeature.ui.request.model.DocumentPayloadDomain
 import eu.europa.ec.commonfeature.util.keyIsSignature
 import eu.europa.ec.commonfeature.util.keyIsUserImage
 import eu.europa.ec.corelogic.model.ClaimDomain
-import eu.europa.ec.eudi.wallet.document.ElementIdentifier
+import eu.europa.ec.corelogic.model.ClaimItemId
 import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.ListItemDataUi
 import eu.europa.ec.uilogic.component.ListItemLeadingContentDataUi
@@ -31,21 +31,39 @@ import eu.europa.ec.uilogic.component.wrap.ExpandableListItemUi
 
 fun DocumentPayloadDomain.toSelectiveExpandableListItems(): List<ExpandableListItemUi> {
     return this.docClaimsDomain.map { claim ->
-        claim.toSelectiveExpandableListItems(docId)
+        claim.toSelectiveExpandableListItems(docId = docId, queryId = queryId)
     }
 }
 
-fun ClaimDomain.toSelectiveExpandableListItems(docId: String): ExpandableListItemUi {
+/**
+ * Read-only sibling of [toSelectiveExpandableListItems]: the same claim tree without leaf
+ * checkboxes, for presentation modes whose claims aren't individually selectable (OpenID4VP - see
+ * [PresentationMode.allowsClaimSelection][eu.europa.ec.commonfeature.config.PresentationMode.allowsClaimSelection]).
+ */
+fun DocumentPayloadDomain.toExpandableListItems(): List<ExpandableListItemUi> {
+    return this.docClaimsDomain.map { claimDomain ->
+        claimDomain.toExpandableListItems(docId = docId, queryId = queryId)
+    }
+}
+
+fun ClaimDomain.toSelectiveExpandableListItems(
+    docId: String,
+    queryId: String?,
+): ExpandableListItemUi {
     return when (this) {
         is ClaimDomain.Group -> {
             ExpandableListItemUi.NestedListItem(
                 header = ListItemDataUi(
-                    itemId = path.toId(docId),
+                    itemId = ClaimItemId.Claim(
+                        docId = docId,
+                        queryId = queryId,
+                        path = path,
+                    ).encode(),
                     mainContentData = ListItemMainContentDataUi.Text(text = displayTitle),
                     trailingContentData = ListItemTrailingContentDataUi.Icon(iconData = AppIcons.KeyboardArrowDown)
                 ),
                 nestedItems = items.map {
-                    it.toSelectiveExpandableListItems(docId)
+                    it.toSelectiveExpandableListItems(docId = docId, queryId = queryId)
                 },
                 isExpanded = false
             )
@@ -54,7 +72,11 @@ fun ClaimDomain.toSelectiveExpandableListItems(docId: String): ExpandableListIte
         is ClaimDomain.Primitive -> {
             ExpandableListItemUi.SingleListItem(
                 header = ListItemDataUi(
-                    itemId = path.toId(docId),
+                    itemId = ClaimItemId.Claim(
+                        docId = docId,
+                        queryId = queryId,
+                        path = path,
+                    ).encode(),
                     mainContentData = calculateMainContent(key, value),
                     overlineText = calculateOverlineText(displayTitle),
                     leadingContentData = calculateLeadingContent(key, value),
@@ -70,16 +92,28 @@ fun ClaimDomain.toSelectiveExpandableListItems(docId: String): ExpandableListIte
     }
 }
 
-fun ClaimDomain.toExpandableListItems(docId: String): ExpandableListItemUi {
+fun ClaimDomain.toExpandableListItems(
+    docId: String,
+    queryId: String?,
+): ExpandableListItemUi {
     return when (this) {
         is ClaimDomain.Group -> {
             ExpandableListItemUi.NestedListItem(
                 header = ListItemDataUi(
-                    itemId = path.toId(docId),
+                    itemId = ClaimItemId.Claim(
+                        docId = docId,
+                        queryId = queryId,
+                        path = path,
+                    ).encode(),
                     mainContentData = ListItemMainContentDataUi.Text(text = displayTitle),
                     trailingContentData = ListItemTrailingContentDataUi.Icon(iconData = AppIcons.KeyboardArrowDown)
                 ),
-                nestedItems = items.map { it.toExpandableListItems(docId = docId) },
+                nestedItems = items.map {
+                    it.toExpandableListItems(
+                        docId = docId,
+                        queryId = queryId,
+                    )
+                },
                 isExpanded = false
             )
         }
@@ -87,7 +121,11 @@ fun ClaimDomain.toExpandableListItems(docId: String): ExpandableListItemUi {
         is ClaimDomain.Primitive -> {
             ExpandableListItemUi.SingleListItem(
                 header = ListItemDataUi(
-                    itemId = path.toId(docId),
+                    itemId = ClaimItemId.Claim(
+                        docId = docId,
+                        queryId = queryId,
+                        path = path,
+                    ).encode(),
                     mainContentData = calculateMainContent(key, value),
                     overlineText = calculateOverlineText(displayTitle),
                     leadingContentData = calculateLeadingContent(key, value),
@@ -98,7 +136,7 @@ fun ClaimDomain.toExpandableListItems(docId: String): ExpandableListItemUi {
 }
 
 private fun calculateMainContent(
-    key: ElementIdentifier,
+    key: String,
     value: String,
 ): ListItemMainContentDataUi {
     return when {
@@ -117,7 +155,7 @@ private fun calculateMainContent(
 }
 
 private fun calculateLeadingContent(
-    key: ElementIdentifier,
+    key: String,
     value: String,
 ): ListItemLeadingContentDataUi? {
     return if (keyIsUserImage(key = key)) {

@@ -16,6 +16,7 @@
 
 package eu.europa.ec.uilogic.component.wrap
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -42,6 +43,7 @@ fun WrapCard(
     throttleClicks: Boolean = true,
     shape: Shape? = null,
     colors: CardColors? = null,
+    border: BorderStroke? = null,
     content: @Composable ColumnScope.() -> Unit
 ) {
     val cardShape = shape ?: RoundedCornerShape(SIZE_SMALL.dp)
@@ -69,7 +71,8 @@ fun WrapCard(
     Card(
         modifier = cardModifier,
         shape = cardShape,
-        colors = cardColors
+        colors = cardColors,
+        border = border,
     ) {
         content()
     }

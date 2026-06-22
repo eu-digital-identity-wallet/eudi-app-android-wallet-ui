@@ -51,7 +51,7 @@ sealed class PresentationLoadingSendRequestedDocumentPartialState {
 
 interface PresentationLoadingInteractor : ScopedPresentationInteractor {
     fun observeResponse(): Flow<PresentationLoadingObserveResponsePartialState>
-    fun sendRequestedDocuments(): PresentationLoadingSendRequestedDocumentPartialState
+    suspend fun sendRequestedDocuments(): PresentationLoadingSendRequestedDocumentPartialState
     fun handleUserAuthentication(
         context: Context,
         crypto: BiometricCrypto,
@@ -97,7 +97,7 @@ class PresentationLoadingInteractorImpl(
             }
         }
 
-    override fun sendRequestedDocuments(): PresentationLoadingSendRequestedDocumentPartialState {
+    override suspend fun sendRequestedDocuments(): PresentationLoadingSendRequestedDocumentPartialState {
         return when (val result = walletCorePresentationController.sendRequestedDocuments()) {
             is SendRequestedDocumentsPartialState.RequestSent -> PresentationLoadingSendRequestedDocumentPartialState.Success
             is SendRequestedDocumentsPartialState.Failure -> PresentationLoadingSendRequestedDocumentPartialState.Failure(

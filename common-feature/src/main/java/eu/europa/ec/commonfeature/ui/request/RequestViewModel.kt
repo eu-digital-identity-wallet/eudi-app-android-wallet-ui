@@ -16,16 +16,14 @@
 
 package eu.europa.ec.commonfeature.ui.request
 
-import eu.europa.ec.commonfeature.ui.request.model.DomainDocumentFormat
+import eu.europa.ec.commonfeature.ui.request.model.RequestDataUi
 import eu.europa.ec.commonfeature.ui.request.model.RequestDocumentItemUi
-import eu.europa.ec.corelogic.model.ClaimPathDomain
 import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.ListItemTrailingContentDataUi
 import eu.europa.ec.uilogic.component.content.ContentErrorConfig
 import eu.europa.ec.uilogic.component.content.ContentHeaderConfig
 import eu.europa.ec.uilogic.component.wrap.ExpandableListItemUi
 import eu.europa.ec.uilogic.config.NavigationType
-import eu.europa.ec.uilogic.extension.collectAllNestedIds
 import eu.europa.ec.uilogic.extension.toggleCheckboxState
 import eu.europa.ec.uilogic.extension.toggleExpansionState
 import eu.europa.ec.uilogic.mvi.MviViewModel
@@ -38,7 +36,6 @@ import kotlinx.coroutines.Job
 
 data class State(
     val isLoading: Boolean = true,
-    val isShowingFullUserInfo: Boolean = false,
     val headerConfig: ContentHeaderConfig,
     val error: ContentErrorConfig? = null,
     val isBottomSheetOpen: Boolean = false,
@@ -46,12 +43,18 @@ data class State(
     val hasWarnedUser: Boolean = false,
     val presentationScopeId: String = "",
 
-    val items: List<RequestDocumentItemUi> = emptyList(),
-    val noItems: Boolean = false,
-    val allowShare: Boolean = false,
+    val requestDataUi: RequestDataUi = RequestDataUi.Initial,
+    val claimsAreSelectable: Boolean = true,
 
     val intentAction: IntentAction? = null,
-) : ViewState
+) : ViewState {
+    val allowShare: Boolean
+        get() = if (claimsAreSelectable) {
+            requestDataUi.selectedDocuments.anyClaimChecked()
+        } else {
+            requestDataUi.selectedDocuments.isNotEmpty()
+        }
+}
 
 sealed class Event : ViewEvent {
     data class Init(val intentAction: IntentAction?) : Event()
@@ -62,6 +65,8 @@ sealed class Event : ViewEvent {
 
     data class UserIdentificationClicked(val itemId: String) : Event()
     data class ExpandOrCollapseRequestDocumentItem(val itemId: String) : Event()
+
+    data class CombinationSelected(val index: Int) : Event()
 
     sealed class BottomSheet : Event() {
         data class UpdateBottomSheetState(val isOpen: Boolean) : BottomSheet()
@@ -103,19 +108,9 @@ abstract class RequestViewModel : MviViewModel<Event, State, Effect>() {
      * */
     open fun cleanUp() {}
 
-    open fun updateData(
-        updatedItems: List<RequestDocumentItemUi>,
-        allowShare: Boolean? = null,
-    ) {
-        val hasAtLeastOneFieldSelected = hasAtLeastOneFieldSelected(
-            requestDocuments = updatedItems
-        )
-
+    open fun updateData(updatedItems: List<RequestDocumentItemUi>) {
         setState {
-            copy(
-                items = updatedItems,
-                allowShare = allowShare ?: hasAtLeastOneFieldSelected
-            )
+            copy(requestDataUi = requestDataUi.withSelectedDocuments(updatedItems))
         }
     }
 
@@ -150,15 +145,10 @@ abstract class RequestViewModel : MviViewModel<Event, State, Effect>() {
             }
 
             is Event.UserIdentificationClicked -> {
+                if (!viewState.value.claimsAreSelectable) return
+
                 if (viewState.value.hasWarnedUser) {
-                    val clickedId = event.itemId
-
-                    val siblingIds = getIdsInSameTopLevelRootGroup(
-                        documents = viewState.value.items,
-                        clickedItemId = clickedId
-                    )
-
-                    updateUserIdentificationItem(id = clickedId, siblingIds = siblingIds)
+                    updateUserIdentificationItem(id = event.itemId)
                 } else {
                     setState {
                         copy(hasWarnedUser = true)
@@ -171,86 +161,15 @@ abstract class RequestViewModel : MviViewModel<Event, State, Effect>() {
                 expandOrCollapseRequestDocumentItem(id = event.itemId)
             }
 
+            is Event.CombinationSelected -> {
+                selectCombination(index = event.index)
+            }
+
             is Event.BottomSheet.UpdateBottomSheetState -> {
                 setState {
                     copy(isBottomSheetOpen = event.isOpen)
                 }
             }
-        }
-    }
-
-    /**
-     * Returns all selectable claim item IDs from the same SD-JWT VC document that belong to the
-     * same top-level root segment as the clicked item.
-     *
-     * The [clickedItemId] is expected to have been produced by [ClaimPathDomain.toId], meaning
-     * its structure for SD-JWT VC claims is:
-     *
-     * `docId,pathSegment1,pathSegment2,...`
-     *
-     * This function:
-     * 1. extracts the document ID and the clicked claim's top-level root segment,
-     * 2. finds the matching SD-JWT VC document,
-     * 3. scans the document's top-level UI groups,
-     * 4. collects all nested leaf item IDs that belong to the same top-level root segment,
-     * 5. excludes the clicked item itself from the result.
-     *
-     * Example:
-     * If [clickedItemId] is:
-     * `doc-1,address,country`
-     *
-     * and the document contains item IDs such as:
-     * - `doc-1,address,country`
-     * - `doc-1,address,city`
-     * - `doc-1,address,street,formatted`
-     * - `doc-1,name,given_name`
-     *
-     * then the returned result will be:
-     * - `doc-1,address,city`
-     * - `doc-1,address,street,formatted`
-     *
-     * @param documents The list of request document UI models to search through.
-     * @param clickedItemId The item ID of the clicked claim.
-     * @return All unique item IDs from the same document that share the same top-level root segment
-     * as [clickedItemId], excluding [clickedItemId] itself. Returns an empty list if the ID cannot
-     * be parsed, the document cannot be found, or no matching group exists.
-     */
-    private fun getIdsInSameTopLevelRootGroup(
-        documents: List<RequestDocumentItemUi>,
-        clickedItemId: String
-    ): List<String> {
-        runCatching {
-            val idComponents: List<String> = clickedItemId.split(ClaimPathDomain.PATH_SEPARATOR)
-
-            // For SD-JWT VC IDs, the expected structure is:
-            // [docId, topLevelSegment, ...remainingPath]
-            val clickedDocId = idComponents[0]
-            val clickedClaimFirstPathSegment = idComponents[1]
-
-            val groupItemIds = mutableListOf<String>()
-
-            documents.find { document ->
-                document.domainPayload.domainDocFormat is DomainDocumentFormat.SdJwtVc
-                        && document.domainPayload.docId == clickedDocId
-            }?.let { clickedDocument ->
-                // Traverse the document's top-level UI items and find the group whose root segment
-                // matches the clicked item's root segment.
-                clickedDocument.headerUi.nestedItems.forEach { childItemUi ->
-                    val childItemFirstPathSegment = childItemUi.header.itemId
-                        .split(ClaimPathDomain.PATH_SEPARATOR)[1]
-
-                    if (childItemFirstPathSegment == clickedClaimFirstPathSegment) {
-                        // Collect all nested selectable leaf IDs under the matching top-level group.
-                        groupItemIds.addAll(childItemUi.collectAllNestedIds())
-                    }
-                }
-            }
-
-            return groupItemIds
-                .distinct()
-                .minus(clickedItemId)
-        }.getOrElse {
-            return emptyList()
         }
     }
 
@@ -297,8 +216,27 @@ abstract class RequestViewModel : MviViewModel<Event, State, Effect>() {
         }
     }
 
+    /**
+     * Switch the selected combination and hand its documents to [updateData], so the disclosure
+     * follows the user's choice. No-op for a single combination, or an unchanged/out-of-range index.
+     */
+    private fun selectCombination(index: Int) {
+        val data = viewState.value.requestDataUi
+        if (data !is RequestDataUi.Multiple) return
+        if (index !in data.combinations.indices) return
+        if (index == data.selectedIndex) return
+
+        setState {
+            copy(
+                requestDataUi = data
+                    .copy(selectedIndex = index)
+            )
+        }
+        updateData(updatedItems = data.combinations[index].documents)
+    }
+
     private fun expandOrCollapseRequestDocumentItem(id: String) {
-        val currentItems = viewState.value.items
+        val currentItems = viewState.value.requestDataUi.selectedDocuments
 
         val updatedItems = currentItems.map { requestDocument ->
             val newHeader = if (requestDocument.headerUi.header.itemId == id) {
@@ -328,30 +266,23 @@ abstract class RequestViewModel : MviViewModel<Event, State, Effect>() {
             )
         }
 
-        updateData(updatedItems, viewState.value.allowShare)
+        updateData(updatedItems)
     }
 
-    private fun updateUserIdentificationItem(id: String, siblingIds: List<String>) {
-        val currentItems = viewState.value.items
+    private fun updateUserIdentificationItem(id: String) {
+        val currentItems = viewState.value.requestDataUi.selectedDocuments
 
         val updatedItems: List<RequestDocumentItemUi> = currentItems.map { requestDocument ->
             requestDocument.copy(
                 headerUi = requestDocument.headerUi.copy(
                     nestedItems = requestDocument.headerUi.nestedItems.map {
-                        it.toggleCheckboxState(id = id, coToggleIds = siblingIds)
+                        it.toggleCheckboxState(id = id)
                     }
                 )
             )
         }
 
-        val hasAtLeastOneFieldSelected = hasAtLeastOneFieldSelected(
-            requestDocuments = updatedItems
-        )
-
-        updateData(
-            updatedItems = updatedItems,
-            allowShare = hasAtLeastOneFieldSelected
-        )
+        updateData(updatedItems)
     }
 
     private fun showBottomSheet(sheetContent: RequestBottomSheetContent) {
@@ -373,33 +304,31 @@ abstract class RequestViewModel : MviViewModel<Event, State, Effect>() {
         viewModelJob?.cancel()
     }
 
-    private fun hasAtLeastOneFieldSelected(
-        requestDocuments: List<RequestDocumentItemUi>,
-    ): Boolean {
-        val hasAtLeastOneFieldSelected: Boolean = requestDocuments.any { requestDocument ->
-            requestDocument.headerUi.nestedItems.hasAnySingleSelected()
-        }
-        return hasAtLeastOneFieldSelected
-    }
-
-    private fun List<ExpandableListItemUi>.hasAnySingleSelected(): Boolean {
-        return this.any { expandableItem ->
-            when (expandableItem) {
-                is ExpandableListItemUi.NestedListItem -> {
-                    expandableItem.nestedItems.hasAnySingleSelected()
-                }
-
-                is ExpandableListItemUi.SingleListItem -> {
-                    val trailingContentData = expandableItem.header.trailingContentData
-                    trailingContentData is ListItemTrailingContentDataUi.Checkbox && trailingContentData.checkboxData.isChecked
-                }
-            }
-        }
-    }
-
     override fun onCleared() {
         super.onCleared()
         unsubscribe()
         cleanUp()
+    }
+}
+
+/** True if any document in the list has at least one checked claim. */
+private fun List<RequestDocumentItemUi>.anyClaimChecked(): Boolean {
+    return any { document ->
+        document.headerUi.nestedItems.anyChecked()
+    }
+}
+
+/** True if any (recursively nested) leaf in the tree is a checked checkbox. */
+private fun List<ExpandableListItemUi>.anyChecked(): Boolean {
+    return any { item ->
+        when (item) {
+            is ExpandableListItemUi.NestedListItem -> item.nestedItems.anyChecked()
+
+            is ExpandableListItemUi.SingleListItem -> {
+                val trailingContentData = item.header.trailingContentData
+                trailingContentData is ListItemTrailingContentDataUi.Checkbox &&
+                        trailingContentData.checkboxData.isChecked
+            }
+        }
     }
 }

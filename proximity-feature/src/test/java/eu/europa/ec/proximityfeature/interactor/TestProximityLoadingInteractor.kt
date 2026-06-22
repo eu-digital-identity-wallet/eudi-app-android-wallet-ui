@@ -122,7 +122,7 @@ class TestProximityLoadingInteractor {
     // WalletCorePartialState.Success
 
     // Case 2 Expected Result:
-    // PresentationLoadingObserveResponsePartialState.Success.
+    // ProximityLoadingObserveResponsePartialState.Success.
     @Test
     fun `Given Case 2, When observeResponse is called, Then Case 2 Expected Result is returned`() {
         coroutineRule.runTest {
@@ -166,7 +166,7 @@ class TestProximityLoadingInteractor {
     // WalletCorePartialState.UserAuthenticationRequired.
 
     // Case 4 Expected Result:
-    // PresentationLoadingObserveResponsePartialState.UserAuthenticationRequired.
+    // ProximityLoadingObserveResponsePartialState.UserAuthenticationRequired.
     @Test
     fun `Given Case 4, When observeResponse is called, Then Case 4 Expected Result is returned`() {
         coroutineRule.runTest {
@@ -317,8 +317,7 @@ class TestProximityLoadingInteractor {
     }
 
     // Case 6:
-    // walletCorePresentationController.events emits:
-    // WalletCorePartialState.IntentToSend (mapped to null - filtered by mapNotNull).
+    // walletCorePresentationController.events emits WalletCorePartialState.IntentToSend.
 
     // Case 6 Expected Result:
     // No event is emitted.
@@ -342,36 +341,40 @@ class TestProximityLoadingInteractor {
 
     @Test
     fun `Given controller#sendRequestedDocuments returns RequestSent, When sendRequestedDocuments is called, Then Success is returned`() {
-        // Given
-        whenever(walletCorePresentationController.sendRequestedDocuments())
-            .thenReturn(SendRequestedDocumentsPartialState.RequestSent)
+        coroutineRule.runTest {
+            // Given
+            whenever(walletCorePresentationController.sendRequestedDocuments())
+                .thenReturn(SendRequestedDocumentsPartialState.RequestSent)
 
-        // When
-        val result = interactor.sendRequestedDocuments()
+            // When
+            val result = interactor.sendRequestedDocuments()
 
-        // Then
-        assertEquals(
-            ProximityLoadingSendRequestedDocumentPartialState.Success,
-            result
-        )
+            // Then
+            assertEquals(
+                ProximityLoadingSendRequestedDocumentPartialState.Success,
+                result
+            )
+        }
     }
 
     @Test
     fun `Given controller#sendRequestedDocuments returns Failure, When sendRequestedDocuments is called, Then Failure with the same error is returned`() {
-        // Given
-        whenever(walletCorePresentationController.sendRequestedDocuments())
-            .thenReturn(SendRequestedDocumentsPartialState.Failure(error = mockedPlainFailureMessage))
+        coroutineRule.runTest {
+            // Given
+            whenever(walletCorePresentationController.sendRequestedDocuments())
+                .thenReturn(SendRequestedDocumentsPartialState.Failure(error = mockedPlainFailureMessage))
 
-        // When
-        val result = interactor.sendRequestedDocuments()
+            // When
+            val result = interactor.sendRequestedDocuments()
 
-        // Then
-        assertEquals(
-            ProximityLoadingSendRequestedDocumentPartialState.Failure(
-                error = mockedPlainFailureMessage
-            ),
-            result
-        )
+            // Then
+            assertEquals(
+                ProximityLoadingSendRequestedDocumentPartialState.Failure(
+                    error = mockedPlainFailureMessage
+                ),
+                result
+            )
+        }
     }
     //endregion
 
