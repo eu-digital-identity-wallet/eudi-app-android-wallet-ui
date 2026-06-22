@@ -442,8 +442,8 @@ class TestDocumentDetailsInteractor {
                                     key = "no_data_item",
                                     value = "0",
                                     displayTitle = "no_data_item",
-                                    path = ClaimPathDomain(
-                                        value = listOf("no_data_item"),
+                                    path = ClaimPathDomain.ofPlainKeys(
+                                        names = listOf("no_data_item"),
                                         type = ClaimType.MsoMdoc(namespace = mockedMdocPidNameSpace)
                                     ),
                                     isRequired = false,

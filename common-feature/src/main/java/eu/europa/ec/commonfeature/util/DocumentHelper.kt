@@ -22,8 +22,10 @@ import eu.europa.ec.businesslogic.provider.UuidProvider
 import eu.europa.ec.businesslogic.util.safeLet
 import eu.europa.ec.businesslogic.util.toDateFormatted
 import eu.europa.ec.corelogic.extension.getLocalizedClaimName
+import eu.europa.ec.corelogic.extension.identifierString
 import eu.europa.ec.corelogic.extension.removeEmptyGroups
 import eu.europa.ec.corelogic.extension.sortRecursivelyBy
+import eu.europa.ec.corelogic.extension.toClaimPathSegment
 import eu.europa.ec.corelogic.model.ClaimDomain
 import eu.europa.ec.corelogic.model.ClaimPathDomain
 import eu.europa.ec.corelogic.model.ClaimType
@@ -45,7 +47,7 @@ fun extractValueFromDocumentOrEmpty(
     key: String,
 ): String {
     return document.data.claims
-        .firstOrNull { it.identifier == key }
+        .firstOrNull { it.identifierString == key }
         ?.value
         ?.toString()
         ?: ""
@@ -133,7 +135,12 @@ fun createKeyValue(
                 ClaimDomain.Group(
                     key = groupKey,
                     displayTitle = displayTitle,
-                    path = ClaimPathDomain(listOf(uuidProvider.provideUuid()), disclosurePath.type),
+                    // the path on a UI-only group is just a unique id, never matched against a
+                    // real disclosure path
+                    path = ClaimPathDomain.forUiGroup(
+                        groupId = uuidProvider.provideUuid(),
+                        type = disclosurePath.type,
+                    ),
                     items = children
                 )
             )
@@ -226,9 +233,11 @@ fun createKeyValue(
                                         fallback = groupKey
                                     )
                                 } $position",
-                                path = ClaimPathDomain(
-                                    listOf(uuidProvider.provideUuid()),
-                                    disclosurePath.type
+                                // UUID-only path for a UI sub-group; never matched against a
+                                // real disclosure path
+                                path = ClaimPathDomain.forUiGroup(
+                                    groupId = uuidProvider.provideUuid(),
+                                    type = disclosurePath.type,
                                 ),
                                 items = entryChildren
                             )
@@ -321,24 +330,22 @@ private fun insertPath(
     resourceProvider: ResourceProvider,
     uuidProvider: UuidProvider,
 ): List<ClaimDomain> {
-    if (path.value.isEmpty()) return tree
+    if (path.segments.isEmpty()) return tree
 
     val userLocale = resourceProvider.getLocale()
 
-    val key = path.value.first()
+    val key = path.segments.first()
+    // segment as a string, for the String-keyed node/claim lookups below
+    val keyString: String = key.toString()
 
     val existingNode = tree.find {
         when (val type = disclosurePath.type) {
             is ClaimType.MsoMdoc -> {
-                it.key == key && it.nameSpace == type.namespace
+                it.key == keyString && it.nameSpace == type.namespace
             }
 
             is ClaimType.SdJwtVc -> {
-                it.key == key
-            }
-
-            is ClaimType.Unknown -> {
-                false
+                it.key == keyString
             }
         }
     }
@@ -348,17 +355,16 @@ private fun insertPath(
             is ClaimType.MsoMdoc -> {
                 claims
                     .filterIsInstance<MsoMdocClaim>()
-                    .find { it.identifier == key && it.nameSpace == type.namespace }
+                    .find { it.dataElementName == keyString && it.nameSpace == type.namespace }
             }
 
             is ClaimType.SdJwtVc -> {
-                claims.find { it.identifier == key }
+                claims.filterIsInstance<SdJwtVcClaim>()
+                    .find { it.pathElement.toClaimPathSegment() == key }
             }
-
-            is ClaimType.Unknown -> null
         }
 
-    return if (path.value.size == 1) {
+    return if (path.segments.size == 1) {
         // Leaf node (Primitive or Nested Structure)
         if (existingNode == null && currentClaim != null) {
             currentClaim.value?.let { safeClaimValue ->
@@ -366,7 +372,7 @@ private fun insertPath(
 
                 createKeyValue(
                     item = safeClaimValue,
-                    groupKey = currentClaim.identifier,
+                    groupKey = currentClaim.identifierString,
                     resourceProvider = resourceProvider,
                     uuidProvider = uuidProvider,
                     claimMetaData = currentClaim.issuerMetadata,
@@ -381,14 +387,13 @@ private fun insertPath(
         }
     } else {
         // Group node (Intermediate)
-        val childClaims =
-            (claims.find { key == it.identifier } as? SdJwtVcClaim)?.children ?: claims
+        val childClaims = (currentClaim as? SdJwtVcClaim)?.children ?: claims
         val updatedNode = if (existingNode is ClaimDomain.Group) {
             // Update existing group by inserting the next path segment into its items
             existingNode.copy(
                 items = insertPath(
                     tree = existingNode.items,
-                    path = ClaimPathDomain(path.value.drop(1), path.type),
+                    path = path.copy(segments = path.segments.drop(1)),
                     disclosurePath = disclosurePath,
                     claims = childClaims,
                     resourceProvider = resourceProvider,
@@ -398,19 +403,19 @@ private fun insertPath(
         } else {
             // Create a new group and insert the next path segment
             ClaimDomain.Group(
-                key = currentClaim?.identifier ?: key,
+                key = currentClaim?.identifierString ?: keyString,
                 displayTitle = getReadableNameFromIdentifier(
                     claimMetaData = currentClaim?.issuerMetadata,
                     userLocale = userLocale,
-                    fallback = currentClaim?.identifier ?: key
+                    fallback = currentClaim?.identifierString ?: keyString
                 ),
                 path = ClaimPathDomain(
-                    disclosurePath.value.take((disclosurePath.value.size - path.value.size) + 1),
-                    path.type
+                    segments = disclosurePath.segments.take((disclosurePath.segments.size - path.segments.size) + 1),
+                    type = path.type
                 ),
                 items = insertPath(
                     tree = emptyList(),
-                    path = ClaimPathDomain(path.value.drop(1), path.type),
+                    path = path.copy(segments = path.segments.drop(1)),
                     disclosurePath = disclosurePath,
                     claims = childClaims,
                     resourceProvider = resourceProvider,
@@ -423,15 +428,11 @@ private fun insertPath(
         tree.filter {
             when (val type = disclosurePath.type) {
                 is ClaimType.MsoMdoc -> {
-                    it.key != key || it.nameSpace != type.namespace
+                    it.key != keyString || it.nameSpace != type.namespace
                 }
 
                 is ClaimType.SdJwtVc -> {
-                    it.key != key
-                }
-
-                is ClaimType.Unknown -> {
-                    true
+                    it.key != keyString
                 }
             }
         } + updatedNode

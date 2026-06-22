@@ -138,7 +138,9 @@ To delete a document, navigate to the 'Documents' tab within the 'Dashboard' scr
 4. Choose the fields you want to request from the Wallet (e.g., "Family Name" and "Given Name").
 5. Review your presentation request, tap "Next", and then select "Open with your Wallet".
 6. When prompted to open the wallet app, tap "Open".
-7. You will be redirected to the app’s "Request" screen, where you can select or deselect which attributes to share with the Verifier. You must select at least one attribute to proceed.
+7. You will be redirected to the app’s "Request" screen, which shows the attributes the Verifier
+   requested. These are disclosed as requested; this flow has no per-attribute selection. If the
+   request can be satisfied in more than one way, choose the option you prefer.
 8. Tap "Share".
 9. Enter the PIN you set up during the initial steps.
 10. Upon successful submission, tap "Close".

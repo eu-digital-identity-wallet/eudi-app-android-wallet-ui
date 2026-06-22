@@ -48,7 +48,7 @@ koin = "4.2.2"
 koinPlugin = "1.0.1"
 
 # EUDI wallet SDKs
-eudiWalletCore = "0.28.1"
+eudiWalletCore = "0.29.0-SNAPSHOT"
 rqesUiSDK = "0.3.9"
 
 # Logging

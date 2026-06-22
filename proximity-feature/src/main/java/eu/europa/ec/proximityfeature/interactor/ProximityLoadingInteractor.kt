@@ -47,7 +47,7 @@ sealed class ProximityLoadingSendRequestedDocumentPartialState {
 
 interface ProximityLoadingInteractor : ScopedPresentationInteractor {
     fun observeResponse(): Flow<ProximityLoadingObserveResponsePartialState>
-    fun sendRequestedDocuments(): ProximityLoadingSendRequestedDocumentPartialState
+    suspend fun sendRequestedDocuments(): ProximityLoadingSendRequestedDocumentPartialState
     fun handleUserAuthentication(
         context: Context,
         crypto: BiometricCrypto,
@@ -109,7 +109,7 @@ class ProximityLoadingInteractorImpl(
         }
     }
 
-    override fun sendRequestedDocuments(): ProximityLoadingSendRequestedDocumentPartialState {
+    override suspend fun sendRequestedDocuments(): ProximityLoadingSendRequestedDocumentPartialState {
         return when (val result = walletCorePresentationController.sendRequestedDocuments()) {
             is SendRequestedDocumentsPartialState.RequestSent -> ProximityLoadingSendRequestedDocumentPartialState.Success
             is SendRequestedDocumentsPartialState.Failure -> ProximityLoadingSendRequestedDocumentPartialState.Failure(

@@ -109,8 +109,9 @@ sealed class ListItemMainContentDataUi {
  *
  * This sealed class provides a structured way to define the different types of
  * content that can be displayed at the leading edge of a list item. It supports
- * icons, user images (loaded from base64 strings), and images loaded asynchronously
- * from URLs.
+ * icons, user images (loaded from base64 strings), images loaded asynchronously
+ * from URLs, and radio buttons (for single-choice rows such as selectable cards'
+ * headers).
  *
  * Each subclass of `ListItemLeadingContentData` represents a distinct type of
  * leading content, allowing for flexible and varied visual elements in lists.
@@ -119,7 +120,7 @@ sealed class ListItemMainContentDataUi {
  *                 the visual dimensions of the icon, image, etc.
  */
 sealed class ListItemLeadingContentDataUi {
-    abstract val size: Int
+    abstract val size: Int?
 
     data class Icon(
         override val size: Int = DEFAULT_ICON_SIZE,
@@ -138,6 +139,11 @@ sealed class ListItemLeadingContentDataUi {
         val contentDescription: String?,
         val errorImage: IconDataUi? = null,
         val placeholderImage: IconDataUi? = null,
+    ) : ListItemLeadingContentDataUi()
+
+    data class RadioButton(
+        override val size: Int? = null,
+        val radioButtonData: RadioButtonDataUi,
     ) : ListItemLeadingContentDataUi()
 }
 
@@ -278,7 +284,11 @@ fun ListItem(
             leadingContentData?.let { safeLeadingContentData ->
                 val leadingContentModifier = Modifier
                     .padding(end = SIZE_MEDIUM.dp)
-                    .size(safeLeadingContentData.size.dp)
+                    .then(
+                        other = safeLeadingContentData.size?.let { safeLeadingContentDataSize ->
+                            Modifier.size(safeLeadingContentDataSize.dp)
+                        } ?: Modifier
+                    )
                     .then(blurModifier)
 
                 when (safeLeadingContentData) {
@@ -300,6 +310,11 @@ fun ListItem(
                         error = safeLeadingContentData.errorImage,
                         placeholder = safeLeadingContentData.placeholderImage,
                         contentDescription = safeLeadingContentData.contentDescription
+                    )
+
+                    is ListItemLeadingContentDataUi.RadioButton -> WrapRadioButton(
+                        modifier = leadingContentModifier,
+                        radioButtonData = safeLeadingContentData.radioButtonData,
                     )
                 }
             }
@@ -677,6 +692,21 @@ private fun ListItemPreview() {
                         switchData = SwitchDataUi(
                             isChecked = true,
                             enabled = false,
+                        )
+                    )
+                ),
+                modifier = modifier,
+                onItemClick = {},
+            )
+
+            // ListItem with a leading radio button (e.g. a selectable card's header)
+            ListItem(
+                item = ListItemDataUi(
+                    itemId = "leading-radio",
+                    mainContentData = ListItemMainContentDataUi.Text(text = "Item with Leading Radiobutton"),
+                    leadingContentData = ListItemLeadingContentDataUi.RadioButton(
+                        radioButtonData = RadioButtonDataUi(
+                            isSelected = true,
                         )
                     )
                 ),

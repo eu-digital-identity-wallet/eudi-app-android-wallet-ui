@@ -22,53 +22,27 @@ import eu.europa.ec.uilogic.component.ListItemTrailingContentDataUi
 import eu.europa.ec.uilogic.component.wrap.ExpandableListItemUi
 
 /**
- * Recursively traverses this [ExpandableListItemUi] tree and toggles the `isChecked`
- * state of eligible checkbox items.
- *
- * An item will have its checkbox toggled if:
- * - its `header.itemId` matches the provided [id], **or**
- * - its `header.itemId` is contained in [coToggleIds],
- * - and its `trailingContentData` is a [ListItemTrailingContentDataUi.Checkbox]
- *   whose `checkboxData.enabled` flag is `true`.
- *
- * This allows a clicked item to toggle its own checkbox as well as the checkboxes
- * of related sibling items in a single traversal.
- *
- * Behavior:
- * - If the current item is a [ExpandableListItemUi.NestedListItem], the function
- *   recursively processes all of its `nestedItems`.
- * - If the current item is a [ExpandableListItemUi.SingleListItem], its checkbox
- *   state is toggled only if it satisfies the conditions above.
- * - Items without a checkbox, or with a disabled checkbox, remain unchanged.
- *
- * The function preserves immutability by returning a new tree structure where only
- * the affected items are copied and updated.
- *
- * @param id The ID of the primary item whose checkbox should be toggled.
- * @param coToggleIds Additional item IDs whose checkboxes should also be toggled
- * together with the primary item.
- * @return A new [ExpandableListItemUi] reflecting the updated checkbox state.
- * Items that do not match the conditions are returned unchanged.
+ * Recursively walks this [ExpandableListItemUi] tree and flips the `isChecked` state of the
+ * enabled checkbox whose `header.itemId` matches [id]. Items with no match, no checkbox, or a
+ * disabled checkbox are returned unchanged; only the matched item is copied.
  */
 fun ExpandableListItemUi.toggleCheckboxState(
     id: String,
-    coToggleIds: List<String>
 ): ExpandableListItemUi {
     return when (this) {
         is ExpandableListItemUi.NestedListItem -> {
             this.copy(
                 nestedItems = nestedItems.map {
-                    it.toggleCheckboxState(id, coToggleIds)
+                    it.toggleCheckboxState(id)
                 }
             )
         }
 
         is ExpandableListItemUi.SingleListItem -> {
             val trailingContent = header.trailingContentData
-            val isTarget = header.itemId == id || header.itemId in coToggleIds
 
             if (
-                isTarget &&
+                header.itemId == id &&
                 trailingContent is ListItemTrailingContentDataUi.Checkbox &&
                 trailingContent.checkboxData.enabled
             ) {
@@ -84,29 +58,6 @@ fun ExpandableListItemUi.toggleCheckboxState(
             } else {
                 this
             }
-        }
-    }
-}
-
-/**
- * Recursively traverses the [ExpandableListItemUi] and its children to collect all item IDs.
- *
- * If the current item is a [ExpandableListItemUi.NestedListItem], it flattens the IDs collected
- * from all its `nestedItems`. If it is a [ExpandableListItemUi.SingleListItem], it returns
- * a list containing its own header ID.
- *
- * @return A list of all item IDs contained within this item and its nested hierarchy.
- */
-fun ExpandableListItemUi.collectAllNestedIds(): List<String> {
-    return when (this) {
-        is ExpandableListItemUi.NestedListItem -> {
-            this.nestedItems.flatMap {
-                it.collectAllNestedIds()
-            }
-        }
-
-        is ExpandableListItemUi.SingleListItem -> {
-            listOf(this.header.itemId)
         }
     }
 }

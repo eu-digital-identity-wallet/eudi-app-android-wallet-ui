@@ -20,18 +20,19 @@ import android.content.Intent
 import androidx.activity.ComponentActivity
 import eu.europa.ec.authenticationlogic.model.BiometricCrypto
 import eu.europa.ec.businesslogic.controller.storage.PrefKeys
-import eu.europa.ec.businesslogic.extension.addOrReplace
 import eu.europa.ec.businesslogic.extension.safeAsync
 import eu.europa.ec.businesslogic.extension.toUri
 import eu.europa.ec.corelogic.di.WalletCoreScope
 import eu.europa.ec.corelogic.di.getOrCreateKoinScope
+import eu.europa.ec.corelogic.extension.toClaimPath
 import eu.europa.ec.corelogic.model.AuthenticationData
+import eu.europa.ec.corelogic.model.PresentationCombinationDomain
+import eu.europa.ec.corelogic.model.PresentationMatchDomain
+import eu.europa.ec.corelogic.model.PresentationSelectionDomain
+import eu.europa.ec.corelogic.model.identityKey
 import eu.europa.ec.corelogic.util.EudiWalletListenerWrapper
 import eu.europa.ec.eudi.iso18013.transfer.TransferEvent
-import eu.europa.ec.eudi.iso18013.transfer.response.DisclosedDocument
-import eu.europa.ec.eudi.iso18013.transfer.response.DisclosedDocuments
 import eu.europa.ec.eudi.iso18013.transfer.response.RequestProcessor
-import eu.europa.ec.eudi.iso18013.transfer.response.RequestedDocument
 import eu.europa.ec.eudi.iso18013.transfer.toKotlinResult
 import eu.europa.ec.eudi.wallet.EudiWallet
 import eu.europa.ec.eudi.wallet.document.DocumentExtensions.getDefaultKeyUnlockData
@@ -48,11 +49,15 @@ import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import org.multipaz.presentment.CredentialPresentmentSelection
+import org.multipaz.presentment.CredentialPresentmentSetOptionMemberMatch
+import org.multipaz.securearea.KeyUnlockData
 import java.net.URI
 
 sealed class PresentationControllerConfig(val initiatorRoute: String) {
@@ -72,7 +77,7 @@ sealed class TransferEventPartialState {
     data class Error(val error: String) : TransferEventPartialState()
     data class QrEngagementReady(val qrCode: String) : TransferEventPartialState()
     data class RequestReceived(
-        val requestData: List<RequestedDocument>,
+        val combinationsDomain: List<PresentationCombinationDomain>,
         val verifierName: String?,
         val verifierIsTrusted: Boolean,
     ) : TransferEventPartialState()
@@ -116,21 +121,25 @@ sealed class WalletCorePartialState {
 }
 
 /**
- * Common scoped interactor that has all the complexity and required interaction with the EudiWallet Core.
+ * The app's single entry point to a live presentation session (one instance per presentation,
+ * inside the per-presentation Koin scope). Requests are exposed as pure-domain
+ * [PresentationCombinationDomain]s and the raw Wallet Core SDK matches never leave the controller,
+ * so no Wallet Core types reach the UI.
  * */
 interface WalletCorePresentationController {
     /**
-     * On initialization it adds the core listener and remove it when scope is canceled.
-     * When the scope is canceled so does the presentation
-     *
-     * @return Hot Flow that emits the Core's status callback.
+     * Hot flow of the Wallet Core SDK's status callbacks. The SDK listener attaches on first collection
+     * (shared `Lazily`, which is also what starts the configured transport) and is removed when
+     * the per-presentation scope is cancelled, ending the presentation.
      * */
     val events: SharedFlow<TransferEventPartialState>
 
     /**
-     * User selection data for request step
+     * The user's pending disclosure decision — one [PresentationSelectionDomain] per match kept.
+     * (The per-credential [KeyUnlockData] captured during the biometric step lives in the
+     * controller, not on the selection.)
      * */
-    val disclosedDocuments: MutableList<DisclosedDocument>?
+    val disclosedDocuments: List<PresentationSelectionDomain>?
 
     /**
      * Verifier name so it can be retrieve across screens
@@ -154,7 +163,7 @@ interface WalletCorePresentationController {
     fun setConfig(config: PresentationControllerConfig)
 
     /**
-     * Terminates the presentation and kills the coroutine scope that [events] live in
+     * Terminates the presentation and kills the coroutine scope that [events] live in.
      * */
     fun stopPresentation()
 
@@ -175,31 +184,26 @@ interface WalletCorePresentationController {
     fun toggleNfcEngagement(componentActivity: ComponentActivity, toggle: Boolean)
 
     /**
-     * Transform UI models to Domain and create -> sent the request.
-     *
-     * @return Flow that emits the creation state. On Success send the request.
-     * The response of that request is emitted through [events]
-     *  */
+     * Emits the key-unlock step for the send flow:
+     * [CheckKeyUnlockPartialState.UserAuthenticationRequired] (one biometric prompt per
+     * credential) when the config requires authentication, otherwise
+     * [CheckKeyUnlockPartialState.RequestIsReadyToBeSent].
+     * */
     fun checkForKeyUnlock(): Flow<CheckKeyUnlockPartialState>
 
-    fun sendRequestedDocuments(): SendRequestedDocumentsPartialState
-
     /**
-     * Updates the UI model
-     * @param disclosedDocuments User updated data through UI Events
-     * */
-    fun updateRequestedDocuments(disclosedDocuments: MutableList<DisclosedDocument>?)
+     * Build the Wallet Core [CredentialPresentmentSelection] from [disclosedDocuments] and
+     * dispatch it to the Wallet Core SDK.
+     */
+    suspend fun sendRequestedDocuments(): SendRequestedDocumentsPartialState
 
-    /**
-     * @return flow that maps the state from [events] emission to what we consider as success state
-     * */
+    fun updateRequestedDocuments(disclosedDocuments: List<PresentationSelectionDomain>?)
+
     fun mappedCallbackStateFlow(): Flow<ResponseReceivedPartialState>
 
     /**
-     * The main observation point for collecting state for the Request flow.
-     * Exposes a single flow for two operations([checkForKeyUnlock] - [mappedCallbackStateFlow])
-     * and a single state
-     * @return flow that emits the create, sent, receive states
+     * Merges [checkForKeyUnlock] and [mappedCallbackStateFlow] into the single
+     * [WalletCorePartialState] stream the loading screen observes.
      * */
     fun observeSentDocumentsRequest(): Flow<WalletCorePartialState>
 }
@@ -235,9 +239,19 @@ class WalletCorePresentationControllerImpl(
 
     private lateinit var _config: PresentationControllerConfig
 
-    override var disclosedDocuments: MutableList<DisclosedDocument>? = null
+    override var disclosedDocuments: List<PresentationSelectionDomain>? = null
 
+    // The Wallet Core SDK request, held from the onRequestReceived callback until send.
     private var processedRequest: RequestProcessor.ProcessedRequest.Success? = null
+
+    // Raw Wallet Core SDK matches kept only here (keyed by documentId/credentialId/queryId) so the
+    // UI-facing types stay free of Wallet Core types; re-paired to the domain selections at send.
+    private var matchByKey: Map<Triple<String, String, String?>, CredentialPresentmentSetOptionMemberMatch> =
+        emptyMap()
+
+    // Per-credential key-unlock data captured in [checkForKeyUnlock], consumed by
+    // [sendRequestedDocuments]; kept here rather than on the UI-facing selection.
+    private val keyUnlockDataByCredentialId: MutableMap<String, KeyUnlockData> = mutableMapOf()
 
     override var verifierName: String? = null
 
@@ -283,26 +297,8 @@ class WalletCorePresentationControllerImpl(
                     )
                 )
             },
-            onRequestReceived = { requestedDocumentData ->
-                trySendBlocking(
-                    requestedDocumentData.getOrNull()?.let { requestedDocuments ->
-
-                        processedRequest = requestedDocuments
-
-                        verifierName = requestedDocuments.requestedDocuments
-                            .firstOrNull()?.readerAuth?.readerCommonName
-
-                        val isTrusted = requestedDocuments.requestedDocuments
-                            .firstOrNull()?.readerAuth?.isVerified == true
-                        verifierIsTrusted = isTrusted
-
-                        TransferEventPartialState.RequestReceived(
-                            requestData = requestedDocuments.requestedDocuments,
-                            verifierName = verifierName,
-                            verifierIsTrusted = isTrusted
-                        )
-                    } ?: TransferEventPartialState.Error(error = genericErrorMessage)
-                )
+            onRequestReceived = { result ->
+                trySendBlocking(handleRequestReceived(result))
             },
             onResponseSent = {
                 trySendBlocking(
@@ -353,76 +349,116 @@ class WalletCorePresentationControllerImpl(
         }
     }
 
-    override fun checkForKeyUnlock() = flow {
-        disclosedDocuments?.let { documents ->
+    override fun checkForKeyUnlock(): Flow<CheckKeyUnlockPartialState> {
+        return flow {
+            disclosedDocuments?.let { selections ->
 
-            val authenticationData = mutableListOf<AuthenticationData>()
+                // fresh per send attempt
+                keyUnlockDataByCredentialId.clear()
 
-            if (eudiWallet.config.userAuthenticationRequired) {
+                val authenticationData = mutableListOf<AuthenticationData>()
 
-                val keyUnlockDataMap = documents.associateWith { disclosedDocument ->
-                    eudiWallet.getDefaultKeyUnlockData(documentId = disclosedDocument.documentId)
-                }
+                if (eudiWallet.config.userAuthenticationRequired) {
 
-                for ((doc, kud) in keyUnlockDataMap) {
+                    // one prompt per credential, not per selection: a multi-query request can
+                    // disclose the same credential under several queryIds and its key unlocks
+                    // once, so distinctBy avoids N identical biometric prompts
+                    val distinctCredentialSelections = selections.distinctBy { it.credentialId }
 
-                    val cryptoObject = kud?.getCryptoObjectForSigning()
+                    for (selection in distinctCredentialSelections) {
+                        val kud =
+                            eudiWallet.getDefaultKeyUnlockData(documentId = selection.documentId)
+                        val cryptoObject = kud?.getCryptoObjectForSigning()
 
-                    authenticationData.add(
-                        AuthenticationData(
-                            crypto = BiometricCrypto(cryptoObject),
-                            onAuthenticationSuccess = {
-                                disclosedDocuments?.addOrReplace(
-                                    value = doc.copy(keyUnlockData = kud),
-                                    replaceCondition = { disclosedDocument ->
-                                        disclosedDocument.documentId == doc.documentId
+                        authenticationData.add(
+                            AuthenticationData(
+                                crypto = BiometricCrypto(cryptoObject),
+                                onAuthenticationSuccess = {
+                                    if (kud != null) {
+                                        keyUnlockDataByCredentialId[selection.credentialId] = kud
                                     }
-                                )
-                            }
+                                }
+                            )
+                        )
+                    }
+
+                    emit(
+                        CheckKeyUnlockPartialState.UserAuthenticationRequired(
+                            authenticationData
                         )
                     )
-                }
 
-                emit(
-                    CheckKeyUnlockPartialState.UserAuthenticationRequired(
-                        authenticationData
+                } else {
+                    emit(
+                        CheckKeyUnlockPartialState.RequestIsReadyToBeSent
                     )
-                )
-
-            } else {
-                emit(
-                    CheckKeyUnlockPartialState.RequestIsReadyToBeSent
-                )
+                }
             }
+        }.safeAsync {
+            CheckKeyUnlockPartialState.Failure(
+                error = it.localizedMessage ?: genericErrorMessage
+            )
         }
-    }.safeAsync {
-        CheckKeyUnlockPartialState.Failure(
-            error = it.localizedMessage ?: genericErrorMessage
-        )
     }
 
-    override fun sendRequestedDocuments(): SendRequestedDocumentsPartialState {
-        return disclosedDocuments?.let { safeDisclosedDocuments ->
+    override suspend fun sendRequestedDocuments(): SendRequestedDocumentsPartialState {
+        val selectionsDomain = disclosedDocuments
+            ?: return SendRequestedDocumentsPartialState.Failure(error = genericErrorMessage)
+        val processed = processedRequest
+            ?: return SendRequestedDocumentsPartialState.Failure(error = genericErrorMessage)
 
-            var result: SendRequestedDocumentsPartialState =
-                SendRequestedDocumentsPartialState.RequestSent
+        return runCatching {
+            // re-pair each selection domain to its Wallet Core match by (documentId, credentialId, queryId),
+            // then keep only the user-confirmed claims; copy() keeps source/transactionData so the
+            // processor can re-associate the originating query.
+            val walletCoreMatches = selectionsDomain.map { selectionDomain ->
+                // every selection came from a stored match, so this must resolve; if it ever
+                // doesn't, fail loudly rather than silently under-disclose
+                val match = matchByKey[Triple(
+                    selectionDomain.documentId,
+                    selectionDomain.credentialId,
+                    selectionDomain.queryId
+                )] ?: error(
+                    "No stored match for selection (documentId=${selectionDomain.documentId}, " +
+                            "credentialId=${selectionDomain.credentialId}, queryId=${selectionDomain.queryId})"
+                )
+                match.copy(
+                    claims = match
+                        .claims
+                        .filterKeys { requestedClaim ->
+                            requestedClaim.toClaimPath() in selectionDomain.selectedClaims
+                        }
+                )
+            }
 
-            processedRequest?.generateResponse(DisclosedDocuments(safeDisclosedDocuments.toList()))
-                ?.toKotlinResult()
-                ?.onFailure {
-                    val errorMessage = it.localizedMessage ?: genericErrorMessage
-                    result = SendRequestedDocumentsPartialState.Failure(
-                        error = errorMessage
-                    )
+            val walletCoreSelection = CredentialPresentmentSelection(matches = walletCoreMatches)
+
+            val keyUnlockData = selectionsDomain.mapNotNull { selectionDomain ->
+                keyUnlockDataByCredentialId[selectionDomain.credentialId]?.let { keyUnlockData ->
+                    selectionDomain.credentialId to keyUnlockData
                 }
-                ?.onSuccess {
-                    eudiWallet.sendResponse(it.response)
-                    result = SendRequestedDocumentsPartialState.RequestSent
-                }
-            result
-        } ?: SendRequestedDocumentsPartialState.Failure(
-            error = genericErrorMessage
-        )
+            }.toMap()
+
+            processed.generateResponse(
+                selection = walletCoreSelection,
+                keyUnlockData = keyUnlockData,
+            ).toKotlinResult()
+                .fold(
+                    onSuccess = {
+                        eudiWallet.sendResponse(it.response)
+                        SendRequestedDocumentsPartialState.RequestSent
+                    },
+                    onFailure = {
+                        SendRequestedDocumentsPartialState.Failure(
+                            error = it.localizedMessage ?: genericErrorMessage
+                        )
+                    }
+                )
+        }.getOrElse {
+            SendRequestedDocumentsPartialState.Failure(
+                error = it.localizedMessage ?: genericErrorMessage
+            )
+        }
     }
 
     override fun mappedCallbackStateFlow(): Flow<ResponseReceivedPartialState> {
@@ -465,7 +501,7 @@ class WalletCorePresentationControllerImpl(
     }
 
     override fun observeSentDocumentsRequest(): Flow<WalletCorePartialState> =
-        merge(checkForKeyUnlock(), mappedCallbackStateFlow()).mapNotNull {
+        merge(checkForKeyUnlock(), mappedCallbackStateFlow()).map {
             when (it) {
                 is CheckKeyUnlockPartialState.Failure -> {
                     WalletCorePartialState.Failure(it.error)
@@ -503,7 +539,7 @@ class WalletCorePresentationControllerImpl(
             )
         }
 
-    override fun updateRequestedDocuments(disclosedDocuments: MutableList<DisclosedDocument>?) {
+    override fun updateRequestedDocuments(disclosedDocuments: List<PresentationSelectionDomain>?) {
         this.disclosedDocuments = disclosedDocuments
     }
 
@@ -511,6 +547,39 @@ class WalletCorePresentationControllerImpl(
         coroutineScope.cancel()
         CoroutineScope(dispatcher).launch {
             eudiWallet.stopProximityPresentation()
+        }
+    }
+
+    /**
+     * Ingests a processed request from the Wallet Core SDK: stores the per-session state the rest of the
+     * flow needs (the raw [processedRequest], verifier identity/trust, the private [matchByKey])
+     * and projects it into a [TransferEventPartialState.RequestReceived].
+     * A throw here (ours or the SDK's) becomes an Error state, not a crash.
+     */
+    private fun handleRequestReceived(
+        result: RequestProcessor.ProcessedRequest,
+    ): TransferEventPartialState {
+        return runCatching {
+            val success = result.getOrThrow()
+            processedRequest = success
+
+            verifierName = success.trustMetadata?.displayName
+            val isTrusted = success.trustMetadata != null
+            verifierIsTrusted = isTrusted
+
+            val combinationsDomain = success.buildCombinationsDomain()
+
+            matchByKey = success.buildMatchByKey()
+
+            TransferEventPartialState.RequestReceived(
+                combinationsDomain = combinationsDomain,
+                verifierName = verifierName,
+                verifierIsTrusted = isTrusted
+            )
+        }.getOrElse { throwable ->
+            TransferEventPartialState.Error(
+                error = throwable.localizedMessage ?: genericErrorMessage
+            )
         }
     }
 
@@ -547,4 +616,37 @@ class WalletCorePresentationControllerImpl(
         }
         return _config
     }
+}
+
+private fun RequestProcessor.ProcessedRequest.Success.buildCombinationsDomain(): List<PresentationCombinationDomain> {
+    return presentmentSelections.map { selection ->
+        PresentationCombinationDomain(
+            matches = selection.matches.map { match ->
+                PresentationMatchDomain.from(match)
+            },
+        )
+    }
+}
+
+/**
+ * The send-time lookup `(documentId, credentialId, queryId)` → raw Wallet Core match that
+ * [sendRequestedDocuments][WalletCorePresentationController.sendRequestedDocuments] re-pairs each selection against.
+ *
+ * An identity can recur across combinations (one credential satisfying the same query in each), so
+ * they're collapsed to one match. The copies are equivalent, so the first wins; a `check` fails
+ * loudly if they ever differ, rather than re-pairing consent to the wrong claims.
+ */
+private fun RequestProcessor.ProcessedRequest.Success.buildMatchByKey():
+        Map<Triple<String, String, String?>, CredentialPresentmentSetOptionMemberMatch> {
+    return presentmentSelections
+        .flatMap { it.matches }
+        .groupBy { it.identityKey }
+        .mapValues { (identityKey, matches) ->
+            matches.first().also { first ->
+                check(matches.all { it.claims.keys == first.claims.keys }) {
+                    "Conflicting matches for the same identity $identityKey: " +
+                            "different claim sets for one (document, credential, query)"
+                }
+            }
+        }
 }
