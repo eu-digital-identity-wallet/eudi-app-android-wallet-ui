@@ -30,7 +30,7 @@ datastore = "1.3.0-alpha09"
 accompanist = "0.37.3"
 androidxComposeBom = "2026.05.01"
 androidxComposeRuntimeTracing = "1.11.2"
-cloudy = "0.5.0"
+cloudy = "0.6.0"
 material3 = "1.4.0"
 materialIcons = "1.7.8"
 
