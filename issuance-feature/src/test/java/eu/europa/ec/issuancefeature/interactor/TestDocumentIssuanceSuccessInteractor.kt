@@ -40,7 +40,6 @@ import eu.europa.ec.testfeature.util.mockedIssuerLogo
 import eu.europa.ec.testfeature.util.mockedIssuerName
 import eu.europa.ec.testfeature.util.mockedPidId
 import eu.europa.ec.testfeature.util.mockedSdJwtPidId
-import eu.europa.ec.testfeature.util.mockedUuid
 import eu.europa.ec.testlogic.extension.runFlowTest
 import eu.europa.ec.testlogic.extension.runTest
 import eu.europa.ec.testlogic.rule.CoroutineTestRule
@@ -113,7 +112,7 @@ class TestDocumentIssuanceSuccessInteractor {
 
     //  Case 1 Expected Result:
     // 	DocumentIssuanceSuccessInteractorGetUiItemsPartialState.Success is emitted, with:
-    // 	documentsUi: A list containing one ExpandableListItem.NestedListItemDataUi with document name and mapped claims,
+    // 	documentsUi: A list containing one ExpandableListItemUi.NestedListItem with document name and mapped claims,
     // 	headerConfig: Includes the issuer’s name.
 
     @Test
@@ -173,14 +172,13 @@ class TestDocumentIssuanceSuccessInteractor {
 
     //  Case 2 Expected Result:
     // 	DocumentIssuanceSuccessInteractorGetUiItemsPartialState.Success is emitted, with:
-    // 	documentsUi: A list containing one ExpandableListItem.NestedListItemDataUi with document name and mapped claims
+    // 	documentsUi: A list containing one ExpandableListItemUi.NestedListItem with document name and mapped claims
 
     @Test
     fun `Given Case 2, When getUiItems is called, Then Success state with full document UI is returned`() {
         coroutineRule.runTest {
             // Given
             mockHeaderConfigDescription(isErrorCase = false)
-            mockProvideUuid()
             mockTransformToDocumentDetailsDomainStrings(resourceProvider)
             mockGetUiItemsStrings(
                 resourceProvider = resourceProvider,
@@ -391,7 +389,6 @@ class TestDocumentIssuanceSuccessInteractor {
                 resourceProvider = resourceProvider,
                 supportingText = mockedDocumentSuccessCollapsedSupportingText,
             )
-            mockProvideUuid()
 
             val mockedPidWithBasicFields = getMockedPidWithBasicFields()
             mockGetDocumentByIdCall(response = mockedPidWithBasicFields)
@@ -481,8 +478,7 @@ class TestDocumentIssuanceSuccessInteractor {
     }
 
     // Case 7B:
-    // Same as Case 7 but the thrown exception has no message, exercising the
-    // `it.localizedMessage ?: genericErrorMsg` elvis fallback and the genericErrorMsg getter.
+    // Same as Case 7 but the thrown exception has no message, so the generic error is used.
     @Test
     fun `Given Case 7B, When getUiItems is called with no-message exception, Then Failure with generic error is returned`() {
         coroutineRule.runTest {
@@ -511,7 +507,7 @@ class TestDocumentIssuanceSuccessInteractor {
 
     //  Case 8 Expected Result:
     // 	DocumentIssuanceSuccessInteractorGetUiItemsPartialState.Success is emitted, with:
-    // 	documentsUi: A list containing one ExpandableListItem.NestedListItemDataUi with document name and mapped claims,
+    // 	documentsUi: A list containing one ExpandableListItemUi.NestedListItem with document name and mapped claims,
     // 	headerConfig: Includes the issuer’s name and logo.
 
     @Test
@@ -580,11 +576,6 @@ class TestDocumentIssuanceSuccessInteractor {
             whenever(resourceProvider.getString(R.string.issuance_success_header_description))
                 .thenReturn(description)
         }
-    }
-
-    private fun mockProvideUuid() {
-        whenever(uuidProvider.provideUuid())
-            .thenReturn(mockedUuid)
     }
 
     private fun mockGetDocumentByIdCall(response: IssuedDocument?) {

@@ -18,65 +18,51 @@ package eu.europa.ec.corelogic.config
 
 import eu.europa.ec.corelogic.model.DocumentIdentifier
 import eu.europa.ec.eudi.wallet.document.CreateDocumentSettings.CredentialPolicy
-import java.time.Duration
+import kotlin.time.Duration
 
 /**
  * Represents the configuration for document issuance.
  *
- * This class defines the rules for issuing documents, including a default rule and
- * specific rules for individual document types.
+ * This class defines the [CredentialPolicy] to apply per document type — a default policy plus
+ * specific policies for individual document types — and the background re-issuance rule.
  *
- * @property defaultRule The default [DocumentIssuanceRule] to be applied when no specific rule
- *                       is defined for a document type.
- * @property documentSpecificRules A map where keys are [eu.europa.ec.corelogic.model.DocumentIdentifier]s and values are
- *                                  [DocumentIssuanceRule]s, defining specific rules for
- *                                  particular document types.
- * @property reissuanceRule defining rules for automated document re-issuance background operation.
+ * @property defaultPolicy The default [CredentialPolicy] to apply when no specific policy is defined
+ * for a document type.
+ * @property documentSpecificPolicies A map where keys are [DocumentIdentifier]s and values are the
+ * [CredentialPolicy] to apply for those specific document types.
+ * @property reissuanceRule The rule for the automated document re-issuance background operation.
  */
 data class DocumentIssuanceConfig(
-    val defaultRule: DocumentIssuanceRule,
-    val documentSpecificRules: Map<DocumentIdentifier, DocumentIssuanceRule>,
+    val defaultPolicy: CredentialPolicy,
+    val documentSpecificPolicies: Map<DocumentIdentifier, CredentialPolicy>,
     val reissuanceRule: ReIssuanceRule
 ) {
 
     /**
-     * Retrieves the [DocumentIssuanceRule] for a given [DocumentIdentifier].
+     * Retrieves the [CredentialPolicy] for a given [DocumentIdentifier].
      *
-     * If a specific rule is defined for the provided [documentIdentifier], that rule is returned.
-     * Otherwise, the [defaultRule] is returned.
+     * If a specific policy is defined for the provided [documentIdentifier], that policy is returned.
+     * Otherwise, the [defaultPolicy] is returned.
      *
-     * @param documentIdentifier The identifier of the document for which to retrieve the rule.
-     *                           If null, the [defaultRule] will be returned.
-     * @return The [DocumentIssuanceRule] applicable to the given [documentIdentifier], or the
-     *         [defaultRule] if no specific rule is found.
+     * @param documentIdentifier The identifier of the document for which to retrieve the policy.
+     * If null, the [defaultPolicy] will be returned.
+     * @return The [CredentialPolicy] applicable to the given [documentIdentifier], or the
+     * [defaultPolicy] if no specific policy is found.
      */
-    fun getRuleForDocument(documentIdentifier: DocumentIdentifier?): DocumentIssuanceRule =
-        documentSpecificRules[documentIdentifier] ?: defaultRule
+    fun getPolicyForDocument(documentIdentifier: DocumentIdentifier?): CredentialPolicy =
+        documentSpecificPolicies[documentIdentifier] ?: defaultPolicy
 }
 
 /**
- * Represents a rule for issuing a document.
+ * Defines the configuration for the background process responsible for automatic document re-issuance.
  *
- * This class encapsulates the policy and the number of credentials associated with a document
- * issuance.
+ * This rule manages the scheduling of the background operation. While the specific threshold
+ * for re-issuance is governed by each document's [CredentialPolicy], this class specifies
+ * how frequently the system should check for and process documents that need re-issuing.
  *
- * @property policy The [CredentialPolicy] to be applied during document issuance.
- * @property numberOfCredentials The number of credentials to be issued for the document.
- */
-data class DocumentIssuanceRule(
-    val policy: CredentialPolicy,
-    val numberOfCredentials: Int,
-)
-
-/**
- * Represents a rule for the re-issuance of a document
- *
- * @property minNumberOfCredentials Minimum number of instances remaining.
- * @property minExpirationHours Minimum number of hours remaining before expiration.
- * @property backgroundInterval Interval between background operations.
+ * @property backgroundInterval The duration of time between consecutive executions of the
+ * background re-issuance task.
  */
 data class ReIssuanceRule(
-    val minNumberOfCredentials: Int,
-    val minExpirationHours: Int,
     val backgroundInterval: Duration
 )

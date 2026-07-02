@@ -20,7 +20,7 @@ import eu.europa.ec.businesslogic.extension.safeAsync
 import eu.europa.ec.businesslogic.provider.UuidProvider
 import eu.europa.ec.commonfeature.interactor.ScopedPresentationInteractor
 import eu.europa.ec.commonfeature.interactor.ScopedPresentationInteractorDelegate
-import eu.europa.ec.commonfeature.ui.request.model.RequestDocumentItemUi
+import eu.europa.ec.commonfeature.ui.request.model.RequestCombinationUi
 import eu.europa.ec.commonfeature.ui.request.transformer.RequestTransformer
 import eu.europa.ec.corelogic.controller.TransferEventPartialState
 import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
@@ -31,13 +31,14 @@ import kotlinx.coroutines.flow.mapNotNull
 
 sealed class ProximityRequestInteractorPartialState {
     data class Success(
-        val verifierName: String? = null,
+        val verifierName: String?,
         val verifierIsTrusted: Boolean,
-        val requestDocuments: List<RequestDocumentItemUi>
+        val combinationsUi: List<RequestCombinationUi>,
+        val claimsAreSelectable: Boolean,
     ) : ProximityRequestInteractorPartialState()
 
     data class NoData(
-        val verifierName: String? = null,
+        val verifierName: String?,
         val verifierIsTrusted: Boolean,
     ) : ProximityRequestInteractorPartialState()
 
@@ -48,7 +49,7 @@ sealed class ProximityRequestInteractorPartialState {
 interface ProximityRequestInteractor : ScopedPresentationInteractor {
     fun getRequestDocuments(): Flow<ProximityRequestInteractorPartialState>
     fun stopPresentation()
-    fun updateRequestedDocuments(items: List<RequestDocumentItemUi>)
+    fun updateRequestedDocuments(selectedCombination: RequestCombinationUi?)
 }
 
 class ProximityRequestInteractorImpl(
@@ -62,34 +63,52 @@ class ProximityRequestInteractorImpl(
     private val genericErrorMsg
         get() = resourceProvider.genericErrorMessage()
 
+    // Proximity always allows selective disclosure.
+    private val claimsAreSelectable: Boolean = true
+
     override fun getRequestDocuments(): Flow<ProximityRequestInteractorPartialState> =
         walletCorePresentationController.events.mapNotNull { response ->
             when (response) {
                 is TransferEventPartialState.RequestReceived -> {
-                    if (response.requestData.all { it.requestedItems.isEmpty() }) {
+                    val requestedClaimsAreEmpty = response.combinationsDomain
+                        .flatMap { it.matches }
+                        .all { it.requestedClaims.isEmpty() }
+                    if (requestedClaimsAreEmpty) {
                         ProximityRequestInteractorPartialState.NoData(
                             verifierName = response.verifierName,
                             verifierIsTrusted = response.verifierIsTrusted,
                         )
                     } else {
-                        val documentsDomain = RequestTransformer.transformToDomainItems(
-                            storageDocuments = walletCoreDocumentsController.getAllIssuedDocuments(),
-                            requestDocuments = response.requestData,
-                            resourceProvider = resourceProvider,
-                            uuidProvider = uuidProvider
-                        ).getOrThrow()
-                            .filterNot {
-                                walletCoreDocumentsController.isDocumentRevoked(it.docId)
+                        val storageDocuments = walletCoreDocumentsController.getAllIssuedDocuments()
+
+                        val revokedDocumentIds = storageDocuments
+                            .map { it.id }
+                            .filter { walletCoreDocumentsController.isDocumentRevoked(it) }
+                            .toSet()
+
+                        val combinationsDomain =
+                            response.combinationsDomain.map { combinationDomain ->
+                                combinationDomain.copy(
+                                    matches = combinationDomain.matches
+                                        .filterNot { it.documentId in revokedDocumentIds }
+                                )
                             }
 
-                        if (documentsDomain.isNotEmpty()) {
+                        val combinationsUi = RequestTransformer.transformToCombinationsUi(
+                            storageDocuments = storageDocuments,
+                            resourceProvider = resourceProvider,
+                            uuidProvider = uuidProvider,
+                            combinationsDomain = combinationsDomain,
+                            claimsAreSelectable = claimsAreSelectable,
+                        ).getOrThrow()
+                            .filter { it.documents.isNotEmpty() }
+
+                        if (combinationsUi.isNotEmpty()) {
                             ProximityRequestInteractorPartialState.Success(
                                 verifierName = response.verifierName,
                                 verifierIsTrusted = response.verifierIsTrusted,
-                                requestDocuments = RequestTransformer.transformToUiItems(
-                                    documentsDomain = documentsDomain,
-                                    resourceProvider = resourceProvider,
-                                )
+                                combinationsUi = combinationsUi,
+                                claimsAreSelectable = claimsAreSelectable,
                             )
                         } else {
                             ProximityRequestInteractorPartialState.NoData(
@@ -120,8 +139,15 @@ class ProximityRequestInteractorImpl(
         walletCorePresentationController.stopPresentation()
     }
 
-    override fun updateRequestedDocuments(items: List<RequestDocumentItemUi>) {
-        val disclosedDocuments = RequestTransformer.createDisclosedDocuments(items)
-        walletCorePresentationController.updateRequestedDocuments(disclosedDocuments.toMutableList())
+    override fun updateRequestedDocuments(selectedCombination: RequestCombinationUi?) {
+        val selections = selectedCombination?.let { safeSelectedCombinationUi ->
+            RequestTransformer.createSelectionsDomain(
+                documentItemsUi = safeSelectedCombinationUi.documents,
+                matchesDomain = safeSelectedCombinationUi.matches,
+                claimsAreSelectable = claimsAreSelectable,
+            )
+        }.orEmpty()
+
+        walletCorePresentationController.updateRequestedDocuments(disclosedDocuments = selections)
     }
 }

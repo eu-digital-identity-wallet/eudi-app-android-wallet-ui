@@ -20,16 +20,20 @@ import android.content.Context
 import android.content.Intent
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
-import eu.europa.ec.corelogic.config.WalletCoreConfig
 import eu.europa.ec.corelogic.controller.IssueDocumentsPartialState
 import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
 import eu.europa.ec.corelogic.util.CoreActions
 import eu.europa.ec.corelogic.util.CoreActions.RE_ISSUANCE_IDS_DETAILS_EXTRA
 import eu.europa.ec.eudi.wallet.document.CreateDocumentSettings.CredentialPolicy
+import eu.europa.ec.eudi.wallet.document.IssuedDocument
 import eu.europa.ec.storagelogic.dao.FailedReIssuedDocumentDao
 import eu.europa.ec.storagelogic.model.FailedReIssuedDocument
 import kotlinx.coroutines.flow.first
 import org.koin.android.annotation.KoinWorker
+import kotlin.time.Clock
+import kotlin.time.Duration
+import kotlin.time.Instant
+import kotlin.time.toKotlinInstant
 
 @KoinWorker
 class ReIssuanceWorkManager(
@@ -37,7 +41,6 @@ class ReIssuanceWorkManager(
     workerParams: WorkerParameters,
     private val failedReIssuedDocumentDao: FailedReIssuedDocumentDao,
     private val walletCoreDocumentsController: WalletCoreDocumentsController,
-    private val walletCoreConfig: WalletCoreConfig
 ) : CoroutineWorker(appContext, workerParams) {
 
     companion object {
@@ -52,28 +55,27 @@ class ReIssuanceWorkManager(
             val succeed = mutableListOf<String>()
             val idsRemoved = mutableListOf<String>()
 
-            val config = walletCoreConfig.documentIssuanceConfig.reissuanceRule
-            val now = java.time.Instant.now()
-            val expirationLimit = now.plus(
-                java.time.Duration.ofHours(config.minExpirationHours.toLong())
-            )
+            val now = Clock.System.now()
 
             walletCoreDocumentsController
                 .getAllIssuedDocuments()
-                .filter { credential ->
+                .filter { document ->
+                    when (val policy = document.credentialPolicy) {
+                        is CredentialPolicy.LimitedTime -> document.isDueForLifetimeReIssue(
+                            now = now,
+                            reissueTriggerLifetimeLeft = policy.reissueTriggerLifetimeLeft,
+                        )
 
-                    val belowMinCount =
-                        credential.credentialsCount() <= config.minNumberOfCredentials
+                        is CredentialPolicy.OnceOnly -> document.isDueForUnusedCountReIssue(
+                            now = now,
+                            reissueTriggerUnused = policy.reissueTriggerUnused,
+                        )
 
-                    val hasOneTimeUseUsePolicy =
-                        credential.credentialPolicy == CredentialPolicy.OneTimeUse
-
-                    val expiresWithinThreshold =
-                        credential.getValidUntil()
-                            .map { validUntil -> validUntil.isBefore(expirationLimit) }
-                            .getOrDefault(false)
-
-                    (belowMinCount && hasOneTimeUseUsePolicy) || expiresWithinThreshold
+                        is CredentialPolicy.RotatingBatch -> document.isDueForLifetimeReIssue(
+                            now = now,
+                            reissueTriggerLifetimeLeft = policy.reissueTriggerLifetimeLeft,
+                        )
+                    }
                 }
                 .forEach { document ->
 
@@ -156,4 +158,44 @@ class ReIssuanceWorkManager(
         }
         applicationContext.sendBroadcast(refreshIntent)
     }
+}
+
+/**
+ * Re-issue when no currently-valid credential remains, or when the remaining lifetime is at or
+ * below the policy's threshold. Used for [CredentialPolicy.LimitedTime] and
+ * [CredentialPolicy.RotatingBatch], for which re-issuance is driven by remaining lifetime.
+ *
+ * The threshold travels with the document's stored policy — set by the issuer for a mandatory reuse
+ * policy, or by the wallet's own [eu.europa.ec.corelogic.config.DocumentIssuanceConfig] for an
+ * optional one. A null threshold is not expected; defensively it re-issues only once the document
+ * has actually expired.
+ *
+ * A failed [IssuedDocument.getValidUntil] means nothing is valid right now (expired/exhausted),
+ * which is itself a reason to re-issue.
+ */
+private suspend fun IssuedDocument.isDueForLifetimeReIssue(
+    now: Instant,
+    reissueTriggerLifetimeLeft: Duration?,
+): Boolean {
+    val validUntil = getValidUntil().getOrNull()?.toKotlinInstant() ?: return true
+    val expirationLimit = reissueTriggerLifetimeLeft?.let { now.plus(it) } ?: now
+    return validUntil <= expirationLimit
+}
+
+/**
+ * Re-issue when the number of currently-valid unused credentials is at or below the policy's
+ * threshold. For once-only, re-issuance is driven by the count of unused credentials, never
+ * remaining lifetime.
+ *
+ * [IssuedDocument.credentialsCount] is intentionally avoided: it also counts expired credentials,
+ * so an expired-but-unused batch would stay above the threshold forever; counting only valid
+ * credentials lets it fall to the threshold and re-issue. A null threshold is not expected;
+ * defensively it re-issues only once no usable credential remains.
+ */
+private suspend fun IssuedDocument.isDueForUnusedCountReIssue(
+    now: Instant,
+    reissueTriggerUnused: Int?,
+): Boolean {
+    val validUnusedCount = getCredentials().count { now >= it.validFrom && now <= it.validUntil }
+    return validUnusedCount <= (reissueTriggerUnused ?: 0)
 }

@@ -22,11 +22,11 @@ import eu.europa.ec.businesslogic.util.FULL_DATETIME_PATTERN_24H_SEPARATED_BY_DA
 import eu.europa.ec.businesslogic.util.formatInstant
 import eu.europa.ec.commonfeature.extension.toExpandableListItems
 import eu.europa.ec.commonfeature.util.transformPathsToDomainClaims
+import eu.europa.ec.corelogic.extension.getExpiryDate
 import eu.europa.ec.corelogic.extension.toClaimPaths
 import eu.europa.ec.corelogic.model.toDocumentIdentifier
 import eu.europa.ec.dashboardfeature.ui.documents.detail.model.DocumentDetailsDomain
 import eu.europa.ec.dashboardfeature.ui.documents.detail.model.DocumentDetailsUi
-import eu.europa.ec.dashboardfeature.ui.documents.detail.model.DocumentIssuanceStateUi
 import eu.europa.ec.dashboardfeature.ui.documents.model.DocumentCredentialsInfoUi
 import eu.europa.ec.eudi.wallet.document.IssuedDocument
 import eu.europa.ec.resourceslogic.R
@@ -60,7 +60,7 @@ object DocumentDetailsTransformer {
             documentIssuanceDate = document.issuedAt.formatInstant(
                 pattern = FULL_DATETIME_PATTERN_24H_SEPARATED_BY_DASH
             ),
-            documentExpirationDate = document.getValidUntil().getOrNull()?.formatInstant(
+            documentExpirationDate = document.getExpiryDate()?.formatInstant(
                 pattern = DAY_MONTH_YEAR_FULL_PATTERN
             ),
         )
@@ -68,7 +68,10 @@ object DocumentDetailsTransformer {
 
     fun DocumentDetailsDomain.transformToDocumentDetailsUi(): DocumentDetailsUi {
         val documentDetailsUi = this.documentClaims.map { domainClaim ->
-            domainClaim.toExpandableListItems(docId = this.docId)
+            domainClaim.toExpandableListItems(
+                docId = this.docId,
+                queryId = null,
+            )
         }
         return DocumentDetailsUi(
             documentId = this.docId,
@@ -76,7 +79,6 @@ object DocumentDetailsTransformer {
             issuerId = this.issuerId,
             documentConfigId = this.documentConfigId,
             documentIdentifier = this.documentIdentifier,
-            documentIssuanceStateUi = DocumentIssuanceStateUi.Issued,
             documentClaims = documentDetailsUi,
         )
     }

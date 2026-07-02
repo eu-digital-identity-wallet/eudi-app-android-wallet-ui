@@ -101,7 +101,10 @@ class DocumentIssuanceSuccessInteractorImpl(
                     )
 
                     val claimsUi = domainClaims.map { selectedDomainClaim ->
-                        selectedDomainClaim.toExpandableListItems(docId = documentId)
+                        selectedDomainClaim.toExpandableListItems(
+                            docId = documentId,
+                            queryId = null,
+                        )
                     }
 
                     val documentUi = ExpandableListItemUi.NestedListItem(

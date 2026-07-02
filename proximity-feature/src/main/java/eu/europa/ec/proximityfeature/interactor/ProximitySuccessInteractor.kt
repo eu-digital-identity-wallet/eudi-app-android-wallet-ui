@@ -25,7 +25,8 @@ import eu.europa.ec.commonfeature.interactor.ScopedPresentationInteractorDelegat
 import eu.europa.ec.commonfeature.util.transformPathsToDomainClaims
 import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
 import eu.europa.ec.corelogic.controller.WalletCorePresentationController
-import eu.europa.ec.corelogic.extension.toClaimPath
+import eu.europa.ec.corelogic.extension.toClaimPaths
+import eu.europa.ec.corelogic.model.ClaimItemId
 import eu.europa.ec.eudi.wallet.document.IssuedDocument
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
@@ -75,14 +76,18 @@ class ProximitySuccessInteractorImpl(
 
             val isVerified = walletCorePresentationController.verifierIsTrusted == true
 
-            walletCorePresentationController.disclosedDocuments?.forEach { disclosedDocument ->
+            walletCorePresentationController.disclosedDocuments?.forEach { selection ->
                 try {
-                    val documentId = disclosedDocument.documentId
+                    val documentId = selection.documentId
                     val document =
                         walletCoreDocumentsController.getDocumentById(documentId = documentId) as IssuedDocument
 
-                    val disclosedClaimPaths = disclosedDocument.disclosedItems.map {
-                        it.toClaimPath()
+                    // the request can be a wildcard or ancestor (e.g. ["nationalities", null]) that
+                    // won't equal a stored path, so keep every stored leaf it matches
+                    val storagePaths = document.data.claims.flatMap { it.toClaimPaths() }
+                    val requestedPaths = selection.selectedClaims
+                    val disclosedClaimPaths = storagePaths.filter { available ->
+                        requestedPaths.any { requested -> requested.matches(available) }
                     }
 
                     val disclosedClaims = transformPathsToDomainClaims(
@@ -93,13 +98,19 @@ class ProximitySuccessInteractorImpl(
                     )
 
                     val disclosedClaimsUi = disclosedClaims.map { disclosedClaim ->
-                        disclosedClaim.toExpandableListItems(docId = documentId)
+                        disclosedClaim.toExpandableListItems(
+                            docId = documentId,
+                            queryId = selection.queryId,
+                        )
                     }
 
                     if (disclosedClaimsUi.isNotEmpty()) {
                         val disclosedDocumentUi = ExpandableListItemUi.NestedListItem(
                             header = ListItemDataUi(
-                                itemId = documentId,
+                                itemId = ClaimItemId.DocumentHeader(
+                                    docId = documentId,
+                                    queryId = selection.queryId,
+                                ).encode(),
                                 mainContentData = ListItemMainContentDataUi.Text(text = document.name),
                                 supportingText = resourceProvider.getString(R.string.document_success_collapsed_supporting_text),
                                 trailingContentData = ListItemTrailingContentDataUi.Icon(

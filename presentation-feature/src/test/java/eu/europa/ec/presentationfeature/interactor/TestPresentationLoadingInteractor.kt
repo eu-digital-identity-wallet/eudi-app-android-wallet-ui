@@ -363,36 +363,40 @@ class TestPresentationLoadingInteractor {
 
     @Test
     fun `Given controller#sendRequestedDocuments returns RequestSent, When sendRequestedDocuments is called, Then Success is returned`() {
-        // Given
-        whenever(walletCorePresentationController.sendRequestedDocuments())
-            .thenReturn(SendRequestedDocumentsPartialState.RequestSent)
+        coroutineRule.runTest {
+            // Given
+            whenever(walletCorePresentationController.sendRequestedDocuments())
+                .thenReturn(SendRequestedDocumentsPartialState.RequestSent)
 
-        // When
-        val result = interactor.sendRequestedDocuments()
+            // When
+            val result = interactor.sendRequestedDocuments()
 
-        // Then
-        assertEquals(
-            PresentationLoadingSendRequestedDocumentPartialState.Success,
-            result
-        )
+            // Then
+            assertEquals(
+                PresentationLoadingSendRequestedDocumentPartialState.Success,
+                result
+            )
+        }
     }
 
     @Test
     fun `Given controller#sendRequestedDocuments returns Failure, When sendRequestedDocuments is called, Then Failure with the same error is returned`() {
-        // Given
-        whenever(walletCorePresentationController.sendRequestedDocuments())
-            .thenReturn(SendRequestedDocumentsPartialState.Failure(error = mockedPlainFailureMessage))
+        coroutineRule.runTest {
+            // Given
+            whenever(walletCorePresentationController.sendRequestedDocuments())
+                .thenReturn(SendRequestedDocumentsPartialState.Failure(error = mockedPlainFailureMessage))
 
-        // When
-        val result = interactor.sendRequestedDocuments()
+            // When
+            val result = interactor.sendRequestedDocuments()
 
-        // Then
-        assertEquals(
-            PresentationLoadingSendRequestedDocumentPartialState.Failure(
-                error = mockedPlainFailureMessage
-            ),
-            result
-        )
+            // Then
+            assertEquals(
+                PresentationLoadingSendRequestedDocumentPartialState.Failure(
+                    error = mockedPlainFailureMessage
+                ),
+                result
+            )
+        }
     }
     //endregion
 

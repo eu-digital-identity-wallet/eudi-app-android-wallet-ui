@@ -126,27 +126,28 @@ class ProximityLoadingViewModel(
     }
 
     private fun sendRequestedDocuments(event: Event) {
+        viewModelScope.launch {
+            when (val result = interactor.sendRequestedDocuments()) {
+                is ProximityLoadingSendRequestedDocumentPartialState.Success -> { /*no op*/
+                }
 
-        when (val result = interactor.sendRequestedDocuments()) {
-            is ProximityLoadingSendRequestedDocumentPartialState.Success -> { /*no op*/
-            }
-
-            is ProximityLoadingSendRequestedDocumentPartialState.Failure -> {
-                setState {
-                    copy(
-                        error = ContentErrorConfig(
-                            onRetry = { setEvent(event) },
-                            errorSubTitle = result.error,
-                            onCancel = {
-                                setEvent(Event.DismissError)
-                                doNavigation(
-                                    NavigationType.PopTo(
-                                        getPreviousScreen()
+                is ProximityLoadingSendRequestedDocumentPartialState.Failure -> {
+                    setState {
+                        copy(
+                            error = ContentErrorConfig(
+                                onRetry = { setEvent(event) },
+                                errorSubTitle = result.error,
+                                onCancel = {
+                                    setEvent(Event.DismissError)
+                                    doNavigation(
+                                        NavigationType.PopTo(
+                                            getPreviousScreen()
+                                        )
                                     )
-                                )
-                            }
+                                }
+                            )
                         )
-                    )
+                    }
                 }
             }
         }
@@ -156,10 +157,25 @@ class ProximityLoadingViewModel(
         context: Context,
         popEffect: Effect,
         authenticationDataList: List<AuthenticationData>,
-        sendRequestedDocumentsAction: suspend () -> Unit,
+        sendRequestedDocumentsAction: () -> Unit,
         index: Int = 0,
     ) {
-        val authenticationData = authenticationDataList[index]
+        val authenticationData = authenticationDataList.getOrNull(index)
+        if (authenticationData == null) {
+            setState {
+                copy(
+                    error = ContentErrorConfig(
+                        errorSubTitle = resourceProvider.genericErrorMessage(),
+                        onCancel = {
+                            setEvent(Event.DismissError)
+                            doNavigation(NavigationType.PopTo(getPreviousScreen()))
+                        },
+                        onRetry = null,
+                    )
+                )
+            }
+            return
+        }
         val isFinalAuthentication = index == authenticationDataList.lastIndex
         interactor.handleUserAuthentication(
             context = context,

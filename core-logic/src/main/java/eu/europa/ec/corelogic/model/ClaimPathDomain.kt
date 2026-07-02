@@ -18,88 +18,112 @@ package eu.europa.ec.corelogic.model
 
 import eu.europa.ec.eudi.wallet.document.NameSpace
 
-sealed interface ClaimType {
-    data object SdJwtVc : ClaimType
-    data class MsoMdoc(val namespace: NameSpace) : ClaimType
-
-    data object Unknown : ClaimType
-}
-
+/**
+ * A path to a claim within a credential — the app's platform-agnostic claim-path pointer,
+ * abstracting over the SD-JWT VC and MSO-mdoc representations so the app can identify, match, and
+ * address claims uniformly.
+ *
+ * @property segments the [ClaimPathSegment]s forming the path (keys, indices, or wildcards).
+ * @property type the credential format (SD-JWT VC or MSO-mdoc) and namespace context.
+ */
 data class ClaimPathDomain(
-    val value: List<String>,
+    val segments: List<ClaimPathSegment>,
     val type: ClaimType,
 ) {
 
     companion object {
-        const val PATH_SEPARATOR = ","
-
-        fun toElementIdentifier(itemId: String): String {
-            return itemId
-                .split(PATH_SEPARATOR)
-                .drop(2)
-                .first()
-        }
-
-        fun toNameSpace(itemId: String): NameSpace {
-            return itemId
-                .split(PATH_SEPARATOR)
-                .drop(1)
-                .first()
-        }
-
-        fun toSdJwtVcPath(itemId: String): List<String> {
-            return itemId
-                .split(PATH_SEPARATOR)
-                .drop(1)
-        }
-
-        fun List<String>.toClaimPathDomain(type: ClaimType): ClaimPathDomain {
-            return ClaimPathDomain(value = this, type = type)
+        fun List<ClaimPathSegment>.toClaimPathDomain(type: ClaimType): ClaimPathDomain {
+            return ClaimPathDomain(
+                segments = this,
+                type = type
+            )
         }
 
         /**
-         * Checks whether this [ClaimPathDomain] is a prefix of another [ClaimPathDomain].
-         *
-         * A prefix match means that all elements of this path must appear in the same order
-         * and at the beginning of the [other] path. This allows partial matches useful in scenarios
-         * where the verifier requests a parent claim (e.g., `"address"`) and the wallet contains
-         * deeper nested claims (e.g., `"address.street"`, `"address.city"`).
-         *
-         * Examples:
-         * ```
-         * ClaimPath(listOf("address")).isPrefixOf(ClaimPath(listOf("address", "city"))) == true
-         * ClaimPath(listOf("claim1", "a")).isPrefixOf(ClaimPath(listOf("claim1", "a", "b"))) == true
-         * ClaimPath(listOf("name")).isPrefixOf(ClaimPath(listOf("name_birth"))) == false
-         * ```
-         *
-         * @param other The [ClaimPathDomain] to compare against.
-         * @return `true` if this path is a prefix of [other]; `false` otherwise.
+         * Builds a [ClaimPathDomain] of plain object-key segments — the common case where a path
+         * has only nested keys (flat SD-JWT VC claims, MSO-mdoc elements), no indices or wildcards.
          */
-        fun ClaimPathDomain.isPrefixOf(other: ClaimPathDomain): Boolean {
-            return this.value.size <= other.value.size &&
-                    this.type == other.type &&
-                    this.value.zip(other.value).all { (a, b) -> a == b }
+        fun ofPlainKeys(names: List<String>, type: ClaimType): ClaimPathDomain {
+            return ClaimPathDomain(
+                segments = names.map {
+                    ClaimPathSegment.Key(name = it)
+                },
+                type = type
+            )
+        }
+
+        /**
+         * Builds a [ClaimPathDomain] for a UI-only group node in the rendered claim tree. It is
+         * never matched against a real disclosure path; it only gives the group a stable identity,
+         * so [groupId] must be unique within the tree.
+         */
+        fun forUiGroup(groupId: String, type: ClaimType): ClaimPathDomain {
+            return ClaimPathDomain(
+                segments = listOf(
+                    ClaimPathSegment.Key(name = groupId)
+                ),
+                type = type
+            )
+        }
+
+        /** Wildcard matches any index; index and key match the same kind by value. */
+        private fun segmentMatches(a: ClaimPathSegment, b: ClaimPathSegment): Boolean = when (a) {
+            is ClaimPathSegment.AllElements -> b is ClaimPathSegment.Index
+            is ClaimPathSegment.Index -> b is ClaimPathSegment.Index && a.index == b.index
+            is ClaimPathSegment.Key -> b is ClaimPathSegment.Key && a.name == b.name
         }
     }
 
-    val joined: String
-        get() = value.joinToString(PATH_SEPARATOR)
-
-    fun toId(docId: String): String {
-        val namespaceOrNull: String? = when (type) {
-            is ClaimType.MsoMdoc -> type.namespace
-            is ClaimType.SdJwtVc -> null
-            is ClaimType.Unknown -> null
+    /**
+     * Returns `true` when this requested path *matches* the stored path [other], called as
+     * `requested.matches(stored)`. Matches on the shared prefix in either direction, a wildcard
+     * matches any index, and an empty path matches nothing.
+     *
+     * Examples (read as `requested matches stored`):
+     * ```
+     * ["address"]                        matches ["address", "city"]               → true  (descendant: parent asked, leaf stored beneath it)
+     * ["nationalities", 0]               matches ["nationalities"]                 → true  (ancestor)
+     * ["nationalities", 0]               matches ["nationalities", 0]              → true  (exact)
+     * ["nationalities", 0]               matches ["nationalities", 1]              → false (sibling)
+     * ["nationalities", null]            matches ["nationalities", 0]              → true  (wildcard)
+     * ["nationalities", null]            matches ["nationalities", 1]              → true  (wildcard)
+     * ["addresses", null, "city"]        matches ["addresses", 0, "city"]          → true
+     * ["addresses", null, "city"]        matches ["addresses", 0, "street"]        → false
+     * ```
+     */
+    fun matches(other: ClaimPathDomain): Boolean {
+        if (type != other.type) return false
+        // empty path matches nothing: a length-0 shared prefix would match every path of the type
+        if (segments.isEmpty() || other.segments.isEmpty()) return false
+        val common = minOf(segments.size, other.segments.size)
+        for (i in 0 until common) {
+            if (!segmentMatches(segments[i], other.segments[i])) return false
         }
+        return true
+    }
 
-        val finalId: String = buildList {
-            add(docId)
-            namespaceOrNull?.let { safeNamespace ->
-                add(safeNamespace)
-            }
-            addAll(value)
-        }.joinToString(separator = PATH_SEPARATOR)
+}
 
-        return finalId
+sealed interface ClaimType {
+    data object SdJwtVc : ClaimType
+    data class MsoMdoc(val namespace: NameSpace) : ClaimType
+}
+
+/** A single step in a [ClaimPathDomain]. */
+sealed interface ClaimPathSegment {
+
+    /** An object key, e.g. `"family_name"`. */
+    data class Key(val name: String) : ClaimPathSegment {
+        override fun toString(): String = name
+    }
+
+    /** A concrete array index, e.g. `0`. */
+    data class Index(val index: Int) : ClaimPathSegment {
+        override fun toString(): String = index.toString()
+    }
+
+    /** The `null` wildcard — matches every index of the targeted array. */
+    data object AllElements : ClaimPathSegment {
+        override fun toString(): String = "null"
     }
 }

@@ -17,136 +17,252 @@
 package eu.europa.ec.corelogic.model
 
 import eu.europa.ec.corelogic.extension.toClaimPath
-import eu.europa.ec.corelogic.model.ClaimPathDomain.Companion.isPrefixOf
-import eu.europa.ec.eudi.iso18013.transfer.response.device.MsoMdocItem
-import eu.europa.ec.eudi.wallet.transfer.openId4vp.SdJwtVcItem
+import eu.europa.ec.corelogic.model.ClaimPathDomain.Companion.toClaimPathDomain
+import kotlinx.serialization.json.JsonArray
+import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.JsonNull
+import kotlinx.serialization.json.JsonPrimitive
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import org.multipaz.request.JsonRequestedClaim
+import org.multipaz.request.MdocRequestedClaim
 
 class TestClaimPath {
 
+    private fun sdJwt(path: List<String>) = JsonRequestedClaim(
+        vctValues = listOf("vct"),
+        claimPath = JsonArray(path.map { JsonPrimitive(it) }),
+    )
+
+    /** Like [sdJwt] but takes raw [JsonElement]s, so wildcard and array-index segments keep their type. */
+    private fun sdJwtRaw(path: List<JsonElement>) = JsonRequestedClaim(
+        vctValues = listOf("vct"),
+        claimPath = JsonArray(path),
+    )
+
+    private fun mdoc(namespace: String, dataElementName: String) = MdocRequestedClaim(
+        docType = "doctype",
+        namespaceName = namespace,
+        dataElementName = dataElementName,
+        intentToRetain = false,
+    )
+
+    // ── Conversion: RequestedClaim → ClaimPathDomain ─────────────────────────────
+
     @Test
-    fun `SdJwt - prefix match with deeper nesting`() {
-        val requested1 = SdJwtVcItem(listOf("address")).toClaimPath()
-        val requested2 = SdJwtVcItem(listOf("address", "formatted")).toClaimPath()
+    fun `mdoc claim converts to a single Key segment carrying the namespace in the type`() {
+        val path = mdoc("org.iso.18013.5.1", "family_name").toClaimPath()
 
-        val available1 = SdJwtVcItem(listOf("address", "country")).toClaimPath()
-        val available2 = SdJwtVcItem(listOf("address", "street")).toClaimPath()
-        val available3 = SdJwtVcItem(listOf("address", "street", "number")).toClaimPath()
-        val available4 = SdJwtVcItem(listOf("addressA", "street")).toClaimPath()
-        val available5 = SdJwtVcItem(listOf("addres", "street")).toClaimPath()
-        val available6 = SdJwtVcItem(listOf("address", "formattedNo")).toClaimPath()
-
-        assertTrue(requested1.isPrefixOf(available1))
-        assertTrue(requested1.isPrefixOf(available2))
-        assertTrue(requested1.isPrefixOf(available3))
-        assertFalse(requested1.isPrefixOf(available4))
-        assertFalse(requested1.isPrefixOf(available5))
-        assertFalse(requested2.isPrefixOf(available6))
+        assertEquals(listOf(ClaimPathSegment.Key("family_name")), path.segments)
+        assertEquals(ClaimType.MsoMdoc("org.iso.18013.5.1"), path.type)
     }
 
     @Test
-    fun `SdJwt - exact match returns true`() {
-        val requested1 = SdJwtVcItem(listOf("family_name")).toClaimPath()
-        val requested2 = SdJwtVcItem(listOf("family_name", "birth")).toClaimPath()
+    fun `sd-jwt string path converts to Key segments`() {
+        val path = sdJwt(
+            listOf("place_of_birth", "country")
+        ).toClaimPath()
 
-        val available1 = SdJwtVcItem(listOf("family_name")).toClaimPath()
-        val available2 = SdJwtVcItem(listOf("family_name", "birth")).toClaimPath()
-
-        assertTrue(requested1.isPrefixOf(available1))
-        assertTrue(requested1.isPrefixOf(available2))
-        assertFalse(requested2.isPrefixOf(available1))
-        assertTrue(requested2.isPrefixOf(available2))
+        assertEquals(
+            listOf(
+                ClaimPathSegment.Key("place_of_birth"),
+                ClaimPathSegment.Key("country")
+            ),
+            path.segments,
+        )
+        assertEquals(ClaimType.SdJwtVc, path.type)
     }
 
     @Test
-    fun `SdJwt - non-prefix should return false`() {
-        val requested1 = SdJwtVcItem(listOf("family_name")).toClaimPath()
-        val requested2 = SdJwtVcItem(listOf("family_name_birth")).toClaimPath()
+    fun `sd-jwt raw path converts wildcard and index elements to typed segments`() {
+        val wildcard = sdJwtRaw(
+            listOf(JsonPrimitive("nationalities"), JsonNull)
+        ).toClaimPath()
 
-        val available1 = SdJwtVcItem(listOf("family_name_birth")).toClaimPath()
-        val available2 = SdJwtVcItem(listOf("family_name")).toClaimPath()
+        val indexed = sdJwtRaw(
+            listOf(JsonPrimitive("nationalities"), JsonPrimitive(0))
+        ).toClaimPath()
 
-        assertFalse(requested1.isPrefixOf(available1))
-        assertFalse(requested2.isPrefixOf(available2))
+        assertEquals(
+            listOf(
+                ClaimPathSegment.Key("nationalities"),
+                ClaimPathSegment.AllElements
+            ),
+            wildcard.segments,
+        )
+        assertEquals(
+            listOf(
+                ClaimPathSegment.Key("nationalities"),
+                ClaimPathSegment.Index(0)
+            ),
+            indexed.segments,
+        )
     }
 
     @Test
-    fun `SdJwt - partial match but diverges deeper`() {
-        val requested = SdJwtVcItem(listOf("claim1", "claim1_a", "claim1_b")).toClaimPath()
+    fun `an empty sd-jwt claim path fails loudly at conversion`() {
+        // DCQL requires at least one path element; an empty path would otherwise match every
+        // stored claim of its type.
+        val result = runCatching { sdJwtRaw(emptyList()).toClaimPath() }
 
-        val match1 = SdJwtVcItem(listOf("claim1", "claim1_a", "claim1_b", "claim1_c")).toClaimPath()
-        val match2 = SdJwtVcItem(listOf("claim1", "claim1_a", "claim1_b", "claim2_c")).toClaimPath()
-        val nonMatch =
-            SdJwtVcItem(listOf("claim1", "claim1_a", "claim33_b", "claim2_c")).toClaimPath()
+        assertTrue(result.exceptionOrNull() is IllegalStateException)
+    }
 
-        assertTrue(requested.isPrefixOf(match1))
-        assertTrue(requested.isPrefixOf(match2))
-        assertFalse(requested.isPrefixOf(nonMatch))
+    // ── matches(): exact / ancestor / descendant ─────────────────────────────────
+
+    @Test
+    fun `matches is true for an exact path`() {
+        val requested = sdJwt(listOf("address", "street")).toClaimPath()
+        val available = sdJwt(listOf("address", "street")).toClaimPath()
+
+        assertTrue(requested.matches(available))
     }
 
     @Test
-    fun `SdJwt - requested path longer than available returns false`() {
-        val requested = SdJwtVcItem(listOf("a", "b", "c")).toClaimPath()
-        val available = SdJwtVcItem(listOf("a", "b")).toClaimPath()
+    fun `matches is bidirectional across the shared prefix - ancestor and descendant both match`() {
+        val parent = sdJwt(listOf("address")).toClaimPath()
+        val child = sdJwt(listOf("address", "country")).toClaimPath()
 
-        assertFalse(requested.isPrefixOf(available))
+        assertTrue(parent.matches(child))
+        assertTrue(child.matches(parent))
     }
 
     @Test
-    fun `SdJwt - empty requested path is prefix of any`() {
-        val requested = SdJwtVcItem(emptyList()).toClaimPath()
-        val available = SdJwtVcItem(listOf("anything", "deep")).toClaimPath()
+    fun `matches is false when the shared prefix diverges`() {
+        val requested = sdJwt(listOf("address", "formatted")).toClaimPath()
 
-        assertTrue(requested.isPrefixOf(available))
+        val sibling = sdJwt(listOf("address", "formattedNo")).toClaimPath()
+        val differentRoot = sdJwt(listOf("addressA", "street")).toClaimPath()
+
+        assertFalse(requested.matches(sibling))
+        assertFalse(requested.matches(differentRoot))
     }
 
     @Test
-    fun `MsoMdoc - exact match`() {
-        val requested =
-            MsoMdocItem(namespace = "ns", elementIdentifier = "family_name").toClaimPath()
-        val available =
-            MsoMdocItem(namespace = "ns", elementIdentifier = "family_name").toClaimPath()
+    fun `matches is false across different claim types`() {
+        val mdocPath = mdoc("address", "city").toClaimPath()
+        val sdJwtPath = sdJwt(listOf("address", "city")).toClaimPath()
 
-        assertTrue(requested.isPrefixOf(available))
+        assertFalse(mdocPath.matches(sdJwtPath))
+        assertFalse(sdJwtPath.matches(mdocPath))
     }
 
     @Test
-    fun `MsoMdoc - partial match`() {
-        val requested =
-            MsoMdocItem(namespace = "ns", elementIdentifier = "family_name").toClaimPath()
-        val available =
-            MsoMdocItem(namespace = "ns", elementIdentifier = "family_name_birth").toClaimPath()
+    fun `an empty path matches nothing`() {
+        val empty = ClaimPathDomain(segments = emptyList(), type = ClaimType.SdJwtVc)
+        val stored = sdJwt(listOf("family_name")).toClaimPath()
 
-        assertFalse(requested.isPrefixOf(available))
+        assertFalse(empty.matches(stored))
+        assertFalse(stored.matches(empty))
+        assertFalse(empty.matches(empty))
+    }
+
+    // ── matches(): wildcard and array index ──────────────────────────────────────
+
+    @Test
+    fun `AllElements wildcard matches any concrete index but not a key`() {
+        val wildcard = sdJwtRaw(
+            listOf(JsonPrimitive("nationalities"), JsonNull)
+        ).toClaimPath()
+
+        val index0 = sdJwtRaw(
+            listOf(JsonPrimitive("nationalities"), JsonPrimitive(0))
+        ).toClaimPath()
+        val index1 = sdJwtRaw(
+            listOf(JsonPrimitive("nationalities"), JsonPrimitive(1))
+        ).toClaimPath()
+        val key = sdJwt(listOf("nationalities", "primary")).toClaimPath()
+
+        assertTrue(wildcard.matches(index0))
+        assertTrue(wildcard.matches(index1))
+        assertFalse(wildcard.matches(key))
     }
 
     @Test
-    fun `MsoMdoc - different identifiers`() {
-        val requested = MsoMdocItem(namespace = "ns", elementIdentifier = "name").toClaimPath()
-        val available = MsoMdocItem(namespace = "ns", elementIdentifier = "surname").toClaimPath()
+    fun `wildcard inside a path matches the same trailing key under any index`() {
+        val requested = sdJwtRaw(
+            listOf(JsonPrimitive("addresses"), JsonNull, JsonPrimitive("city")),
+        ).toClaimPath()
 
-        assertFalse(requested.isPrefixOf(available))
+        val cityOfFirst = sdJwtRaw(
+            listOf(JsonPrimitive("addresses"), JsonPrimitive(0), JsonPrimitive("city")),
+        ).toClaimPath()
+        val streetOfFirst = sdJwtRaw(
+            listOf(JsonPrimitive("addresses"), JsonPrimitive(0), JsonPrimitive("street")),
+        ).toClaimPath()
+
+        assertTrue(requested.matches(cityOfFirst))
+        assertFalse(requested.matches(streetOfFirst))
     }
 
     @Test
-    fun `MsoMdoc - different namespace`() {
-        val requested =
-            MsoMdocItem(namespace = "ns1", elementIdentifier = "family_name").toClaimPath()
-        val available =
-            MsoMdocItem(namespace = "ns2", elementIdentifier = "family_name").toClaimPath()
+    fun `concrete index matches the same index and the array ancestor but not a sibling index`() {
+        val index0 = sdJwtRaw(
+            listOf(JsonPrimitive("nationalities"), JsonPrimitive(0))
+        ).toClaimPath()
 
-        assertFalse(requested.isPrefixOf(available))
+        val sameIndex = sdJwtRaw(
+            listOf(JsonPrimitive("nationalities"), JsonPrimitive(0))
+        ).toClaimPath()
+        val ancestor = sdJwt(
+            listOf("nationalities")
+        ).toClaimPath()
+        val siblingIndex = sdJwtRaw(
+            listOf(JsonPrimitive("nationalities"), JsonPrimitive(1))
+        ).toClaimPath()
+
+        assertTrue(index0.matches(sameIndex))
+        assertTrue(index0.matches(ancestor))
+        assertFalse(index0.matches(siblingIndex))
+    }
+
+    // matching is one-directional: a wildcard matches a concrete index only on the requested
+    // (left) side; a concrete requested index does not match a stored wildcard.
+    @Test
+    fun `a concrete index does not match a stored wildcard`() {
+        val index0 = sdJwtRaw(
+            listOf(JsonPrimitive("nationalities"), JsonPrimitive(0))
+        ).toClaimPath()
+        val wildcard = sdJwtRaw(
+            listOf(JsonPrimitive("nationalities"), JsonNull)
+        ).toClaimPath()
+
+        assertFalse(index0.matches(wildcard))
+    }
+
+    // ── mdoc matching ────────────────────────────────────────────────────────────
+
+    @Test
+    fun `mdoc matches only on the same namespace and element`() {
+        val requested = mdoc("ns", "family_name").toClaimPath()
+
+        assertTrue(requested.matches(mdoc("ns", "family_name").toClaimPath()))
+        assertFalse(requested.matches(mdoc("ns", "given_name").toClaimPath()))
+        assertFalse(requested.matches(mdoc("other_ns", "family_name").toClaimPath()))
+    }
+
+    // ── factories ────────────────────────────────────────────────────────────────
+
+    @Test
+    fun `forUiGroup builds a single-key path of the given type`() {
+        val group = ClaimPathDomain.forUiGroup(groupId = "uuid-123", type = ClaimType.SdJwtVc)
+
+        assertEquals(listOf(ClaimPathSegment.Key("uuid-123")), group.segments)
+        assertEquals(ClaimType.SdJwtVc, group.type)
     }
 
     @Test
-    fun `MsoMdoc - namespace as prefix of sdjwt path`() {
-        val msoClaimPath =
-            MsoMdocItem(namespace = "address", elementIdentifier = "city").toClaimPath()
-        val sdjwtClaimPath = SdJwtVcItem(listOf("address", "city")).toClaimPath()
+    fun `toClaimPathDomain wraps a segment list with the given type`() {
+        val segments = listOf(
+            ClaimPathSegment.Key("a"),
+            ClaimPathSegment.Index(0)
+        )
 
-        assertFalse(msoClaimPath.isPrefixOf(sdjwtClaimPath))
-        assertFalse(sdjwtClaimPath.isPrefixOf(msoClaimPath))
+        val path = segments.toClaimPathDomain(ClaimType.SdJwtVc)
+
+        assertEquals(segments, path.segments)
+        assertEquals(ClaimType.SdJwtVc, path.type)
     }
 }

@@ -106,7 +106,7 @@ class PresentationLoadingViewModel(
                     }
 
                     is PresentationLoadingObserveResponsePartialState.RequestReadyToBeSent -> {
-                        sendRequestedDocuments(Event.DoWork(context))
+                        sendRequestedDocuments(event = Event.DoWork(context))
                     }
 
                     is PresentationLoadingObserveResponsePartialState.UserAuthenticationRequired -> {
@@ -120,7 +120,7 @@ class PresentationLoadingViewModel(
                             popEffect,
                             it.authenticationData,
                             {
-                                sendRequestedDocuments(Event.DoWork(context))
+                                sendRequestedDocuments(event = Event.DoWork(context))
                             }
                         )
                     }
@@ -134,27 +134,28 @@ class PresentationLoadingViewModel(
     }
 
     private fun sendRequestedDocuments(event: Event) {
+        viewModelScope.launch {
+            when (val result = interactor.sendRequestedDocuments()) {
+                is PresentationLoadingSendRequestedDocumentPartialState.Success -> { /*no op*/
+                }
 
-        when (val result = interactor.sendRequestedDocuments()) {
-            is PresentationLoadingSendRequestedDocumentPartialState.Success -> { /*no op*/
-            }
-
-            is PresentationLoadingSendRequestedDocumentPartialState.Failure -> {
-                setState {
-                    copy(
-                        error = ContentErrorConfig(
-                            onRetry = { setEvent(event) },
-                            errorSubTitle = result.error,
-                            onCancel = {
-                                setEvent(Event.DismissError)
-                                doNavigation(
-                                    NavigationType.PopTo(
-                                        getPreviousScreen()
+                is PresentationLoadingSendRequestedDocumentPartialState.Failure -> {
+                    setState {
+                        copy(
+                            error = ContentErrorConfig(
+                                onRetry = { setEvent(event) },
+                                errorSubTitle = result.error,
+                                onCancel = {
+                                    setEvent(Event.DismissError)
+                                    doNavigation(
+                                        NavigationType.PopTo(
+                                            getPreviousScreen()
+                                        )
                                     )
-                                )
-                            }
+                                }
+                            )
                         )
-                    )
+                    }
                 }
             }
         }
@@ -167,7 +168,22 @@ class PresentationLoadingViewModel(
         sendRequestedDocumentsAction: () -> Unit,
         index: Int = 0,
     ) {
-        val authenticationData = authenticationDataList[index]
+        val authenticationData = authenticationDataList.getOrNull(index)
+        if (authenticationData == null) {
+            setState {
+                copy(
+                    error = ContentErrorConfig(
+                        errorSubTitle = resourceProvider.genericErrorMessage(),
+                        onCancel = {
+                            setEvent(Event.DismissError)
+                            doNavigation(NavigationType.PopTo(getPreviousScreen()))
+                        },
+                        onRetry = null,
+                    )
+                )
+            }
+            return
+        }
         val isFinalAuthentication = index == authenticationDataList.lastIndex
         interactor.handleUserAuthentication(
             context = context,

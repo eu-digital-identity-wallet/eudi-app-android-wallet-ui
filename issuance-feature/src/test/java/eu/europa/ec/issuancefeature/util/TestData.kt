@@ -16,6 +16,11 @@
 
 package eu.europa.ec.issuancefeature.util
 
+import eu.europa.ec.corelogic.model.ClaimItemId
+import eu.europa.ec.corelogic.model.ClaimPathDomain
+import eu.europa.ec.corelogic.model.ClaimPathDomain.Companion.toClaimPathDomain
+import eu.europa.ec.corelogic.model.ClaimPathSegment
+import eu.europa.ec.corelogic.model.ClaimType
 import eu.europa.ec.corelogic.model.ScopedDocumentDomain
 import eu.europa.ec.eudi.openid4vci.TxCode
 import eu.europa.ec.eudi.openid4vci.TxCodeInputMode
@@ -32,7 +37,6 @@ import eu.europa.ec.testfeature.util.mockedPhotoIdDocName
 import eu.europa.ec.testfeature.util.mockedPidDocName
 import eu.europa.ec.testfeature.util.mockedPidId
 import eu.europa.ec.testfeature.util.mockedSdJwtPidId
-import eu.europa.ec.testfeature.util.mockedUuid
 import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.ListItemDataUi
 import eu.europa.ec.uilogic.component.ListItemMainContentDataUi
@@ -170,14 +174,14 @@ internal val mockedMdocPidClaims = listOf(
 internal val mockedSdJwtPidClaims = listOf(
     ExpandableListItemUi.SingleListItem(
         header = ListItemDataUi(
-            itemId = "$mockedSdJwtPidId,age_birth_year",
+            itemId = sdJwtItemId(mockedSdJwtPidId, ClaimPathSegment.Key("age_birth_year")),
             overlineText = "age_birth_year",
             mainContentData = ListItemMainContentDataUi.Text("1985")
         )
     ),
     ExpandableListItemUi.NestedListItem(
         header = ListItemDataUi(
-            itemId = "$mockedSdJwtPidId,age_equal_or_over",
+            itemId = sdJwtItemId(mockedSdJwtPidId, ClaimPathSegment.Key("age_equal_or_over")),
             mainContentData = ListItemMainContentDataUi.Text("age_equal_or_over"),
             trailingContentData = ListItemTrailingContentDataUi.Icon(
                 iconData = AppIcons.KeyboardArrowDown
@@ -186,14 +190,22 @@ internal val mockedSdJwtPidClaims = listOf(
         nestedItems = listOf(
             ExpandableListItemUi.SingleListItem(
                 header = ListItemDataUi(
-                    itemId = "$mockedSdJwtPidId,age_equal_or_over,18",
+                    itemId = sdJwtItemId(
+                        mockedSdJwtPidId,
+                        ClaimPathSegment.Key("age_equal_or_over"),
+                        ClaimPathSegment.Key("18"),
+                    ),
                     overlineText = "18",
                     mainContentData = ListItemMainContentDataUi.Text("true")
                 )
             ),
             ExpandableListItemUi.SingleListItem(
                 header = ListItemDataUi(
-                    itemId = "$mockedSdJwtPidId,age_equal_or_over,65",
+                    itemId = sdJwtItemId(
+                        mockedSdJwtPidId,
+                        ClaimPathSegment.Key("age_equal_or_over"),
+                        ClaimPathSegment.Key("65"),
+                    ),
                     overlineText = "65",
                     mainContentData = ListItemMainContentDataUi.Text("unset")
                 )
@@ -203,56 +215,56 @@ internal val mockedSdJwtPidClaims = listOf(
     ),
     ExpandableListItemUi.SingleListItem(
         header = ListItemDataUi(
-            itemId = "$mockedSdJwtPidId,birth_date",
+            itemId = sdJwtItemId(mockedSdJwtPidId, ClaimPathSegment.Key("birth_date")),
             overlineText = "birth_date",
             mainContentData = ListItemMainContentDataUi.Text("30 Mar 1985")
         )
     ),
     ExpandableListItemUi.SingleListItem(
         header = ListItemDataUi(
-            itemId = "$mockedSdJwtPidId,exp",
+            itemId = sdJwtItemId(mockedSdJwtPidId, ClaimPathSegment.Key("exp")),
             overlineText = "exp",
             mainContentData = ListItemMainContentDataUi.Text(text = "1755730800")
         )
     ),
     ExpandableListItemUi.SingleListItem(
         header = ListItemDataUi(
-            itemId = "$mockedSdJwtPidId,family_name",
+            itemId = sdJwtItemId(mockedSdJwtPidId, ClaimPathSegment.Key("family_name")),
             overlineText = "family_name",
             mainContentData = ListItemMainContentDataUi.Text("ANDERSSON")
         )
     ),
     ExpandableListItemUi.SingleListItem(
         header = ListItemDataUi(
-            itemId = "$mockedSdJwtPidId,given_name",
+            itemId = sdJwtItemId(mockedSdJwtPidId, ClaimPathSegment.Key("given_name")),
             overlineText = "given_name",
             mainContentData = ListItemMainContentDataUi.Text("JAN")
         )
     ),
     ExpandableListItemUi.SingleListItem(
         header = ListItemDataUi(
-            itemId = "$mockedSdJwtPidId,iat",
+            itemId = sdJwtItemId(mockedSdJwtPidId, ClaimPathSegment.Key("iat")),
             overlineText = "iat",
             mainContentData = ListItemMainContentDataUi.Text(text = "1747954800")
         )
     ),
     ExpandableListItemUi.SingleListItem(
         header = ListItemDataUi(
-            itemId = "$mockedSdJwtPidId,issuing_authority",
+            itemId = sdJwtItemId(mockedSdJwtPidId, ClaimPathSegment.Key("issuing_authority")),
             overlineText = "issuing_authority",
             mainContentData = ListItemMainContentDataUi.Text(text = "Test PID issuer")
         )
     ),
     ExpandableListItemUi.SingleListItem(
         header = ListItemDataUi(
-            itemId = "$mockedSdJwtPidId,issuing_country",
+            itemId = sdJwtItemId(mockedSdJwtPidId, ClaimPathSegment.Key("issuing_country")),
             overlineText = "issuing_country",
             mainContentData = ListItemMainContentDataUi.Text("FC")
         )
     ),
     ExpandableListItemUi.NestedListItem(
         header = ListItemDataUi(
-            itemId = "$mockedSdJwtPidId,$mockedUuid",
+            itemId = sdJwtItemId(mockedSdJwtPidId, ClaimPathSegment.Key("nationalities")),
             overlineText = null,
             mainContentData = ListItemMainContentDataUi.Text("nationalities"),
             trailingContentData = ListItemTrailingContentDataUi.Icon(
@@ -262,8 +274,14 @@ internal val mockedSdJwtPidClaims = listOf(
         nestedItems = listOf(
             ExpandableListItemUi.SingleListItem(
                 header = ListItemDataUi(
-                    itemId = "$mockedSdJwtPidId,nationalities",
-                    overlineText = "nationalities",
+                    // The element is addressed by its typed array index; its overline is the
+                    // index ("0"), not the array name.
+                    itemId = sdJwtItemId(
+                        mockedSdJwtPidId,
+                        ClaimPathSegment.Key("nationalities"),
+                        ClaimPathSegment.Index(0),
+                    ),
+                    overlineText = "0",
                     mainContentData = ListItemMainContentDataUi.Text("SE")
                 )
             )
@@ -272,7 +290,7 @@ internal val mockedSdJwtPidClaims = listOf(
     ),
     ExpandableListItemUi.NestedListItem(
         header = ListItemDataUi(
-            itemId = "$mockedSdJwtPidId,place_of_birth",
+            itemId = sdJwtItemId(mockedSdJwtPidId, ClaimPathSegment.Key("place_of_birth")),
             overlineText = null,
             mainContentData = ListItemMainContentDataUi.Text("place_of_birth"),
             trailingContentData = ListItemTrailingContentDataUi.Icon(
@@ -282,7 +300,11 @@ internal val mockedSdJwtPidClaims = listOf(
         nestedItems = listOf(
             ExpandableListItemUi.SingleListItem(
                 header = ListItemDataUi(
-                    itemId = "$mockedSdJwtPidId,place_of_birth,locality",
+                    itemId = sdJwtItemId(
+                        mockedSdJwtPidId,
+                        ClaimPathSegment.Key("place_of_birth"),
+                        ClaimPathSegment.Key("locality"),
+                    ),
                     overlineText = "locality",
                     mainContentData = ListItemMainContentDataUi.Text("KATRINEHOLM")
                 )
@@ -300,9 +322,29 @@ private fun createMdocClaimListItem(
 ): ExpandableListItemUi.SingleListItem {
     return ExpandableListItemUi.SingleListItem(
         header = ListItemDataUi(
-            itemId = "$docId,$nameSpace,$claimIdentifier",
+            itemId = ClaimItemId.Claim(
+                docId = docId,
+                queryId = null,
+                path = ClaimPathDomain.ofPlainKeys(
+                    names = listOf(claimIdentifier),
+                    type = ClaimType.MsoMdoc(namespace = nameSpace)
+                ),
+            ).encode(),
             overlineText = claimIdentifier,
             mainContentData = ListItemMainContentDataUi.Text(value)
         )
     )
 }
+
+/**
+ * Builds the request-screen item id for an SD-JWT VC claim leaf/group the way production does:
+ * encoding the typed claim path with [ClaimItemId.encode] (queryId is null on the
+ * issuance-success / detail screens). Computing it here, rather than hard-coding the encoded
+ * string, keeps it correct if the id encoding evolves.
+ */
+private fun sdJwtItemId(docId: String, vararg segments: ClaimPathSegment): String =
+    ClaimItemId.Claim(
+        docId = docId,
+        queryId = null,
+        path = segments.toList().toClaimPathDomain(ClaimType.SdJwtVc),
+    ).encode()

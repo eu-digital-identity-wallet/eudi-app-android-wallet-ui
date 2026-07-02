@@ -18,23 +18,30 @@ package eu.europa.ec.testfeature.util
 
 import eu.europa.ec.authenticationlogic.secure.SecurePin
 import eu.europa.ec.authenticationlogic.secure.SecurePinImpl
-import eu.europa.ec.eudi.iso18013.transfer.response.ReaderAuth
-import eu.europa.ec.eudi.iso18013.transfer.response.RequestedDocument
-import eu.europa.ec.eudi.iso18013.transfer.response.device.MsoMdocItem
+import eu.europa.ec.corelogic.extension.toClaimPath
+import eu.europa.ec.corelogic.model.ClaimPathDomain
+import eu.europa.ec.corelogic.model.ClaimType
+import eu.europa.ec.corelogic.model.PresentationMatchDomain
+import eu.europa.ec.corelogic.model.PresentationSelectionDomain
+import eu.europa.ec.eudi.sdjwt.vc.ClaimPathElement
 import eu.europa.ec.eudi.wallet.document.IssuedDocument
 import eu.europa.ec.eudi.wallet.document.format.DocumentData
 import eu.europa.ec.eudi.wallet.document.format.DocumentFormat
+import eu.europa.ec.eudi.wallet.document.format.MsoMdocClaim
 import eu.europa.ec.eudi.wallet.document.format.MsoMdocData
 import eu.europa.ec.eudi.wallet.document.format.MsoMdocFormat
+import eu.europa.ec.eudi.wallet.document.format.SdJwtVcClaim
 import eu.europa.ec.eudi.wallet.document.format.SdJwtVcData
 import eu.europa.ec.eudi.wallet.document.format.SdJwtVcFormat
 import eu.europa.ec.eudi.wallet.document.metadata.IssuerMetadata
 import org.mockito.Mockito.mock
 import org.mockito.kotlin.whenever
+import org.multipaz.credential.SecureAreaBoundCredential
 import org.multipaz.document.NameSpacedData
 import java.net.URI
 import java.time.Instant
 import java.util.Locale
+import kotlin.time.toKotlinInstant
 
 val mockedExceptionWithMessage = RuntimeException("Exception to test interactor.")
 val mockedExceptionWithNoMessage = RuntimeException()
@@ -67,6 +74,8 @@ const val mockedPhotoIdDocName = "Photo ID"
 const val mockedDocumentAvailableCredentials = 3
 const val mockedDocumentTotalCredentials = 15
 const val mockedVerifierIsTrusted = true
+const val mockedSelectableClaims = true
+const val mockedNonSelectableClaims = false
 const val mockedNotifyOnAuthenticationFailure = false
 const val mockedUserFirstName = "JAN"
 const val mockedUserBase64Portrait = "SE"
@@ -417,99 +426,119 @@ private val mockedIssuerMetadata = IssuerMetadata(
     )
 )
 
-private val mockedValidReaderAuth = ReaderAuth(
-    readerAuth = byteArrayOf(),
-    readerSignIsValid = true,
-    readerCertificateChain = listOf(),
-    readerCertificatedIsTrusted = true,
-    readerCommonName = mockedVerifierName
-)
+/** Builds a [PresentationMatchDomain] for an MSO mdoc credential. */
+fun mockedMdocPresentationMatch(
+    documentId: String,
+    credentialId: String,
+    docType: String,
+    namespace: String,
+    dataElements: List<String>,
+    intentToRetain: Boolean = false,
+): PresentationMatchDomain {
+    val requestedClaims = dataElements.map { dataElement ->
+        org.multipaz.request.MdocRequestedClaim(
+            docType = docType,
+            namespaceName = namespace,
+            dataElementName = dataElement,
+            intentToRetain = intentToRetain,
+        ).toClaimPath()
+    }
 
-val mockedValidPidWithBasicFieldsRequestDocument = RequestedDocument(
-    documentId = mockedPidId,
-    requestedItems = mapOf(
-        MsoMdocItem(
-            namespace = mockedMdocPidNameSpace,
-            elementIdentifier = "family_name"
-        ) to false,
-        MsoMdocItem(
-            namespace = mockedMdocPidNameSpace,
-            elementIdentifier = "given_name"
-        ) to false,
-        MsoMdocItem(
-            namespace = mockedMdocPidNameSpace,
-            elementIdentifier = "age_over_18"
-        ) to false,
-        MsoMdocItem(
-            namespace = mockedMdocPidNameSpace,
-            elementIdentifier = "age_over_65"
-        ) to false,
-        MsoMdocItem(
-            namespace = mockedMdocPidNameSpace,
-            elementIdentifier = "age_birth_year"
-        ) to false,
-        MsoMdocItem(
-            namespace = mockedMdocPidNameSpace,
-            elementIdentifier = "birth_city"
-        ) to false,
-        MsoMdocItem(
-            namespace = mockedMdocPidNameSpace,
-            elementIdentifier = "gender"
-        ) to false,
-        MsoMdocItem(
-            namespace = mockedMdocPidNameSpace,
-            elementIdentifier = "expiry_date"
-        ) to false,
-        MsoMdocItem(
-            namespace = mockedMdocPidNameSpace,
-            elementIdentifier = "portrait",
-        ) to false,
-        MsoMdocItem(
-            namespace = mockedMdocPidNameSpace,
-            elementIdentifier = "issuing_country",
-        ) to false,
-    ),
-    readerAuth = mockedValidReaderAuth
-)
+    return PresentationMatchDomain(
+        documentId = documentId,
+        credentialId = credentialId,
+        queryId = null,
+        requestedClaims = requestedClaims,
+    )
+}
 
-val mockedValidMdlWithBasicFieldsRequestDocument = RequestedDocument(
-    documentId = mockedMdlId,
-    requestedItems = mapOf(
-        MsoMdocItem(
-            namespace = mockedMdocMdlNameSpace,
-            elementIdentifier = "family_name"
-        ) to false,
-        MsoMdocItem(
-            namespace = mockedMdocMdlNameSpace,
-            elementIdentifier = "given_name"
-        ) to false,
-        MsoMdocItem(
-            namespace = mockedMdocMdlNameSpace,
-            elementIdentifier = "birth_place"
-        ) to false,
-        MsoMdocItem(
-            namespace = mockedMdocMdlNameSpace,
-            elementIdentifier = "expiry_date"
-        ) to false,
-        MsoMdocItem(
-            namespace = mockedMdocMdlNameSpace,
-            elementIdentifier = "portrait"
-        ) to false,
-        MsoMdocItem(
-            namespace = mockedMdocMdlNameSpace,
-            elementIdentifier = "driving_privileges"
-        ) to false,
-        MsoMdocItem(
-            namespace = mockedMdocMdlNameSpace,
-            elementIdentifier = "signature_usual_mark"
-        ) to false,
-        MsoMdocItem(
-            namespace = mockedMdocMdlNameSpace,
-            elementIdentifier = "sex"
-        ) to false,
-    ),
-    readerAuth = mockedValidReaderAuth
-)
+/**
+ * Builds a [PresentationSelectionDomain] for an MSO mdoc credential — the user's
+ * per-match disclosure decision consumed by the success screen.
+ */
+fun mockedMdocPresentationSelection(
+    documentId: String,
+    namespace: String,
+    dataElements: List<String>,
+    credentialId: String = "$documentId-cred",
+    docType: String = mockedMdocPidDocType,
+    intentToRetain: Boolean = false,
+    queryId: String? = null,
+): PresentationSelectionDomain {
+    val selectedClaims = dataElements.map { dataElement ->
+        org.multipaz.request.MdocRequestedClaim(
+            docType = docType,
+            namespaceName = namespace,
+            dataElementName = dataElement,
+            intentToRetain = intentToRetain,
+        ).toClaimPath()
+    }.toSet()
+
+    return PresentationSelectionDomain(
+        documentId = documentId,
+        credentialId = credentialId,
+        queryId = queryId,
+        selectedClaims = selectedClaims,
+    )
+}
+
+/**
+ * Builds a [PresentationSelectionDomain] for an SD-JWT VC credential — mirrors
+ * [mockedMdocPresentationSelection] but with key-path claims ([ClaimType.SdJwtVc]).
+ */
+fun mockedSdJwtPresentationSelection(
+    documentId: String,
+    claimPaths: List<List<String>>,
+    credentialId: String = "$documentId-cred",
+    queryId: String? = null,
+): PresentationSelectionDomain {
+    return PresentationSelectionDomain(
+        documentId = documentId,
+        credentialId = credentialId,
+        queryId = queryId,
+        selectedClaims = claimPaths.map { names ->
+            ClaimPathDomain.ofPlainKeys(names = names, type = ClaimType.SdJwtVc)
+        }.toSet(),
+    )
+}
+
+val mockedValidPidWithBasicFieldsRequestMatch: PresentationMatchDomain =
+    mockedMdocPresentationMatch(
+        documentId = mockedPidId,
+        credentialId = "${mockedPidId}-cred",
+        docType = mockedMdocPidDocType,
+        namespace = mockedMdocPidNameSpace,
+        dataElements = listOf(
+            "family_name",
+            "given_name",
+            "age_over_18",
+            "age_over_65",
+            "age_birth_year",
+            "birth_city",
+            "gender",
+            "expiry_date",
+            "portrait",
+            "issuing_country",
+        ),
+    )
+
+val mockedValidMdlWithBasicFieldsRequestMatch: PresentationMatchDomain =
+    mockedMdocPresentationMatch(
+        documentId = mockedMdlId,
+        credentialId = "${mockedMdlId}-cred",
+        docType = mockedMdocMdlDocType,
+        namespace = mockedMdocMdlNameSpace,
+        dataElements = listOf(
+            "family_name",
+            "given_name",
+            "birth_place",
+            "expiry_date",
+            "portrait",
+            "driving_privileges",
+            "signature_usual_mark",
+            "sex",
+        ),
+    )
 
 fun createMockedNamespaceData(
     documentNamespace: String,
@@ -520,6 +549,52 @@ fun createMockedNamespaceData(
         builder.putEntry(documentNamespace, it.key, it.value)
     }
     return builder.build()
+}
+
+/** A mocked [MsoMdocClaim] populated from the given fields. */
+fun mockedMdocClaim(
+    dataElementName: String,
+    value: Any? = null,
+    nameSpace: String = mockedMdocPidNameSpace,
+    issuerMetadata: IssuerMetadata.Claim? = null,
+): MsoMdocClaim {
+    val claim = mock<MsoMdocClaim>()
+    whenever(claim.dataElementName).thenReturn(dataElementName)
+    whenever(claim.nameSpace).thenReturn(nameSpace)
+    whenever(claim.value).thenReturn(value)
+    whenever(claim.issuerMetadata).thenReturn(issuerMetadata)
+    return claim
+}
+
+/** A mocked [SdJwtVcClaim] populated from the given fields. */
+fun mockedSdJwtVcClaim(
+    pathElement: ClaimPathElement,
+    children: List<SdJwtVcClaim> = emptyList(),
+    value: Any? = null,
+    issuerMetadata: IssuerMetadata.Claim? = null,
+): SdJwtVcClaim {
+    val claim = mock<SdJwtVcClaim>()
+    whenever(claim.pathElement).thenReturn(pathElement)
+    whenever(claim.children).thenReturn(children)
+    whenever(claim.value).thenReturn(value)
+    whenever(claim.issuerMetadata).thenReturn(issuerMetadata)
+    return claim
+}
+
+// getValidUntil()/getValidFrom() come from a credential, so a mock stubbing them must return a
+// matching credential from getCredentials() too.
+private fun mockCredentialsFor(
+    validFrom: Result<Instant>?,
+    validUntil: Result<Instant>?,
+): List<SecureAreaBoundCredential> {
+    val validFromInstant = validFrom?.getOrNull()?.toKotlinInstant() ?: return emptyList()
+    val validUntilInstant = validUntil?.getOrNull()?.toKotlinInstant() ?: return emptyList()
+
+    val credential = mock<SecureAreaBoundCredential>()
+    whenever(credential.validFrom).thenReturn(validFromInstant)
+    whenever(credential.validUntil).thenReturn(validUntilInstant)
+
+    return listOf(credential)
 }
 
 private suspend fun mockIssuedDocument(
@@ -574,6 +649,10 @@ private suspend fun mockIssuedDocument(
 
         whenever(this.initialCredentialsCount())
             .thenReturn(totalCredentials)
+
+        val credentials = mockCredentialsFor(validFrom = validFrom, validUntil = validUntil)
+        whenever(this.getCredentials())
+            .thenReturn(credentials)
     }
 
     return doc
@@ -672,6 +751,17 @@ suspend fun IssuedDocument.copy(
     if (validUntil != null) {
         whenever(this.getValidUntil())
             .thenReturn(validUntil)
+    }
+
+    // a validity override must also update getCredentials(): rebuild it from the values now on the
+    // mock, so a copy that sets only one date keeps the other.
+    if (validFrom != null || validUntil != null) {
+        val credentials = mockCredentialsFor(
+            validFrom = this.getValidFrom(),
+            validUntil = this.getValidUntil(),
+        )
+        whenever(this.getCredentials())
+            .thenReturn(credentials)
     }
 
     if (data != null) {

@@ -26,7 +26,7 @@ import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
 import eu.europa.ec.corelogic.extension.getLocalizedDocumentName
 import eu.europa.ec.corelogic.extension.sortRecursivelyBy
 import eu.europa.ec.corelogic.model.ClaimDomain
-import eu.europa.ec.corelogic.model.ClaimPathDomain.Companion.toClaimPathDomain
+import eu.europa.ec.corelogic.model.ClaimPathDomain
 import eu.europa.ec.corelogic.model.ClaimType
 import eu.europa.ec.corelogic.model.TransactionLogDataDomain
 import eu.europa.ec.corelogic.model.TransactionLogDataDomain.Companion.getTransactionTypeLabel
@@ -195,7 +195,7 @@ class TransactionDetailsInteractorImpl(
             presentedDocument.claims.forEach { presentedClaim ->
                 presentedClaim.value?.let { safePresentedClaimValue ->
 
-                    val elementIdentifier = when (presentedDocument.format) {
+                    val dataElementName = when (presentedDocument.format) {
                         is MsoMdocFormat -> presentedClaim.path.last()
                         is SdJwtVcFormat -> presentedClaim.path.joinToString(".")
                     }
@@ -208,15 +208,18 @@ class TransactionDetailsInteractorImpl(
                         is SdJwtVcFormat -> ClaimType.SdJwtVc
                     }
 
-                    val itemPath = when (presentedDocument.format) {
-                        is MsoMdocFormat -> listOf(elementIdentifier)
-                        is SdJwtVcFormat -> presentedClaim.path
-                    }.toClaimPathDomain(type = claimType)
+                    val itemPath = ClaimPathDomain.ofPlainKeys(
+                        names = when (presentedDocument.format) {
+                            is MsoMdocFormat -> listOf(dataElementName)
+                            is SdJwtVcFormat -> presentedClaim.path
+                        },
+                        type = claimType,
+                    )
 
 
                     createKeyValue(
                         item = safePresentedClaimValue,
-                        groupKey = elementIdentifier,
+                        groupKey = dataElementName,
                         disclosurePath = itemPath,
                         resourceProvider = resourceProvider,
                         claimMetaData = presentedClaim.metadata,
@@ -250,7 +253,10 @@ class TransactionDetailsInteractorImpl(
                     .sortRecursivelyBy {
                         it.displayTitle.lowercase()
                     }.map { domainClaim ->
-                        domainClaim.toExpandableListItems(docId = uniqueId)
+                        domainClaim.toExpandableListItems(
+                            docId = uniqueId,
+                            queryId = null,
+                        )
                     },
                 isExpanded = false
             )

@@ -46,6 +46,7 @@ import eu.europa.ec.eudi.wallet.document.CreateDocumentSettings
 import eu.europa.ec.eudi.wallet.document.DeferredDocument
 import eu.europa.ec.eudi.wallet.document.Document
 import eu.europa.ec.eudi.wallet.document.DocumentExtensions.getDefaultCreateDocumentSettings
+import eu.europa.ec.eudi.wallet.document.DocumentExtensions.getDefaultCreateKeySettings
 import eu.europa.ec.eudi.wallet.document.DocumentExtensions.getDefaultKeyUnlockData
 import eu.europa.ec.eudi.wallet.document.DocumentId
 import eu.europa.ec.eudi.wallet.document.IssuedDocument
@@ -711,7 +712,7 @@ class WalletCoreDocumentsControllerImpl(
     override suspend fun isDocumentLowOnCredentials(document: IssuedDocument): Boolean {
         val documentRemainingCredentials = document.credentialsCount()
 
-        return document.credentialPolicy == CreateDocumentSettings.CredentialPolicy.OneTimeUse
+        return document.credentialPolicy is CreateDocumentSettings.CredentialPolicy.OnceOnly
                 && documentRemainingCredentials <= 1
     }
 
@@ -766,20 +767,50 @@ class WalletCoreDocumentsControllerImpl(
                 }
 
                 is IssueEvent.DocumentRequiresCreateSettings -> {
-                    launch {
-                        val offeredDocIdentifier = event.offeredDocument.documentIdentifier
+                    when (event) {
+                        is IssueEvent.DocumentRequiresCreateSettings.MandatoryReusePolicy -> {
+                            val (secureAreaId, createKeySettings) = eudiWallet.getDefaultCreateKeySettings()
+                            event.resume(secureAreaId, createKeySettings)
+                        }
 
-                        val documentIssuanceRule = walletCoreConfig
-                            .documentIssuanceConfig
-                            .getRuleForDocument(documentIdentifier = offeredDocIdentifier)
+                        is IssueEvent.DocumentRequiresCreateSettings.OptionalReusePolicy -> {
+                            val offeredDocIdentifier = event.offeredDocument.documentIdentifier
+                            val configuredPolicy = walletCoreConfig
+                                .documentIssuanceConfig
+                                .getPolicyForDocument(documentIdentifier = offeredDocIdentifier)
 
-                        event.resume(
-                            eudiWallet.getDefaultCreateDocumentSettings(
-                                offeredDocument = event.offeredDocument,
-                                credentialPolicy = documentIssuanceRule.policy,
-                                numberOfCredentials = documentIssuanceRule.numberOfCredentials,
+                            val maxBatchSize = event.offeredDocument.batchCredentialIssuanceSize
+                            val safeMaxNumberOfCredentials = minOf(
+                                maxBatchSize,
+                                configuredPolicy.numberOfCredentials
                             )
-                        )
+
+                            val adjustedPolicy = when (configuredPolicy) {
+                                is CreateDocumentSettings.CredentialPolicy.LimitedTime -> {
+                                    configuredPolicy
+                                }
+
+                                is CreateDocumentSettings.CredentialPolicy.OnceOnly -> {
+                                    configuredPolicy.copy(
+                                        numberOfCredentials = safeMaxNumberOfCredentials
+                                    )
+                                }
+
+                                is CreateDocumentSettings.CredentialPolicy.RotatingBatch -> {
+                                    configuredPolicy.copy(
+                                        numberOfCredentials = safeMaxNumberOfCredentials
+                                    )
+                                }
+                            }
+
+                            val createDocumentSettings =
+                                eudiWallet.getDefaultCreateDocumentSettings(
+                                    offeredDocument = event.offeredDocument,
+                                    credentialPolicy = adjustedPolicy
+                                )
+
+                            event.resume(createDocumentSettings)
+                        }
                     }
                 }
 

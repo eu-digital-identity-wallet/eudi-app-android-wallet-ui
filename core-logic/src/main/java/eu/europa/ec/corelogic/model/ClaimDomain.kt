@@ -16,11 +16,10 @@
 
 package eu.europa.ec.corelogic.model
 
-import eu.europa.ec.eudi.wallet.document.ElementIdentifier
 import eu.europa.ec.eudi.wallet.document.NameSpace
 
 sealed class ClaimDomain {
-    abstract val key: ElementIdentifier
+    abstract val key: String
     abstract val displayTitle: String
     abstract val path: ClaimPathDomain
 
@@ -28,18 +27,17 @@ sealed class ClaimDomain {
         get() = when (val type = path.type) {
             is ClaimType.MsoMdoc -> type.namespace
             is ClaimType.SdJwtVc -> null
-            is ClaimType.Unknown -> null
         }
 
     data class Group(
-        override val key: ElementIdentifier,
+        override val key: String,
         override val displayTitle: String,
         override val path: ClaimPathDomain,
         val items: List<ClaimDomain>,
     ) : ClaimDomain()
 
     data class Primitive(
-        override val key: ElementIdentifier,
+        override val key: String,
         override val displayTitle: String,
         override val path: ClaimPathDomain,
         val value: String,

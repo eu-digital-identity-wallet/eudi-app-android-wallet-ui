@@ -17,41 +17,55 @@
 package eu.europa.ec.corelogic.extension
 
 import eu.europa.ec.corelogic.model.ClaimPathDomain
+import eu.europa.ec.corelogic.model.ClaimPathSegment
 import eu.europa.ec.corelogic.model.ClaimType
+import eu.europa.ec.eudi.sdjwt.vc.ClaimPathElement
 import eu.europa.ec.eudi.wallet.document.format.DocumentClaim
 import eu.europa.ec.eudi.wallet.document.format.MsoMdocClaim
 import eu.europa.ec.eudi.wallet.document.format.SdJwtVcClaim
 
 /**
- * Converts a [DocumentClaim] to a list of [ClaimPathDomain]s.
+ * Maps an SD-JWT VC library [ClaimPathElement] to [ClaimPathSegment], keeping
+ * core-logic decoupled from the library's claim-path representation.
+ */
+fun ClaimPathElement.toClaimPathSegment(): ClaimPathSegment = when (this) {
+    is ClaimPathElement.Claim -> ClaimPathSegment.Key(name)
+    is ClaimPathElement.ArrayElement -> ClaimPathSegment.Index(index)
+    is ClaimPathElement.AllArrayElements -> ClaimPathSegment.AllElements
+}
+
+/**
+ * String id for a [DocumentClaim], for UI keys / string look-ups:
+ *  - [SdJwtVcClaim] -> the path segment's string form (object keys as-is, array indices as
+ *    their integer string, the wildcard as the literal `"null"`).
+ *  - [MsoMdocClaim] -> `dataElementName`.
+ */
+val DocumentClaim.identifierString: String
+    get() = when (this) {
+        is SdJwtVcClaim -> pathElement.toClaimPathSegment().toString()
+        is MsoMdocClaim -> dataElementName
+    }
+
+/**
+ * Recursively expands a [DocumentClaim] into the leaf paths the wallet stores for it.
  *
- * This function recursively traverses the claim structure to generate a list of paths,
- * where each path leads to a specific claim. Each path is represented as a list of strings,
- * with each string being an identifier of a claim in the hierarchy.
- *
- * @param parentPath The path of the parent claim, used for recursive calls to build up the full path. Defaults to an empty list.
- * @return A list of [ClaimPathDomain]s representing the paths to each leaf claim in the [DocumentClaim] structure.
- *
- * For [SdJwtVcClaim]s, the function will:
- *  - Append the current claim's identifier to the `parentPath` to form the `currentPath`.
- *  - If the claim is a leaf node (has no children or its value is a collection), a single [ClaimPathDomain] is created with the `currentPath`.
- *  - If the claim has children, it recursively calls `toClaimPaths` on each child, passing the `currentPath`, and flattens the resulting lists of paths.
- *
- * For [MsoMdocClaim]s, the function will:
- * - Create a [ClaimPathDomain] with a list containing only the claim's identifier. The path does not include the namespace.
- * - The type of the returned [ClaimPathDomain] will be [ClaimType.MsoMdoc], which includes the claim's namespace.
+ * SD-JWT claims recurse into their children; an array child (e.g. a `nationalities` collection)
+ * contributes typed [ClaimPathSegment.Index] entries, so per-element addressing appears in the
+ * paths. An mdoc claim is a single [ClaimPathSegment.Key] holding the `dataElementName`, with the
+ * namespace carried in [ClaimType.MsoMdoc].
  */
 fun DocumentClaim.toClaimPaths(
-    parentPath: List<String> = emptyList()
+    parentPath: List<ClaimPathSegment> = emptyList()
 ): List<ClaimPathDomain> {
     return when (this) {
         is SdJwtVcClaim -> {
-            val currentPath: List<String> = parentPath + this.identifier
-            if (children.isEmpty() || this.value is Collection<*>) {
-                listOf(ClaimPathDomain(value = currentPath, type = ClaimType.SdJwtVc))
+            val currentPath: List<ClaimPathSegment> =
+                parentPath + this.pathElement.toClaimPathSegment()
+            if (children.isEmpty()) {
+                listOf(ClaimPathDomain(segments = currentPath, type = ClaimType.SdJwtVc))
             } else {
                 children.flatMap { child ->
-                    child.toClaimPaths(currentPath)
+                    child.toClaimPaths(parentPath = currentPath)
                 }
             }
         }
@@ -59,7 +73,7 @@ fun DocumentClaim.toClaimPaths(
         is MsoMdocClaim -> {
             listOf(
                 ClaimPathDomain(
-                    value = listOf(this.identifier),
+                    segments = listOf(ClaimPathSegment.Key(this.dataElementName)),
                     type = ClaimType.MsoMdoc(this.nameSpace)
                 )
             )

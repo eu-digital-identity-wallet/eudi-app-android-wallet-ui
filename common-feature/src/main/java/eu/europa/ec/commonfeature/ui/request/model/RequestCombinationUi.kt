@@ -17,25 +17,21 @@
 package eu.europa.ec.commonfeature.ui.request.model
 
 import eu.europa.ec.corelogic.model.ClaimDomain
+import eu.europa.ec.corelogic.model.PresentationMatchDomain
 import eu.europa.ec.eudi.wallet.document.DocumentId
 import eu.europa.ec.eudi.wallet.document.format.DocumentFormat
 import eu.europa.ec.eudi.wallet.document.format.MsoMdocFormat
 import eu.europa.ec.eudi.wallet.document.format.SdJwtVcFormat
 import eu.europa.ec.uilogic.component.wrap.ExpandableListItemUi
 
-sealed class DomainDocumentFormat {
-    data object SdJwtVc : DomainDocumentFormat()
-    data object MsoMdoc : DomainDocumentFormat()
-
-    companion object {
-        fun getFormat(format: DocumentFormat): DomainDocumentFormat {
-            return when (format) {
-                is SdJwtVcFormat -> SdJwtVc
-                is MsoMdocFormat -> MsoMdoc
-            }
-        }
-    }
-}
+/**
+ * One selectable combination card on the request screen — the UI projection of a single
+ * [PresentationCombinationDomain][eu.europa.ec.corelogic.model.PresentationCombinationDomain].
+ */
+data class RequestCombinationUi(
+    val documents: List<RequestDocumentItemUi>,
+    val matches: List<PresentationMatchDomain>,
+)
 
 data class RequestDocumentItemUi(
     val domainPayload: DocumentPayloadDomain,
@@ -45,6 +41,25 @@ data class RequestDocumentItemUi(
 data class DocumentPayloadDomain(
     val docName: String,
     val docId: DocumentId,
-    val domainDocFormat: DomainDocumentFormat,
+    val docFormatDomain: DocumentFormatDomain,
     val docClaimsDomain: List<ClaimDomain>,
+    /**
+     * The originating DCQL query id (null for non-DCQL flows like proximity); distinguishes two
+     * payloads for the same document under different queries.
+     */
+    val queryId: String? = null,
 )
+
+sealed class DocumentFormatDomain {
+    data object SdJwtVc : DocumentFormatDomain()
+    data object MsoMdoc : DocumentFormatDomain()
+
+    companion object {
+        fun getFormat(format: DocumentFormat): DocumentFormatDomain {
+            return when (format) {
+                is SdJwtVcFormat -> SdJwtVc
+                is MsoMdocFormat -> MsoMdoc
+            }
+        }
+    }
+}

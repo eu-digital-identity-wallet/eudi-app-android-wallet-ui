@@ -19,8 +19,7 @@ package eu.europa.ec.proximityfeature.interactor
 import eu.europa.ec.businesslogic.provider.UuidProvider
 import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
 import eu.europa.ec.corelogic.controller.WalletCorePresentationController
-import eu.europa.ec.eudi.iso18013.transfer.response.DisclosedDocument
-import eu.europa.ec.eudi.iso18013.transfer.response.device.MsoMdocItem
+import eu.europa.ec.corelogic.model.ClaimItemId
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.testfeature.util.StringResourceProviderMocker.mockTransformToUiItemsStrings
@@ -29,6 +28,7 @@ import eu.europa.ec.testfeature.util.mockedExceptionWithMessage
 import eu.europa.ec.testfeature.util.mockedExceptionWithNoMessage
 import eu.europa.ec.testfeature.util.mockedGenericErrorMessage
 import eu.europa.ec.testfeature.util.mockedMdocPidNameSpace
+import eu.europa.ec.testfeature.util.mockedMdocPresentationSelection
 import eu.europa.ec.testfeature.util.mockedPidId
 import eu.europa.ec.testfeature.util.mockedUuid
 import eu.europa.ec.testfeature.util.mockedVerifierName
@@ -118,9 +118,7 @@ class TestProximitySuccessInteractor {
     //endregion
 
     //region constructor default
-    // Exercises the default `walletCorePresentationController = null` parameter branch of
-    // ScopedPresentationInteractorDelegate. The lazy Koin lookup is never triggered (we do not
-    // access the protected property), so this stays a pure construction smoke-test.
+    // the null-controller default: construction must not trigger the lazy Koin lookup
     @Test
     fun `When constructed without walletCorePresentationController, Then construction does not throw`() {
         // When
@@ -193,15 +191,10 @@ class TestProximitySuccessInteractor {
         coroutineRule.runTest {
             // Given
             val pid = getMockedFullPid()
-            val disclosedDocument = DisclosedDocument(
+            val disclosedDocument = mockedMdocPresentationSelection(
                 documentId = mockedPidId,
-                disclosedItems = listOf(
-                    MsoMdocItem(
-                        namespace = mockedMdocPidNameSpace,
-                        elementIdentifier = "family_name"
-                    )
-                ),
-                keyUnlockData = null,
+                namespace = mockedMdocPidNameSpace,
+                dataElements = listOf("family_name"),
             )
 
             whenever(walletCorePresentationController.disclosedDocuments)
@@ -223,7 +216,13 @@ class TestProximitySuccessInteractor {
 
                 assertEquals(1, result.documentsUi.size)
                 val docUi = result.documentsUi.first()
-                assertEquals(mockedPidId, docUi.header.itemId)
+                assertEquals(
+                    ClaimItemId.DocumentHeader(
+                        docId = mockedPidId,
+                        queryId = null
+                    ).encode(),
+                    docUi.header.itemId
+                )
                 assertEquals(
                     ListItemMainContentDataUi.Text(text = pid.name),
                     docUi.header.mainContentData
@@ -265,10 +264,10 @@ class TestProximitySuccessInteractor {
         coroutineRule.runTest {
             // Given
             val pid = getMockedFullPid()
-            val disclosedDocument = DisclosedDocument(
+            val disclosedDocument = mockedMdocPresentationSelection(
                 documentId = mockedPidId,
-                disclosedItems = emptyList(),
-                keyUnlockData = null,
+                namespace = mockedMdocPidNameSpace,
+                dataElements = emptyList(),
             )
 
             whenever(walletCorePresentationController.disclosedDocuments)
@@ -310,15 +309,10 @@ class TestProximitySuccessInteractor {
     fun `Given Case 4, When getUiItems is called, Then Case 4 Expected Result is returned`() {
         coroutineRule.runTest {
             // Given
-            val disclosedDocument = DisclosedDocument(
+            val disclosedDocument = mockedMdocPresentationSelection(
                 documentId = mockedPidId,
-                disclosedItems = listOf(
-                    MsoMdocItem(
-                        namespace = mockedMdocPidNameSpace,
-                        elementIdentifier = "family_name"
-                    )
-                ),
-                keyUnlockData = null,
+                namespace = mockedMdocPidNameSpace,
+                dataElements = listOf("family_name"),
             )
 
             whenever(walletCorePresentationController.disclosedDocuments)

@@ -22,7 +22,7 @@ import eu.europa.ec.commonfeature.config.RequestUriConfig
 import eu.europa.ec.commonfeature.config.toDomainConfig
 import eu.europa.ec.commonfeature.interactor.ScopedPresentationInteractor
 import eu.europa.ec.commonfeature.interactor.ScopedPresentationInteractorDelegate
-import eu.europa.ec.commonfeature.ui.request.model.RequestDocumentItemUi
+import eu.europa.ec.commonfeature.ui.request.model.RequestCombinationUi
 import eu.europa.ec.commonfeature.ui.request.transformer.RequestTransformer
 import eu.europa.ec.corelogic.controller.TransferEventPartialState
 import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
@@ -36,7 +36,8 @@ sealed class PresentationRequestInteractorPartialState {
     data class Success(
         val verifierName: String?,
         val verifierIsTrusted: Boolean,
-        val requestDocuments: List<RequestDocumentItemUi>
+        val combinationsUi: List<RequestCombinationUi>,
+        val claimsAreSelectable: Boolean,
     ) : PresentationRequestInteractorPartialState()
 
     data class NoData(
@@ -51,7 +52,7 @@ sealed class PresentationRequestInteractorPartialState {
 interface PresentationRequestInteractor : ScopedPresentationInteractor {
     fun getRequestDocuments(): Flow<PresentationRequestInteractorPartialState>
     fun stopPresentation()
-    fun updateRequestedDocuments(items: List<RequestDocumentItemUi>)
+    fun updateRequestedDocuments(selectedCombination: RequestCombinationUi?)
     fun setConfig(config: RequestUriConfig, intentAction: IntentAction?)
 }
 
@@ -66,8 +67,12 @@ class PresentationRequestInteractorImpl(
     private val genericErrorMsg
         get() = resourceProvider.genericErrorMessage()
 
+    // false for OpenID4VP (DCQL is all-or-nothing); true for DC-API.
+    private var claimsAreSelectable: Boolean = true
+
     override fun setConfig(config: RequestUriConfig, intentAction: IntentAction?) {
         setScopeId(config.presentationScopeId)
+        claimsAreSelectable = config.mode.allowsClaimSelection
 
         walletCorePresentationController.setConfig(
             config.toDomainConfig(intentAction = intentAction)
@@ -78,30 +83,45 @@ class PresentationRequestInteractorImpl(
         walletCorePresentationController.events.mapNotNull { response ->
             when (response) {
                 is TransferEventPartialState.RequestReceived -> {
-                    if (response.requestData.all { it.requestedItems.isEmpty() }) {
+                    val requestedClaimsAreEmpty = response.combinationsDomain
+                        .flatMap { it.matches }
+                        .all { it.requestedClaims.isEmpty() }
+                    if (requestedClaimsAreEmpty) {
                         PresentationRequestInteractorPartialState.NoData(
                             verifierName = response.verifierName,
                             verifierIsTrusted = response.verifierIsTrusted,
                         )
                     } else {
-                        val documentsDomain = RequestTransformer.transformToDomainItems(
-                            storageDocuments = walletCoreDocumentsController.getAllIssuedDocuments(),
-                            requestDocuments = response.requestData,
-                            resourceProvider = resourceProvider,
-                            uuidProvider = uuidProvider
-                        ).getOrThrow()
-                            .filterNot {
-                                walletCoreDocumentsController.isDocumentRevoked(it.docId)
+                        val storageDocuments = walletCoreDocumentsController.getAllIssuedDocuments()
+
+                        val revokedDocumentIds = storageDocuments
+                            .map { it.id }
+                            .filter { walletCoreDocumentsController.isDocumentRevoked(it) }
+                            .toSet()
+
+                        val combinationsDomain =
+                            response.combinationsDomain.map { combinationDomain ->
+                                combinationDomain.copy(
+                                    matches = combinationDomain.matches
+                                        .filterNot { it.documentId in revokedDocumentIds }
+                                )
                             }
 
-                        if (documentsDomain.isNotEmpty()) {
+                        val combinationsUi = RequestTransformer.transformToCombinationsUi(
+                            storageDocuments = storageDocuments,
+                            resourceProvider = resourceProvider,
+                            uuidProvider = uuidProvider,
+                            combinationsDomain = combinationsDomain,
+                            claimsAreSelectable = claimsAreSelectable,
+                        ).getOrThrow()
+                            .filter { it.documents.isNotEmpty() }
+
+                        if (combinationsUi.isNotEmpty()) {
                             PresentationRequestInteractorPartialState.Success(
                                 verifierName = response.verifierName,
                                 verifierIsTrusted = response.verifierIsTrusted,
-                                requestDocuments = RequestTransformer.transformToUiItems(
-                                    documentsDomain = documentsDomain,
-                                    resourceProvider = resourceProvider,
-                                )
+                                combinationsUi = combinationsUi,
+                                claimsAreSelectable = claimsAreSelectable,
                             )
                         } else {
                             PresentationRequestInteractorPartialState.NoData(
@@ -132,8 +152,15 @@ class PresentationRequestInteractorImpl(
         walletCorePresentationController.stopPresentation()
     }
 
-    override fun updateRequestedDocuments(items: List<RequestDocumentItemUi>) {
-        val disclosedDocuments = RequestTransformer.createDisclosedDocuments(items)
-        walletCorePresentationController.updateRequestedDocuments(disclosedDocuments.toMutableList())
+    override fun updateRequestedDocuments(selectedCombination: RequestCombinationUi?) {
+        val selections = selectedCombination?.let { safeSelectedCombinationUi ->
+            RequestTransformer.createSelectionsDomain(
+                documentItemsUi = safeSelectedCombinationUi.documents,
+                matchesDomain = safeSelectedCombinationUi.matches,
+                claimsAreSelectable = claimsAreSelectable,
+            )
+        }.orEmpty()
+
+        walletCorePresentationController.updateRequestedDocuments(disclosedDocuments = selections)
     }
 }

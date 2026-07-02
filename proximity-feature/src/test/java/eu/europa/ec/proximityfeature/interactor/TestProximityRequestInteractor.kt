@@ -17,10 +17,12 @@
 package eu.europa.ec.proximityfeature.interactor
 
 import eu.europa.ec.businesslogic.provider.UuidProvider
+import eu.europa.ec.commonfeature.ui.request.model.RequestCombinationUi
 import eu.europa.ec.commonfeature.ui.request.transformer.RequestTransformer
 import eu.europa.ec.corelogic.controller.TransferEventPartialState
 import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
 import eu.europa.ec.corelogic.controller.WalletCorePresentationController
+import eu.europa.ec.corelogic.model.PresentationCombinationDomain
 import eu.europa.ec.eudi.wallet.document.IssuedDocument
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.testfeature.util.StringResourceProviderMocker.mockTransformToUiItemsStrings
@@ -30,8 +32,9 @@ import eu.europa.ec.testfeature.util.mockedExceptionWithMessage
 import eu.europa.ec.testfeature.util.mockedExceptionWithNoMessage
 import eu.europa.ec.testfeature.util.mockedGenericErrorMessage
 import eu.europa.ec.testfeature.util.mockedPlainFailureMessage
-import eu.europa.ec.testfeature.util.mockedValidMdlWithBasicFieldsRequestDocument
-import eu.europa.ec.testfeature.util.mockedValidPidWithBasicFieldsRequestDocument
+import eu.europa.ec.testfeature.util.mockedSelectableClaims
+import eu.europa.ec.testfeature.util.mockedValidMdlWithBasicFieldsRequestMatch
+import eu.europa.ec.testfeature.util.mockedValidPidWithBasicFieldsRequestMatch
 import eu.europa.ec.testfeature.util.mockedVerifierIsTrusted
 import eu.europa.ec.testfeature.util.mockedVerifierName
 import eu.europa.ec.testlogic.extension.expectNoEvents
@@ -180,7 +183,7 @@ class TestProximityRequestInteractor {
     // Case 4:
     // 1. walletCorePresentationController.events emits:
     // TransferEventPartialState.RequestReceived, with:
-    // 1. an emptyList() for requestData,
+    // 1. an emptyList() for combinations,
     // 2. a not null String for verifier name,
     // 3. true for verifierIsTrusted.
 
@@ -194,7 +197,7 @@ class TestProximityRequestInteractor {
             // Given
             mockWalletCorePresentationControllerEventEmission(
                 event = TransferEventPartialState.RequestReceived(
-                    requestData = emptyList(),
+                    combinationsDomain = emptyList(),
                     verifierName = mockedVerifierName,
                     verifierIsTrusted = mockedVerifierIsTrusted
                 )
@@ -218,7 +221,7 @@ class TestProximityRequestInteractor {
     // Case 5:
     // 1. walletCorePresentationController.events emits:
     // TransferEventPartialState.RequestReceived, with:
-    // 1. an emptyList() for requestData,
+    // 1. an emptyList() for combinations,
     // 2. a null String for verifier name,
     // 3. false for verifierIsTrusted.
 
@@ -232,7 +235,7 @@ class TestProximityRequestInteractor {
             // Given
             mockWalletCorePresentationControllerEventEmission(
                 event = TransferEventPartialState.RequestReceived(
-                    requestData = emptyList(),
+                    combinationsDomain = emptyList(),
                     verifierName = null,
                     verifierIsTrusted = false
                 )
@@ -256,7 +259,7 @@ class TestProximityRequestInteractor {
     // Case 6:
     // 1. walletCorePresentationController.events emits:
     // TransferEventPartialState.RequestReceived, with:
-    // 1. a list of a PID RequestDocument, with empty list for docRequest.requestItems, for requestData,
+    // 1. a combination with a PID match whose requestedClaims is empty,
     // 2. a not null String for verifier name,
     // 3. true for verifierIsTrusted.
 
@@ -270,11 +273,15 @@ class TestProximityRequestInteractor {
             // Given
             mockWalletCorePresentationControllerEventEmission(
                 event = TransferEventPartialState.RequestReceived(
-                    requestData = listOf(
-                        mockedValidPidWithBasicFieldsRequestDocument
-                            .copy(
-                                requestedItems = emptyMap()
+                    combinationsDomain = listOf(
+                        PresentationCombinationDomain(
+                            matches = listOf(
+                                // no requested claims → the interactor emits NoData
+                                mockedValidPidWithBasicFieldsRequestMatch.copy(
+                                    requestedClaims = emptyList(),
+                                )
                             )
+                        )
                     ),
                     verifierName = mockedVerifierName,
                     verifierIsTrusted = mockedVerifierIsTrusted
@@ -323,8 +330,10 @@ class TestProximityRequestInteractor {
 
             mockWalletCorePresentationControllerEventEmission(
                 event = TransferEventPartialState.RequestReceived(
-                    requestData = listOf(
-                        mockedValidPidWithBasicFieldsRequestDocument
+                    combinationsDomain = listOf(
+                        PresentationCombinationDomain(
+                            matches = listOf(mockedValidPidWithBasicFieldsRequestMatch)
+                        )
                     ),
                     verifierName = mockedVerifierName,
                     verifierIsTrusted = mockedVerifierIsTrusted
@@ -336,7 +345,7 @@ class TestProximityRequestInteractor {
                 .runFlowTest {
                     val requestDataUi = RequestTransformer.transformToDomainItems(
                         storageDocuments = listOf(mockedPidWithBasicFields),
-                        requestDocuments = listOf(mockedValidPidWithBasicFieldsRequestDocument),
+                        requestMatchesDomain = listOf(mockedValidPidWithBasicFieldsRequestMatch),
                         resourceProvider = resourceProvider,
                         uuidProvider = uuidProvider
                     )
@@ -346,10 +355,17 @@ class TestProximityRequestInteractor {
                         ProximityRequestInteractorPartialState.Success(
                             verifierName = mockedVerifierName,
                             verifierIsTrusted = mockedVerifierIsTrusted,
-                            requestDocuments = RequestTransformer.transformToUiItems(
-                                documentsDomain = requestDataUi.getOrThrow(),
-                                resourceProvider = resourceProvider,
-                            )
+                            combinationsUi = listOf(
+                                RequestCombinationUi(
+                                    documents = RequestTransformer.transformToUiItems(
+                                        documentsDomain = requestDataUi.getOrThrow(),
+                                        resourceProvider = resourceProvider,
+                                        claimsAreSelectable = mockedSelectableClaims,
+                                    ),
+                                    matches = listOf(mockedValidPidWithBasicFieldsRequestMatch),
+                                )
+                            ),
+                            claimsAreSelectable = mockedSelectableClaims,
                         ),
                         awaitItem()
                     )
@@ -383,8 +399,10 @@ class TestProximityRequestInteractor {
             mockIsDocumentRevoked(isRevoked = false)
             mockWalletCorePresentationControllerEventEmission(
                 event = TransferEventPartialState.RequestReceived(
-                    requestData = listOf(
-                        mockedValidMdlWithBasicFieldsRequestDocument
+                    combinationsDomain = listOf(
+                        PresentationCombinationDomain(
+                            matches = listOf(mockedValidMdlWithBasicFieldsRequestMatch)
+                        )
                     ),
                     verifierName = mockedVerifierName,
                     verifierIsTrusted = mockedVerifierIsTrusted
@@ -396,7 +414,7 @@ class TestProximityRequestInteractor {
                 .runFlowTest {
                     val requestDataUi = RequestTransformer.transformToDomainItems(
                         storageDocuments = listOf(mockedMdlWithBasicFields),
-                        requestDocuments = listOf(mockedValidMdlWithBasicFieldsRequestDocument),
+                        requestMatchesDomain = listOf(mockedValidMdlWithBasicFieldsRequestMatch),
                         resourceProvider = resourceProvider,
                         uuidProvider = uuidProvider
                     )
@@ -406,10 +424,17 @@ class TestProximityRequestInteractor {
                         ProximityRequestInteractorPartialState.Success(
                             verifierName = mockedVerifierName,
                             verifierIsTrusted = mockedVerifierIsTrusted,
-                            requestDocuments = RequestTransformer.transformToUiItems(
-                                documentsDomain = requestDataUi.getOrThrow(),
-                                resourceProvider = resourceProvider,
-                            )
+                            combinationsUi = listOf(
+                                RequestCombinationUi(
+                                    documents = RequestTransformer.transformToUiItems(
+                                        documentsDomain = requestDataUi.getOrThrow(),
+                                        resourceProvider = resourceProvider,
+                                        claimsAreSelectable = mockedSelectableClaims,
+                                    ),
+                                    matches = listOf(mockedValidMdlWithBasicFieldsRequestMatch),
+                                )
+                            ),
+                            claimsAreSelectable = mockedSelectableClaims,
                         ),
                         awaitItem()
                     )
@@ -447,9 +472,13 @@ class TestProximityRequestInteractor {
             mockIsDocumentRevoked(isRevoked = false)
             mockWalletCorePresentationControllerEventEmission(
                 event = TransferEventPartialState.RequestReceived(
-                    requestData = listOf(
-                        mockedValidMdlWithBasicFieldsRequestDocument,
-                        mockedValidPidWithBasicFieldsRequestDocument
+                    combinationsDomain = listOf(
+                        PresentationCombinationDomain(
+                            matches = listOf(
+                                mockedValidMdlWithBasicFieldsRequestMatch,
+                                mockedValidPidWithBasicFieldsRequestMatch
+                            )
+                        )
                     ),
                     verifierName = mockedVerifierName,
                     verifierIsTrusted = mockedVerifierIsTrusted
@@ -464,9 +493,9 @@ class TestProximityRequestInteractor {
                             mockedMdlWithBasicFields,
                             mockedPidWithBasicFields
                         ),
-                        requestDocuments = listOf(
-                            mockedValidMdlWithBasicFieldsRequestDocument,
-                            mockedValidPidWithBasicFieldsRequestDocument
+                        requestMatchesDomain = listOf(
+                            mockedValidMdlWithBasicFieldsRequestMatch,
+                            mockedValidPidWithBasicFieldsRequestMatch
                         ),
                         resourceProvider = resourceProvider,
                         uuidProvider = uuidProvider
@@ -477,10 +506,20 @@ class TestProximityRequestInteractor {
                         ProximityRequestInteractorPartialState.Success(
                             verifierName = mockedVerifierName,
                             verifierIsTrusted = mockedVerifierIsTrusted,
-                            requestDocuments = RequestTransformer.transformToUiItems(
-                                documentsDomain = requestDataUi.getOrThrow(),
-                                resourceProvider = resourceProvider,
-                            )
+                            combinationsUi = listOf(
+                                RequestCombinationUi(
+                                    documents = RequestTransformer.transformToUiItems(
+                                        documentsDomain = requestDataUi.getOrThrow(),
+                                        resourceProvider = resourceProvider,
+                                        claimsAreSelectable = mockedSelectableClaims,
+                                    ),
+                                    matches = listOf(
+                                        mockedValidMdlWithBasicFieldsRequestMatch,
+                                        mockedValidPidWithBasicFieldsRequestMatch,
+                                    ),
+                                )
+                            ),
+                            claimsAreSelectable = mockedSelectableClaims,
                         ),
                         awaitItem()
                     )
@@ -518,9 +557,13 @@ class TestProximityRequestInteractor {
             mockIsDocumentRevoked(isRevoked = false)
             mockWalletCorePresentationControllerEventEmission(
                 event = TransferEventPartialState.RequestReceived(
-                    requestData = listOf(
-                        mockedValidPidWithBasicFieldsRequestDocument,
-                        mockedValidMdlWithBasicFieldsRequestDocument
+                    combinationsDomain = listOf(
+                        PresentationCombinationDomain(
+                            matches = listOf(
+                                mockedValidPidWithBasicFieldsRequestMatch,
+                                mockedValidMdlWithBasicFieldsRequestMatch
+                            )
+                        )
                     ),
                     verifierName = mockedVerifierName,
                     verifierIsTrusted = mockedVerifierIsTrusted
@@ -535,9 +578,9 @@ class TestProximityRequestInteractor {
                             mockedPidWithBasicFields,
                             mockedMdlWithBasicFields
                         ),
-                        requestDocuments = listOf(
-                            mockedValidPidWithBasicFieldsRequestDocument,
-                            mockedValidMdlWithBasicFieldsRequestDocument
+                        requestMatchesDomain = listOf(
+                            mockedValidPidWithBasicFieldsRequestMatch,
+                            mockedValidMdlWithBasicFieldsRequestMatch
                         ),
                         resourceProvider = resourceProvider,
                         uuidProvider = uuidProvider
@@ -548,10 +591,20 @@ class TestProximityRequestInteractor {
                         ProximityRequestInteractorPartialState.Success(
                             verifierName = mockedVerifierName,
                             verifierIsTrusted = mockedVerifierIsTrusted,
-                            requestDocuments = RequestTransformer.transformToUiItems(
-                                documentsDomain = requestDataUi.getOrThrow(),
-                                resourceProvider = resourceProvider,
-                            )
+                            combinationsUi = listOf(
+                                RequestCombinationUi(
+                                    documents = RequestTransformer.transformToUiItems(
+                                        documentsDomain = requestDataUi.getOrThrow(),
+                                        resourceProvider = resourceProvider,
+                                        claimsAreSelectable = mockedSelectableClaims,
+                                    ),
+                                    matches = listOf(
+                                        mockedValidPidWithBasicFieldsRequestMatch,
+                                        mockedValidMdlWithBasicFieldsRequestMatch,
+                                    ),
+                                )
+                            ),
+                            claimsAreSelectable = mockedSelectableClaims,
                         ),
                         awaitItem()
                     )
@@ -576,8 +629,10 @@ class TestProximityRequestInteractor {
             // Given
             mockWalletCorePresentationControllerEventEmission(
                 event = TransferEventPartialState.RequestReceived(
-                    requestData = listOf(
-                        mockedValidPidWithBasicFieldsRequestDocument
+                    combinationsDomain = listOf(
+                        PresentationCombinationDomain(
+                            matches = listOf(mockedValidPidWithBasicFieldsRequestMatch)
+                        )
                     ),
                     verifierName = mockedVerifierName,
                     verifierIsTrusted = mockedVerifierIsTrusted
@@ -617,8 +672,10 @@ class TestProximityRequestInteractor {
             // Given
             mockWalletCorePresentationControllerEventEmission(
                 event = TransferEventPartialState.RequestReceived(
-                    requestData = listOf(
-                        mockedValidPidWithBasicFieldsRequestDocument
+                    combinationsDomain = listOf(
+                        PresentationCombinationDomain(
+                            matches = listOf(mockedValidPidWithBasicFieldsRequestMatch)
+                        )
                     ),
                     verifierName = mockedVerifierName,
                     verifierIsTrusted = mockedVerifierIsTrusted
@@ -642,9 +699,8 @@ class TestProximityRequestInteractor {
     }
 
     // Case 13:
-    // RequestReceived with non-empty requestData, but every issued document is filtered out
-    // because isDocumentRevoked returns true for all. Exercises the
-    // `if (documentsDomain.isNotEmpty())` false branch which falls through to NoData.
+    // RequestReceived with non-empty combinations, but every issued document is revoked, so all
+    // combinations end up empty and the interactor falls through to NoData.
     @Test
     fun `Given Case 13, When getRequestDocuments is called and all docs are revoked, Then NoData is returned`() =
         coroutineRule.runTest {
@@ -655,7 +711,11 @@ class TestProximityRequestInteractor {
             mockTransformToUiItemsStrings(resourceProvider = resourceProvider)
             mockWalletCorePresentationControllerEventEmission(
                 event = TransferEventPartialState.RequestReceived(
-                    requestData = listOf(mockedValidPidWithBasicFieldsRequestDocument),
+                    combinationsDomain = listOf(
+                        PresentationCombinationDomain(
+                            matches = listOf(mockedValidPidWithBasicFieldsRequestMatch)
+                        )
+                    ),
                     verifierName = mockedVerifierName,
                     verifierIsTrusted = mockedVerifierIsTrusted
                 )
@@ -675,8 +735,7 @@ class TestProximityRequestInteractor {
         }
 
     // Case 14:
-    // Disconnected event emitted via the shareIn pattern, ensuring Kover's branch tracker
-    // sees the `is Disconnected ->` arm covered.
+    // A Disconnected event (emitted via a shared flow) maps to Disconnect.
     @Test
     fun `Given Case 14, When getRequestDocuments emits Disconnected, Then Disconnect is mapped`() {
         coroutineRule.runTest {
@@ -696,8 +755,7 @@ class TestProximityRequestInteractor {
     }
 
     // Case 15:
-    // Emits Connecting (not-handled) FOLLOWED by Disconnected. The Connecting forces the
-    // `else -> null` arm to actually run before the Disconnected emission is observed.
+    // A not-handled event (Connecting) followed by Disconnected still maps to Disconnect.
     @Test
     fun `Given Case 15, When getRequestDocuments emits a not-handled event then Disconnected, Then Disconnect is mapped after else-null`() {
         coroutineRule.runTest {
@@ -717,7 +775,82 @@ class TestProximityRequestInteractor {
         }
     }
 
+    // Case 16:
+    // RequestReceived with one combination holding two matches (PID + mDL); only the PID is
+    // revoked, so the revoked match is dropped and the non-revoked one survives.
+
+    // Case 16 Expected Result:
+    // ProximityRequestInteractorPartialState.Success with a single combination whose only
+    // item is the mDL.
+    @Test
+    fun `Given Case 16, When getRequestDocuments is called and one of two documents is revoked, Then only the non-revoked document survives`() {
+        coroutineRule.runTest {
+            // Given
+            val mockedPidWithBasicFields = getMockedPidWithBasicFields()
+            val mockedMdlWithBasicFields = getMockedMdlWithBasicFields()
+            mockGetAllIssuedDocumentsCall(
+                response = listOf(
+                    mockedPidWithBasicFields,
+                    mockedMdlWithBasicFields
+                )
+            )
+            mockIsDocumentRevoked(revokedIds = setOf(mockedPidWithBasicFields.id))
+            mockTransformToUiItemsStrings(
+                resourceProvider = resourceProvider,
+            )
+            mockWalletCorePresentationControllerEventEmission(
+                event = TransferEventPartialState.RequestReceived(
+                    combinationsDomain = listOf(
+                        PresentationCombinationDomain(
+                            matches = listOf(
+                                mockedValidPidWithBasicFieldsRequestMatch,
+                                mockedValidMdlWithBasicFieldsRequestMatch
+                            )
+                        )
+                    ),
+                    verifierName = mockedVerifierName,
+                    verifierIsTrusted = mockedVerifierIsTrusted
+                )
+            )
+
+            // When
+            interactor.getRequestDocuments()
+                .runFlowTest {
+                    val survivingDomainItems = RequestTransformer.transformToDomainItems(
+                        storageDocuments = listOf(
+                            mockedPidWithBasicFields,
+                            mockedMdlWithBasicFields
+                        ),
+                        requestMatchesDomain = listOf(mockedValidMdlWithBasicFieldsRequestMatch),
+                        resourceProvider = resourceProvider,
+                        uuidProvider = uuidProvider
+                    )
+
+                    // Then
+                    assertEquals(
+                        ProximityRequestInteractorPartialState.Success(
+                            verifierName = mockedVerifierName,
+                            verifierIsTrusted = mockedVerifierIsTrusted,
+                            combinationsUi = listOf(
+                                RequestCombinationUi(
+                                    documents = RequestTransformer.transformToUiItems(
+                                        documentsDomain = survivingDomainItems.getOrThrow(),
+                                        resourceProvider = resourceProvider,
+                                        claimsAreSelectable = mockedSelectableClaims,
+                                    ),
+                                    matches = listOf(mockedValidMdlWithBasicFieldsRequestMatch),
+                                )
+                            ),
+                            claimsAreSelectable = mockedSelectableClaims,
+                        ),
+                        awaitItem()
+                    )
+                }
+        }
+    }
+
     // Constructor default
+    // the null-controller default: construction must not trigger the lazy Koin lookup
     @Test
     fun `When constructed without walletCorePresentationController, Then construction does not throw`() {
         val newInteractor = ProximityRequestInteractorImpl(
@@ -732,22 +865,74 @@ class TestProximityRequestInteractor {
 
     //region stopPresentation
     @Test
-    fun `Verify that stopPresentation calls walletCorePresentationController#stopPresentation`() {
+    fun `When stopPresentation on the interactor is called, Then stopPresentation should be executed on the controller`() {
+        // When
         interactor.stopPresentation()
 
+        // Then
         verify(walletCorePresentationController, times(1))
             .stopPresentation()
     }
     //endregion
 
     //region updateRequestedDocuments
+
+    // Case 1:
+    // updateRequestedDocuments is called with no selected combination (null).
+
+    // Case 1 Expected Result:
+    // The controller's updateRequestedDocuments is called with an empty selection list.
     @Test
-    fun `Verify that updateRequestedDocuments calls walletCorePresentationController#updateRequestedDocuments`() {
-        interactor.updateRequestedDocuments(items = emptyList())
+    fun `Given Case 1, When updateRequestedDocuments is called, Then Case 1 expected result is returned`() {
+
+        interactor.updateRequestedDocuments(selectedCombination = null)
 
         verify(walletCorePresentationController, times(1))
-            .updateRequestedDocuments(disclosedDocuments = any())
+            .updateRequestedDocuments(
+                disclosedDocuments = emptyList()
+            )
     }
+
+    // Case 2:
+    // updateRequestedDocuments is called with a selected combination (a single mDL match), with
+    // the interactor on its BLE (selectable) path.
+
+    // Case 2 Expected Result:
+    // The controller's updateRequestedDocuments is called with the selection built from that
+    // combination's matches.
+    @Test
+    fun `Given Case 2, When updateRequestedDocuments is called with a combination, Then it discloses that combination's own document`() =
+        coroutineRule.runTest {
+            // Given
+            val mockedMdlWithBasicFields = getMockedMdlWithBasicFields()
+            mockTransformToUiItemsStrings(resourceProvider = resourceProvider)
+            val domainItems = RequestTransformer.transformToDomainItems(
+                storageDocuments = listOf(mockedMdlWithBasicFields),
+                requestMatchesDomain = listOf(mockedValidMdlWithBasicFieldsRequestMatch),
+                resourceProvider = resourceProvider,
+                uuidProvider = uuidProvider,
+            ).getOrThrow()
+            val selectedCombination = RequestCombinationUi(
+                documents = RequestTransformer.transformToUiItems(
+                    documentsDomain = domainItems,
+                    resourceProvider = resourceProvider,
+                    claimsAreSelectable = mockedSelectableClaims,
+                ),
+                matches = listOf(mockedValidMdlWithBasicFieldsRequestMatch),
+            )
+
+            // When
+            interactor.updateRequestedDocuments(selectedCombination = selectedCombination)
+
+            // Then
+            val expectedSelections = RequestTransformer.createSelectionsDomain(
+                documentItemsUi = selectedCombination.documents,
+                matchesDomain = selectedCombination.matches,
+                claimsAreSelectable = mockedSelectableClaims,
+            )
+            verify(walletCorePresentationController, times(1))
+                .updateRequestedDocuments(disclosedDocuments = expectedSelections)
+        }
     //endregion
 
     //region setScopeId
@@ -790,6 +975,12 @@ class TestProximityRequestInteractor {
 
     private suspend fun mockIsDocumentRevoked(isRevoked: Boolean) {
         whenever(walletCoreDocumentsController.isDocumentRevoked(any())).thenReturn(isRevoked)
+    }
+
+    private suspend fun mockIsDocumentRevoked(revokedIds: Set<String>) {
+        whenever(walletCoreDocumentsController.isDocumentRevoked(any())).thenAnswer {
+            (it.arguments.first() as String) in revokedIds
+        }
     }
     //endregion
 }
