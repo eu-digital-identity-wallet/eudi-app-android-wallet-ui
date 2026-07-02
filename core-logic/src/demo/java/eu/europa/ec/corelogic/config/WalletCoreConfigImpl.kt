@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 European Commission
+ * Copyright (c) 2026 European Commission
  *
  * Licensed under the EUPL, Version 1.2 or - as soon they will be approved by the European
  * Commission - subsequent versions of the EUPL (the "Licence"); You may not use this work
@@ -19,6 +19,8 @@ package eu.europa.ec.corelogic.config
 import android.content.Context
 import eu.europa.ec.corelogic.BuildConfig
 import eu.europa.ec.corelogic.model.DocumentIdentifier
+import eu.europa.ec.eudi.openid4vci.CredentialReusePolicies
+import eu.europa.ec.eudi.openid4vci.EudiReusePolicyType
 import eu.europa.ec.eudi.wallet.EudiWalletConfig
 import eu.europa.ec.eudi.wallet.document.CreateDocumentSettings.CredentialPolicy
 import eu.europa.ec.eudi.wallet.issue.openid4vci.OpenId4VciManager
@@ -26,7 +28,8 @@ import eu.europa.ec.eudi.wallet.issue.openid4vci.dpop.DPopConfig
 import eu.europa.ec.eudi.wallet.transfer.openId4vp.ClientIdScheme
 import eu.europa.ec.eudi.wallet.transfer.openId4vp.Format
 import eu.europa.ec.resourceslogic.R
-import java.time.Duration
+import kotlin.time.Duration.Companion.hours
+import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 
 internal class WalletCoreConfigImpl(
@@ -95,6 +98,15 @@ internal class WalletCoreConfigImpl(
                     .withAuthFlowRedirectionURI(BuildConfig.ISSUE_AUTHORIZATION_DEEPLINK)
                     .withParUsage(OpenId4VciManager.Config.ParUsage.IF_SUPPORTED)
                     .withDPopConfig(DPopConfig.Default)
+                    .withSupportedCredentialReusePolicies(
+                        CredentialReusePolicies.Supported(
+                            policyTypes = setOf(
+                                EudiReusePolicyType.RotatingBatch,
+                                EudiReusePolicyType.OnceOnly,
+                                EudiReusePolicyType.LimitedTime,
+                            )
+                        )
+                    )
                     .build(),
                 order = 0
             ),
@@ -105,6 +117,15 @@ internal class WalletCoreConfigImpl(
                     .withAuthFlowRedirectionURI(BuildConfig.ISSUE_AUTHORIZATION_DEEPLINK)
                     .withParUsage(OpenId4VciManager.Config.ParUsage.IF_SUPPORTED)
                     .withDPopConfig(DPopConfig.Default)
+                    .withSupportedCredentialReusePolicies(
+                        CredentialReusePolicies.Supported(
+                            policyTypes = setOf(
+                                EudiReusePolicyType.RotatingBatch,
+                                EudiReusePolicyType.OnceOnly,
+                                EudiReusePolicyType.LimitedTime,
+                            )
+                        )
+                    )
                     .build(),
                 order = 1
             )
@@ -112,24 +133,22 @@ internal class WalletCoreConfigImpl(
 
     override val documentIssuanceConfig: DocumentIssuanceConfig
         get() = DocumentIssuanceConfig(
-            defaultRule = DocumentIssuanceRule(
-                policy = CredentialPolicy.RotateUse,
-                numberOfCredentials = 1
+            defaultPolicy = CredentialPolicy.RotatingBatch(
+                numberOfCredentials = 1,
+                reissueTriggerLifetimeLeft = 24.hours
             ),
-            documentSpecificRules = mapOf(
-                DocumentIdentifier.MdocPid to DocumentIssuanceRule(
-                    policy = CredentialPolicy.OneTimeUse,
-                    numberOfCredentials = 10
+            documentSpecificPolicies = mapOf(
+                DocumentIdentifier.MdocPid to CredentialPolicy.OnceOnly(
+                    numberOfCredentials = 10,
+                    reissueTriggerUnused = 2
                 ),
-                DocumentIdentifier.SdJwtPid to DocumentIssuanceRule(
-                    policy = CredentialPolicy.OneTimeUse,
-                    numberOfCredentials = 10
+                DocumentIdentifier.SdJwtPid to CredentialPolicy.OnceOnly(
+                    numberOfCredentials = 10,
+                    reissueTriggerUnused = 2
                 ),
             ),
             reissuanceRule = ReIssuanceRule(
-                minNumberOfCredentials = 2,
-                minExpirationHours = 24,
-                backgroundInterval = Duration.ofMinutes(15)
+                backgroundInterval = 15.minutes
             )
         )
 

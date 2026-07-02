@@ -35,10 +35,11 @@ import eu.europa.ec.businesslogic.validator.model.FilterableItem
 import eu.europa.ec.businesslogic.validator.model.FilterableList
 import eu.europa.ec.businesslogic.validator.model.Filters
 import eu.europa.ec.businesslogic.validator.model.SortOrder
-import eu.europa.ec.commonfeature.util.documentHasExpired
 import eu.europa.ec.corelogic.controller.DeleteDocumentPartialState
 import eu.europa.ec.corelogic.controller.IssueDeferredDocumentPartialState
 import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
+import eu.europa.ec.corelogic.extension.getExpiryDate
+import eu.europa.ec.corelogic.extension.isExpired
 import eu.europa.ec.corelogic.extension.localizedIssuerMetadata
 import eu.europa.ec.corelogic.model.DeferredDocumentDataDomain
 import eu.europa.ec.corelogic.model.DocumentCategory
@@ -318,16 +319,12 @@ class DocumentsInteractorImpl(
                                 }
                             }
 
-                            val documentExpirationDate = document.getValidUntil().getOrNull()
-                            val documentHasExpired = if (documentExpirationDate != null) {
-                                documentHasExpired(documentExpirationDate = documentExpirationDate)
-                            } else {
-                                false
-                            }
+                            val documentExpirationDate = document.getExpiryDate()
+                            val documentHasExpired = document.isExpired()
 
                             val documentIssuanceState = when {
                                 documentIsRevoked -> DocumentIssuanceStateUi.Revoked
-                                documentHasExpired -> DocumentIssuanceStateUi.Failed
+                                documentHasExpired -> DocumentIssuanceStateUi.Expired
                                 else -> DocumentIssuanceStateUi.Issued
                             }
 

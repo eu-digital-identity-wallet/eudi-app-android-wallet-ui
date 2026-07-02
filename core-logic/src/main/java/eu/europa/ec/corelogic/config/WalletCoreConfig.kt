@@ -22,7 +22,8 @@ import eu.europa.ec.corelogic.model.DocumentIdentifier
 import eu.europa.ec.eudi.wallet.EudiWalletConfig
 import eu.europa.ec.eudi.wallet.document.CreateDocumentSettings.CredentialPolicy
 import eu.europa.ec.eudi.wallet.issue.openid4vci.OpenId4VciManager
-import java.time.Duration
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.minutes
 
 interface WalletCoreConfig {
 
@@ -163,27 +164,26 @@ interface WalletCoreConfig {
      * This property defines the time interval between checks for revoked tokens or credentials.
      * It is currently set to 15 minutes.
      */
-    val revocationInterval: Duration get() = Duration.ofMinutes(15)
+    val revocationInterval: Duration get() = 15.minutes
 
     /**
-     * Configuration for document issuance, including default rules and specific overrides.
+     * Configuration for document issuance, including the default policy and specific overrides.
      *
-     * This property defines the behavior for how many credentials of each document type are issued,
-     * the background re-issuance policy and their usage policy (e.g., rotate use, one-time use).
+     * This property defines, for each document type, the [CredentialPolicy] to apply (which also
+     * carries how many credentials to issue) and the background re-issuance rule.
      *
      * It consists of:
-     * - `defaultRule`: A [DocumentIssuanceRule] that applies to all document types unless overridden.
-     *   By default, it uses [CredentialPolicy.RotateUse] and issues 1 credential.
-     * - `documentSpecificRules`: A map allowing overrides for specific document types.
+     * - `defaultPolicy`: A [CredentialPolicy] that applies to all document types unless overridden.
+     *   By default, it uses [CredentialPolicy.RotatingBatch] with a single credential.
+     * - `documentSpecificPolicies`: A map allowing overrides for specific document types.
      *   - Keys are [DocumentIdentifier] objects representing specific document types.
-     *   - Values are [DocumentIssuanceRule] objects defining the policy and number of credentials for that document.
+     *   - Values are the [CredentialPolicy] to apply for that document.
      * - `reissuanceRule`: A [ReIssuanceRule] that defines the background re-issuance policy.
      *
-     * For example:
-     * - [DocumentIdentifier.MdocPid] is configured for [CredentialPolicy.OneTimeUse] with 10 credentials.
-     * - [DocumentIdentifier.SdJwtPid] is configured for [CredentialPolicy.OneTimeUse] with 10 credentials.
+     * For example, [DocumentIdentifier.MdocPid] and [DocumentIdentifier.SdJwtPid] are configured
+     * for [CredentialPolicy.OnceOnly].
      *
-     * Any document type not listed in `documentSpecificRules` will use the `defaultRule`.
+     * Any document type not listed in `documentSpecificPolicies` will use the `defaultPolicy`.
      */
     val documentIssuanceConfig: DocumentIssuanceConfig
 

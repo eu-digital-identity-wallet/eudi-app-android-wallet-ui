@@ -914,28 +914,28 @@ Do not point production builds to EUDI demo wallet-provider services.
 
 ## Document Issuance Rules
 
-Current code:
+`WalletCoreConfig.documentIssuanceConfig` holds the wallet's per-document issuance and re-issuance
+defaults. They apply when the issuer does not advertise a credential reuse policy; when it does, the
+issuer's policy takes precedence and these act as the fallback.
 
 ```kotlin
 DocumentIssuanceConfig(
-    defaultRule = DocumentIssuanceRule(
-        policy = CredentialPolicy.RotateUse,
-        numberOfCredentials = 1
+  defaultPolicy = CredentialPolicy.RotatingBatch(
+    numberOfCredentials = 1,
+    reissueTriggerLifetimeLeft = 24.hours
     ),
-    documentSpecificRules = mapOf(
-        DocumentIdentifier.MdocPid to DocumentIssuanceRule(
-            policy = CredentialPolicy.OneTimeUse,
-            numberOfCredentials = 10
+  documentSpecificPolicies = mapOf(
+    DocumentIdentifier.MdocPid to CredentialPolicy.OnceOnly(
+      numberOfCredentials = 10,
+      reissueTriggerUnused = 2
         ),
-        DocumentIdentifier.SdJwtPid to DocumentIssuanceRule(
-            policy = CredentialPolicy.OneTimeUse,
-            numberOfCredentials = 10
+    DocumentIdentifier.SdJwtPid to CredentialPolicy.OnceOnly(
+      numberOfCredentials = 10,
+      reissueTriggerUnused = 2
         ),
     ),
     reissuanceRule = ReIssuanceRule(
-        minNumberOfCredentials = 2,
-        minExpirationHours = 24,
-        backgroundInterval = Duration.ofMinutes(15)
+      backgroundInterval = 15.minutes
     )
 )
 ```
@@ -946,18 +946,22 @@ per flavor.
 
 Meaning:
 
-| Field | Meaning | Production decision |
-| --- | --- | --- |
-| `CredentialPolicy.RotateUse` | Reuse/rotate credentials according to Wallet Core behavior. | Use for documents where a single reusable credential is acceptable. |
-| `CredentialPolicy.OneTimeUse` | Issue a batch so each presentation can consume a credential. | Use for unlinkability/privacy-sensitive credentials such as PID where required. |
-| `numberOfCredentials` | Number of credentials requested at issuance. | Balance privacy, user offline needs, issuer load, and storage size. |
-| `minNumberOfCredentials` | Background reissuance starts when remaining credentials are at or below this count. | Set high enough to avoid users running out. |
-| `minExpirationHours` | Reissue when credentials expire within this window. | Set according to credential validity and issuer SLA. |
-| `backgroundInterval` | WorkManager interval for reissuance checks. | Android periodic work minimum is effectively 15 minutes. Avoid excessive issuer load. |
+| Field                                                        | Meaning                                                                                   | Production decision                                                                   |
+|--------------------------------------------------------------|-------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------|
+| `CredentialPolicy.RotatingBatch`                             | Batch of credentials rotated across presentations.                                        | Default for most documents where a rotating batch is acceptable.                      |
+| `CredentialPolicy.OnceOnly`                                  | Each credential is used once then deleted; issued in batches.                             | Use for unlinkability/privacy-sensitive credentials such as PID where required.       |
+| `CredentialPolicy.LimitedTime`                               | A single credential presented repeatedly until it expires.                                | Use where one long-lived credential is acceptable.                                    |
+| `numberOfCredentials`                                        | Batch size requested at issuance (`RotatingBatch`/`OnceOnly`; `LimitedTime` is always 1). | Balance privacy, user offline needs, issuer load, and storage size.                   |
+| `reissueTriggerUnused` (`OnceOnly`)                          | Reissue when the number of unused credentials is at or below this count.                  | Set high enough to avoid users running out between checks.                            |
+| `reissueTriggerLifetimeLeft` (`RotatingBatch`/`LimitedTime`) | Reissue when the remaining validity is at or below this.                                  | Set according to credential validity and issuer SLA.                                  |
+| `backgroundInterval` (`ReIssuanceRule`)                      | WorkManager interval for reissuance checks.                                               | Android periodic work minimum is effectively 15 minutes. Avoid excessive issuer load. |
+
+The re-issuance thresholds now travel with each credential's stored policy (`reissueTriggerUnused` /
+`reissueTriggerLifetimeLeft`); `ReIssuanceRule` only controls how often the background check runs.
 
 Production questions:
 
-* Which credential types require one-time-use?
+* Which credential types require once-only issuance?
 * How many offline presentations must users be able to perform?
 * What happens if reissuance fails for days?
 * Is authorization fallback allowed for background reissuance?
@@ -966,7 +970,7 @@ Production questions:
 
 Recommended:
 
-* Keep PID and privacy-sensitive credentials as one-time-use if required by the profile.
+* Keep PID and privacy-sensitive credentials as once-only if required by the profile.
 * Start with a conservative batch size and tune after load testing.
 * Monitor reissuance failures.
 * Do not silently delete or replace user credentials without clear UX and audit behavior.

@@ -30,6 +30,5 @@ data class DocumentDetailsUi(
     val documentConfigId: String,
     val documentName: String,
     val documentIdentifier: DocumentIdentifier,
-    val documentIssuanceStateUi: DocumentIssuanceStateUi,
     val documentClaims: List<ExpandableListItemUi>,
 )

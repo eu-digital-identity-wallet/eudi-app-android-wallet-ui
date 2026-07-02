@@ -48,7 +48,6 @@ import androidx.navigation.NavController
 import eu.europa.ec.corelogic.model.DocumentIdentifier
 import eu.europa.ec.corelogic.util.CoreActions
 import eu.europa.ec.dashboardfeature.ui.documents.detail.model.DocumentDetailsUi
-import eu.europa.ec.dashboardfeature.ui.documents.detail.model.DocumentIssuanceStateUi
 import eu.europa.ec.dashboardfeature.ui.documents.model.DocumentCredentialsInfoUi
 import eu.europa.ec.dashboardfeature.util.TestTag
 import eu.europa.ec.resourceslogic.R
@@ -590,7 +589,6 @@ private fun DocumentDetailsScreenPreview() {
                         )
                     )
                 ),
-                documentIssuanceStateUi = DocumentIssuanceStateUi.Issued,
             ),
             hideSensitiveContent = false,
             sheetContent = DocumentDetailsBottomSheetContent.DeleteDocumentConfirmation
