@@ -36,10 +36,12 @@ import eu.europa.ec.eudi.wallet.document.format.SdJwtVcFormat
 import eu.europa.ec.eudi.wallet.document.metadata.IssuerMetadata
 import org.mockito.Mockito.mock
 import org.mockito.kotlin.whenever
+import org.multipaz.credential.SecureAreaBoundCredential
 import org.multipaz.document.NameSpacedData
 import java.net.URI
 import java.time.Instant
 import java.util.Locale
+import kotlin.time.toKotlinInstant
 
 val mockedExceptionWithMessage = RuntimeException("Exception to test interactor.")
 val mockedExceptionWithNoMessage = RuntimeException()
@@ -579,6 +581,22 @@ fun mockedSdJwtVcClaim(
     return claim
 }
 
+// getValidUntil()/getValidFrom() come from a credential, so a mock stubbing them must return a
+// matching credential from getCredentials() too.
+private fun mockCredentialsFor(
+    validFrom: Result<Instant>?,
+    validUntil: Result<Instant>?,
+): List<SecureAreaBoundCredential> {
+    val validFromInstant = validFrom?.getOrNull()?.toKotlinInstant() ?: return emptyList()
+    val validUntilInstant = validUntil?.getOrNull()?.toKotlinInstant() ?: return emptyList()
+
+    val credential = mock<SecureAreaBoundCredential>()
+    whenever(credential.validFrom).thenReturn(validFromInstant)
+    whenever(credential.validUntil).thenReturn(validUntilInstant)
+
+    return listOf(credential)
+}
+
 private suspend fun mockIssuedDocument(
     format: DocumentFormat,
     id: String,
@@ -631,6 +649,10 @@ private suspend fun mockIssuedDocument(
 
         whenever(this.initialCredentialsCount())
             .thenReturn(totalCredentials)
+
+        val credentials = mockCredentialsFor(validFrom = validFrom, validUntil = validUntil)
+        whenever(this.getCredentials())
+            .thenReturn(credentials)
     }
 
     return doc
@@ -729,6 +751,17 @@ suspend fun IssuedDocument.copy(
     if (validUntil != null) {
         whenever(this.getValidUntil())
             .thenReturn(validUntil)
+    }
+
+    // a validity override must also update getCredentials(): rebuild it from the values now on the
+    // mock, so a copy that sets only one date keeps the other.
+    if (validFrom != null || validUntil != null) {
+        val credentials = mockCredentialsFor(
+            validFrom = this.getValidFrom(),
+            validUntil = this.getValidUntil(),
+        )
+        whenever(this.getCredentials())
+            .thenReturn(credentials)
     }
 
     if (data != null) {

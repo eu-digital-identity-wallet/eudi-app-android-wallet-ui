@@ -30,7 +30,8 @@ import eu.europa.ec.corelogic.worker.RevocationWorkManager
 import eu.europa.ec.eudi.rqesui.infrastructure.EudiRQESUi
 import org.koin.android.ext.android.inject
 import org.koin.core.KoinApplication
-import java.time.Duration
+import kotlin.time.Duration
+import kotlin.time.toJavaDuration
 
 class Application : Application() {
 
@@ -81,7 +82,7 @@ class Application : Application() {
     ) {
         val periodicWorkRequest = PeriodicWorkRequest.Builder(
             workerClass,
-            duration
+            duration.toJavaDuration()
         ).build()
 
         WorkManager.getInstance(this).enqueueUniquePeriodicWork(
