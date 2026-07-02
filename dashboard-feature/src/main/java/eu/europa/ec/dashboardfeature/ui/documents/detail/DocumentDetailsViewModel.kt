@@ -574,7 +574,8 @@ class DocumentDetailsViewModel(
         documentState: IssuerDetailsCardDataUi.DocumentState
     ) {
         when (documentState) {
-            is IssuerDetailsCardDataUi.DocumentState.Issued -> {
+            is IssuerDetailsCardDataUi.DocumentState.Issued,
+            is IssuerDetailsCardDataUi.DocumentState.Expired -> {
                 viewState.value.documentDetailsUi?.let { safeDocumentDetailsUi ->
                     reIssueDocument(
                         event = event,

@@ -29,6 +29,7 @@ import eu.europa.ec.corelogic.controller.DeleteAllDocumentsPartialState
 import eu.europa.ec.corelogic.controller.DeleteDocumentPartialState
 import eu.europa.ec.corelogic.controller.IssueDocumentsPartialState
 import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
+import eu.europa.ec.corelogic.extension.isExpired
 import eu.europa.ec.corelogic.extension.localizedIssuerMetadata
 import eu.europa.ec.corelogic.model.DocumentIdentifier
 import eu.europa.ec.corelogic.model.toDocumentIdentifier
@@ -172,10 +173,15 @@ class DocumentDetailsInteractorImpl(
                 val issuerDetails = IssuerDetailsCardDataUi(
                     issuerName = issuerName,
                     issuerLogo = issuerLogo?.uri,
-                    documentState = if (documentIsRevoked) {
-                        IssuerDetailsCardDataUi.DocumentState.Revoked
-                    } else {
-                        IssuerDetailsCardDataUi.DocumentState.Issued(
+                    documentState = when {
+                        documentIsRevoked -> IssuerDetailsCardDataUi.DocumentState.Revoked
+
+                        safeIssuedDocument.isExpired() -> IssuerDetailsCardDataUi.DocumentState.Expired(
+                            issuanceDate = documentDetailsDomain.documentIssuanceDate,
+                            expirationDate = documentDetailsDomain.documentExpirationDate
+                        )
+
+                        else -> IssuerDetailsCardDataUi.DocumentState.Issued(
                             issuanceDate = documentDetailsDomain.documentIssuanceDate,
                             expirationDate = documentDetailsDomain.documentExpirationDate
                         )

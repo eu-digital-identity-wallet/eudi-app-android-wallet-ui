@@ -50,6 +50,7 @@ import eu.europa.ec.eudi.wallet.document.DocumentId
 import eu.europa.ec.eudi.wallet.document.IssuedDocument
 import eu.europa.ec.eudi.wallet.document.UnsignedDocument
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
+import eu.europa.ec.testfeature.util.copy
 import eu.europa.ec.testfeature.util.getMockedFullDocuments
 import eu.europa.ec.testfeature.util.getMockedFullPid
 import eu.europa.ec.testfeature.util.mockedDefaultLocale
@@ -949,51 +950,18 @@ class TestDocumentsInteractor {
     }
 
     @Test
-    fun `Given an expired IssuedDocument, When getDocuments is called, Then documentIssuanceState is Failed`() {
+    fun `Given an expired IssuedDocument, When getDocuments is called, Then documentIssuanceState is Expired`() {
         coroutineRule.runTest {
-            // Given
+            // Given a PID whose credential expired in the past.
             mockShowBatchIssuanceCounterPreference(response = true)
-            val mockedFullPid = getMockedFullPid()
-            val pidFormat = mockedFullPid.format
-            val pidData = mockedFullPid.data
-            // Override validUntil to a past date so documentHasExpired evaluates true.
-            val expiredPid =
-                mock<IssuedDocument>()
-            whenever(expiredPid.id).thenReturn("expired-pid-id")
-            whenever(expiredPid.name).thenReturn("Expired PID")
-            whenever(expiredPid.format).thenReturn(pidFormat)
-            whenever(expiredPid.data).thenReturn(pidData)
-            whenever(expiredPid.issuerMetadata).thenReturn(null)
-            whenever(expiredPid.getValidUntil()).thenReturn(
-                Result.success(Instant.parse("2020-01-01T00:00:00Z"))
+            val expiredPid = getMockedFullPid().copy(
+                validUntil = Result.success(Instant.parse("2020-01-01T00:00:00Z")),
             )
-            whenever(expiredPid.credentialsCount()).thenReturn(3)
-            whenever(expiredPid.initialCredentialsCount()).thenReturn(5)
-
-            whenever(walletCoreDocumentsController.getMainPidDocument()).thenReturn(expiredPid)
-            whenever(walletCoreDocumentsController.getAllDocuments())
-                .thenReturn(listOf(expiredPid))
-            whenever(walletCoreDocumentsController.getAllDocumentCategories())
-                .thenReturn(DocumentCategories(value = emptyMap()))
-            whenever(walletCoreDocumentsController.isDocumentRevoked(anyString())).thenReturn(false)
-            whenever(walletCoreDocumentsController.isDocumentLowOnCredentials(any()))
-                .thenReturn(false)
-            whenever(resourceProvider.getLocale())
-                .thenReturn(mockedDefaultLocale)
-            whenever(resourceProvider.getString(any())).thenReturn("mocked")
-            whenever(
-                resourceProvider.getString(
-                    any(),
-                    any<Int>(),
-                    any<Int>()
-                )
-            ).thenReturn("mocked-credentials-info")
-            whenever(
-                resourceProvider.getString(
-                    any(),
-                    any<String>()
-                )
-            ).thenReturn("mocked-expiry-message")
+            mockGetDocumentsBaseCalls(
+                documents = listOf(expiredPid),
+                mainPid = expiredPid,
+            )
+            mockGetDocumentsResourceStrings()
 
             // When
             interactor.getDocuments().runFlowTest {
@@ -1001,7 +969,7 @@ class TestDocumentsInteractor {
                 val state = awaitItem()
                 assertTrue(state is DocumentInteractorGetDocumentsPartialState.Success)
                 val payload = state.allDocuments.items.first().payload as DocumentUi
-                assertEquals(DocumentIssuanceStateUi.Failed, payload.documentIssuanceState)
+                assertEquals(DocumentIssuanceStateUi.Expired, payload.documentIssuanceState)
             }
         }
     }

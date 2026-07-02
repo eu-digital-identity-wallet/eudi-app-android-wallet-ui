@@ -22,7 +22,6 @@ import eu.europa.ec.corelogic.model.ClaimType
 import eu.europa.ec.corelogic.model.DocumentIdentifier
 import eu.europa.ec.dashboardfeature.ui.documents.detail.model.DocumentDetailsDomain
 import eu.europa.ec.dashboardfeature.ui.documents.detail.model.DocumentDetailsUi
-import eu.europa.ec.dashboardfeature.ui.documents.detail.model.DocumentIssuanceStateUi
 import eu.europa.ec.testfeature.util.mockedFormattedExpirationDate
 import eu.europa.ec.testfeature.util.mockedFormattedIssuanceDate
 import eu.europa.ec.testfeature.util.mockedMdlDocName
@@ -47,16 +46,12 @@ internal val mockedFullPidUi = DocumentDetailsUi(
     documentConfigId = "",
     documentIdentifier = DocumentIdentifier.MdocPid,
     documentClaims = emptyList(),
-    documentIssuanceStateUi = DocumentIssuanceStateUi.Issued,
 )
 
-internal val mockedPendingPidUi = mockedFullPidUi.copy(
-    documentIssuanceStateUi = DocumentIssuanceStateUi.Pending
-)
+internal val mockedPendingPidUi = mockedFullPidUi
 
 internal val mockedUnsignedPidUi = mockedFullPidUi.copy(
     documentName = mockedPidDocName,
-    documentIssuanceStateUi = DocumentIssuanceStateUi.Pending,
     documentIdentifier = DocumentIdentifier.MdocPid,
 )
 
@@ -161,12 +156,9 @@ internal val mockedFullMdlUi = DocumentDetailsUi(
     documentConfigId = "",
     documentIdentifier = DocumentIdentifier.OTHER("org.iso.18013.5.1.mDL"),
     documentClaims = emptyList(),
-    documentIssuanceStateUi = DocumentIssuanceStateUi.Issued,
 )
 
-internal val mockedPendingMdlUi = mockedFullMdlUi.copy(
-    documentIssuanceStateUi = DocumentIssuanceStateUi.Pending
-)
+internal val mockedPendingMdlUi = mockedFullMdlUi
 
 internal val mockedBasicMdlUi = mockedFullMdlUi.copy(
     documentClaims = listOf(
