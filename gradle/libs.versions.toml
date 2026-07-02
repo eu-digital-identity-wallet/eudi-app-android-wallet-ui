@@ -58,7 +58,7 @@ treessence = "1.1.2"
 
 # Other libraries
 androidDesugarJdkLibs = "2.1.5"
-googlePhoneNumber = "9.0.32"
+googlePhoneNumber = "9.0.34"
 gson = "2.14.0"
 lint = "32.2.1"
 material = "1.14.0"
