@@ -28,9 +28,9 @@ datastore = "1.3.0-alpha09"
 
 # Jetpack Compose
 accompanist = "0.37.3"
-androidxComposeBom = "2026.06.00"
-androidxComposeRuntimeTracing = "1.11.3"
-cloudy = "0.5.0"
+androidxComposeBom = "2026.06.01"
+androidxComposeRuntimeTracing = "1.11.4"
+cloudy = "0.6.1"
 material3 = "1.4.0"
 materialIcons = "1.7.8"
 
@@ -41,7 +41,7 @@ cameraCore = "1.6.1"
 coil = "3.5.0"
 
 # Ktor (networking)
-ktor = "3.5.0"
+ktor = "3.5.1"
 
 # Koin (dependency injection)
 koin = "4.2.2"
@@ -58,7 +58,7 @@ treessence = "1.1.2"
 
 # Other libraries
 androidDesugarJdkLibs = "2.1.5"
-googlePhoneNumber = "9.0.33"
+googlePhoneNumber = "9.0.34"
 gson = "2.14.0"
 lint = "32.2.1"
 material = "1.14.0"
@@ -74,7 +74,7 @@ androidxTestExt = "1.3.0"
 androidxTestOrchestrator = "1.3.0"
 androidxTestRules = "1.7.0"
 androidxTestRunner = "1.7.0"
-androidxUiAutomator = "2.3.0"
+androidxUiAutomator = "2.4.0"
 junit4 = "4.13.2"
 mockito = "5.23.0"
 mockitoKotlin = "6.3.0"
@@ -83,7 +83,7 @@ turbine = "1.2.1"
 
 # Gradle plugins
 androidGradlePlugin = "9.2.1"
-baselineprofile = "1.5.0-alpha06"
+baselineprofile = "1.5.0-alpha07"
 dependencyGraphPlugin = "0.13.0"
 gmsPlugin = "4.5.0"
 kover = "0.9.8"
