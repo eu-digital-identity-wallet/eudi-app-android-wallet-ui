@@ -63,7 +63,7 @@ gson = "2.14.0"
 lint = "32.2.1"
 material = "1.14.0"
 protobuf = "4.35.1"
-sqlcipher = "4.16.0"
+sqlcipher = "4.17.0"
 zxing = "3.5.4"
 
 # Testing
