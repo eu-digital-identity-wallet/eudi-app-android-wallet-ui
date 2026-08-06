@@ -182,9 +182,7 @@ fun DocumentDetailsScreen(
             WrapModalBottomSheet(
                 onDismissRequest = {
                     viewModel.setEvent(
-                        Event.BottomSheet.UpdateBottomSheetState(
-                            isOpen = false
-                        )
+                        Event.BottomSheet.UpdateBottomSheetState(isOpen = false)
                     )
                 },
                 sheetState = bottomSheetState
@@ -355,6 +353,7 @@ private fun Content(
                     }.invokeOnCompletion {
                         if (!modalBottomSheetState.isVisible) {
                             onEventSend(Event.BottomSheet.UpdateBottomSheetState(isOpen = false))
+                            onEventSend(Event.BottomSheet.FinishedClosing)
                         }
                     }
                 }

@@ -123,6 +123,7 @@ fun PinScreen(
                 sheetState = bottomSheetState
             ) {
                 SheetContent(
+                    sheetContent = state.sheetContent,
                     onEventSent = {
                         viewModel.setEvent(it)
                     }
@@ -242,6 +243,7 @@ private fun Content(
                     }.invokeOnCompletion {
                         if (!modalBottomSheetState.isVisible) {
                             onEventSend(Event.BottomSheet.UpdateBottomSheetState(isOpen = false))
+                            onEventSend(Event.BottomSheet.FinishedClosing)
                         }
                     }
                 }
@@ -256,18 +258,23 @@ private fun Content(
 
 @Composable
 private fun SheetContent(
+    sheetContent: PinBottomSheetContent,
     onEventSent: (event: Event) -> Unit
 ) {
-    DialogBottomSheet(
-        textData = BottomSheetTextDataUi(
-            title = stringResource(id = R.string.quick_pin_bottom_sheet_cancel_title),
-            message = stringResource(id = R.string.quick_pin_bottom_sheet_cancel_subtitle),
-            positiveButtonText = stringResource(id = R.string.quick_pin_bottom_sheet_cancel_primary_button_text),
-            negativeButtonText = stringResource(id = R.string.quick_pin_bottom_sheet_cancel_secondary_button_text),
-        ),
-        onPositiveClick = { onEventSent(Event.BottomSheet.Cancel.PrimaryButtonPressed) },
-        onNegativeClick = { onEventSent(Event.BottomSheet.Cancel.SecondaryButtonPressed) }
-    )
+    when (sheetContent) {
+        is PinBottomSheetContent.CancelConfirmation -> {
+            DialogBottomSheet(
+                textData = BottomSheetTextDataUi(
+                    title = stringResource(id = R.string.quick_pin_bottom_sheet_cancel_title),
+                    message = stringResource(id = R.string.quick_pin_bottom_sheet_cancel_subtitle),
+                    positiveButtonText = stringResource(id = R.string.quick_pin_bottom_sheet_cancel_primary_button_text),
+                    negativeButtonText = stringResource(id = R.string.quick_pin_bottom_sheet_cancel_secondary_button_text),
+                ),
+                onPositiveClick = { onEventSent(Event.BottomSheet.Cancel.PrimaryButtonPressed) },
+                onNegativeClick = { onEventSent(Event.BottomSheet.Cancel.SecondaryButtonPressed) }
+            )
+        }
+    }
 }
 
 @Composable
@@ -318,6 +325,7 @@ private fun PinScreenEmptyPreview() {
 private fun SheetContentCancelPreview() {
     PreviewTheme {
         SheetContent(
+            sheetContent = PinBottomSheetContent.CancelConfirmation,
             onEventSent = {}
         )
     }
