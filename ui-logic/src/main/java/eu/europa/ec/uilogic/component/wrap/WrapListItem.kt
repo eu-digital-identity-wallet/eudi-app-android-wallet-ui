@@ -25,7 +25,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.text.TextStyle
@@ -38,6 +37,7 @@ import eu.europa.ec.uilogic.component.ListItem
 import eu.europa.ec.uilogic.component.ListItemDataUi
 import eu.europa.ec.uilogic.component.ListItemLeadingContentDataUi
 import eu.europa.ec.uilogic.component.ListItemMainContentDataUi
+import eu.europa.ec.uilogic.component.ListItemSupportingContentDataUi
 import eu.europa.ec.uilogic.component.ListItemTrailingContentDataUi
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.TextLengthPreviewProvider
@@ -79,7 +79,6 @@ fun WrapListItem(
     mainContentVerticalPadding: Dp? = null,
     mainContentTextStyle: TextStyle? = null,
     overlineTextStyle: (@Composable (item: ListItemDataUi) -> TextStyle)? = null,
-    supportingTextColor: Color? = null,
     clickableAreas: List<ClickableArea>? = null,
     shape: Shape? = null,
     colors: CardColors? = null,
@@ -101,7 +100,6 @@ fun WrapListItem(
                 ?: MaterialTheme.typography.labelMedium.copy(
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 ),
-            supportingTextColor = supportingTextColor,
             clickableAreas = clickableAreas ?: listOf(ClickableArea.ENTIRE_ROW),
         )
     }
@@ -130,7 +128,9 @@ private fun WrapListItemPreview(
                     itemId = "2",
                     mainContentData = ListItemMainContentDataUi.Text(text = "Main text $text"),
                     overlineText = "",
-                    supportingText = "",
+                    supportingContentData = ListItemSupportingContentDataUi.Text(
+                        text = "",
+                    ),
                 ),
                 onItemClick = {},
             )
@@ -140,7 +140,9 @@ private fun WrapListItemPreview(
                     itemId = "3",
                     mainContentData = ListItemMainContentDataUi.Text(text = "Main text $text"),
                     overlineText = "Overline text $text",
-                    supportingText = "Supporting text $text",
+                    supportingContentData = ListItemSupportingContentDataUi.Text(
+                        text = "Supporting text $text",
+                    ),
                     leadingContentData = ListItemLeadingContentDataUi.Icon(iconData = AppIcons.Sign),
                     trailingContentData = ListItemTrailingContentDataUi.Icon(
                         iconData = AppIcons.KeyboardArrowRight,
@@ -153,7 +155,9 @@ private fun WrapListItemPreview(
                 item = ListItemDataUi(
                     itemId = "4",
                     mainContentData = ListItemMainContentDataUi.Text(text = "Main text $text"),
-                    supportingText = "Supporting text $text",
+                    supportingContentData = ListItemSupportingContentDataUi.Text(
+                        text = "Supporting text $text",
+                    ),
                     trailingContentData = ListItemTrailingContentDataUi.Icon(
                         iconData = AppIcons.KeyboardArrowRight,
                     ),

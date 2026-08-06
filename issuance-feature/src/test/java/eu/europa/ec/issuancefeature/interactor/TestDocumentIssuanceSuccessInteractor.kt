@@ -46,6 +46,7 @@ import eu.europa.ec.testlogic.rule.CoroutineTestRule
 import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.ListItemDataUi
 import eu.europa.ec.uilogic.component.ListItemMainContentDataUi
+import eu.europa.ec.uilogic.component.ListItemSupportingContentDataUi
 import eu.europa.ec.uilogic.component.ListItemTrailingContentDataUi
 import eu.europa.ec.uilogic.component.RelyingPartyDataUi
 import eu.europa.ec.uilogic.component.content.ContentHeaderConfig
@@ -141,7 +142,7 @@ class TestDocumentIssuanceSuccessInteractor {
                                 header = ListItemDataUi(
                                     itemId = mockedPidId,
                                     mainContentData = ListItemMainContentDataUi.Text(text = mockedPidWithBasicFields.name),
-                                    supportingText = mockedDocumentSuccessCollapsedSupportingText,
+                                    supportingContentData = mockedDocumentSuccessCollapsedSupportingContent,
                                     trailingContentData = ListItemTrailingContentDataUi.Icon(
                                         iconData = AppIcons.KeyboardArrowDown
                                     )
@@ -208,7 +209,7 @@ class TestDocumentIssuanceSuccessInteractor {
                                 header = ListItemDataUi(
                                     itemId = mockedSdJwtPidId,
                                     mainContentData = ListItemMainContentDataUi.Text(text = mockedSdJwtPidWithBasicFields.name),
-                                    supportingText = mockedDocumentSuccessCollapsedSupportingText,
+                                    supportingContentData = mockedDocumentSuccessCollapsedSupportingContent,
                                     trailingContentData = ListItemTrailingContentDataUi.Icon(
                                         iconData = AppIcons.KeyboardArrowDown
                                     )
@@ -261,7 +262,7 @@ class TestDocumentIssuanceSuccessInteractor {
                                 header = ListItemDataUi(
                                     itemId = mockedPidWithBasicFields.id,
                                     mainContentData = ListItemMainContentDataUi.Text(text = mockedPidWithBasicFields.name),
-                                    supportingText = mockedDocumentSuccessCollapsedSupportingText,
+                                    supportingContentData = mockedDocumentSuccessCollapsedSupportingContent,
                                     trailingContentData = ListItemTrailingContentDataUi.Icon(
                                         iconData = AppIcons.KeyboardArrowDown
                                     )
@@ -419,7 +420,7 @@ class TestDocumentIssuanceSuccessInteractor {
                                 header = ListItemDataUi(
                                     itemId = mockedPidId,
                                     mainContentData = ListItemMainContentDataUi.Text(text = mockedPidWithBasicFields.name),
-                                    supportingText = mockedDocumentSuccessCollapsedSupportingText,
+                                    supportingContentData = mockedDocumentSuccessCollapsedSupportingContent,
                                     trailingContentData = ListItemTrailingContentDataUi.Icon(
                                         iconData = AppIcons.KeyboardArrowDown
                                     )
@@ -431,7 +432,7 @@ class TestDocumentIssuanceSuccessInteractor {
                                 header = ListItemDataUi(
                                     itemId = mockedSdJwtPidId,
                                     mainContentData = ListItemMainContentDataUi.Text(text = mockedSdJwtPidWithBasicFields.name),
-                                    supportingText = mockedDocumentSuccessCollapsedSupportingText,
+                                    supportingContentData = mockedDocumentSuccessCollapsedSupportingContent,
                                     trailingContentData = ListItemTrailingContentDataUi.Icon(
                                         iconData = AppIcons.KeyboardArrowDown
                                     )
@@ -536,7 +537,7 @@ class TestDocumentIssuanceSuccessInteractor {
                                 header = ListItemDataUi(
                                     itemId = mockedPidId,
                                     mainContentData = ListItemMainContentDataUi.Text(text = mockedPidWithBasicFieldsAndMetadata.name),
-                                    supportingText = mockedDocumentSuccessCollapsedSupportingText,
+                                    supportingContentData = mockedDocumentSuccessCollapsedSupportingContent,
                                     trailingContentData = ListItemTrailingContentDataUi.Icon(
                                         iconData = AppIcons.KeyboardArrowDown
                                     )
@@ -588,5 +589,12 @@ class TestDocumentIssuanceSuccessInteractor {
             .thenReturn(response)
     }
 
+    //endregion
+
+    //region Mocked objects needed for tests.
+    private val mockedDocumentSuccessCollapsedSupportingContent =
+        ListItemSupportingContentDataUi.Text(
+            text = mockedDocumentSuccessCollapsedSupportingText,
+        )
     //endregion
 }

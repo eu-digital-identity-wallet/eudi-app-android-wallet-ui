@@ -56,12 +56,13 @@ import eu.europa.ec.eudi.wallet.document.IssuedDocument
 import eu.europa.ec.eudi.wallet.document.UnsignedDocument
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
-import eu.europa.ec.resourceslogic.theme.values.ThemeColors
 import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.ListItemDataUi
 import eu.europa.ec.uilogic.component.ListItemLeadingContentDataUi
 import eu.europa.ec.uilogic.component.ListItemMainContentDataUi
+import eu.europa.ec.uilogic.component.ListItemSupportingContentDataUi
 import eu.europa.ec.uilogic.component.ListItemTrailingContentDataUi
+import eu.europa.ec.uilogic.component.ThemeColorKey
 import eu.europa.ec.uilogic.component.wrap.CheckboxDataUi
 import eu.europa.ec.uilogic.component.wrap.ExpandableListItemUi
 import eu.europa.ec.uilogic.component.wrap.RadioButtonDataUi
@@ -332,20 +333,31 @@ class DocumentsInteractorImpl(
                                 else -> DocumentIssuanceStateUi.Issued
                             }
 
-                            val supportingText = when {
-                                documentIsRevoked -> resourceProvider.getString(R.string.dashboard_document_revoked)
-                                documentHasExpired -> resourceProvider.getString(R.string.dashboard_document_has_expired)
+                            val supportingContentData = when {
+                                documentIsRevoked -> ListItemSupportingContentDataUi.Text(
+                                    text = resourceProvider.getString(R.string.dashboard_document_revoked),
+                                    textColorKey = ThemeColorKey.Error,
+                                )
+
+                                documentHasExpired -> ListItemSupportingContentDataUi.Text(
+                                    text = resourceProvider.getString(R.string.dashboard_document_has_expired),
+                                    textColorKey = ThemeColorKey.Error,
+                                )
+
                                 documentExpirationDate == null -> null
-                                else -> resourceProvider.getString(
-                                    R.string.dashboard_document_has_not_expired,
-                                    documentExpirationDate.formatInstant()
+
+                                else -> ListItemSupportingContentDataUi.Text(
+                                    text = resourceProvider.getString(
+                                        R.string.dashboard_document_has_not_expired,
+                                        documentExpirationDate.formatInstant()
+                                    ),
                                 )
                             }
 
                             val trailingContentData = if (documentIsRevoked) {
                                 ListItemTrailingContentDataUi.Icon(
                                     iconData = AppIcons.ErrorFilled,
-                                    tint = ThemeColors.error
+                                    tint = ThemeColorKey.Error
                                 )
                             } else {
                                 val documentAvailableCredentials = document.credentialsCount()
@@ -378,7 +390,7 @@ class DocumentsInteractorImpl(
                                         itemId = document.id,
                                         mainContentData = ListItemMainContentDataUi.Text(text = documentName),
                                         overlineText = issuerName,
-                                        supportingText = supportingText,
+                                        supportingContentData = supportingContentData,
                                         leadingContentData = ListItemLeadingContentDataUi.AsyncImage(
                                             imageUrl = localizedIssuerMetadata?.logo?.uri.toString(),
                                             contentDescription = resourceProvider.getString(R.string.content_description_issuer_logo_icon),
@@ -430,7 +442,10 @@ class DocumentsInteractorImpl(
                                         itemId = document.id,
                                         mainContentData = ListItemMainContentDataUi.Text(text = documentName),
                                         overlineText = issuerName,
-                                        supportingText = resourceProvider.getString(R.string.dashboard_document_deferred_pending),
+                                        supportingContentData = ListItemSupportingContentDataUi.Text(
+                                            text = resourceProvider.getString(R.string.dashboard_document_deferred_pending),
+                                            textColorKey = ThemeColorKey.Warning,
+                                        ),
                                         leadingContentData = ListItemLeadingContentDataUi.AsyncImage(
                                             imageUrl = localizedIssuerMetadata?.logo?.uri.toString(),
                                             contentDescription = resourceProvider.getString(R.string.content_description_issuer_logo_icon),
@@ -438,7 +453,7 @@ class DocumentsInteractorImpl(
                                         ),
                                         trailingContentData = ListItemTrailingContentDataUi.Icon(
                                             iconData = AppIcons.ClockTimer,
-                                            tint = ThemeColors.warning,
+                                            tint = ThemeColorKey.Warning,
                                         )
                                     ),
                                     documentIdentifier = documentIdentifier,
@@ -477,7 +492,7 @@ class DocumentsInteractorImpl(
         showBatchIssuanceCounter: Boolean,
     ): ListItemTrailingContentDataUi {
         val lowOnCredentialsIcon = AppIcons.ErrorFilled
-        val lowOnCredentialsIconTint = ThemeColors.warning
+        val lowOnCredentialsIconTint = ThemeColorKey.Warning
 
         return when {
             showBatchIssuanceCounter && documentLowOnCredentials -> {

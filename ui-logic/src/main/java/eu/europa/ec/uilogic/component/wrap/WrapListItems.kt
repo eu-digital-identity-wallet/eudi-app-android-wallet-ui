@@ -33,6 +33,7 @@ import eu.europa.ec.uilogic.component.ClickableArea
 import eu.europa.ec.uilogic.component.ListItemDataUi
 import eu.europa.ec.uilogic.component.ListItemLeadingContentDataUi
 import eu.europa.ec.uilogic.component.ListItemMainContentDataUi
+import eu.europa.ec.uilogic.component.ListItemSupportingContentDataUi
 import eu.europa.ec.uilogic.component.ListItemTrailingContentDataUi
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.TextLengthPreviewProvider
@@ -116,13 +117,17 @@ private fun WrapListItemsPreview(
                 itemId = "2",
                 mainContentData = ListItemMainContentDataUi.Text(text = "Main text $text"),
                 overlineText = "",
-                supportingText = "",
+                supportingContentData = ListItemSupportingContentDataUi.Text(
+                    text = "",
+                ),
             ),
             ListItemDataUi(
                 itemId = "3",
                 mainContentData = ListItemMainContentDataUi.Text(text = "Main text $text"),
                 overlineText = "Overline text $text",
-                supportingText = "Supporting text $text",
+                supportingContentData = ListItemSupportingContentDataUi.Text(
+                    text = "Supporting text $text",
+                ),
                 leadingContentData = ListItemLeadingContentDataUi.Icon(iconData = AppIcons.Sign),
                 trailingContentData = ListItemTrailingContentDataUi.Icon(
                     iconData = AppIcons.KeyboardArrowRight,
@@ -132,7 +137,9 @@ private fun WrapListItemsPreview(
                 itemId = "4",
                 mainContentData = ListItemMainContentDataUi.Text(text = "Main text $text"),
                 overlineText = "Overline text $text",
-                supportingText = "Supporting text $text",
+                supportingContentData = ListItemSupportingContentDataUi.Text(
+                    text = "Supporting text $text",
+                ),
                 leadingContentData = ListItemLeadingContentDataUi.Icon(iconData = AppIcons.Sign),
                 trailingContentData = ListItemTrailingContentDataUi.Checkbox(
                     checkboxData = CheckboxDataUi(
@@ -144,7 +151,9 @@ private fun WrapListItemsPreview(
             ListItemDataUi(
                 itemId = "5",
                 mainContentData = ListItemMainContentDataUi.Text(text = "Main text $text"),
-                supportingText = "Supporting text $text",
+                supportingContentData = ListItemSupportingContentDataUi.Text(
+                    text = "Supporting text $text",
+                ),
                 trailingContentData = ListItemTrailingContentDataUi.Icon(
                     iconData = AppIcons.KeyboardArrowRight,
                 ),
@@ -152,7 +161,9 @@ private fun WrapListItemsPreview(
             ListItemDataUi(
                 itemId = "6",
                 mainContentData = ListItemMainContentDataUi.Text(text = "Main text $text"),
-                supportingText = "Supporting text $text",
+                supportingContentData = ListItemSupportingContentDataUi.Text(
+                    text = "Supporting text $text",
+                ),
                 trailingContentData = ListItemTrailingContentDataUi.Checkbox(
                     checkboxData = CheckboxDataUi(
                         isChecked = true,

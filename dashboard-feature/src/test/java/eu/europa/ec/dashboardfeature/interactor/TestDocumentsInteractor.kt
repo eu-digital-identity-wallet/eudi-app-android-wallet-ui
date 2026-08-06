@@ -1477,7 +1477,7 @@ class TestDocumentsInteractor {
                 itemId = "sumo",
                 mainContentData = ListItemMainContentDataUi.Text("test"),
                 overlineText = null,
-                supportingText = null,
+                supportingContentData = null,
                 leadingContentData = null,
                 trailingContentData = null
             ),

@@ -37,6 +37,7 @@ import eu.europa.ec.testlogic.extension.runTest
 import eu.europa.ec.testlogic.rule.CoroutineTestRule
 import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.ListItemMainContentDataUi
+import eu.europa.ec.uilogic.component.ListItemSupportingContentDataUi
 import eu.europa.ec.uilogic.component.ListItemTrailingContentDataUi
 import eu.europa.ec.uilogic.component.RelyingPartyDataUi
 import eu.europa.ec.uilogic.component.content.ContentHeaderConfig
@@ -227,7 +228,12 @@ class TestProximitySuccessInteractor {
                     ListItemMainContentDataUi.Text(text = pid.name),
                     docUi.header.mainContentData
                 )
-                assertEquals(mockedDocumentSupportingText, docUi.header.supportingText)
+                assertEquals(
+                    ListItemSupportingContentDataUi.Text(
+                        text = mockedDocumentSupportingText,
+                    ),
+                    docUi.header.supportingContentData
+                )
                 assertEquals(
                     ListItemTrailingContentDataUi.Icon(iconData = AppIcons.KeyboardArrowDown),
                     docUi.header.trailingContentData

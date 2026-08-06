@@ -20,13 +20,7 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.ColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
-import eu.europa.ec.resourceslogic.theme.ThemeManager
 import eu.europa.ec.resourceslogic.theme.templates.ThemeColorsTemplate
-
-private val isInDarkMode: Boolean
-    get() {
-        return ThemeManager.instance.set.isInDarkMode
-    }
 
 class ThemeColors {
     companion object {
@@ -260,48 +254,6 @@ class ThemeColors {
             onTertiaryFixed = eudiw_theme_dark_onTertiaryFixed,
             onTertiaryFixedVariant = eudiw_theme_dark_onTertiaryFixedVariant,
         )
-
-        val primary: Color
-            get() = if (isInDarkMode) {
-                Color(eudiw_theme_dark_primary)
-            } else {
-                Color(eudiw_theme_light_primary)
-            }
-
-        val success: Color
-            get() = if (isInDarkMode) {
-                Color(eudiw_theme_dark_success)
-            } else {
-                Color(eudiw_theme_light_success)
-            }
-
-        val warning: Color
-            get() = if (isInDarkMode) {
-                Color(eudiw_theme_dark_warning)
-            } else {
-                Color(eudiw_theme_light_warning)
-            }
-
-        val pending: Color
-            get() = if (isInDarkMode) {
-                Color(eudiw_theme_dark_pending)
-            } else {
-                Color(eudiw_theme_light_pending)
-            }
-
-        val error: Color
-            get() = if (isInDarkMode) {
-                Color(eudiw_theme_dark_error)
-            } else {
-                Color(eudiw_theme_light_error)
-            }
-
-        val divider: Color
-            get() = if (isInDarkMode) {
-                Color(eudiw_theme_dark_divider)
-            } else {
-                Color(eudiw_theme_light_divider)
-            }
     }
 }
 

@@ -45,6 +45,7 @@ import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.ListItemDataUi
 import eu.europa.ec.uilogic.component.ListItemMainContentDataUi
+import eu.europa.ec.uilogic.component.ListItemSupportingContentDataUi
 import eu.europa.ec.uilogic.component.ListItemTrailingContentDataUi
 import eu.europa.ec.uilogic.component.wrap.ExpandableListItemUi
 import kotlinx.coroutines.flow.Flow
@@ -244,7 +245,9 @@ class TransactionDetailsInteractorImpl(
                                 }
                         )
                     ),
-                    supportingText = documentSupportingText,
+                    supportingContentData = ListItemSupportingContentDataUi.Text(
+                        text = documentSupportingText,
+                    ),
                     trailingContentData = ListItemTrailingContentDataUi.Icon(
                         iconData = AppIcons.KeyboardArrowDown
                     )

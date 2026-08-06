@@ -76,12 +76,12 @@ import eu.europa.ec.dashboardfeature.ui.documents.detail.model.DocumentIssuanceS
 import eu.europa.ec.dashboardfeature.ui.documents.list.model.DocumentUi
 import eu.europa.ec.dashboardfeature.util.TestTag
 import eu.europa.ec.resourceslogic.R
-import eu.europa.ec.resourceslogic.theme.values.warning
 import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.FiltersSearchBar
 import eu.europa.ec.uilogic.component.InlineSnackbar
 import eu.europa.ec.uilogic.component.ListItemDataUi
 import eu.europa.ec.uilogic.component.ListItemMainContentDataUi
+import eu.europa.ec.uilogic.component.ListItemSupportingContentDataUi
 import eu.europa.ec.uilogic.component.ModalOptionUi
 import eu.europa.ec.uilogic.component.SectionTitle
 import eu.europa.ec.uilogic.component.content.BroadcastAction
@@ -470,13 +470,6 @@ private fun DocumentCategory(
                         }
                         onEventSend(onItemClickEvent)
                     },
-                    supportingTextColor = when (documentItem.documentIssuanceState) {
-                        DocumentIssuanceStateUi.Issued -> null
-                        DocumentIssuanceStateUi.Pending -> MaterialTheme.colorScheme.warning
-                        DocumentIssuanceStateUi.Failed -> MaterialTheme.colorScheme.error
-                        DocumentIssuanceStateUi.Expired -> MaterialTheme.colorScheme.error
-                        DocumentIssuanceStateUi.Revoked -> MaterialTheme.colorScheme.error
-                    },
                     shape = WrapListItemDefaults.groupedShape(
                         index = index,
                         itemCount = documents.size
@@ -693,7 +686,9 @@ private fun DocumentsScreenPreview() {
                         itemId = "id1",
                         mainContentData = ListItemMainContentDataUi.Text(text = "Document 1"),
                         overlineText = issuerName,
-                        supportingText = validUntil,
+                        supportingContentData = ListItemSupportingContentDataUi.Text(
+                            text = validUntil,
+                        ),
                         leadingContentData = null,
                         trailingContentData = null
                     ),
@@ -706,7 +701,9 @@ private fun DocumentsScreenPreview() {
                         itemId = "id2",
                         mainContentData = ListItemMainContentDataUi.Text(text = "Document 2"),
                         overlineText = issuerName,
-                        supportingText = validUntil,
+                        supportingContentData = ListItemSupportingContentDataUi.Text(
+                            text = validUntil,
+                        ),
                         leadingContentData = null,
                         trailingContentData = null
                     ),
@@ -719,7 +716,9 @@ private fun DocumentsScreenPreview() {
                         itemId = "id3",
                         mainContentData = ListItemMainContentDataUi.Text(text = "Document 3"),
                         overlineText = issuerName,
-                        supportingText = validUntil,
+                        supportingContentData = ListItemSupportingContentDataUi.Text(
+                            text = validUntil,
+                        ),
                         leadingContentData = null,
                         trailingContentData = null
                     ),
@@ -732,7 +731,9 @@ private fun DocumentsScreenPreview() {
                         itemId = "id4",
                         mainContentData = ListItemMainContentDataUi.Text(text = "Document 4"),
                         overlineText = issuerName,
-                        supportingText = validUntil,
+                        supportingContentData = ListItemSupportingContentDataUi.Text(
+                            text = validUntil,
+                        ),
                         leadingContentData = null,
                         trailingContentData = null
                     ),
