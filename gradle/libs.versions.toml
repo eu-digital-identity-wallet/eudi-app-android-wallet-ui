@@ -45,7 +45,7 @@ ktor = "3.5.1"
 
 # Koin (dependency injection)
 koin = "4.2.2"
-koinPlugin = "1.0.2"
+koinPlugin = "1.1.0"
 
 # EUDI wallet SDKs
 eudiWalletCore = "0.29.0"
