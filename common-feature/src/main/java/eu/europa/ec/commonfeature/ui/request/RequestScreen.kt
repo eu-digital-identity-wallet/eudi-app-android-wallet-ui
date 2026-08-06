@@ -59,7 +59,6 @@ import eu.europa.ec.uilogic.component.ListItemDataUi
 import eu.europa.ec.uilogic.component.ListItemMainContentDataUi
 import eu.europa.ec.uilogic.component.ListItemSupportingContentDataUi
 import eu.europa.ec.uilogic.component.ListItemTrailingContentDataUi
-import eu.europa.ec.uilogic.component.OnBehalfOfRelyingParty
 import eu.europa.ec.uilogic.component.RelyingParty
 import eu.europa.ec.uilogic.component.RelyingPartyDataUi
 import eu.europa.ec.uilogic.component.SectionTitle
@@ -284,8 +283,8 @@ private fun Content(
 }
 
 /**
- * The who-is-asking header: the requester's identity, the "on behalf of" block for an
- * intermediated request, and the verified registration sections (privacy policy, intended use).
+ * The who-is-asking header: the requester's identity and the verified registration sections
+ * (privacy policy, intended use).
  */
 @Composable
 private fun VerifierHeaderSection(
@@ -300,16 +299,6 @@ private fun VerifierHeaderSection(
                 .padding(vertical = SPACING_SMALL.dp),
             relyingPartyData = header.relyingParty,
         )
-
-        header.onBehalfOf?.let { safeOnBehalfOf ->
-            OnBehalfOfRelyingParty(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = SPACING_SMALL.dp),
-                label = stringResource(R.string.request_relying_party_on_behalf_of_label),
-                relyingPartyData = safeOnBehalfOf,
-            )
-        }
 
         header.privacyPolicyUrl?.let { safePrivacyPolicyUrl ->
             InfoLinkSection(
@@ -512,7 +501,6 @@ private fun previewRelyingPartyHeader(): RelyingPartyHeaderUi {
             uniqueId = "rp:nordicbank:prod",
             description = null,
         ),
-        onBehalfOf = null,
         intendedUse = "We will use your identity and age to verify you for a new current " +
                 "account. Your data will be used once to complete onboarding and to meet " +
                 "anti-money laundering requirements.",
@@ -528,41 +516,6 @@ private fun ContentPreview() {
         Content(
             state = State(
                 relyingPartyHeader = previewRelyingPartyHeader(),
-                requestDataUi = RequestDataUi.Single(
-                    combination = RequestCombinationUi(
-                        documents = listOf(previewRequestDocumentItem()),
-                        matches = emptyList(),
-                    ),
-                ),
-            ),
-            effectFlow = Channel<Effect>().receiveAsFlow(),
-            onEventSend = {},
-            onNavigationRequested = {},
-            paddingValues = PaddingValues(SPACING_MEDIUM.dp),
-            coroutineScope = rememberCoroutineScope(),
-            modalBottomSheetState = rememberModalBottomSheetState()
-        )
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@ThemeModePreviews
-@Composable
-private fun ContentIntermediaryPreview() {
-    PreviewTheme {
-        val header = previewRelyingPartyHeader()
-        Content(
-            state = State(
-                relyingPartyHeader = header.copy(
-                    relyingParty = RelyingPartyDataUi(
-                        logo = null,
-                        isVerified = true,
-                        name = "RP Services S.A.",
-                        uniqueId = "rp:rpservices:prod",
-                        description = null,
-                    ),
-                    onBehalfOf = header.relyingParty,
-                ),
                 requestDataUi = RequestDataUi.Single(
                     combination = RequestCombinationUi(
                         documents = listOf(previewRequestDocumentItem()),

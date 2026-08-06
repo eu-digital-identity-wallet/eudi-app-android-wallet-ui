@@ -25,8 +25,8 @@ import java.net.URI
  *
  * @property name the requester's display name, resolved across both layers — see
  * [resolveRequesterName].
- * @property uniqueId the requester's registered identifier — the intermediary's when the request
- * is intermediated, the certificate subject's otherwise.
+ * @property uniqueId the requester's registered identifier, as the registration certificate's
+ * subject gives it.
  * @property hasTrustedAccessCertificate whether the request's access-certificate chain validated
  * against the configured trust source; also false when the request carried no reader
  * authentication at all.
@@ -90,9 +90,8 @@ enum class RegistrationFailureReasonDomain {
 }
 
 /**
- * Registration-certificate content the app displays. The certificate subject is the relying
- * party itself; when [intermediary] is present the request is presented on the subject's behalf
- * and the subject renders in the "on behalf of" block.
+ * Registration-certificate content the app displays; the certificate subject is the relying
+ * party itself.
  */
 data class RegistrationDetailsDomain(
     val tradeName: String?,
@@ -101,13 +100,6 @@ data class RegistrationDetailsDomain(
     val intendedUse: String?,
     val privacyPolicyUrl: String?,
     val serviceDescription: String?,
-    val intermediary: RegistrationIntermediaryDomain?,
-)
-
-/** The party presenting the request on the registered relying party's behalf. */
-data class RegistrationIntermediaryDomain(
-    val uniqueId: String,
-    val name: String?,
 )
 
 /**
@@ -138,23 +130,16 @@ fun RegistrationStatusDomain.overaskedClaimsOrEmpty(): List<OveraskedClaimDomain
 }
 
 /**
- * The requester's registered identifier: the intermediary's when the request is intermediated,
- * the certificate subject's otherwise; null when no registration details exist.
+ * The requester's registered identifier as the certificate subject gives it; null when no
+ * registration details exist.
  */
 fun RegistrationStatusDomain.requesterUniqueIdOrNull(): String? {
-    return detailsOrNull()?.let { safeDetails ->
-        safeDetails.intermediary?.uniqueId ?: safeDetails.uniqueId
-    }
+    return detailsOrNull()?.uniqueId
 }
 
-/**
- * The requester's name as the registration certificate gives it: the intermediary's when the
- * request is intermediated, the certificate subject's otherwise.
- */
+/** The requester's name as the registration certificate's subject gives it. */
 fun RegistrationStatusDomain.requesterNameOrNull(): String? {
-    return detailsOrNull()?.let { safeDetails ->
-        safeDetails.intermediary?.name ?: safeDetails.tradeName
-    }
+    return detailsOrNull()?.tradeName
 }
 
 /**

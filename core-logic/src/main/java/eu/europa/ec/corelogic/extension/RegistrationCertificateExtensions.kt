@@ -26,7 +26,6 @@ import eu.europa.ec.corelogic.model.IssuerRegistrationDomain
 import eu.europa.ec.corelogic.model.OveraskedClaimDomain
 import eu.europa.ec.corelogic.model.RegistrationDetailsDomain
 import eu.europa.ec.corelogic.model.RegistrationFailureReasonDomain
-import eu.europa.ec.corelogic.model.RegistrationIntermediaryDomain
 import eu.europa.ec.corelogic.model.RegistrationStatusDomain
 import eu.europa.ec.eudi.iso18013.transfer.response.WrpRegistrationInfo
 import eu.europa.ec.eudi.wallet.registration.ClaimPathElement
@@ -110,12 +109,6 @@ private fun RegistrationCertificate.toRegistrationDetailsDomain(
         intendedUse = purpose.localizedValueOrNull(locale = locale),
         privacyPolicyUrl = privacyPolicyUri,
         serviceDescription = serviceDescription.localizedValueOrNull(locale = locale),
-        intermediary = intermediary?.let { safeIntermediary ->
-            RegistrationIntermediaryDomain(
-                uniqueId = safeIntermediary.identifier,
-                name = safeIntermediary.name,
-            )
-        },
     )
 }
 

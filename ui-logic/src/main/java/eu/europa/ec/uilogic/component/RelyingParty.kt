@@ -16,16 +16,13 @@
 
 package eu.europa.ec.uilogic.component
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -46,7 +43,6 @@ import eu.europa.ec.uilogic.component.utils.VSpacer
 import eu.europa.ec.uilogic.component.wrap.TextConfig
 import eu.europa.ec.uilogic.component.wrap.TextStyleKey
 import eu.europa.ec.uilogic.component.wrap.WrapAsyncImage
-import eu.europa.ec.uilogic.component.wrap.WrapCard
 import eu.europa.ec.uilogic.component.wrap.WrapIcon
 import eu.europa.ec.uilogic.component.wrap.WrapText
 import kotlinx.serialization.Contextual
@@ -86,7 +82,7 @@ enum class RelyingPartyLayout {
 
 /**
  * The reusable party-identity block: logo, verified badge + name, "(ID: …)" line, optional
- * description. Rendered standalone and inside [OnBehalfOfRelyingParty].
+ * description.
  */
 @Composable
 fun RelyingParty(
@@ -218,41 +214,6 @@ private fun RelyingPartyIdentity(
     }
 }
 
-/**
- * The "on behalf of" card of an intermediated request: a labeled surface hosting the
- * [RelyingParty] block of the party the requester acts for.
- */
-@Composable
-fun OnBehalfOfRelyingParty(
-    modifier: Modifier = Modifier,
-    label: String,
-    relyingPartyData: RelyingPartyDataUi,
-) {
-    WrapCard(
-        modifier = modifier,
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceDim,
-            contentColor = MaterialTheme.colorScheme.onSurface,
-        ),
-    ) {
-        Text(
-            text = label,
-            modifier = Modifier.padding(
-                vertical = SPACING_EXTRA_SMALL.dp,
-                horizontal = SPACING_SMALL.dp
-            ),
-            style = MaterialTheme.typography.bodySmall,
-        )
-        RelyingParty(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(MaterialTheme.colorScheme.surfaceContainer)
-                .padding(all = SPACING_SMALL.dp),
-            relyingPartyData = relyingPartyData,
-        )
-    }
-}
-
 @ThemeModePreviews
 @Composable
 private fun RelyingPartyPreview(
@@ -309,26 +270,6 @@ private fun RelyingPartyStackedCenteredPreview() {
                 description = null,
             ),
             layout = RelyingPartyLayout.StackedCentered,
-        )
-    }
-}
-
-@ThemeModePreviews
-@Composable
-private fun OnBehalfOfRelyingPartyPreview() {
-    PreviewTheme {
-        OnBehalfOfRelyingParty(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(SPACING_EXTRA_SMALL.dp),
-            label = "on behalf of",
-            relyingPartyData = RelyingPartyDataUi(
-                logo = null,
-                isVerified = true,
-                name = "NordicBank A/S",
-                uniqueId = "rp:nordicbank:prod",
-                description = null,
-            )
         )
     }
 }

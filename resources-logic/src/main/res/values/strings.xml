@@ -175,7 +175,6 @@
     <string name="request_screen_title">Data sharing request</string>
     <string name="request_relying_party_default_name">@string/generic_default_relying_party_name</string>
     <string name="request_relying_party_id_format">(ID: %1$s)</string>
-    <string name="request_relying_party_on_behalf_of_label">on behalf of</string>
     <string name="request_privacy_policy_section_title">Privacy policy</string>
     <string name="request_intended_use_section_title">Intended use</string>
     <string name="request_requested_data_section_title">Requested data</string>

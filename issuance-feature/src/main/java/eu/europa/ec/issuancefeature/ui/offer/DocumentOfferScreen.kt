@@ -395,7 +395,6 @@ private fun ContentPreview() {
                     uniqueId = "rp:aegeanairlines:prod",
                     description = null,
                 ),
-                onBehalfOf = null,
                 intendedUse = "Aegean Airlines is asking your permission to issue the " +
                         "following to your Wallet.",
                 privacyPolicyUrl = "https://aegean.gr/privacy",

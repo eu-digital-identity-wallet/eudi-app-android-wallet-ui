@@ -25,13 +25,6 @@ class TestRelyingPartyDomain {
     private val mockedAccessCertificateName = "Verifier Signer dev"
     private val mockedSubjectName = "NordicBank A/S"
     private val mockedSubjectUniqueId = "LEIXG-123456789"
-    private val mockedIntermediaryName = "RP Services Ltd"
-    private val mockedIntermediaryUniqueId = "VATEU-987654321"
-
-    private val mockedIntermediary = RegistrationIntermediaryDomain(
-        uniqueId = mockedIntermediaryUniqueId,
-        name = mockedIntermediaryName,
-    )
 
     private val mockedDetails = RegistrationDetailsDomain(
         tradeName = mockedSubjectName,
@@ -40,7 +33,6 @@ class TestRelyingPartyDomain {
         intendedUse = "mocked intended use",
         privacyPolicyUrl = "https://nordicbank.example/privacy",
         serviceDescription = "mocked service description",
-        intermediary = null,
     )
 
     //region resolveRequesterName
@@ -57,22 +49,6 @@ class TestRelyingPartyDomain {
 
         // Then
         assertEquals(mockedSubjectName, result)
-    }
-
-    @Test
-    fun `Given a verified intermediated registration, When resolveRequesterName is called, Then the intermediary names the requester`() {
-        // Given
-        val registration = verified(
-            details = mockedDetails.copy(intermediary = mockedIntermediary),
-        )
-
-        // When
-        val result = registration.resolveRequesterName(
-            accessCertificateName = mockedAccessCertificateName,
-        )
-
-        // Then
-        assertEquals(mockedIntermediaryName, result)
     }
 
     @Test
@@ -146,7 +122,7 @@ class TestRelyingPartyDomain {
     //region requesterUniqueIdOrNull
 
     @Test
-    fun `Given a direct registration, When requesterUniqueIdOrNull is called, Then the certificate subject identifies the requester`() {
+    fun `Given a verified registration, When requesterUniqueIdOrNull is called, Then the certificate subject identifies the requester`() {
         // Given
         val registration = verified(details = mockedDetails)
 
@@ -155,20 +131,6 @@ class TestRelyingPartyDomain {
 
         // Then
         assertEquals(mockedSubjectUniqueId, result)
-    }
-
-    @Test
-    fun `Given an intermediated registration, When requesterUniqueIdOrNull is called, Then the intermediary identifies the requester`() {
-        // Given
-        val registration = verified(
-            details = mockedDetails.copy(intermediary = mockedIntermediary),
-        )
-
-        // When
-        val result = registration.requesterUniqueIdOrNull()
-
-        // Then
-        assertEquals(mockedIntermediaryUniqueId, result)
     }
 
     @Test

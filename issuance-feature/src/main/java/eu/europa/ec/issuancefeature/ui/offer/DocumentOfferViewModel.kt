@@ -384,7 +384,6 @@ class DocumentOfferViewModel(
                 uniqueId = details?.uniqueId,
                 description = null,
             ),
-            onBehalfOf = null,
             intendedUse = details?.intendedUse,
             privacyPolicyUrl = details?.privacyPolicyUrl,
         )

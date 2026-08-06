@@ -21,7 +21,6 @@ import eu.europa.ec.corelogic.model.ClaimType
 import eu.europa.ec.corelogic.model.OveraskedClaimDomain
 import eu.europa.ec.corelogic.model.RegistrationDetailsDomain
 import eu.europa.ec.corelogic.model.RegistrationFailureReasonDomain
-import eu.europa.ec.corelogic.model.RegistrationIntermediaryDomain
 import eu.europa.ec.corelogic.model.RegistrationStatusDomain
 import eu.europa.ec.corelogic.model.RelyingPartyDomain
 import eu.europa.ec.testfeature.util.mockedVerifierName
@@ -34,15 +33,9 @@ import java.net.URI
 class TestRelyingPartyHeaderUi {
 
     private val mockedFallbackName = "Unknown relying party"
-    private val mockedRequesterUniqueId = "rp:rpservices:prod"
     private val mockedRequesterLogoUri = URI("https://rpservices.example/logo.png")
     private val mockedDetailsLogoUri = URI("https://nordicbank.example/logo.png")
     private val mockedTradeName = "NordicBank A/S"
-
-    private val mockedIntermediary = RegistrationIntermediaryDomain(
-        uniqueId = mockedRequesterUniqueId,
-        name = "RP Services Ltd",
-    )
 
     private val mockedDetails = RegistrationDetailsDomain(
         tradeName = mockedTradeName,
@@ -51,7 +44,6 @@ class TestRelyingPartyHeaderUi {
         intendedUse = "mocked intended use",
         privacyPolicyUrl = "https://nordicbank.example/privacy",
         serviceDescription = "mocked service description",
-        intermediary = null,
     )
 
     private val mockedOveraskedClaim = OveraskedClaimDomain(
@@ -65,7 +57,7 @@ class TestRelyingPartyHeaderUi {
     //region toRelyingPartyHeaderUi
 
     @Test
-    fun `Given a verified direct registration, When toRelyingPartyHeaderUi is called, Then the header shows the badge and the registration sections`() {
+    fun `Given a verified registration, When toRelyingPartyHeaderUi is called, Then the header shows the badge and the registration sections`() {
         // Given
         val relyingParty = buildRelyingPartyDomain(
             name = mockedVerifierName,
@@ -90,7 +82,6 @@ class TestRelyingPartyHeaderUi {
                     uniqueId = mockedDetails.uniqueId,
                     description = null,
                 ),
-                onBehalfOf = null,
                 intendedUse = mockedDetails.intendedUse,
                 privacyPolicyUrl = mockedDetails.privacyPolicyUrl,
             ),
@@ -121,35 +112,6 @@ class TestRelyingPartyHeaderUi {
     }
 
     @Test
-    fun `Given a verified intermediated registration, When toRelyingPartyHeaderUi is called, Then the on behalf of block describes the certificate subject with the badge`() {
-        // Given
-        val relyingParty = buildRelyingPartyDomain(
-            name = mockedVerifierName,
-            uniqueId = mockedRequesterUniqueId,
-            hasTrustedAccessCertificate = true,
-            registration = RegistrationStatusDomain.Verified(
-                details = mockedDetails.copy(intermediary = mockedIntermediary),
-                overaskedClaims = emptyList(),
-            ),
-        )
-
-        // When
-        val result = relyingParty.toRelyingPartyHeaderUi(fallbackName = mockedFallbackName)
-
-        // Then
-        assertEquals(
-            RelyingPartyDataUi(
-                logo = mockedDetailsLogoUri,
-                isVerified = true,
-                name = mockedTradeName,
-                uniqueId = mockedDetails.uniqueId,
-                description = null,
-            ),
-            result.onBehalfOf,
-        )
-    }
-
-    @Test
     fun `Given a not verified registration with no parsed details, When toRelyingPartyHeaderUi is called, Then the badge is hidden and the registration sections are absent`() {
         // Given
         val relyingParty = buildRelyingPartyDomain(
@@ -167,7 +129,6 @@ class TestRelyingPartyHeaderUi {
 
         // Then
         assertEquals(false, result.relyingParty.isVerified)
-        assertNull(result.onBehalfOf)
         assertNull(result.intendedUse)
         assertNull(result.privacyPolicyUrl)
     }
@@ -190,38 +151,8 @@ class TestRelyingPartyHeaderUi {
 
         // Then
         assertEquals(false, result.relyingParty.isVerified)
-        assertNull(result.onBehalfOf)
         assertEquals(mockedDetails.intendedUse, result.intendedUse)
         assertEquals(mockedDetails.privacyPolicyUrl, result.privacyPolicyUrl)
-    }
-
-    @Test
-    fun `Given a not verified intermediated registration carrying parsed details, When toRelyingPartyHeaderUi is called, Then the on behalf of block renders without the badge`() {
-        // Given
-        val relyingParty = buildRelyingPartyDomain(
-            name = mockedVerifierName,
-            uniqueId = mockedRequesterUniqueId,
-            hasTrustedAccessCertificate = true,
-            registration = RegistrationStatusDomain.NotVerified(
-                reason = RegistrationFailureReasonDomain.REVOCATION_STATUS_UNKNOWN,
-                details = mockedDetails.copy(intermediary = mockedIntermediary),
-            ),
-        )
-
-        // When
-        val result = relyingParty.toRelyingPartyHeaderUi(fallbackName = mockedFallbackName)
-
-        // Then
-        assertEquals(
-            RelyingPartyDataUi(
-                logo = mockedDetailsLogoUri,
-                isVerified = false,
-                name = mockedTradeName,
-                uniqueId = mockedDetails.uniqueId,
-                description = null,
-            ),
-            result.onBehalfOf,
-        )
     }
 
     @Test

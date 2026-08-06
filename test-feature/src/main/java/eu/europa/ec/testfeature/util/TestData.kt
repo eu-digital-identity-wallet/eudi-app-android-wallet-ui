@@ -563,7 +563,6 @@ val mockedVerifiedIssuerRegistration = IssuerRegistrationDomain.Verified(
         intendedUse = "mocked intended use",
         privacyPolicyUrl = "https://aegean.gr/privacy",
         serviceDescription = null,
-        intermediary = null,
     ),
 )
 

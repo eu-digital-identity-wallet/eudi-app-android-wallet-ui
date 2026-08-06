@@ -22,13 +22,11 @@ import eu.europa.ec.corelogic.model.RelyingPartyDomain
 import eu.europa.ec.uilogic.component.RelyingPartyDataUi
 
 /**
- * The request screen's who-is-asking header: the requester's identity block, the
- * "on behalf of" block when the requester acts for another relying party, and the registration
+ * The request screen's who-is-asking header: the requester's identity block and the registration
  * sections (hidden when null).
  */
 data class RelyingPartyHeaderUi(
     val relyingParty: RelyingPartyDataUi,
-    val onBehalfOf: RelyingPartyDataUi?,
     val intendedUse: String?,
     val privacyPolicyUrl: String?,
 )
@@ -49,18 +47,6 @@ fun RelyingPartyDomain.toRelyingPartyHeaderUi(fallbackName: String): RelyingPart
         is RegistrationStatusDomain.NotEvaluated -> null
     }
 
-    // the certificate subject is the party behind the requester; when an intermediary presents
-    // for it, the subject renders in the "on behalf of" block
-    val onBehalfOf = details?.takeIf { it.intermediary != null }?.let { safeDetails ->
-        RelyingPartyDataUi(
-            logo = safeDetails.logoUri,
-            isVerified = showVerifiedBadge,
-            name = safeDetails.tradeName.ifEmptyOrNull(default = fallbackName),
-            uniqueId = safeDetails.uniqueId,
-            description = null,
-        )
-    }
-
     return RelyingPartyHeaderUi(
         relyingParty = RelyingPartyDataUi(
             logo = logoUri,
@@ -69,7 +55,6 @@ fun RelyingPartyDomain.toRelyingPartyHeaderUi(fallbackName: String): RelyingPart
             uniqueId = uniqueId,
             description = null,
         ),
-        onBehalfOf = onBehalfOf,
         intendedUse = details?.intendedUse,
         privacyPolicyUrl = details?.privacyPolicyUrl,
     )
