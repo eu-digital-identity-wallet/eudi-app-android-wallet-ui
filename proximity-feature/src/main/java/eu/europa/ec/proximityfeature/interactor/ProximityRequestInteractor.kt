@@ -25,21 +25,21 @@ import eu.europa.ec.commonfeature.ui.request.transformer.RequestTransformer
 import eu.europa.ec.corelogic.controller.TransferEventPartialState
 import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
 import eu.europa.ec.corelogic.controller.WalletCorePresentationController
+import eu.europa.ec.corelogic.model.RelyingPartyDomain
+import eu.europa.ec.corelogic.model.overaskedClaimsOrEmpty
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.mapNotNull
 
 sealed class ProximityRequestInteractorPartialState {
     data class Success(
-        val verifierName: String?,
-        val verifierIsTrusted: Boolean,
+        val relyingParty: RelyingPartyDomain,
         val combinationsUi: List<RequestCombinationUi>,
         val claimsAreSelectable: Boolean,
     ) : ProximityRequestInteractorPartialState()
 
     data class NoData(
-        val verifierName: String?,
-        val verifierIsTrusted: Boolean,
+        val relyingParty: RelyingPartyDomain,
     ) : ProximityRequestInteractorPartialState()
 
     data class Failure(val error: String) : ProximityRequestInteractorPartialState()
@@ -76,8 +76,7 @@ class ProximityRequestInteractorImpl(
                         .all { it.requestedClaims.isEmpty() }
                     if (requestedClaimsAreEmpty) {
                         ProximityRequestInteractorPartialState.NoData(
-                            verifierName = response.verifierName,
-                            verifierIsTrusted = response.verifierIsTrusted,
+                            relyingParty = response.relyingParty,
                         )
                     } else {
                         val storageDocuments = walletCoreDocumentsController.getAllIssuedDocuments()
@@ -101,20 +100,19 @@ class ProximityRequestInteractorImpl(
                             uuidProvider = uuidProvider,
                             combinationsDomain = combinationsDomain,
                             claimsAreSelectable = claimsAreSelectable,
+                            overaskedClaims = response.relyingParty.registration.overaskedClaimsOrEmpty(),
                         ).getOrThrow()
                             .filter { it.documents.isNotEmpty() }
 
                         if (combinationsUi.isNotEmpty()) {
                             ProximityRequestInteractorPartialState.Success(
-                                verifierName = response.verifierName,
-                                verifierIsTrusted = response.verifierIsTrusted,
+                                relyingParty = response.relyingParty,
                                 combinationsUi = combinationsUi,
                                 claimsAreSelectable = claimsAreSelectable,
                             )
                         } else {
                             ProximityRequestInteractorPartialState.NoData(
-                                verifierName = response.verifierName,
-                                verifierIsTrusted = response.verifierIsTrusted,
+                                relyingParty = response.relyingParty,
                             )
                         }
                     }

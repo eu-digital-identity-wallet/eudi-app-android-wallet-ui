@@ -35,7 +35,6 @@ object TestTag {
     }
 
     object RequestScreen {
-        const val CONTENT_HEADER_DESCRIPTION = "request_screen_content_header_description"
         const val BUTTON = "request_screen_button"
 
         fun requestedDocument(index: Int) = "request_screen_requested_document_$index"

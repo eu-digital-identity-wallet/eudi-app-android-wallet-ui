@@ -48,7 +48,7 @@ koin = "4.2.2"
 koinPlugin = "1.0.2"
 
 # EUDI wallet SDKs
-eudiWalletCore = "0.29.0"
+eudiWalletCore = "0.30.0-SNAPSHOT"
 rqesUiSDK = "0.3.9"
 eudiLibKmpEtsi1196x2 = "0.4.0-alpha.1"
 

@@ -176,15 +176,22 @@ fun AddDocumentScreen(
             WrapModalBottomSheet(
                 onDismissRequest = {
                     viewModel.setEvent(
-                        Event.BottomSheet.UpdateBottomSheetState(isOpen = false)
+                        when (state.sheetContent) {
+                            is AddDocumentBottomSheetContent.NoTrustedIssuers -> {
+                                Event.BottomSheet.NoTrustedIssuers.Close
+                            }
+
+                            is AddDocumentBottomSheetContent.IssuerNotTrusted -> {
+                                Event.BottomSheet.UpdateBottomSheetState(isOpen = false)
+                            }
+                        }
                     )
                 },
                 sheetState = bottomSheetState
             ) {
-                IssuerNotTrustedSheetContent(
-                    onClose = {
-                        viewModel.setEvent(Event.BottomSheet.Close)
-                    },
+                SheetContent(
+                    sheetContent = state.sheetContent,
+                    onEventSent = { viewModel.setEvent(it) }
                 )
             }
         }
@@ -241,11 +248,36 @@ private fun Content(
                     }.invokeOnCompletion {
                         if (!modalBottomSheetState.isVisible) {
                             onEventSend(Event.BottomSheet.UpdateBottomSheetState(isOpen = false))
+                            onEventSend(Event.BottomSheet.FinishedClosing)
                         }
                     }
                 }
             }
         }.collect()
+    }
+}
+
+@Composable
+private fun SheetContent(
+    sheetContent: AddDocumentBottomSheetContent,
+    onEventSent: (event: Event) -> Unit,
+) {
+    when (sheetContent) {
+        is AddDocumentBottomSheetContent.IssuerNotTrusted -> {
+            IssuerNotTrustedSheetContent(
+                onClose = {
+                    onEventSent(Event.BottomSheet.IssuerNotTrusted.CloseButtonPressed)
+                },
+            )
+        }
+
+        is AddDocumentBottomSheetContent.NoTrustedIssuers -> {
+            IssuerNotTrustedSheetContent(
+                onClose = {
+                    onEventSent(Event.BottomSheet.NoTrustedIssuers.Close)
+                },
+            )
+        }
     }
 }
 

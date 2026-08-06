@@ -17,7 +17,6 @@
 package eu.europa.ec.proximityfeature.ui.request
 
 import androidx.lifecycle.viewModelScope
-import eu.europa.ec.businesslogic.extension.ifEmptyOrNull
 import eu.europa.ec.commonfeature.config.BiometricMode
 import eu.europa.ec.commonfeature.config.BiometricUiConfig
 import eu.europa.ec.commonfeature.config.OnBackNavigationConfig
@@ -26,14 +25,14 @@ import eu.europa.ec.commonfeature.ui.request.RequestBottomSheetContent
 import eu.europa.ec.commonfeature.ui.request.RequestViewModel
 import eu.europa.ec.commonfeature.ui.request.model.RequestDataUi
 import eu.europa.ec.commonfeature.ui.request.model.RequestDocumentItemUi
+import eu.europa.ec.commonfeature.ui.request.model.toRegistrationWarningUi
+import eu.europa.ec.commonfeature.ui.request.model.toRelyingPartyHeaderUi
 import eu.europa.ec.corelogic.di.getOrNullKoinScope
 import eu.europa.ec.proximityfeature.interactor.ProximityRequestInteractor
 import eu.europa.ec.proximityfeature.interactor.ProximityRequestInteractorPartialState
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
-import eu.europa.ec.uilogic.component.RelyingPartyDataUi
 import eu.europa.ec.uilogic.component.content.ContentErrorConfig
-import eu.europa.ec.uilogic.component.content.ContentHeaderConfig
 import eu.europa.ec.uilogic.config.ConfigNavigation
 import eu.europa.ec.uilogic.config.NavigationType
 import eu.europa.ec.uilogic.navigation.CommonScreens
@@ -52,17 +51,6 @@ class ProximityRequestViewModel(
     private val uiSerializer: UiSerializer,
     @InjectedParam private val presentationScopeId: String
 ) : RequestViewModel() {
-
-    override fun getHeaderConfig(): ContentHeaderConfig {
-        return ContentHeaderConfig(
-            description = resourceProvider.getString(R.string.request_header_description),
-            mainText = resourceProvider.getString(R.string.request_header_main_text),
-            relyingPartyData = getRelyingPartyData(
-                name = null,
-                isVerified = false,
-            ),
-        )
-    }
 
     override fun getNextScreen(): String {
         return generateComposableNavigationLink(
@@ -131,18 +119,17 @@ class ProximityRequestViewModel(
                     is ProximityRequestInteractorPartialState.Success -> {
                         val requestData = RequestDataUi.of(combinations = response.combinationsUi)
 
-                        val updatedHeaderConfig = viewState.value.headerConfig.copy(
-                            relyingPartyData = getRelyingPartyData(
-                                name = response.verifierName,
-                                isVerified = response.verifierIsTrusted,
-                            )
+                        val relyingPartyHeader = response.relyingParty.toRelyingPartyHeaderUi(
+                            fallbackName = resourceProvider.getString(R.string.request_relying_party_default_name)
                         )
+                        val registrationWarning = response.relyingParty.toRegistrationWarningUi()
 
                         setState {
                             copy(
                                 isLoading = false,
                                 error = null,
-                                headerConfig = updatedHeaderConfig,
+                                relyingPartyHeader = relyingPartyHeader,
+                                registrationWarning = registrationWarning,
                                 requestDataUi = requestData,
                                 claimsAreSelectable = response.claimsAreSelectable,
                             )
@@ -159,7 +146,7 @@ class ProximityRequestViewModel(
                                 error = null
                             )
                         }
-                        showBottomSheet(sheetContent = RequestBottomSheetContent.VERIFIER_NOT_TRUSTED)
+                        showBottomSheet(sheetContent = RequestBottomSheetContent.VerifierNotTrusted)
                     }
 
                     is ProximityRequestInteractorPartialState.Disconnect -> {
@@ -167,18 +154,16 @@ class ProximityRequestViewModel(
                     }
 
                     is ProximityRequestInteractorPartialState.NoData -> {
-                        val updatedHeaderConfig = viewState.value.headerConfig.copy(
-                            relyingPartyData = getRelyingPartyData(
-                                name = response.verifierName,
-                                isVerified = response.verifierIsTrusted,
-                            )
+                        val relyingPartyHeader = response.relyingParty.toRelyingPartyHeaderUi(
+                            fallbackName = resourceProvider.getString(R.string.request_relying_party_default_name)
                         )
 
                         setState {
                             copy(
                                 isLoading = false,
                                 error = null,
-                                headerConfig = updatedHeaderConfig,
+                                relyingPartyHeader = relyingPartyHeader,
+                                registrationWarning = null,
                                 requestDataUi = RequestDataUi.NoData,
                             )
                         }
@@ -199,18 +184,5 @@ class ProximityRequestViewModel(
         super.cleanUp()
         interactor.stopPresentation()
         getOrNullKoinScope(presentationScopeId)?.close()
-    }
-
-    private fun getRelyingPartyData(
-        name: String?,
-        isVerified: Boolean,
-    ): RelyingPartyDataUi {
-        return RelyingPartyDataUi(
-            isVerified = isVerified,
-            name = name.ifEmptyOrNull(
-                default = resourceProvider.getString(R.string.request_relying_party_default_name)
-            ),
-            description = resourceProvider.getString(R.string.request_relying_party_description),
-        )
     }
 }

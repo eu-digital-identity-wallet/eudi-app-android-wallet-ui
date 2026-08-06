@@ -75,6 +75,8 @@ data class State(
     val noOptions: Boolean = false,
 
     val isBottomSheetOpen: Boolean = false,
+    val bottomSheetClosingInProgress: Boolean = false,
+    val sheetContent: AddDocumentBottomSheetContent = AddDocumentBottomSheetContent.IssuerNotTrusted,
 ) : ViewState
 
 sealed class Event : ViewEvent {
@@ -95,7 +97,15 @@ sealed class Event : ViewEvent {
 
     sealed class BottomSheet : Event() {
         data class UpdateBottomSheetState(val isOpen: Boolean) : BottomSheet()
-        data object Close : BottomSheet()
+        data object FinishedClosing : BottomSheet()
+
+        sealed class IssuerNotTrusted : BottomSheet() {
+            data object CloseButtonPressed : IssuerNotTrusted()
+        }
+
+        sealed class NoTrustedIssuers : BottomSheet() {
+            data object Close : NoTrustedIssuers()
+        }
     }
 }
 
@@ -109,6 +119,11 @@ sealed class Effect : ViewSideEffect {
 
     data object ShowBottomSheet : Effect()
     data object CloseBottomSheet : Effect()
+}
+
+sealed class AddDocumentBottomSheetContent {
+    data object IssuerNotTrusted : AddDocumentBottomSheetContent()
+    data object NoTrustedIssuers : AddDocumentBottomSheetContent()
 }
 
 @KoinViewModel
@@ -206,11 +221,36 @@ class AddDocumentViewModel(
             }
 
             is Event.BottomSheet.UpdateBottomSheetState -> {
-                setState { copy(isBottomSheetOpen = event.isOpen) }
+                setState {
+                    copy(
+                        isBottomSheetOpen = event.isOpen,
+                        bottomSheetClosingInProgress = if (event.isOpen) false
+                        else bottomSheetClosingInProgress,
+                    )
+                }
             }
 
-            is Event.BottomSheet.Close -> {
-                setEffect { Effect.CloseBottomSheet }
+            is Event.BottomSheet.FinishedClosing -> {
+                when (viewState.value.sheetContent) {
+                    is AddDocumentBottomSheetContent.NoTrustedIssuers -> {
+                        getOnNoTrustedIssuersClosedAction(
+                            flowType = viewState.value.issuanceConfig.flowType
+                        ).invoke()
+                    }
+
+                    is AddDocumentBottomSheetContent.IssuerNotTrusted -> Unit
+                }
+            }
+
+            is Event.BottomSheet.IssuerNotTrusted.CloseButtonPressed -> {
+                hideBottomSheet()
+            }
+
+            is Event.BottomSheet.NoTrustedIssuers.Close -> {
+                if (!viewState.value.bottomSheetClosingInProgress) {
+                    setState { copy(bottomSheetClosingInProgress = true) }
+                    hideBottomSheet()
+                }
             }
         }
     }
@@ -265,6 +305,29 @@ class AddDocumentViewModel(
                         }
                         deepLinkAction?.let {
                             handleDeepLink(it.first, it.second)
+                        }
+                    }
+
+                    is AddDocumentInteractorScopedPartialState.IssuerNotTrusted -> {
+
+                        val deepLinkAction = getDeepLinkAction(deepLinkUri)
+
+                        setState {
+                            copy(
+                                error = null,
+                                options = emptyList(),
+                                noOptions = false,
+                                isInitialised = true,
+                                isLoading = false
+                            )
+                        }
+
+                        if (deepLinkAction == null) {
+                            showBottomSheet(
+                                sheetContent = AddDocumentBottomSheetContent.NoTrustedIssuers
+                            )
+                        } else {
+                            handleDeepLink(deepLinkAction.first, deepLinkAction.second)
                         }
                     }
 
@@ -326,7 +389,7 @@ class AddDocumentViewModel(
                                 isLoading = false
                             )
                         }
-                        setEffect { Effect.ShowBottomSheet }
+                        showBottomSheet(sheetContent = AddDocumentBottomSheetContent.IssuerNotTrusted)
                     }
 
                     is AddDocumentInteractorIssueDocumentsPartialState.Success -> {
@@ -463,6 +526,27 @@ class AddDocumentViewModel(
         }
     }
 
+    /**
+     * What to do once the "no verified issuer" notice has closed and the list is empty. This is
+     * deliberately not [getOnBackAction]: with no document yet, this screen is the root of a gated
+     * flow, so leaving would close the app and take away the last way in — the toolbar's scan
+     * action for a credential offer, which resolves the offer's own issuer and is therefore
+     * unaffected by the issuers that could not be verified here.
+     */
+    private fun getOnNoTrustedIssuersClosedAction(flowType: IssuanceFlowType): (() -> Unit) {
+        return when (flowType) {
+            is IssuanceFlowType.NoDocument -> {
+                { }
+            }
+
+            // the dashboard behind this screen offers its own add-document and scan entry points,
+            // so backing out loses nothing
+            is IssuanceFlowType.ExtraDocument -> {
+                { setEvent(Event.Pop) }
+            }
+        }
+    }
+
     private fun getDeepLinkAction(deepLinkUri: Uri?): Pair<Uri, DeepLinkAction>? {
         return deepLinkUri?.let { uri ->
             hasDeepLink(uri)?.let {
@@ -516,6 +600,21 @@ class AddDocumentViewModel(
             }
 
             else -> {}
+        }
+    }
+
+    private fun showBottomSheet(sheetContent: AddDocumentBottomSheetContent) {
+        setState {
+            copy(sheetContent = sheetContent)
+        }
+        setEffect {
+            Effect.ShowBottomSheet
+        }
+    }
+
+    private fun hideBottomSheet() {
+        setEffect {
+            Effect.CloseBottomSheet
         }
     }
 }

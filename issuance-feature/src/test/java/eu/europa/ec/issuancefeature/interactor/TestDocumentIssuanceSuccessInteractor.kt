@@ -36,6 +36,7 @@ import eu.europa.ec.testfeature.util.getMockedSdJwtPidWithBasicFields
 import eu.europa.ec.testfeature.util.mockedDefaultLocale
 import eu.europa.ec.testfeature.util.mockedDocumentSuccessCollapsedSupportingText
 import eu.europa.ec.testfeature.util.mockedGenericErrorMessage
+import eu.europa.ec.testfeature.util.mockedIssuanceSuccessBannerText
 import eu.europa.ec.testfeature.util.mockedIssuerLogo
 import eu.europa.ec.testfeature.util.mockedIssuerName
 import eu.europa.ec.testfeature.util.mockedPidId
@@ -154,11 +155,14 @@ class TestDocumentIssuanceSuccessInteractor {
                         headerConfig = ContentHeaderConfig(
                             description = mockedSuccessDescription,
                             relyingPartyData = RelyingPartyDataUi(
-                                name = mockedIssuerName,
                                 logo = null,
-                                isVerified = false
+                                isVerified = false,
+                                name = mockedIssuerName,
+                                uniqueId = null,
+                                description = null,
                             )
                         ),
+                        bannerText = mockedIssuanceSuccessBannerText,
                     ),
                     awaitItem()
                 )
@@ -199,9 +203,11 @@ class TestDocumentIssuanceSuccessInteractor {
                         headerConfig = ContentHeaderConfig(
                             description = mockedSuccessDescription,
                             relyingPartyData = RelyingPartyDataUi(
-                                name = mockedIssuerName,
                                 logo = null,
-                                isVerified = false
+                                isVerified = false,
+                                name = mockedIssuerName,
+                                uniqueId = null,
+                                description = null,
                             )
                         ),
                         documentsUi = listOf(
@@ -217,7 +223,8 @@ class TestDocumentIssuanceSuccessInteractor {
                                 nestedItems = mockedSdJwtPidClaims,
                                 isExpanded = false
                             )
-                        )
+                        ),
+                        bannerText = mockedIssuanceSuccessBannerText,
                     ),
                     awaitItem()
                 )
@@ -274,11 +281,14 @@ class TestDocumentIssuanceSuccessInteractor {
                         headerConfig = ContentHeaderConfig(
                             description = mockedSuccessDescription,
                             relyingPartyData = RelyingPartyDataUi(
-                                name = mockedIssuerName,
                                 logo = null,
-                                isVerified = false
+                                isVerified = false,
+                                name = mockedIssuerName,
+                                uniqueId = null,
+                                description = null,
                             )
                         ),
+                        bannerText = mockedIssuanceSuccessBannerText,
                     ),
                     awaitItem()
                 )
@@ -318,11 +328,14 @@ class TestDocumentIssuanceSuccessInteractor {
                         headerConfig = ContentHeaderConfig(
                             description = mockedErrorDescription,
                             relyingPartyData = RelyingPartyDataUi(
-                                name = mockedIssuerName,
                                 logo = null,
-                                isVerified = false
+                                isVerified = false,
+                                name = mockedIssuerName,
+                                uniqueId = null,
+                                description = null,
                             )
                         ),
+                        bannerText = mockedIssuanceSuccessBannerText,
                     ),
                     awaitItem()
                 )
@@ -361,11 +374,14 @@ class TestDocumentIssuanceSuccessInteractor {
                         headerConfig = ContentHeaderConfig(
                             description = mockedErrorDescription,
                             relyingPartyData = RelyingPartyDataUi(
-                                name = mockedIssuerName,
                                 logo = null,
-                                isVerified = false
+                                isVerified = false,
+                                name = mockedIssuerName,
+                                uniqueId = null,
+                                description = null,
                             )
                         ),
+                        bannerText = mockedIssuanceSuccessBannerText,
                     ),
                     awaitItem()
                 )
@@ -410,9 +426,11 @@ class TestDocumentIssuanceSuccessInteractor {
                         headerConfig = ContentHeaderConfig(
                             description = mockedSuccessDescription,
                             relyingPartyData = RelyingPartyDataUi(
-                                name = mockedIssuerName,
                                 logo = null,
-                                isVerified = false
+                                isVerified = false,
+                                name = mockedIssuerName,
+                                uniqueId = null,
+                                description = null,
                             )
                         ),
                         documentsUi = listOf(
@@ -440,7 +458,8 @@ class TestDocumentIssuanceSuccessInteractor {
                                 nestedItems = mockedSdJwtPidClaims,
                                 isExpanded = false
                             )
-                        )
+                        ),
+                        bannerText = mockedIssuanceSuccessBannerText,
                     ),
                     awaitItem()
                 )
@@ -549,11 +568,14 @@ class TestDocumentIssuanceSuccessInteractor {
                         headerConfig = ContentHeaderConfig(
                             description = mockedSuccessDescription,
                             relyingPartyData = RelyingPartyDataUi(
-                                name = mockedIssuerName,
                                 logo = URI.create(mockedIssuerLogo),
-                                isVerified = false
+                                isVerified = false,
+                                name = mockedIssuerName,
+                                uniqueId = null,
+                                description = null,
                             )
                         ),
+                        bannerText = mockedIssuanceSuccessBannerText,
                     ),
                     awaitItem()
                 )
@@ -577,6 +599,9 @@ class TestDocumentIssuanceSuccessInteractor {
             whenever(resourceProvider.getString(R.string.issuance_success_header_description))
                 .thenReturn(description)
         }
+
+        whenever(resourceProvider.getString(R.string.issuance_success_banner_text))
+            .thenReturn(mockedIssuanceSuccessBannerText)
     }
 
     private fun mockGetDocumentByIdCall(response: IssuedDocument?) {

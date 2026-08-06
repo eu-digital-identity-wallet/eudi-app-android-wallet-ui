@@ -66,6 +66,7 @@ class ProximitySuccessViewModel(
                         setState {
                             copy(
                                 headerConfig = response.headerConfig,
+                                bannerText = response.bannerText,
                                 items = response.documentsUi,
                                 isLoading = false,
                             )

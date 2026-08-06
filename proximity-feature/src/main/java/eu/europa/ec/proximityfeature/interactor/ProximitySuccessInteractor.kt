@@ -45,6 +45,7 @@ sealed class ProximitySuccessInteractorGetUiItemsPartialState {
     data class Success(
         val documentsUi: List<ExpandableListItemUi.NestedListItem>,
         val headerConfig: ContentHeaderConfig,
+        val bannerText: String,
     ) : ProximitySuccessInteractorGetUiItemsPartialState()
 
     data class Failed(
@@ -75,7 +76,7 @@ class ProximitySuccessInteractorImpl(
 
             val verifierName = walletCorePresentationController.verifierName
 
-            val isVerified = walletCorePresentationController.verifierIsTrusted == true
+            val isVerified = walletCorePresentationController.verifierIsFullyVerified == true
 
             walletCorePresentationController.disclosedDocuments?.forEach { selection ->
                 try {
@@ -138,17 +139,21 @@ class ProximitySuccessInteractorImpl(
             val headerConfig = ContentHeaderConfig(
                 description = headerConfigDescription,
                 relyingPartyData = RelyingPartyDataUi(
+                    logo = null,
+                    isVerified = isVerified,
                     name = verifierName.ifEmptyOrNull(
                         default = resourceProvider.getString(R.string.document_success_relying_party_default_name)
                     ),
-                    isVerified = isVerified,
+                    uniqueId = null,
+                    description = null,
                 )
             )
 
             emit(
                 ProximitySuccessInteractorGetUiItemsPartialState.Success(
                     documentsUi = documentsUi,
-                    headerConfig = headerConfig
+                    headerConfig = headerConfig,
+                    bannerText = resourceProvider.getString(R.string.document_success_banner_text),
                 )
             )
         }.safeAsync {

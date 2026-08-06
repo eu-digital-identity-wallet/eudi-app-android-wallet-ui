@@ -19,6 +19,7 @@ package eu.europa.ec.uilogic.component.wrap
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
@@ -26,6 +27,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import eu.europa.ec.uilogic.component.utils.SPACING_SMALL
 
 sealed interface StickyBottomType {
     data class OneButton(
@@ -35,6 +37,7 @@ sealed interface StickyBottomType {
     data class TwoButtons(
         val primaryButtonConfig: ButtonConfig,
         val secondaryButtonConfig: ButtonConfig,
+        val secondaryButtonContent: @Composable RowScope.() -> Unit,
     ) : StickyBottomType
 
     data object Generic : StickyBottomType
@@ -81,22 +84,35 @@ fun WrapStickyBottomContent(
         }
 
         is StickyBottomType.TwoButtons -> {
-            Row(
-                modifier = modifier,
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceEvenly
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                verticalArrangement = Arrangement.Top,
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                WrapButton(
-                    modifier = Modifier.weight(1f),
-                    buttonConfig = stickyBottomType.primaryButtonConfig
-                ) {
-                    content()
+                if (stickyBottomConfig.showDivider) {
+                    HorizontalDivider(
+                        thickness = 1.dp,
+                        color = MaterialTheme.colorScheme.outlineVariant,
+                    )
                 }
-                WrapButton(
-                    modifier = Modifier.weight(1f),
-                    buttonConfig = stickyBottomType.secondaryButtonConfig
+
+                Row(
+                    modifier = modifier,
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(SPACING_SMALL.dp)
                 ) {
-                    content()
+                    WrapButton(
+                        modifier = Modifier.weight(1f),
+                        buttonConfig = stickyBottomType.secondaryButtonConfig
+                    ) {
+                        stickyBottomType.secondaryButtonContent(this)
+                    }
+                    WrapButton(
+                        modifier = Modifier.weight(1f),
+                        buttonConfig = stickyBottomType.primaryButtonConfig
+                    ) {
+                        content()
+                    }
                 }
             }
         }

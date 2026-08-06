@@ -43,6 +43,7 @@ sealed class DocumentIssuanceSuccessInteractorGetUiItemsPartialState {
     data class Success(
         val documentsUi: List<ExpandableListItemUi.NestedListItem>,
         val headerConfig: ContentHeaderConfig,
+        val bannerText: String,
     ) : DocumentIssuanceSuccessInteractorGetUiItemsPartialState()
 
     data class Failed(
@@ -137,8 +138,10 @@ class DocumentIssuanceSuccessInteractorImpl(
                 description = headerConfigDescription,
                 relyingPartyData = RelyingPartyDataUi(
                     logo = issuerLogo,
-                    name = issuerName,
                     isVerified = issuerIsTrusted,
+                    name = issuerName,
+                    uniqueId = null,
+                    description = null,
                 )
             )
 
@@ -146,6 +149,7 @@ class DocumentIssuanceSuccessInteractorImpl(
                 DocumentIssuanceSuccessInteractorGetUiItemsPartialState.Success(
                     documentsUi = documentsUi,
                     headerConfig = headerConfig,
+                    bannerText = resourceProvider.getString(R.string.issuance_success_banner_text),
                 )
             )
         }.safeAsync {

@@ -34,14 +34,16 @@ import eu.europa.ec.corelogic.extension.getIssuerLogo
 import eu.europa.ec.corelogic.extension.getIssuerName
 import eu.europa.ec.corelogic.extension.getName
 import eu.europa.ec.corelogic.model.DocumentIdentifier
+import eu.europa.ec.corelogic.model.IssuerRegistrationDomain
+import eu.europa.ec.corelogic.model.UntrustedIssuerReasonDomain
 import eu.europa.ec.eudi.openid4vci.TxCodeInputMode
 import eu.europa.ec.eudi.wallet.document.DocumentId
 import eu.europa.ec.eudi.wallet.issue.openid4vci.Offer
 import eu.europa.ec.issuancefeature.ui.offer.model.DocumentOfferUi
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
-import eu.europa.ec.resourceslogic.theme.values.ThemeColors
 import eu.europa.ec.uilogic.component.AppIcons
+import eu.europa.ec.uilogic.component.ThemeColorKey
 import eu.europa.ec.uilogic.component.utils.PERCENTAGE_25
 import eu.europa.ec.uilogic.config.ConfigNavigation
 import eu.europa.ec.uilogic.navigation.CommonScreens
@@ -58,17 +60,21 @@ sealed class ResolveDocumentOfferInteractorPartialState {
         val documents: List<DocumentOfferUi>,
         val issuerName: String,
         val issuerLogo: URI?,
-        val txCodeLength: Int?
+        val txCodeLength: Int?,
+        val issuerRegistration: IssuerRegistrationDomain,
     ) : ResolveDocumentOfferInteractorPartialState()
 
     data class NoDocument(
         val issuerName: String,
         val issuerLogo: URI?,
+        val issuerRegistration: IssuerRegistrationDomain,
     ) : ResolveDocumentOfferInteractorPartialState()
 
     data class Failure(val errorMessage: String) : ResolveDocumentOfferInteractorPartialState()
 
-    data object IssuerNotTrusted : ResolveDocumentOfferInteractorPartialState()
+    data class IssuerNotTrusted(
+        val reason: UntrustedIssuerReasonDomain,
+    ) : ResolveDocumentOfferInteractorPartialState()
 }
 
 sealed class IssueDocumentsInteractorPartialState {
@@ -86,7 +92,9 @@ sealed class IssueDocumentsInteractorPartialState {
 
     data class Failure(val errorMessage: String) : IssueDocumentsInteractorPartialState()
 
-    data object IssuerNotTrusted : IssueDocumentsInteractorPartialState()
+    data class IssuerNotTrusted(
+        val reason: UntrustedIssuerReasonDomain,
+    ) : IssueDocumentsInteractorPartialState()
 
     data class UserAuthRequired(
         val crypto: BiometricCrypto,
@@ -142,7 +150,9 @@ class DocumentOfferInteractorImpl(
                     }
 
                     is ResolveDocumentOfferPartialState.IssuerNotTrusted -> {
-                        ResolveDocumentOfferInteractorPartialState.IssuerNotTrusted
+                        ResolveDocumentOfferInteractorPartialState.IssuerNotTrusted(
+                            reason = response.reason
+                        )
                     }
 
                     is ResolveDocumentOfferPartialState.Success -> {
@@ -154,6 +164,7 @@ class DocumentOfferInteractorImpl(
                             ResolveDocumentOfferInteractorPartialState.NoDocument(
                                 issuerName = response.offer.getIssuerName(userLocale),
                                 issuerLogo = response.offer.getIssuerLogo(userLocale),
+                                issuerRegistration = response.issuerRegistration,
                             )
                         } else {
 
@@ -195,7 +206,8 @@ class DocumentOfferInteractorImpl(
                                     },
                                     issuerName = response.offer.getIssuerName(userLocale),
                                     issuerLogo = response.offer.getIssuerLogo(userLocale),
-                                    txCodeLength = response.offer.txCodeSpec?.length
+                                    txCodeLength = response.offer.txCodeSpec?.length,
+                                    issuerRegistration = response.issuerRegistration,
                                 )
                             } else {
                                 ResolveDocumentOfferInteractorPartialState.Failure(
@@ -234,7 +246,9 @@ class DocumentOfferInteractorImpl(
                         }
 
                         is IssueDocumentsPartialState.IssuerNotTrusted -> {
-                            IssueDocumentsInteractorPartialState.IssuerNotTrusted
+                            IssueDocumentsInteractorPartialState.IssuerNotTrusted(
+                                reason = response.reason
+                            )
                         }
 
                         is IssueDocumentsPartialState.PartialSuccess -> {
@@ -337,13 +351,13 @@ class DocumentOfferInteractorImpl(
             first = SuccessUIConfig.TextElementsConfig(
                 text = resourceProvider.getString(R.string.issuance_document_offer_deferred_success_text),
                 description = description,
-                color = ThemeColors.pending
+                color = ThemeColorKey.Pending
             ),
             second = SuccessUIConfig.ImageConfig(
                 type = SuccessUIConfig.ImageConfig.Type.Drawable(
                     icon = AppIcons.InProgress,
                 ),
-                tint = ThemeColors.primary,
+                tint = ThemeColorKey.Primary,
                 screenPercentageSize = PERCENTAGE_25,
             ),
             third = resourceProvider.getString(R.string.issuance_document_offer_deferred_success_primary_button_text)

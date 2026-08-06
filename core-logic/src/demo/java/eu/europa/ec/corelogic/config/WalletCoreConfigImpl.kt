@@ -31,6 +31,7 @@ import eu.europa.ec.eudi.wallet.dcapi.DCAPIProtocol
 import eu.europa.ec.eudi.wallet.document.CreateDocumentSettings.CredentialPolicy
 import eu.europa.ec.eudi.wallet.issue.openid4vci.OpenId4VciManager
 import eu.europa.ec.eudi.wallet.issue.openid4vci.dpop.DPopConfig
+import eu.europa.ec.eudi.wallet.registration.issuer.IssuerRegistrationPolicy
 import eu.europa.ec.eudi.wallet.transfer.openId4vp.ClientIdScheme
 import eu.europa.ec.eudi.wallet.transfer.openId4vp.Format
 import eu.europa.ec.eudi.wallet.trust.TrustPolicy
@@ -84,6 +85,7 @@ internal class WalletCoreConfigImpl : WalletCoreConfig {
                             SupportedLists(
                                 pidProviders = Uri("https://trustedlist.serviceproviders.eudiw.dev/LOTE/json/PIDProviders.jwt"),
                                 wrpacProviders = Uri("https://trustedlist.serviceproviders.eudiw.dev/LOTE/json/WRPACProviders.jwt"),
+                                wrprcProviders = Uri("https://trustedlist.serviceproviders.eudiw.dev/LOTE/json/WRPRCProviders.jwt"),
                                 pubEaaProviders = Uri("https://trustedlist.serviceproviders.eudiw.dev/LOTE/json/PubEAAProviders.jwt"),
                             )
                         )
@@ -110,6 +112,7 @@ internal class WalletCoreConfigImpl : WalletCoreConfig {
                     configureIssuerTrust {
                         policy { default(TrustPolicy.Action.ENFORCE) }
                         requireSignedMetadata()
+                        configureIssuerRegistrationPolicy(IssuerRegistrationPolicy.Enabled)
                     }
 
                     configureDocumentStatusResolver {

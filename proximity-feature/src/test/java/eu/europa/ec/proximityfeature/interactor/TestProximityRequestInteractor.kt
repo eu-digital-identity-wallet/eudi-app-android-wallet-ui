@@ -32,11 +32,10 @@ import eu.europa.ec.testfeature.util.mockedExceptionWithMessage
 import eu.europa.ec.testfeature.util.mockedExceptionWithNoMessage
 import eu.europa.ec.testfeature.util.mockedGenericErrorMessage
 import eu.europa.ec.testfeature.util.mockedPlainFailureMessage
+import eu.europa.ec.testfeature.util.mockedRelyingPartyDomain
 import eu.europa.ec.testfeature.util.mockedSelectableClaims
 import eu.europa.ec.testfeature.util.mockedValidMdlWithBasicFieldsRequestMatch
 import eu.europa.ec.testfeature.util.mockedValidPidWithBasicFieldsRequestMatch
-import eu.europa.ec.testfeature.util.mockedVerifierIsTrusted
-import eu.europa.ec.testfeature.util.mockedVerifierName
 import eu.europa.ec.testlogic.extension.expectNoEvents
 import eu.europa.ec.testlogic.extension.runFlowTest
 import eu.europa.ec.testlogic.extension.runTest
@@ -185,13 +184,11 @@ class TestProximityRequestInteractor {
     // 1. walletCorePresentationController.events emits:
     // TransferEventPartialState.RequestReceived, with:
     // 1. an emptyList() for combinations,
-    // 2. a not null String for verifier name,
-    // 3. true for verifierIsTrusted.
+    // 2. a relying party.
 
     // Case 4 Expected Result:
     // ProximityRequestInteractorPartialState.NoData state, with:
-    // 1. the same not null String for verifier name,
-    // 2. true for verifierIsTrusted.
+    // 1. the same relying party.
     @Test
     fun `Given Case 4, When getRequestDocuments is called, Then Case 4 Expected Result is returned`() {
         coroutineRule.runTest {
@@ -199,8 +196,7 @@ class TestProximityRequestInteractor {
             mockWalletCorePresentationControllerEventEmission(
                 event = TransferEventPartialState.RequestReceived(
                     combinationsDomain = emptyList(),
-                    verifierName = mockedVerifierName,
-                    verifierIsTrusted = mockedVerifierIsTrusted
+                    relyingParty = mockedRelyingPartyDomain,
                 )
             )
 
@@ -210,8 +206,7 @@ class TestProximityRequestInteractor {
                     // Then
                     assertEquals(
                         ProximityRequestInteractorPartialState.NoData(
-                            verifierName = mockedVerifierName,
-                            verifierIsTrusted = mockedVerifierIsTrusted
+                            relyingParty = mockedRelyingPartyDomain,
                         ),
                         awaitItem()
                     )
@@ -223,13 +218,11 @@ class TestProximityRequestInteractor {
     // 1. walletCorePresentationController.events emits:
     // TransferEventPartialState.RequestReceived, with:
     // 1. an emptyList() for combinations,
-    // 2. a null String for verifier name,
-    // 3. false for verifierIsTrusted.
+    // 2. an unidentified relying party.
 
     // Case 5 Expected Result:
     // ProximityRequestInteractorPartialState.NoData state, with:
-    // 1. null String for verifier name,
-    // 2. false for verifierIsTrusted.
+    // 1. the same unidentified relying party.
     @Test
     fun `Given Case 5, When getRequestDocuments is called, Then Case 5 Expected Result is returned`() {
         coroutineRule.runTest {
@@ -237,8 +230,7 @@ class TestProximityRequestInteractor {
             mockWalletCorePresentationControllerEventEmission(
                 event = TransferEventPartialState.RequestReceived(
                     combinationsDomain = emptyList(),
-                    verifierName = null,
-                    verifierIsTrusted = false
+                    relyingParty = mockedUnidentifiedRelyingPartyDomain,
                 )
             )
 
@@ -248,8 +240,7 @@ class TestProximityRequestInteractor {
                     // Then
                     assertEquals(
                         ProximityRequestInteractorPartialState.NoData(
-                            verifierName = null,
-                            verifierIsTrusted = false
+                            relyingParty = mockedUnidentifiedRelyingPartyDomain,
                         ),
                         awaitItem()
                     )
@@ -261,13 +252,11 @@ class TestProximityRequestInteractor {
     // 1. walletCorePresentationController.events emits:
     // TransferEventPartialState.RequestReceived, with:
     // 1. a combination with a PID match whose requestedClaims is empty,
-    // 2. a not null String for verifier name,
-    // 3. true for verifierIsTrusted.
+    // 2. a relying party.
 
     // Case 6 Expected Result:
     // ProximityRequestInteractorPartialState.NoData state, with:
-    // 1. the same not null String for verifier name,
-    // 2. true for verifierIsTrusted.
+    // 1. the same relying party.
     @Test
     fun `Given Case 6, When getRequestDocuments is called, Then Case 6 Expected Result is returned`() {
         coroutineRule.runTest {
@@ -284,8 +273,7 @@ class TestProximityRequestInteractor {
                             )
                         )
                     ),
-                    verifierName = mockedVerifierName,
-                    verifierIsTrusted = mockedVerifierIsTrusted
+                    relyingParty = mockedRelyingPartyDomain,
                 )
             )
 
@@ -295,8 +283,7 @@ class TestProximityRequestInteractor {
                     // Then
                     assertEquals(
                         ProximityRequestInteractorPartialState.NoData(
-                            verifierName = mockedVerifierName,
-                            verifierIsTrusted = mockedVerifierIsTrusted
+                            relyingParty = mockedRelyingPartyDomain,
                         ),
                         awaitItem()
                     )
@@ -308,14 +295,12 @@ class TestProximityRequestInteractor {
     // 1. walletCorePresentationController.events emits:
     // TransferEventPartialState.RequestReceived, with:
     // 1. a list of a PID RequestDocument, with some basic fields,
-    // 2. a not null String for verifier name,
-    // 3. true for verifierIsTrusted.
+    // 2. a relying party.
 
     // Case 7 Expected Result:
     // ProximityRequestInteractorPartialState.Success state, with:
     // 1. a list with the transformed basic fields to RequestDataUi items,
-    // 2. the same not null String for verifier name,
-    // 3. true for verifierIsTrusted.
+    // 2. the same relying party.
     @Test
     fun `Given Case 7, When getRequestDocuments is called, Then Case 7 Expected Result is returned`() {
         coroutineRule.runTest {
@@ -336,8 +321,7 @@ class TestProximityRequestInteractor {
                             matches = listOf(mockedValidPidWithBasicFieldsRequestMatch)
                         )
                     ),
-                    verifierName = mockedVerifierName,
-                    verifierIsTrusted = mockedVerifierIsTrusted
+                    relyingParty = mockedRelyingPartyDomain,
                 )
             )
 
@@ -354,8 +338,7 @@ class TestProximityRequestInteractor {
                     // Then
                     assertEquals(
                         ProximityRequestInteractorPartialState.Success(
-                            verifierName = mockedVerifierName,
-                            verifierIsTrusted = mockedVerifierIsTrusted,
+                            relyingParty = mockedRelyingPartyDomain,
                             combinationsUi = listOf(
                                 RequestCombinationUi(
                                     documents = RequestTransformer.transformToUiItems(
@@ -378,14 +361,12 @@ class TestProximityRequestInteractor {
     // 1. walletCorePresentationController.events emits:
     // TransferEventPartialState.RequestReceived, with:
     // 1. a list of an mDL RequestDocument, with some basic fields,
-    // 2. a not null String for verifier name,
-    // 3. true for verifierIsTrusted.
+    // 2. a relying party.
 
     // Case 8 Expected Result:
     // ProximityRequestInteractorPartialState.Success state, with:
     // 1. a list with the transformed basic fields to RequestDataUi items,
-    // 2. the same not null String for verifier name,
-    // 3. true for verifierIsTrusted.
+    // 2. the same relying party.
     @Test
     fun `Given Case 8, When getRequestDocuments is called, Then Case 8 Expected Result is returned`() {
         coroutineRule.runTest {
@@ -405,8 +386,7 @@ class TestProximityRequestInteractor {
                             matches = listOf(mockedValidMdlWithBasicFieldsRequestMatch)
                         )
                     ),
-                    verifierName = mockedVerifierName,
-                    verifierIsTrusted = mockedVerifierIsTrusted
+                    relyingParty = mockedRelyingPartyDomain,
                 )
             )
 
@@ -423,8 +403,7 @@ class TestProximityRequestInteractor {
                     // Then
                     assertEquals(
                         ProximityRequestInteractorPartialState.Success(
-                            verifierName = mockedVerifierName,
-                            verifierIsTrusted = mockedVerifierIsTrusted,
+                            relyingParty = mockedRelyingPartyDomain,
                             combinationsUi = listOf(
                                 RequestCombinationUi(
                                     documents = RequestTransformer.transformToUiItems(
@@ -447,14 +426,12 @@ class TestProximityRequestInteractor {
     // 1. walletCorePresentationController.events emits:
     // TransferEventPartialState.RequestReceived, with:
     // 1. a list of an mDL RequestDocument and a PID, both with some basic fields,
-    // 2. a not null String for verifier name,
-    // 3. true for verifierIsTrusted.
+    // 2. a relying party.
 
     // Case 9 Expected Result:
     // ProximityRequestInteractorPartialState.Success state, with:
     // 1. a list with the transformed basic fields to RequestDataUi items, for both Documents
-    // 2. the same not null String for verifier name,
-    // 3. true for verifierIsTrusted.
+    // 2. the same relying party.
     @Test
     fun `Given Case 9, When getRequestDocuments is called, Then Case 9 Expected Result is returned`() {
         coroutineRule.runTest {
@@ -481,8 +458,7 @@ class TestProximityRequestInteractor {
                             )
                         )
                     ),
-                    verifierName = mockedVerifierName,
-                    verifierIsTrusted = mockedVerifierIsTrusted
+                    relyingParty = mockedRelyingPartyDomain,
                 )
             )
 
@@ -505,8 +481,7 @@ class TestProximityRequestInteractor {
                     // Then
                     assertEquals(
                         ProximityRequestInteractorPartialState.Success(
-                            verifierName = mockedVerifierName,
-                            verifierIsTrusted = mockedVerifierIsTrusted,
+                            relyingParty = mockedRelyingPartyDomain,
                             combinationsUi = listOf(
                                 RequestCombinationUi(
                                     documents = RequestTransformer.transformToUiItems(
@@ -532,14 +507,12 @@ class TestProximityRequestInteractor {
     // 1. walletCorePresentationController.events emits:
     // TransferEventPartialState.RequestReceived, with:
     // 1. a list of a PID RequestDocument and an mDL, both with some basic fields,
-    // 2. a not null String for verifier name,
-    // 3. true for verifierIsTrusted.
+    // 2. a relying party.
 
     // Case 10 Expected Result:
     // ProximityRequestInteractorPartialState.Success state, with:
     // 1. a list with the transformed basic fields to RequestDataUi items, for both Documents
-    // 2. the same not null String for verifier name,
-    // 3. true for verifierIsTrusted.
+    // 2. the same relying party.
     @Test
     fun `Given Case 10, When getRequestDocuments is called, Then Case 10 Expected Result is returned`() {
         coroutineRule.runTest {
@@ -566,8 +539,7 @@ class TestProximityRequestInteractor {
                             )
                         )
                     ),
-                    verifierName = mockedVerifierName,
-                    verifierIsTrusted = mockedVerifierIsTrusted
+                    relyingParty = mockedRelyingPartyDomain,
                 )
             )
 
@@ -590,8 +562,7 @@ class TestProximityRequestInteractor {
                     // Then
                     assertEquals(
                         ProximityRequestInteractorPartialState.Success(
-                            verifierName = mockedVerifierName,
-                            verifierIsTrusted = mockedVerifierIsTrusted,
+                            relyingParty = mockedRelyingPartyDomain,
                             combinationsUi = listOf(
                                 RequestCombinationUi(
                                     documents = RequestTransformer.transformToUiItems(
@@ -617,8 +588,7 @@ class TestProximityRequestInteractor {
     // 1. walletCorePresentationController.events emits:
     // TransferEventPartialState.RequestReceived, with:
     // 1. a list of a PID RequestDocument, with some basic fields,
-    // 2. a not null String for verifier name,
-    // 3. true for verifierIsTrusted,
+    // 2. a relying party,
     // 4. walletCoreDocumentsController.getAllIssuedDocuments() throws an exception with a message.
 
     // Case 11 Expected Result:
@@ -635,8 +605,7 @@ class TestProximityRequestInteractor {
                             matches = listOf(mockedValidPidWithBasicFieldsRequestMatch)
                         )
                     ),
-                    verifierName = mockedVerifierName,
-                    verifierIsTrusted = mockedVerifierIsTrusted
+                    relyingParty = mockedRelyingPartyDomain,
                 )
             )
             whenever(walletCoreDocumentsController.getAllIssuedDocuments())
@@ -660,8 +629,7 @@ class TestProximityRequestInteractor {
     // 1. walletCorePresentationController.events emits:
     // TransferEventPartialState.RequestReceived, with:
     // 1. a list of a PID RequestDocument, with some basic fields,
-    // 2. a not null String for verifier name,
-    // 3. true for verifierIsTrusted,
+    // 2. a relying party,
     // 4. walletCoreDocumentsController.getAllIssuedDocuments() throws an exception with no message.
 
     // Case 12 Expected Result:
@@ -678,8 +646,7 @@ class TestProximityRequestInteractor {
                             matches = listOf(mockedValidPidWithBasicFieldsRequestMatch)
                         )
                     ),
-                    verifierName = mockedVerifierName,
-                    verifierIsTrusted = mockedVerifierIsTrusted
+                    relyingParty = mockedRelyingPartyDomain,
                 )
             )
             whenever(walletCoreDocumentsController.getAllIssuedDocuments())
@@ -717,8 +684,7 @@ class TestProximityRequestInteractor {
                             matches = listOf(mockedValidPidWithBasicFieldsRequestMatch)
                         )
                     ),
-                    verifierName = mockedVerifierName,
-                    verifierIsTrusted = mockedVerifierIsTrusted
+                    relyingParty = mockedRelyingPartyDomain,
                 )
             )
 
@@ -727,8 +693,7 @@ class TestProximityRequestInteractor {
                 // Then
                 assertEquals(
                     ProximityRequestInteractorPartialState.NoData(
-                        verifierName = mockedVerifierName,
-                        verifierIsTrusted = mockedVerifierIsTrusted,
+                        relyingParty = mockedRelyingPartyDomain,
                     ),
                     awaitItem()
                 )
@@ -809,8 +774,7 @@ class TestProximityRequestInteractor {
                             )
                         )
                     ),
-                    verifierName = mockedVerifierName,
-                    verifierIsTrusted = mockedVerifierIsTrusted
+                    relyingParty = mockedRelyingPartyDomain,
                 )
             )
 
@@ -830,8 +794,7 @@ class TestProximityRequestInteractor {
                     // Then
                     assertEquals(
                         ProximityRequestInteractorPartialState.Success(
-                            verifierName = mockedVerifierName,
-                            verifierIsTrusted = mockedVerifierIsTrusted,
+                            relyingParty = mockedRelyingPartyDomain,
                             combinationsUi = listOf(
                                 RequestCombinationUi(
                                     documents = RequestTransformer.transformToUiItems(
@@ -1011,5 +974,12 @@ class TestProximityRequestInteractor {
         whenever(walletCorePresentationController.requestAllowsClaimSelection)
             .thenReturn(response)
     }
+    //endregion
+
+    //region Mocked objects needed for tests.
+    private val mockedUnidentifiedRelyingPartyDomain = mockedRelyingPartyDomain.copy(
+        name = null,
+        hasTrustedAccessCertificate = false,
+    )
     //endregion
 }

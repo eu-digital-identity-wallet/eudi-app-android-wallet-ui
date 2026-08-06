@@ -47,6 +47,7 @@ sealed class PresentationSuccessInteractorGetUiItemsPartialState {
     data class Success(
         val documentsUi: List<ExpandableListItemUi.NestedListItem>,
         val headerConfig: ContentHeaderConfig,
+        val bannerText: String,
     ) : PresentationSuccessInteractorGetUiItemsPartialState()
 
     data class Failed(
@@ -90,7 +91,7 @@ class PresentationSuccessInteractorImpl(
 
             val verifierName = walletCorePresentationController.verifierName
 
-            val isVerified = walletCorePresentationController.verifierIsTrusted == true
+            val isVerified = walletCorePresentationController.verifierIsFullyVerified == true
 
             walletCorePresentationController.disclosedDocuments?.forEach { selection ->
                 try {
@@ -153,17 +154,21 @@ class PresentationSuccessInteractorImpl(
             val headerConfig = ContentHeaderConfig(
                 description = headerConfigDescription,
                 relyingPartyData = RelyingPartyDataUi(
+                    logo = null,
+                    isVerified = isVerified,
                     name = verifierName.ifEmptyOrNull(
                         default = resourceProvider.getString(R.string.document_success_relying_party_default_name)
                     ),
-                    isVerified = isVerified,
+                    uniqueId = null,
+                    description = null,
                 )
             )
 
             emit(
                 PresentationSuccessInteractorGetUiItemsPartialState.Success(
                     documentsUi = documentsUi,
-                    headerConfig = headerConfig
+                    headerConfig = headerConfig,
+                    bannerText = resourceProvider.getString(R.string.document_success_banner_text),
                 )
             )
         }.safeAsync {

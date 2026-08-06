@@ -14,17 +14,12 @@
  * governing permissions and limitations under the Licence.
  */
 
-package eu.europa.ec.issuancefeature.util
+package eu.europa.ec.corelogic.model
 
-object TestTag {
-
-    object AddDocumentScreen {
-        const val SUBTITLE = "add_document_screen_subtitle"
-        fun optionItem(issuerId: String, configIds: List<String>) =
-            "add_document_screen_attestation_${issuerId}_${configIds.joinToString(",")}"
-    }
-
-    object DocumentOfferScreen {
-        const val BUTTON = "document_offer_screen_button"
-    }
+/**
+ * Which trust layer refused the issuer.
+ */
+enum class UntrustedIssuerReasonDomain {
+    ACCESS_CERTIFICATE,
+    REGISTRATION_CERTIFICATE,
 }
