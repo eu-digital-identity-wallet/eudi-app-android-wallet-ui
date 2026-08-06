@@ -43,6 +43,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
@@ -57,7 +59,7 @@ import eu.europa.ec.uilogic.component.content.ScreenNavigateAction
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
 import eu.europa.ec.uilogic.component.utils.HSpacer
-import eu.europa.ec.uilogic.component.utils.OneTimeLaunchedEffect
+import eu.europa.ec.uilogic.component.utils.LifecycleEffect
 import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
 import eu.europa.ec.uilogic.component.utils.SPACING_SMALL
 import eu.europa.ec.uilogic.component.wrap.ActionCardConfig
@@ -122,28 +124,31 @@ fun HomeScreen(
             modalBottomSheetState = bottomSheetState,
             paddingValues = paddingValues
         )
-    }
 
-    if (isBottomSheetOpen) {
-        WrapModalBottomSheet(
-            onDismissRequest = {
-                viewModel.setEvent(
-                    Event.BottomSheet.UpdateBottomSheetState(
-                        isOpen = false
+        if (isBottomSheetOpen) {
+            WrapModalBottomSheet(
+                onDismissRequest = {
+                    viewModel.setEvent(
+                        Event.BottomSheet.UpdateBottomSheetState(
+                            isOpen = false
+                        )
                     )
+                },
+                sheetState = bottomSheetState
+            ) {
+                HomeScreenSheetContent(
+                    sheetContent = state.sheetContent,
+                    onEventSent = { event -> viewModel.setEvent(event) },
                 )
-            },
-            sheetState = bottomSheetState
-        ) {
-            HomeScreenSheetContent(
-                sheetContent = state.sheetContent,
-                onEventSent = { event -> viewModel.setEvent(event) },
-            )
+            }
         }
     }
 
-    OneTimeLaunchedEffect {
-        viewModel.setEvent(Event.Init)
+    LifecycleEffect(
+        lifecycleOwner = LocalLifecycleOwner.current,
+        lifecycleEvent = Lifecycle.Event.ON_RESUME
+    ) {
+        viewModel.setEvent(Event.OnResume)
     }
 }
 
