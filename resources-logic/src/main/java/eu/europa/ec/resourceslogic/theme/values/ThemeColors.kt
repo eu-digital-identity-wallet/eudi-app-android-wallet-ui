@@ -59,7 +59,7 @@ class ThemeColors {
         private const val eudiw_theme_light_inversePrimary: Long = 0xFFD0BCFF
         private const val eudiw_theme_light_surfaceDim: Long = 0xFFE2E8F3
         private const val eudiw_theme_light_surfaceBright: Long = 0xFFFEF7FF
-        private const val eudiw_theme_light_surfaceContainerLowest: Long = white
+        internal const val eudiw_theme_light_surfaceContainerLowest: Long = white
         private const val eudiw_theme_light_surfaceContainerLow: Long = 0xFFF7F2FA
         private const val eudiw_theme_light_surfaceContainer: Long = 0xFFEBF1FD
         private const val eudiw_theme_light_surfaceContainerHigh: Long = 0xFFECE6F0
@@ -121,7 +121,7 @@ class ThemeColors {
         private const val eudiw_theme_dark_surfaceBright: Long = 0xFF3A3939
         private const val eudiw_theme_dark_surfaceContainerLowest: Long = 0xFF0E0E0E
         private const val eudiw_theme_dark_surfaceContainerLow: Long = 0xFF1C1B1C
-        private const val eudiw_theme_dark_surfaceContainer: Long = 0xFF1C1E2E
+        internal const val eudiw_theme_dark_surfaceContainer: Long = 0xFF1C1E2E
         private const val eudiw_theme_dark_surfaceContainerHigh: Long = 0xFF2A2A2A
         private const val eudiw_theme_dark_surfaceContainerHighest: Long = 0xFF353535
         private const val eudiw_theme_dark_surfaceTint: Long = eudiw_theme_dark_surface
@@ -283,4 +283,11 @@ val ColorScheme.divider: Color
         Color(ThemeColors.eudiw_theme_dark_divider)
     } else {
         Color(ThemeColors.eudiw_theme_light_divider)
+    }
+
+val ColorScheme.surfaceAtElevation1: Color
+    @Composable get() = if (isSystemInDarkTheme()) {
+        Color(ThemeColors.eudiw_theme_dark_surfaceContainer)
+    } else {
+        Color(ThemeColors.eudiw_theme_light_surfaceContainerLowest)
     }
