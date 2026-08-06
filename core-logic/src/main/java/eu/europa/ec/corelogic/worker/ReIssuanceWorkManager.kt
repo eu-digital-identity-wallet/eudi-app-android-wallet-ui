@@ -52,7 +52,6 @@ class ReIssuanceWorkManager(
         try {
 
             val failed = mutableListOf<String>()
-            val succeed = mutableListOf<String>()
             val idsRemoved = mutableListOf<String>()
 
             val now = Clock.System.now()
@@ -79,30 +78,19 @@ class ReIssuanceWorkManager(
                 }
                 .forEach { document ->
 
+                    val issuerId = document.issuerMetadata?.credentialIssuerIdentifier.orEmpty()
+
                     val state = walletCoreDocumentsController.reIssueDocument(
                         documentId = document.id,
-                        issuerId = document.issuerMetadata?.credentialIssuerIdentifier.orEmpty(),
+                        issuerId = issuerId,
                         allowAuthorizationFallback = false
                     ).first()
 
                     when (state) {
-                        is IssueDocumentsPartialState.DeferredSuccess -> {
-                            succeed.addAll(state.deferredDocuments.keys)
-                            idsRemoved.add(document.id)
-                        }
-
-                        is IssueDocumentsPartialState.PartialSuccess -> {
-                            succeed.addAll(state.documentIds)
-                            idsRemoved.add(document.id)
-                        }
-
-                        is IssueDocumentsPartialState.PartialSuccessWithUntrustedIssuer -> {
-                            succeed.addAll(state.issuedDocumentIds)
-                            idsRemoved.add(document.id)
-                        }
-
+                        is IssueDocumentsPartialState.DeferredSuccess,
+                        is IssueDocumentsPartialState.PartialSuccess,
+                        is IssueDocumentsPartialState.PartialSuccessWithUntrustedIssuer,
                         is IssueDocumentsPartialState.Success -> {
-                            succeed.addAll(state.documentIds)
                             idsRemoved.add(document.id)
                         }
 
@@ -127,7 +115,7 @@ class ReIssuanceWorkManager(
                 storeFailedToStorage(failed)
             }
 
-            if (succeed.isNotEmpty()) {
+            if (idsRemoved.isNotEmpty()) {
                 notifyDocumentsList()
                 notifyDocumentDetails(idsRemoved)
             }
