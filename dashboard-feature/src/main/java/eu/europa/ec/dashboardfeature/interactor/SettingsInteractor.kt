@@ -40,6 +40,7 @@ interface SettingsInteractor : BiometricInteractor {
     suspend fun getSettingsItemsUi(changelogUrl: String?): List<SettingsItemUi>
     suspend fun toggleBiometricsAuthentication()
     suspend fun toggleShowBatchIssuanceCounter()
+    suspend fun toggleRegistrationCheck()
 }
 
 class SettingsInteractorImpl(
@@ -61,6 +62,7 @@ class SettingsInteractorImpl(
 
     override suspend fun getSettingsItemsUi(changelogUrl: String?): List<SettingsItemUi> {
         val deviceSupportsBiometrics = deviceSupportsBiometrics()
+        val registrationCheckEnabled = getRegistrationCheckEnabled()
 
         return buildList {
             if (deviceSupportsBiometrics) {
@@ -100,6 +102,27 @@ class SettingsInteractorImpl(
                         trailingContentData = ListItemTrailingContentDataUi.Switch(
                             switchData = SwitchDataUi(
                                 isChecked = getShowBatchIssuanceCounter(),
+                                enabled = true,
+                            )
+                        )
+                    )
+                )
+            )
+
+            add(
+                SettingsItemUi(
+                    type = SettingsMenuItemType.REGISTRATION_CHECK,
+                    data = ListItemDataUi(
+                        itemId = SettingsMenuItemType.REGISTRATION_CHECK.itemId,
+                        mainContentData = ListItemMainContentDataUi.Text(
+                            text = resourceProvider.getString(R.string.settings_screen_option_registration_check)
+                        ),
+                        leadingContentData = ListItemLeadingContentDataUi.Icon(
+                            iconData = AppIcons.Verified
+                        ),
+                        trailingContentData = ListItemTrailingContentDataUi.Switch(
+                            switchData = SwitchDataUi(
+                                isChecked = registrationCheckEnabled,
                                 enabled = true,
                             )
                         )
@@ -159,12 +182,22 @@ class SettingsInteractorImpl(
         )
     }
 
+    override suspend fun toggleRegistrationCheck() {
+        prefKeys.setRegistrationCheckEnabled(
+            value = !getRegistrationCheckEnabled()
+        )
+    }
+
     private suspend fun getBiometricUsageDecision(): Boolean {
         return biometricInteractor.getBiometricUserSelection()
     }
 
     private suspend fun getShowBatchIssuanceCounter(): Boolean {
         return prefKeys.getShowBatchIssuanceCounter()
+    }
+
+    private suspend fun getRegistrationCheckEnabled(): Boolean {
+        return prefKeys.getRegistrationCheckEnabled()
     }
 
     private fun deviceSupportsBiometrics(): Boolean {

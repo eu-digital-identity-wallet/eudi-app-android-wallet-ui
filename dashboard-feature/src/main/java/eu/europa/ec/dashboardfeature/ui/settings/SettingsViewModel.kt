@@ -156,6 +156,28 @@ class SettingsViewModel(
                 }
             }
 
+            SettingsMenuItemType.REGISTRATION_CHECK -> {
+                viewModelScope.launch {
+                    settingsInteractor.toggleRegistrationCheck()
+
+                    val settingsItems = settingsInteractor.getSettingsItemsUi(
+                        changelogUrl = viewState.value.changelogUrl
+                    )
+
+                    setState {
+                        copy(
+                            settingsItems = settingsItems,
+                        )
+                    }
+
+                    setEffect {
+                        Effect.ShowSnackbar(
+                            message = resourceProvider.getString(R.string.settings_screen_option_registration_check_restart)
+                        )
+                    }
+                }
+            }
+
             SettingsMenuItemType.RETRIEVE_LOGS -> {
                 val logs = settingsInteractor.retrieveLogFileUris()
                 if (logs.isNotEmpty()) {

@@ -693,7 +693,10 @@ class WalletCoreDocumentsControllerImpl(
                     is OfferResult.Success -> {
                         val issuerRegistration = result.offer.issuerRegistration
                             .toIssuerRegistrationDomain(locale = resourceProvider.getLocale())
-                        val registrationRefused = issuerRegistration.isBlockedForIssuance
+                        // with the check off Core evaluates nothing, so every offer would
+                        // otherwise refuse for lack of an outcome
+                        val registrationRefused = walletCoreConfig.isRegistrationCheckEnabled &&
+                                issuerRegistration.isBlockedForIssuance
 
                         trySendBlocking(
                             if (registrationRefused) {
@@ -1093,11 +1096,16 @@ class WalletCoreDocumentsControllerImpl(
 
     /**
      * Registration check for a flow with no approval screen, run before it starts. Returns the
-     * terminal state refusing or failing the flow, or null to proceed.
+     * terminal state refusing or failing the flow, or null to proceed — always null while the
+     * check is off, which also skips the resolve itself.
      */
     private suspend fun preflightRegistrationRefusalOrNull(
         resolveRegistration: suspend () -> Result<RegistrationCertificateResult>,
     ): IssueDocumentsPartialState? {
+        if (!walletCoreConfig.isRegistrationCheckEnabled) {
+            return null
+        }
+
         val resolution = resolveRegistration()
 
         return resolution.fold(

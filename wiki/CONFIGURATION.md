@@ -142,8 +142,15 @@ Each flavor can use different issuer configs, wallet provider hosts, and trust s
             // ENFORCE: block issuance from an issuer that cannot be verified
             policy { default(TrustPolicy.Action.ENFORCE) }
             requireSignedMetadata()
-            // validate the issuer's registration certificate
-            configureIssuerRegistrationPolicy(IssuerRegistrationPolicy.Enabled)
+            // the issuer half of the registration check; driven by the Settings switch,
+            // so Disabled unless the user turns it on
+            configureIssuerRegistrationPolicy(
+                if (registrationCheckEnabled) {
+                    IssuerRegistrationPolicy.Enabled
+                } else {
+                    IssuerRegistrationPolicy.Disabled
+                }
+            )
         }
         configureDocumentStatusResolver {
             configureTrust {
@@ -157,6 +164,14 @@ Each flavor can use different issuer configs, wallet provider hosts, and trust s
             // but refuse a reader that presents an untrusted chain
             readerAuthPolicy(ReaderAuthPolicy.EnforceIfPresent)
         }
+        // the verifier half of the same switch
+        configureWrpRegistrationPolicy(
+            if (registrationCheckEnabled) {
+                WrpRegistrationPolicy.Enabled
+            } else {
+                WrpRegistrationPolicy.Disabled
+            }
+        )
     }
     ```
 
@@ -165,14 +180,31 @@ Each flavor can use different issuer configs, wallet provider hosts, and trust s
    the trusted/untrusted behavior varies per presentation protocol. Change these values carefully.
 
    **Two trust layers.** An access certificate answers *who is this party*, a registration
-   certificate answers *what is it registered to do*. They are checked independently, and both are
-   needed on the issuance path: a document is only stored when the issuer authenticates **and** its
-   registration is verified and covers the credential being issued. Either failure refuses the
-   issuance and reports it the same way, so an issuer must be registered for what it offers, not
-   merely authenticated. On the presentation path an unverified registration — or a request reaching
-   beyond the registered scope — does not block the request; the user is warned and must acknowledge
-   it explicitly before any data is shared. The verified badge needs both layers, and a request that
-   over-asks keeps the badge and marks the offending claims instead.
+   certificate answers *what is it registered to do*. They are checked independently. Access-
+   certificate trust is always enforced; the registration layer is governed by a single runtime
+   setting described below.
+
+   With the registration check **on**, both layers are needed on the issuance path: a document is
+   only stored when the issuer authenticates **and** its registration is verified and covers the
+   credential being issued. Either failure refuses the issuance and reports it the same way, so an
+   issuer must be registered for what it offers, not merely authenticated. On the presentation path
+   an unverified registration — or a request reaching beyond the registered scope — does not block
+   the request; the user is warned and must acknowledge it explicitly before any data is shared. The
+   verified badge needs both layers, and a request that over-asks keeps the badge and marks the
+   offending claims instead.
+
+   **The registration-certificate setting.** *Check Registration Certificates* in the app's Settings
+   drives both `configureIssuerRegistrationPolicy` and `configureWrpRegistrationPolicy` from one
+   preference, and it **ships off**. The value is read once, where the wallet configuration is
+   built, because the SDK reads both policies when it creates its managers against a session-scoped
+   wallet — so a change applies on the next app start and the row says so. App-side enforcement
+   consults the configuration the wallet was built with, never the stored preference, since the two
+   disagree until that restart.
+
+   With the setting off nothing is evaluated: no registered identity, intended use or warning
+   appears on any screen, no issuance is refused over a registration, and the verified badge falls
+   back to the access certificate alone. **Turn the setting on for production** — see
+   [GO_LIVE.md](GO_LIVE.md#registration-certificates-the-second-trust-layer).
 
    **Static trust anchors (alternative).** The Wallet Core SDK also supports a reader trust store
    built from certificates loaded from raw resources:
@@ -328,7 +360,7 @@ complete production process, see [GO_LIVE.md](GO_LIVE.md).
 | OpenID4VP schemes                          | `AndroidLibraryConventionPlugin.kt` and `EudiWalletConfig.configureOpenId4Vp`                               | Schemes and client ID schemes approved for the ecosystem. Keep the manifest, `BuildConfig`, and Wallet Core config aligned.                                                                                                                                                                                                                                                 |
 | Reader/verifier trust anchors              | `configureReaderTrustStore(...)` raw resources, or `configureReaderTrustStore { ... }` backed by ETSI trust | Production IACA/reader/verifier trust anchors from an approved trust list or governance process. Decide the `ReaderAuthPolicy` (the reference flavors use `EnforceIfPresent`, which admits readers that send no reader authentication; `AlwaysRequire` is stricter and refuses them).                                                                                       |
 | ETSI trusted lists (LoTE)                  | `configureEtsiTrust { ... }` in `WalletCoreConfigImpl.kt`                                                   | Production LoTE URLs from the approved trust framework, including the registration-certificate list (`wrprcProviders`) — without it no registration certificate can be validated in either direction. Remove the dev relaxations (`relaxCertificateProfiles()`, `relaxPkixRevocation()`) so certificate profile checks and revocation checking are enforced. Review the issuer-trust (`ENFORCE`) and status-list-trust (`INFORM`) policies and the cache TTLs. |
-| Issuer registration policy                 | `configureIssuerRegistrationPolicy(...)` inside `configureIssuerTrust`                                      | Keep `IssuerRegistrationPolicy.Enabled`: it makes a verified, in-scope registration certificate a precondition for storing any document, so confirm every production issuer can satisfy that before release.                                                                                                                                                                 |
+| Registration-certificate checking          | The *Check Registration Certificates* setting, feeding `configureIssuerRegistrationPolicy(...)` and `configureWrpRegistrationPolicy(...)` | **Ships off; turn it on for production.** One setting drives both policies. On, a verified in-scope registration certificate becomes a precondition for storing any document, and verifiers' registrations are shown and warned about — so confirm every production issuer and verifier is on the `wrprcProviders` list before release. Decide too whether the switch should remain user-visible in a production build. |
 | Document key settings                      | `configureDocumentKeyCreation(...)`                                                                         | For LoA High PID and other high-assurance EAA/QEAA credentials, require strong user authentication and hardware-backed key protection unless an approved remote high-assurance key protection design replaces local key use. Use `0.seconds` only when one prompt per key use is acceptable; for batch issuing, a short approved window such as `10.seconds` may be needed. |
 | Document key storage                       | `EudiWallet.Builder` in `core-logic/src/main/java/.../LogicCoreModule.kt`                                   | Default Wallet Core behavior uses Android Keystore secure areas. Use `withSecureAreas(...)`, `withStorage(...)`, or `withDocumentManager(...)` if production requires an alternative secure area, remote-backed key service, or custom document manager.                                                                                                                    |
 | Wallet attestation key storage             | `EudiWallet.Builder.withWalletKeyManager(...)` and Wallet Provider policy                                   | Use if wallet attestation/client-attestation keys must be generated, stored, attested, or unlocked by a custom secure area or remote high-assurance key service.                                                                                                                                                                                                            |

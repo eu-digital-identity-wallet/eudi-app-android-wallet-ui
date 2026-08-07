@@ -826,6 +826,8 @@ configureIssuerTrust {
     default(TrustPolicy.Action.ENFORCE)
   }
   requireSignedMetadata()
+  // the production target: registration checking on. The reference build instead drives both
+  // policies from the Settings switch, which ships off — see the next section
   configureIssuerRegistrationPolicy(IssuerRegistrationPolicy.Enabled)
 }
 configureDocumentStatusResolver {
@@ -838,6 +840,7 @@ configureDocumentStatusResolver {
 configureReaderTrustStore {
   readerAuthPolicy(ReaderAuthPolicy.EnforceIfPresent)
 }
+configureWrpRegistrationPolicy(WrpRegistrationPolicy.Enabled)
 ```
 
 The behavior differs per area and protocol. For example, untrusted verifiers are handled
@@ -853,7 +856,8 @@ Production requirements for a trusted-list deployment:
 * Classify every credential type you issue (`classifications`) so issuer and status-list trust
   actually evaluate it; unclassified types are silently skipped.
 * Configure `wrprcProviders` as well; without it the registration certificates covered in the next
-  section have no trust source.
+  section have no trust source. Note that the registration layer also has to be switched on — see
+  the next section.
 * Decide the trust policies deliberately: `INFORM` records the verdict without blocking,
   `ENFORCE` rejects (issuance: document deleted; status: resolution fails). If the app must show
   or act on `INFORM` verdicts, consume `IssueEvent.DocumentIssued.issuerTrustResult`.
@@ -882,7 +886,17 @@ Trust is evaluated on two independent layers, and passing one says nothing about
 The two layers are not interchangeable: an authenticated issuer that is not registered for what it
 offers is refused, and a registered issuer that fails authentication is refused too.
 
-The app treats the two directions differently, and the asymmetry is intentional:
+**This layer is off by default and must be switched on.** Access-certificate trust is always
+enforced, but registration-certificate checking is governed by the *Check Registration Certificates*
+setting, which the reference build ships **off**. One setting drives both the issuer policy
+(`configureIssuerRegistrationPolicy`) and the verifier policy (`configureWrpRegistrationPolicy`).
+While it is off, none of the behavior described below happens: nothing is evaluated, nothing is
+refused or warned about, and the verified indicator falls back to the access certificate alone.
+**A production deployment must turn it on** — and should decide whether to keep the switch
+reachable by users at all, since it turns a trust check off.
+
+Everything below describes behavior with the setting on. The app treats the two directions
+differently, and the asymmetry is intentional:
 
 * **Issuance is strict.** A document is stored only when the issuer's registration is verified and
   covers the credential being issued. Anything short of that — no registration, one that does not
@@ -902,6 +916,9 @@ not fail validation.
 
 Production requirements:
 
+* **Turn the registration check on**, and decide whether the switch stays user-visible. Shipping it
+  on but toggleable leaves users able to disable a trust check; shipping it on and hidden — or
+  fixing both policies to `Enabled` in your production flavor — is the stricter choice.
 * Configure the registration-certificate trusted list (`wrprcProviders`) alongside the others.
   Without it, registration certificates have no trust source, and issuance is refused rather than
   waved through.
@@ -917,6 +934,8 @@ Production requirements:
 * Test the refusals, not just the happy path: an unregistered issuer, an issuer offering a type
   outside its registered scope, and a verifier over-asking. Confirm a refused re-issuance leaves
   the existing document in place and usable.
+* Test both states of the setting if you keep it toggleable, and remember the change only takes
+  effect on the next app start — the SDK reads both policies when it builds its managers.
 
 ## Issuer Configuration: `issuersConfig`
 
