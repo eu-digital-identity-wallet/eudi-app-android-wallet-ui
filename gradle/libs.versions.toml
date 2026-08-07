@@ -14,7 +14,7 @@ androidxBiometric = "1.4.0-alpha07"
 androidxBrowser = "1.10.0"
 androidxCore = "1.19.0"
 androidxCoreSplashscreen = "1.2.0"
-androidxCredentials = "1.0.0-alpha04"
+androidxCredentials = "1.0.0-alpha05"
 androidxLifecycle = "2.11.0"
 androidxMetrics = "1.0.0"
 androidxNavigation = "2.9.8"
@@ -23,8 +23,8 @@ androidxRoom = "2.8.4"
 androidxTracing = "1.3.0"
 androidxWindowManager = "1.5.1"
 androidxWork = "2.11.2"
-constraintlayoutVersion = "1.1.1"
-datastore = "1.3.0-alpha09"
+constraintlayoutVersion = "1.1.2"
+datastore = "1.3.0-alpha10"
 
 # Jetpack Compose
 accompanist = "0.37.3"
@@ -41,11 +41,11 @@ cameraCore = "1.6.1"
 coil = "3.5.0"
 
 # Ktor (networking)
-ktor = "3.5.1"
+ktor = "3.5.2"
 
 # Koin (dependency injection)
 koin = "4.2.2"
-koinPlugin = "1.0.2"
+koinPlugin = "1.1.0"
 
 # EUDI wallet SDKs
 eudiWalletCore = "0.30.0-SNAPSHOT"
@@ -59,9 +59,9 @@ treessence = "1.1.2"
 
 # Other libraries
 androidDesugarJdkLibs = "2.1.5"
-googlePhoneNumber = "9.0.35"
+googlePhoneNumber = "9.0.36"
 gson = "2.14.0"
-lint = "32.3.0"
+lint = "32.3.1"
 material = "1.14.0"
 protobuf = "4.35.1"
 sqlcipher = "4.17.0"
@@ -83,15 +83,15 @@ robolectric = "4.16.1"
 turbine = "1.2.1"
 
 # Gradle plugins
-androidGradlePlugin = "9.3.0"
-baselineprofile = "1.5.0-alpha07"
+androidGradlePlugin = "9.3.1"
+baselineprofile = "1.5.0-beta01"
 dependencyGraphPlugin = "0.13.0"
 gmsPlugin = "4.5.0"
 kover = "0.9.9"
-owaspDependencyCheck = "12.2.2"
+owaspDependencyCheck = "13.0.0"
 protobufPlugin = "0.10.0"
 secrets = "2.0.1"
-sonar = "7.3.1.8318"
+sonar = "7.4.0.8496"
 
 [libraries]
 # Kotlin
