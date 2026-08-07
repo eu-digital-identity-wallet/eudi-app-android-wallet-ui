@@ -304,7 +304,6 @@ class DocumentDetailsInteractorImpl(
             when (state) {
                 is IssueDocumentsPartialState.DeferredSuccess -> {
                     isDeferred = true
-                    successIds.addAll(state.deferredDocuments.keys)
                 }
 
                 is IssueDocumentsPartialState.Failure -> {

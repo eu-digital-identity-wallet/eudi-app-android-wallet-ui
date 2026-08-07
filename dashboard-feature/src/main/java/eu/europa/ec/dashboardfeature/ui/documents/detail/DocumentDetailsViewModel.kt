@@ -58,7 +58,6 @@ data class State(
     val isLoading: Boolean = true,
     val error: ContentErrorConfig? = null,
     val isBottomSheetOpen: Boolean = false,
-    val bottomSheetClosingInProgress: Boolean = false,
 
     val documentDetailsUi: DocumentDetailsUi? = null,
     val title: String? = null,
@@ -83,7 +82,6 @@ sealed class Event : ViewEvent {
 
     sealed class BottomSheet : Event() {
         data class UpdateBottomSheetState(val isOpen: Boolean) : BottomSheet()
-        data object FinishedClosing : BottomSheet()
 
         sealed class Delete : BottomSheet() {
             data object PrimaryButtonPressed : Delete()
@@ -187,21 +185,7 @@ class DocumentDetailsViewModel(
 
             is Event.BottomSheet.UpdateBottomSheetState -> {
                 setState {
-                    copy(
-                        isBottomSheetOpen = event.isOpen,
-                        bottomSheetClosingInProgress = if (event.isOpen) false
-                        else bottomSheetClosingInProgress,
-                    )
-                }
-            }
-
-            is Event.BottomSheet.FinishedClosing -> {
-                when (viewState.value.sheetContent) {
-                    is DocumentDetailsBottomSheetContent.DeleteDocumentConfirmation,
-                    is DocumentDetailsBottomSheetContent.BookmarkStoredInfo,
-                    is DocumentDetailsBottomSheetContent.BookmarkRemovedInfo,
-                    is DocumentDetailsBottomSheetContent.TrustedRelyingPartyInfo,
-                    is DocumentDetailsBottomSheetContent.IssuerNotTrusted -> Unit
+                    copy(isBottomSheetOpen = event.isOpen)
                 }
             }
 

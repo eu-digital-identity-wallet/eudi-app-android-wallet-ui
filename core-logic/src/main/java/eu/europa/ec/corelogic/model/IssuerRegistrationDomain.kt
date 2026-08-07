@@ -57,9 +57,8 @@ sealed interface IssuerRegistrationDomain {
 }
 
 /**
- * The one rule deciding whether a registration outcome refuses an issuance — every enforcement
- * point (offer resolve gate, post-issuance enforcement, re-issuance pre-flight) consults this and
- * nothing else, and consults it only while the wallet validates issuer registrations at all.
+ * The one rule deciding whether a registration outcome refuses an issuance — the offer resolve
+ * gate and the pre-flights of the flows with no approval screen consult this and nothing else.
  *
  * Anything short of [IssuerRegistrationDomain.Verified] refuses: over-providing and a failed
  * validation, and equally an outcome that was never established — a provider whose registration
