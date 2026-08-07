@@ -450,16 +450,16 @@ class TestAddDocumentInteractor {
     // Case 10:
     // 1. flowType == IssuanceFlowType.NoDocument
     // 2. walletCoreDocumentsController.getScopedDocuments() returns
-    //    FetchScopedDocumentsPartialState.IssuerNotTrusted, i.e. no issuer could be verified.
+    //    FetchScopedDocumentsPartialState.NoTrustedIssuers, i.e. no issuer could be verified.
 
     // Case 10 Expected Result:
-    // AddDocumentInteractorScopedPartialState.IssuerNotTrusted, so the screen shows the blocked
+    // AddDocumentInteractorScopedPartialState.NoTrustedIssuers, so the screen shows the blocked
     // notice instead of the generic error.
     @Test
     fun `Given Case 10, When getAddDocumentOption is called, Then Case 10 Expected Result is returned`() {
         coroutineRule.runTest {
             // Given
-            val expectedResponse = FetchScopedDocumentsPartialState.IssuerNotTrusted
+            val expectedResponse = FetchScopedDocumentsPartialState.NoTrustedIssuers
             mockGetScopedDocumentsResponse(expectedResponse)
 
             // When
@@ -468,7 +468,7 @@ class TestAddDocumentInteractor {
             ).runFlowTest {
                 // Then
                 assertEquals(
-                    AddDocumentInteractorScopedPartialState.IssuerNotTrusted,
+                    AddDocumentInteractorScopedPartialState.NoTrustedIssuers,
                     awaitItem()
                 )
             }

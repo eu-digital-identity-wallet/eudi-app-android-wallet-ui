@@ -308,7 +308,7 @@ class AddDocumentViewModel(
                         }
                     }
 
-                    is AddDocumentInteractorScopedPartialState.IssuerNotTrusted -> {
+                    is AddDocumentInteractorScopedPartialState.NoTrustedIssuers -> {
 
                         val deepLinkAction = getDeepLinkAction(deepLinkUri)
 

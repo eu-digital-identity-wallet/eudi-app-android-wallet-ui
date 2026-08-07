@@ -145,12 +145,13 @@ sealed class ResolveDocumentOfferPartialState {
 }
 
 sealed class FetchScopedDocumentsPartialState {
-    data class Success(val documents: List<ScopedDocumentDomain>) :
-        FetchScopedDocumentsPartialState()
+    data class Success(
+        val documents: List<ScopedDocumentDomain>
+    ) : FetchScopedDocumentsPartialState()
 
     data class Failure(val errorMessage: String) : FetchScopedDocumentsPartialState()
 
-    data object IssuerNotTrusted : FetchScopedDocumentsPartialState()
+    data object NoTrustedIssuers : FetchScopedDocumentsPartialState()
 }
 
 private sealed class GetIssuerMetadataPartialState {
@@ -400,7 +401,7 @@ class WalletCoreDocumentsControllerImpl(
                         documents = documents
                     )
 
-                    hasUntrustedIssuer -> FetchScopedDocumentsPartialState.IssuerNotTrusted
+                    hasUntrustedIssuer -> FetchScopedDocumentsPartialState.NoTrustedIssuers
 
                     else -> FetchScopedDocumentsPartialState.Failure(
                         errorMessage = firstFailureMessage ?: genericErrorMessage

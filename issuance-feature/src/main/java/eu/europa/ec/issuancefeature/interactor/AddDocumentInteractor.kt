@@ -76,7 +76,7 @@ sealed class AddDocumentInteractorScopedPartialState {
     data class NoOptions(val errorMsg: String) : AddDocumentInteractorScopedPartialState()
     data class Failure(val error: String) : AddDocumentInteractorScopedPartialState()
 
-    data object IssuerNotTrusted : AddDocumentInteractorScopedPartialState()
+    data object NoTrustedIssuers : AddDocumentInteractorScopedPartialState()
 }
 
 interface AddDocumentInteractor {
@@ -126,8 +126,8 @@ class AddDocumentInteractorImpl(
                     )
                 )
 
-                is FetchScopedDocumentsPartialState.IssuerNotTrusted -> emit(
-                    AddDocumentInteractorScopedPartialState.IssuerNotTrusted
+                is FetchScopedDocumentsPartialState.NoTrustedIssuers -> emit(
+                    AddDocumentInteractorScopedPartialState.NoTrustedIssuers
                 )
 
                 is FetchScopedDocumentsPartialState.Success -> {
