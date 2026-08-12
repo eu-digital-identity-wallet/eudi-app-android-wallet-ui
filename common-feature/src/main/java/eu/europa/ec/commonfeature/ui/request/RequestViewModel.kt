@@ -157,6 +157,7 @@ abstract class RequestViewModel : MviViewModel<Event, State, Effect>() {
             }
 
             is Event.OnBack -> {
+                if (viewState.value.bottomSheetClosingInProgress) return
                 handleOnBack()
             }
 
@@ -218,7 +219,7 @@ abstract class RequestViewModel : MviViewModel<Event, State, Effect>() {
                 when (viewState.value.sheetContent) {
                     is RequestBottomSheetContent.Warning -> Unit
                     is RequestBottomSheetContent.VerifierNotTrusted -> {
-                        setEvent(Event.OnBack)
+                        handleOnBack()
                     }
                 }
             }

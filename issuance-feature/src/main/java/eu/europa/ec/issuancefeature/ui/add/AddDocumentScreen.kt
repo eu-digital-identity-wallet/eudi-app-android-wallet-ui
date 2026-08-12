@@ -122,7 +122,7 @@ fun AddDocumentScreen(
         isLoading = state.isLoading,
         toolBarConfig = toolbarConfig,
         navigatableAction = state.navigatableAction,
-        onBack = state.onBackAction,
+        onBack = { viewModel.setEvent(Event.OnBack) },
         contentErrorConfig = state.error,
         broadcastAction = BroadcastAction(
             intentFilters = listOf(
@@ -182,7 +182,7 @@ fun AddDocumentScreen(
                             }
 
                             is AddDocumentBottomSheetContent.IssuerNotTrusted -> {
-                                Event.BottomSheet.UpdateBottomSheetState(isOpen = false)
+                                Event.BottomSheet.IssuerNotTrusted.CloseButtonPressed
                             }
                         }
                     )
@@ -249,6 +249,8 @@ private fun Content(
                         if (!modalBottomSheetState.isVisible) {
                             onEventSend(Event.BottomSheet.UpdateBottomSheetState(isOpen = false))
                             onEventSend(Event.BottomSheet.FinishedClosing)
+                        } else {
+                            onEventSend(Event.BottomSheet.UpdateBottomSheetState(isOpen = true))
                         }
                     }
                 }

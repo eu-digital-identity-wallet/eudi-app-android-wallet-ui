@@ -270,6 +270,8 @@ private fun Content(
                         if (!modalBottomSheetState.isVisible) {
                             onEventSend(Event.BottomSheet.UpdateBottomSheetState(isOpen = false))
                             onEventSend(Event.BottomSheet.FinishedClosing)
+                        } else {
+                            onEventSend(Event.BottomSheet.UpdateBottomSheetState(isOpen = true))
                         }
                     }
                 }

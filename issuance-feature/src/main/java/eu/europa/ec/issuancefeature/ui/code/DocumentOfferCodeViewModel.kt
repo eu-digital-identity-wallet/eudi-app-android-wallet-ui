@@ -121,8 +121,8 @@ class DocumentOfferCodeViewModel(
     override fun handleEvents(event: Event) {
         when (event) {
             is Event.Pop -> {
-                setState { copy(error = null) }
-                setEffect { Effect.Navigation.Pop }
+                if (viewState.value.bottomSheetClosingInProgress) return
+                pop()
             }
 
             is Event.DismissError -> {
@@ -152,7 +152,7 @@ class DocumentOfferCodeViewModel(
             is Event.BottomSheet.FinishedClosing -> {
                 when (val content = viewState.value.sheetContent) {
                     is DocumentOfferCodeBottomSheetContent.IssuerNotTrusted -> {
-                        setEvent(Event.Pop)
+                        pop()
                     }
 
                     is DocumentOfferCodeBottomSheetContent.PartialSuccessWithUntrustedIssuer -> {
@@ -266,6 +266,11 @@ class DocumentOfferCodeViewModel(
                 }
             }
         }
+    }
+
+    private fun pop() {
+        setState { copy(error = null) }
+        setEffect { Effect.Navigation.Pop }
     }
 
     private fun goToDocumentIssuanceSuccessScreen(

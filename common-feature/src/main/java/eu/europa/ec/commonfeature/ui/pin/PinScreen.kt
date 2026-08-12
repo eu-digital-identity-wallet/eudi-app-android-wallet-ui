@@ -114,11 +114,7 @@ fun PinScreen(
         if (isBottomSheetOpen) {
             WrapModalBottomSheet(
                 onDismissRequest = {
-                    viewModel.setEvent(
-                        Event.BottomSheet.UpdateBottomSheetState(
-                            isOpen = false
-                        )
-                    )
+                    viewModel.setEvent(Event.BottomSheet.Cancel.PrimaryButtonPressed)
                 },
                 sheetState = bottomSheetState
             ) {
@@ -244,6 +240,8 @@ private fun Content(
                         if (!modalBottomSheetState.isVisible) {
                             onEventSend(Event.BottomSheet.UpdateBottomSheetState(isOpen = false))
                             onEventSend(Event.BottomSheet.FinishedClosing)
+                        } else {
+                            onEventSend(Event.BottomSheet.UpdateBottomSheetState(isOpen = true))
                         }
                     }
                 }

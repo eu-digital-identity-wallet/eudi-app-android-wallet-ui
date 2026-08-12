@@ -60,7 +60,6 @@ import org.koin.core.annotation.KoinViewModel
 
 data class State(
     val navigatableAction: ScreenNavigateAction,
-    val onBackAction: (() -> Unit)? = null,
 
     val issuanceConfig: IssuanceUiConfig,
 
@@ -82,6 +81,7 @@ data class State(
 sealed class Event : ViewEvent {
     data class Init(val deepLink: Uri?) : Event()
     data object GoToQrScan : Event()
+    data object OnBack : Event()
     data object Pop : Event()
     data object OnPause : Event()
     data class OnResumeIssuance(val uri: String) : Event()
@@ -146,7 +146,6 @@ class AddDocumentViewModel(
         return State(
             issuanceConfig = deserializedConfig,
             navigatableAction = getNavigatableAction(deserializedConfig.flowType),
-            onBackAction = getOnBackAction(deserializedConfig.flowType),
             title = resourceProvider.getString(R.string.issuance_add_document_title),
             subtitle = resourceProvider.getString(R.string.issuance_add_document_subtitle),
         )
@@ -160,6 +159,11 @@ class AddDocumentViewModel(
                 } else {
                     handleDeepLink(event.deepLink)
                 }
+            }
+
+            is Event.OnBack -> {
+                if (viewState.value.bottomSheetClosingInProgress) return
+                getOnBackAction(viewState.value.issuanceConfig.flowType).invoke()
             }
 
             is Event.Pop -> setEffect { Effect.Navigation.Pop }
@@ -233,9 +237,15 @@ class AddDocumentViewModel(
             is Event.BottomSheet.FinishedClosing -> {
                 when (viewState.value.sheetContent) {
                     is AddDocumentBottomSheetContent.NoTrustedIssuers -> {
-                        getOnNoTrustedIssuersClosedAction(
+                        val onClosed = getOnNoTrustedIssuersClosedAction(
                             flowType = viewState.value.issuanceConfig.flowType
-                        ).invoke()
+                        )
+
+                        if (onClosed != null) {
+                            onClosed.invoke()
+                        } else {
+                            setState { copy(bottomSheetClosingInProgress = false) }
+                        }
                     }
 
                     is AddDocumentBottomSheetContent.IssuerNotTrusted -> Unit
@@ -527,17 +537,15 @@ class AddDocumentViewModel(
     }
 
     /**
-     * What to do once the "no verified issuer" notice has closed and the list is empty. This is
-     * deliberately not [getOnBackAction]: with no document yet, this screen is the root of a gated
-     * flow, so leaving would close the app and take away the last way in — the toolbar's scan
-     * action for a credential offer, which resolves the offer's own issuer and is therefore
-     * unaffected by the issuers that could not be verified here.
+     * What to run once the "no verified issuer" notice has closed and the list is empty, or `null`
+     * to stay on this screen. This is deliberately not [getOnBackAction]. With no document yet,
+     * this screen is where issuance starts, so backing out of it closes the app. It would also
+     * take away the toolbar's scan action, which is the only remaining way to get a document. That
+     * action still works, because a credential offer carries its own issuer.
      */
-    private fun getOnNoTrustedIssuersClosedAction(flowType: IssuanceFlowType): (() -> Unit) {
+    private fun getOnNoTrustedIssuersClosedAction(flowType: IssuanceFlowType): (() -> Unit)? {
         return when (flowType) {
-            is IssuanceFlowType.NoDocument -> {
-                { }
-            }
+            is IssuanceFlowType.NoDocument -> null
 
             // the dashboard behind this screen offers its own add-document and scan entry points,
             // so backing out loses nothing

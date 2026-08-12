@@ -174,6 +174,7 @@ class DocumentOfferViewModel(
             }
 
             is Event.BackButtonPressed -> {
+                if (viewState.value.bottomSheetClosingInProgress) return
                 setState { copy(error = null) }
                 doNavigation(viewState.value.offerUiConfig.onCancelNavigation)
             }

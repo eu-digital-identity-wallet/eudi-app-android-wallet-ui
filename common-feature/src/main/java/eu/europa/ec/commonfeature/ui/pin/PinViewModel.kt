@@ -208,6 +208,7 @@ class PinViewModel(
             }
 
             is Event.CancelPressed -> {
+                if (viewState.value.bottomSheetClosingInProgress) return
                 showBottomSheet(sheetContent = PinBottomSheetContent.CancelConfirmation)
             }
 
