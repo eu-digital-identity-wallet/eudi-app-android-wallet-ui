@@ -84,7 +84,7 @@ turbine = "1.2.1"
 
 # Gradle plugins
 androidGradlePlugin = "9.3.0"
-baselineprofile = "1.5.0-alpha07"
+baselineprofile = "1.5.0-beta01"
 dependencyGraphPlugin = "0.13.0"
 gmsPlugin = "4.5.0"
 kover = "0.9.9"
