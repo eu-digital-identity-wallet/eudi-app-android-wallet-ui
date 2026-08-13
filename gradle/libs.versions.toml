@@ -4,7 +4,7 @@ kotlin = "2.4.0"
 kotlinxCoroutines = "1.11.0"
 kotlinxDatetime = "0.8.0"
 kotlinxSerializationJson = "1.11.0"
-ksp = "2.3.10"
+ksp = "2.3.11"
 
 # AndroidX
 androidxActivity = "1.13.0"
