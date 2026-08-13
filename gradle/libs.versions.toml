@@ -23,7 +23,7 @@ androidxRoom = "2.8.4"
 androidxTracing = "1.3.0"
 androidxWindowManager = "1.5.1"
 androidxWork = "2.11.2"
-constraintlayoutVersion = "1.1.1"
+constraintlayoutVersion = "1.1.2"
 datastore = "1.3.0-alpha09"
 
 # Jetpack Compose
