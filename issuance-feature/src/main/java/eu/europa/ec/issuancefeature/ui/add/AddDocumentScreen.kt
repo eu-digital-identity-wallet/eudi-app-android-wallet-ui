@@ -122,7 +122,7 @@ fun AddDocumentScreen(
         isLoading = state.isLoading,
         toolBarConfig = toolbarConfig,
         navigatableAction = state.navigatableAction,
-        onBack = state.onBackAction,
+        onBack = { viewModel.setEvent(Event.OnBack) },
         contentErrorConfig = state.error,
         broadcastAction = BroadcastAction(
             intentFilters = listOf(
@@ -176,15 +176,22 @@ fun AddDocumentScreen(
             WrapModalBottomSheet(
                 onDismissRequest = {
                     viewModel.setEvent(
-                        Event.BottomSheet.UpdateBottomSheetState(isOpen = false)
+                        when (state.sheetContent) {
+                            is AddDocumentBottomSheetContent.NoTrustedIssuers -> {
+                                Event.BottomSheet.NoTrustedIssuers.Close
+                            }
+
+                            is AddDocumentBottomSheetContent.IssuerNotTrusted -> {
+                                Event.BottomSheet.IssuerNotTrusted.CloseButtonPressed
+                            }
+                        }
                     )
                 },
                 sheetState = bottomSheetState
             ) {
-                IssuerNotTrustedSheetContent(
-                    onClose = {
-                        viewModel.setEvent(Event.BottomSheet.Close)
-                    },
+                SheetContent(
+                    sheetContent = state.sheetContent,
+                    onEventSent = { viewModel.setEvent(it) }
                 )
             }
         }
@@ -241,11 +248,38 @@ private fun Content(
                     }.invokeOnCompletion {
                         if (!modalBottomSheetState.isVisible) {
                             onEventSend(Event.BottomSheet.UpdateBottomSheetState(isOpen = false))
+                            onEventSend(Event.BottomSheet.FinishedClosing)
+                        } else {
+                            onEventSend(Event.BottomSheet.UpdateBottomSheetState(isOpen = true))
                         }
                     }
                 }
             }
         }.collect()
+    }
+}
+
+@Composable
+private fun SheetContent(
+    sheetContent: AddDocumentBottomSheetContent,
+    onEventSent: (event: Event) -> Unit,
+) {
+    when (sheetContent) {
+        is AddDocumentBottomSheetContent.IssuerNotTrusted -> {
+            IssuerNotTrustedSheetContent(
+                onClose = {
+                    onEventSent(Event.BottomSheet.IssuerNotTrusted.CloseButtonPressed)
+                },
+            )
+        }
+
+        is AddDocumentBottomSheetContent.NoTrustedIssuers -> {
+            IssuerNotTrustedSheetContent(
+                onClose = {
+                    onEventSent(Event.BottomSheet.NoTrustedIssuers.Close)
+                },
+            )
+        }
     }
 }
 

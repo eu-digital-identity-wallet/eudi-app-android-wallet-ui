@@ -28,16 +28,20 @@ import eu.europa.ec.corelogic.extension.toClaimPaths
 import eu.europa.ec.corelogic.model.ClaimDomain
 import eu.europa.ec.corelogic.model.ClaimItemId
 import eu.europa.ec.corelogic.model.ClaimPathDomain
+import eu.europa.ec.corelogic.model.OveraskedClaimDomain
 import eu.europa.ec.corelogic.model.PresentationCombinationDomain
 import eu.europa.ec.corelogic.model.PresentationMatchDomain
 import eu.europa.ec.corelogic.model.PresentationSelectionDomain
+import eu.europa.ec.corelogic.model.toDocumentIdentifier
 import eu.europa.ec.eudi.wallet.document.IssuedDocument
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.ListItemDataUi
 import eu.europa.ec.uilogic.component.ListItemMainContentDataUi
+import eu.europa.ec.uilogic.component.ListItemSupportingContentDataUi
 import eu.europa.ec.uilogic.component.ListItemTrailingContentDataUi
+import eu.europa.ec.uilogic.component.ThemeColorKey
 import eu.europa.ec.uilogic.component.wrap.ExpandableListItemUi
 
 object RequestTransformer {
@@ -45,6 +49,8 @@ object RequestTransformer {
     /**
      * Projects the domain combinations into request-screen cards.
      * [claimsAreSelectable] = checkbox vs read-only leaves.
+     * [overaskedClaims] = the request's claims not covered by the relying party's registration;
+     * their rows get the "not registered" mark.
      */
     fun transformToCombinationsUi(
         storageDocuments: List<IssuedDocument>,
@@ -52,6 +58,7 @@ object RequestTransformer {
         uuidProvider: UuidProvider,
         combinationsDomain: List<PresentationCombinationDomain>,
         claimsAreSelectable: Boolean,
+        overaskedClaims: List<OveraskedClaimDomain>,
     ): Result<List<RequestCombinationUi>> {
         return runCatching {
             combinationsDomain.map { combinationDomain ->
@@ -62,11 +69,18 @@ object RequestTransformer {
                     requestMatchesDomain = combinationDomain.matches,
                 ).getOrThrow()
 
+                val documentsUi = transformToUiItems(
+                    documentsDomain = documentsDomain,
+                    resourceProvider = resourceProvider,
+                    claimsAreSelectable = claimsAreSelectable,
+                )
+
                 RequestCombinationUi(
-                    documents = transformToUiItems(
-                        documentsDomain = documentsDomain,
+                    documents = markOveraskedClaims(
+                        documentsUi = documentsUi,
+                        overaskedClaims = overaskedClaims,
+                        storageDocuments = storageDocuments,
                         resourceProvider = resourceProvider,
-                        claimsAreSelectable = claimsAreSelectable,
                     ),
                     matches = combinationDomain.matches,
                 )
@@ -151,7 +165,9 @@ object RequestTransformer {
                             queryId = documentDomain.queryId,
                         ).encode(),
                         mainContentData = ListItemMainContentDataUi.Text(text = documentDomain.docName),
-                        supportingText = resourceProvider.getString(R.string.request_collapsed_supporting_text),
+                        supportingContentData = ListItemSupportingContentDataUi.Text(
+                            text = resourceProvider.getString(R.string.request_collapsed_supporting_text),
+                        ),
                         trailingContentData = ListItemTrailingContentDataUi.Icon(
                             iconData = AppIcons.KeyboardArrowDown
                         )
@@ -190,6 +206,119 @@ object RequestTransformer {
                 matchDomain.toFullSelectionDomain()
             }
         }
+    }
+
+    /**
+     * Applies the overasked ("not registered") mark to every leaf row whose claim satisfies an
+     * overasked claim of the row's document attestation — query-blind on purpose: registrations
+     * key claims by attestation type, so a claim outside the registered scope is marked wherever
+     * it renders. Rows are resolved by re-encoding the stored leaves into ids (same contract as
+     * the backward pass — ids are never parsed).
+     */
+    private fun markOveraskedClaims(
+        documentsUi: List<RequestDocumentItemUi>,
+        overaskedClaims: List<OveraskedClaimDomain>,
+        storageDocuments: List<IssuedDocument>,
+        resourceProvider: ResourceProvider,
+    ): List<RequestDocumentItemUi> {
+        if (overaskedClaims.isEmpty()) return documentsUi
+
+        val commonNotRegisteredSupportingContentMark = ListItemSupportingContentDataUi.Text(
+            text = resourceProvider.getString(R.string.request_claim_not_registered_supporting_text),
+            textColorKey = ThemeColorKey.Pending,
+        )
+
+        return documentsUi.map { documentUi ->
+            val payload = documentUi.domainPayload
+
+            // every payload was built from a stored document, so this resolves; a rendered
+            // document that cannot be re-resolved just goes unmarked
+            val storageDocument = storageDocuments.firstOrNull { it.id == payload.docId }
+                ?: return@map documentUi
+
+            val documentFormatType = storageDocument.toDocumentIdentifier().formatType
+
+            val overaskedPathsForDocument = overaskedClaims
+                .filter { overasked -> overasked.appliesTo(formatType = documentFormatType) }
+                .map { overasked -> overasked.path }
+            if (overaskedPathsForDocument.isEmpty()) return@map documentUi
+
+            // ids of the leaf rows whose stored path satisfies an overasked claim
+            val overaskedItemIds = payload.docClaimsDomain
+                .flatMap { claim -> claim.leafStoragePaths() }
+                .filter { stored ->
+                    overaskedPathsForDocument.any { overasked -> overasked.matches(stored) }
+                }
+                .map { path ->
+                    ClaimItemId.Claim(
+                        docId = payload.docId,
+                        queryId = payload.queryId,
+                        path = path,
+                    ).encode()
+                }
+                .toSet()
+            if (overaskedItemIds.isEmpty()) return@map documentUi
+
+            documentUi.copy(
+                headerUi = documentUi.headerUi.copy(
+                    nestedItems = documentUi.headerUi.nestedItems.map { item ->
+                        item.withOveraskedMark(
+                            overaskedItemIds = overaskedItemIds,
+                            commonSupportingContentMark = commonNotRegisteredSupportingContentMark,
+                        )
+                    },
+                ),
+            )
+        }
+    }
+
+    private fun ExpandableListItemUi.withOveraskedMark(
+        overaskedItemIds: Set<String>,
+        commonSupportingContentMark: ListItemSupportingContentDataUi,
+    ): ExpandableListItemUi {
+        return when (this) {
+            is ExpandableListItemUi.SingleListItem -> {
+                if (header.itemId in overaskedItemIds) {
+                    copy(
+                        header = header.withOveraskedMark(
+                            supportingContentMark = commonSupportingContentMark,
+                        ),
+                    )
+                } else {
+                    this
+                }
+            }
+
+            is ExpandableListItemUi.NestedListItem -> copy(
+                nestedItems = nestedItems.map { item ->
+                    item.withOveraskedMark(
+                        overaskedItemIds = overaskedItemIds,
+                        commonSupportingContentMark = commonSupportingContentMark,
+                    )
+                },
+            )
+        }
+    }
+
+    /**
+     * The overasked ("not registered") presentation of a leaf row: the warning supporting
+     * line, plus the pending checkbox tint when the row is selectable (read-only rows carry
+     * no checkbox and keep their trailing content unchanged).
+     */
+    private fun ListItemDataUi.withOveraskedMark(
+        supportingContentMark: ListItemSupportingContentDataUi,
+    ): ListItemDataUi {
+        val trailingContent = trailingContentData
+        val markedTrailingContent = if (trailingContent is ListItemTrailingContentDataUi.Checkbox) {
+            trailingContent.copy(tint = ThemeColorKey.Pending)
+        } else {
+            trailingContent
+        }
+
+        return copy(
+            supportingContentData = supportingContentMark,
+            trailingContentData = markedTrailingContent,
+        )
     }
 
     private fun PresentationMatchDomain.toFullSelectionDomain(): PresentationSelectionDomain {

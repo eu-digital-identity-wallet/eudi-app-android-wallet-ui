@@ -47,7 +47,7 @@ fun WrapExpandableCard(
         shape = shape,
         colors = colors,
         onClick = onExpandedChange,
-        throttleClicks = throttleClicks
+        throttleClicks = throttleClicks,
     ) {
         Column {
             // Title Section (Always Visible)

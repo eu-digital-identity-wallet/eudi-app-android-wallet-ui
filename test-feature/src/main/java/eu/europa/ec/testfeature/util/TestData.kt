@@ -21,8 +21,12 @@ import eu.europa.ec.authenticationlogic.secure.SecurePinImpl
 import eu.europa.ec.corelogic.extension.toClaimPath
 import eu.europa.ec.corelogic.model.ClaimPathDomain
 import eu.europa.ec.corelogic.model.ClaimType
+import eu.europa.ec.corelogic.model.IssuerRegistrationDomain
 import eu.europa.ec.corelogic.model.PresentationMatchDomain
 import eu.europa.ec.corelogic.model.PresentationSelectionDomain
+import eu.europa.ec.corelogic.model.RegistrationDetailsDomain
+import eu.europa.ec.corelogic.model.RegistrationStatusDomain
+import eu.europa.ec.corelogic.model.RelyingPartyDomain
 import eu.europa.ec.eudi.sdjwt.vc.ClaimPathElement
 import eu.europa.ec.eudi.wallet.document.IssuedDocument
 import eu.europa.ec.eudi.wallet.document.format.DocumentData
@@ -87,6 +91,9 @@ const val mockedDocumentHasExpired = false
 const val mockedVerifierName = "EUDIW Verifier"
 const val mockedIssuerName = "EUDIW Issuer"
 const val mockedDocumentSuccessCollapsedSupportingText = "View details"
+const val mockedDocumentSuccessBannerText = "Authentication successful"
+const val mockedIssuanceSuccessBannerText = "Document issued"
+const val mockedRequestCollapsedSupportingText = "View details"
 const val mockedUriPath1 = "eudi-wallet://example.com/path1"
 const val mockedUriPath2 = "eudi-wallet://example.com/path2"
 const val mockedUuid = "00000000-0000-0000-0000-000000000000"
@@ -539,6 +546,25 @@ val mockedValidMdlWithBasicFieldsRequestMatch: PresentationMatchDomain =
             "sex",
         ),
     )
+
+val mockedRelyingPartyDomain = RelyingPartyDomain(
+    name = mockedVerifierName,
+    uniqueId = null,
+    hasTrustedAccessCertificate = mockedVerifierIsTrusted,
+    logoUri = null,
+    registration = RegistrationStatusDomain.NotEvaluated,
+)
+
+val mockedVerifiedIssuerRegistration = IssuerRegistrationDomain.Verified(
+    details = RegistrationDetailsDomain(
+        tradeName = "Aegean S.A.",
+        uniqueId = "rp:aegeanairlines:prod",
+        logoUri = null,
+        intendedUse = "mocked intended use",
+        privacyPolicyUrl = "https://aegean.gr/privacy",
+        serviceDescription = null,
+    ),
+)
 
 fun createMockedNamespaceData(
     documentNamespace: String,

@@ -39,6 +39,8 @@ data class State(
     val isLoading: Boolean = false,
     val headerConfig: ContentHeaderConfig,
 
+    val bannerText: String = "",
+
     val items: List<ExpandableListItemUi.NestedListItem> = emptyList(),
 ) : ViewState
 

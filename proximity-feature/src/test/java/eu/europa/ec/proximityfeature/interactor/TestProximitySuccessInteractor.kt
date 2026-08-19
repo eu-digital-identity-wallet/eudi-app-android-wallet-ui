@@ -24,6 +24,7 @@ import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.testfeature.util.StringResourceProviderMocker.mockTransformToUiItemsStrings
 import eu.europa.ec.testfeature.util.getMockedFullPid
+import eu.europa.ec.testfeature.util.mockedDocumentSuccessBannerText
 import eu.europa.ec.testfeature.util.mockedExceptionWithMessage
 import eu.europa.ec.testfeature.util.mockedExceptionWithNoMessage
 import eu.europa.ec.testfeature.util.mockedGenericErrorMessage
@@ -37,6 +38,7 @@ import eu.europa.ec.testlogic.extension.runTest
 import eu.europa.ec.testlogic.rule.CoroutineTestRule
 import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.ListItemMainContentDataUi
+import eu.europa.ec.uilogic.component.ListItemSupportingContentDataUi
 import eu.europa.ec.uilogic.component.ListItemTrailingContentDataUi
 import eu.europa.ec.uilogic.component.RelyingPartyDataUi
 import eu.europa.ec.uilogic.component.content.ContentHeaderConfig
@@ -138,7 +140,7 @@ class TestProximitySuccessInteractor {
     // Case 1:
     // 1. walletCorePresentationController.disclosedDocuments returns null.
     // 2. walletCorePresentationController.verifierName returns null.
-    // 3. walletCorePresentationController.verifierIsTrusted returns null
+    // 3. walletCorePresentationController.verifierIsFullyVerified returns null
     //    (the `== true` check will evaluate to false, so isVerified is false).
 
     // Case 1 Expected Result:
@@ -152,7 +154,7 @@ class TestProximitySuccessInteractor {
             // Given
             whenever(walletCorePresentationController.disclosedDocuments).thenReturn(null)
             whenever(walletCorePresentationController.verifierName).thenReturn(null)
-            whenever(walletCorePresentationController.verifierIsTrusted).thenReturn(null)
+            whenever(walletCorePresentationController.verifierIsFullyVerified).thenReturn(null)
             mockSuccessHeaderStrings()
 
             // When
@@ -163,10 +165,14 @@ class TestProximitySuccessInteractor {
                     headerConfig = ContentHeaderConfig(
                         description = mockedErrorDescription,
                         relyingPartyData = RelyingPartyDataUi(
-                            name = mockedDefaultRelyingPartyName,
+                            logo = null,
                             isVerified = false,
+                            name = mockedDefaultRelyingPartyName,
+                            uniqueId = null,
+                            description = null,
                         )
-                    )
+                    ),
+                    bannerText = mockedDocumentSuccessBannerText,
                 )
                 assertEquals(expectedResult, awaitItem())
             }
@@ -178,7 +184,7 @@ class TestProximitySuccessInteractor {
     //    referencing the mocked PID with one non-empty disclosed item.
     // 2. walletCoreDocumentsController.getDocumentById returns the mocked PID IssuedDocument.
     // 3. walletCorePresentationController.verifierName returns a non-empty name.
-    // 4. walletCorePresentationController.verifierIsTrusted returns true.
+    // 4. walletCorePresentationController.verifierIsFullyVerified returns true.
 
     // Case 2 Expected Result:
     // Success state with:
@@ -202,7 +208,7 @@ class TestProximitySuccessInteractor {
             whenever(walletCoreDocumentsController.getDocumentById(documentId = mockedPidId))
                 .thenReturn(pid)
             whenever(walletCorePresentationController.verifierName).thenReturn(mockedVerifierName)
-            whenever(walletCorePresentationController.verifierIsTrusted).thenReturn(true)
+            whenever(walletCorePresentationController.verifierIsFullyVerified).thenReturn(true)
             mockSuccessHeaderStrings()
             mockTransformToUiItemsStrings(resourceProvider)
             whenever(uuidProvider.provideUuid()).thenReturn(mockedUuid)
@@ -227,7 +233,12 @@ class TestProximitySuccessInteractor {
                     ListItemMainContentDataUi.Text(text = pid.name),
                     docUi.header.mainContentData
                 )
-                assertEquals(mockedDocumentSupportingText, docUi.header.supportingText)
+                assertEquals(
+                    ListItemSupportingContentDataUi.Text(
+                        text = mockedDocumentSupportingText,
+                    ),
+                    docUi.header.supportingContentData
+                )
                 assertEquals(
                     ListItemTrailingContentDataUi.Icon(iconData = AppIcons.KeyboardArrowDown),
                     docUi.header.trailingContentData
@@ -239,8 +250,11 @@ class TestProximitySuccessInteractor {
                     ContentHeaderConfig(
                         description = mockedNormalDescription,
                         relyingPartyData = RelyingPartyDataUi(
-                            name = mockedVerifierName,
+                            logo = null,
                             isVerified = true,
+                            name = mockedVerifierName,
+                            uniqueId = null,
+                            description = null,
                         )
                     ),
                     result.headerConfig
@@ -275,7 +289,7 @@ class TestProximitySuccessInteractor {
             whenever(walletCoreDocumentsController.getDocumentById(documentId = mockedPidId))
                 .thenReturn(pid)
             whenever(walletCorePresentationController.verifierName).thenReturn(mockedVerifierName)
-            whenever(walletCorePresentationController.verifierIsTrusted).thenReturn(true)
+            whenever(walletCorePresentationController.verifierIsFullyVerified).thenReturn(true)
             mockSuccessHeaderStrings()
 
             // When
@@ -286,10 +300,14 @@ class TestProximitySuccessInteractor {
                     headerConfig = ContentHeaderConfig(
                         description = mockedErrorDescription,
                         relyingPartyData = RelyingPartyDataUi(
-                            name = mockedVerifierName,
+                            logo = null,
                             isVerified = true,
+                            name = mockedVerifierName,
+                            uniqueId = null,
+                            description = null,
                         )
-                    )
+                    ),
+                    bannerText = mockedDocumentSuccessBannerText,
                 )
                 assertEquals(expectedResult, awaitItem())
             }
@@ -320,7 +338,7 @@ class TestProximitySuccessInteractor {
             whenever(walletCoreDocumentsController.getDocumentById(documentId = mockedPidId))
                 .thenThrow(mockedExceptionWithMessage)
             whenever(walletCorePresentationController.verifierName).thenReturn(mockedVerifierName)
-            whenever(walletCorePresentationController.verifierIsTrusted).thenReturn(false)
+            whenever(walletCorePresentationController.verifierIsFullyVerified).thenReturn(false)
             mockSuccessHeaderStrings()
 
             // When
@@ -331,10 +349,14 @@ class TestProximitySuccessInteractor {
                     headerConfig = ContentHeaderConfig(
                         description = mockedErrorDescription,
                         relyingPartyData = RelyingPartyDataUi(
-                            name = mockedVerifierName,
+                            logo = null,
                             isVerified = false,
+                            name = mockedVerifierName,
+                            uniqueId = null,
+                            description = null,
                         )
-                    )
+                    ),
+                    bannerText = mockedDocumentSuccessBannerText,
                 )
                 assertEquals(expectedResult, awaitItem())
             }
@@ -352,7 +374,7 @@ class TestProximitySuccessInteractor {
         coroutineRule.runTest {
             // Given
             whenever(walletCorePresentationController.disclosedDocuments).thenReturn(null)
-            whenever(walletCorePresentationController.verifierIsTrusted).thenReturn(false)
+            whenever(walletCorePresentationController.verifierIsFullyVerified).thenReturn(false)
             whenever(walletCorePresentationController.verifierName)
                 .thenThrow(mockedExceptionWithMessage)
 
@@ -377,7 +399,7 @@ class TestProximitySuccessInteractor {
         coroutineRule.runTest {
             // Given
             whenever(walletCorePresentationController.disclosedDocuments).thenReturn(null)
-            whenever(walletCorePresentationController.verifierIsTrusted).thenReturn(false)
+            whenever(walletCorePresentationController.verifierIsFullyVerified).thenReturn(false)
             whenever(walletCorePresentationController.verifierName)
                 .thenThrow(mockedExceptionWithNoMessage)
 
@@ -404,6 +426,8 @@ class TestProximitySuccessInteractor {
             .thenReturn(mockedDefaultRelyingPartyName)
         whenever(resourceProvider.getString(R.string.document_success_collapsed_supporting_text))
             .thenReturn(mockedDocumentSupportingText)
+        whenever(resourceProvider.getString(R.string.document_success_banner_text))
+            .thenReturn(mockedDocumentSuccessBannerText)
     }
     //endregion
 

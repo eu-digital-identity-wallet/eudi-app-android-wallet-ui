@@ -36,6 +36,18 @@ interface WalletCoreConfig {
     val config: EudiWalletConfig
 
     /**
+     * Whether registration certificates are checked in this process — the value [config] was built
+     * with, not a live read of the setting behind it.
+     *
+     * Enforcement must consult this and not `RegistrationCheckProvider`: Wallet Core reads both
+     * registration policies when it builds its managers against a session-scoped wallet, so a
+     * setting flipped mid-session does not reach it until a restart. Enforcement that followed the
+     * setting instead would refuse every issuance while Wallet Core evaluates nothing, or enforce
+     * nothing while it still does.
+     */
+    val isRegistrationCheckEnabled: Boolean
+
+    /**
      * A list of configurations for Verifiable Credentials Issuance (VCI) using OpenID4VCI.
      *
      * Each element in the list is an [VciConfig] object, which contains:

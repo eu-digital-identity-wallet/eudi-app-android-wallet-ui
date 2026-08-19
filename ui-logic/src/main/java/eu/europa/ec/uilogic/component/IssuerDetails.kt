@@ -196,31 +196,41 @@ fun IssuerDetailsCard(
                     )
                 }
 
-                val (supportingText: String?, supportingTextColor: Color) = when (data.documentState) {
-                    is IssuerDetailsCardDataUi.DocumentState.Issued -> {
-                        data.documentState.expirationDate?.let { safeExpirationDate ->
-                            stringResource(
-                                R.string.document_details_issuer_card_expires_on_text,
-                                safeExpirationDate
-                            )
-                        } to MaterialTheme.colorScheme.onSurfaceVariant
-                    }
-
-                    is IssuerDetailsCardDataUi.DocumentState.Expired -> {
-                        val expiredText =
+                val supportingContentData: ListItemSupportingContentDataUi? =
+                    when (data.documentState) {
+                        is IssuerDetailsCardDataUi.DocumentState.Issued -> {
                             data.documentState.expirationDate?.let { safeExpirationDate ->
-                                stringResource(
-                                    R.string.document_details_issuer_card_expired_on_text,
-                                    safeExpirationDate
+                                ListItemSupportingContentDataUi.Text(
+                                    text = stringResource(
+                                        R.string.document_details_issuer_card_expires_on_text,
+                                        safeExpirationDate
+                                    ),
                                 )
-                            } ?: stringResource(R.string.document_details_issuer_card_expired_text)
-                        expiredText to MaterialTheme.colorScheme.error
-                    }
+                            }
+                        }
 
-                    is IssuerDetailsCardDataUi.DocumentState.Revoked -> {
-                        stringResource(R.string.document_details_issuer_card_revoked_text) to MaterialTheme.colorScheme.error
+                        is IssuerDetailsCardDataUi.DocumentState.Expired -> {
+                            val expiredText =
+                                data.documentState.expirationDate?.let { safeExpirationDate ->
+                                    stringResource(
+                                        R.string.document_details_issuer_card_expired_on_text,
+                                        safeExpirationDate
+                                    )
+                                }
+                                    ?: stringResource(R.string.document_details_issuer_card_expired_text)
+                            ListItemSupportingContentDataUi.Text(
+                                text = expiredText,
+                                textColorKey = ThemeColorKey.Error,
+                            )
+                        }
+
+                        is IssuerDetailsCardDataUi.DocumentState.Revoked -> {
+                            ListItemSupportingContentDataUi.Text(
+                                text = stringResource(R.string.document_details_issuer_card_revoked_text),
+                                textColorKey = ThemeColorKey.Error,
+                            )
+                        }
                     }
-                }
 
                 WrapListItem(
                     modifier = Modifier.fillMaxWidth(),
@@ -230,7 +240,7 @@ fun IssuerDetailsCard(
                             text = data.issuerName
                                 ?: stringResource(R.string.document_details_issuer_card_unknown_issuer)
                         ),
-                        supportingText = supportingText,
+                        supportingContentData = supportingContentData,
                         leadingContentData = leadingContent,
                         trailingContentData = ListItemTrailingContentDataUi.Icon(
                             iconData = if (data.isExpanded)
@@ -242,7 +252,6 @@ fun IssuerDetailsCard(
                         onExpandedChange()
                     },
                     mainContentVerticalPadding = SPACING_MEDIUM.dp,
-                    supportingTextColor = supportingTextColor,
                     colors = colors,
                 )
             },

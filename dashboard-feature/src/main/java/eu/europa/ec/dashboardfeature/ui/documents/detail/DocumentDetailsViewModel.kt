@@ -28,9 +28,6 @@ import eu.europa.ec.dashboardfeature.interactor.DocumentDetailsInteractorDeleteD
 import eu.europa.ec.dashboardfeature.interactor.DocumentDetailsInteractorIssuancePartialState
 import eu.europa.ec.dashboardfeature.interactor.DocumentDetailsInteractorPartialState
 import eu.europa.ec.dashboardfeature.interactor.DocumentDetailsInteractorStoreBookmarkPartialState
-import eu.europa.ec.dashboardfeature.ui.documents.detail.DocumentDetailsBottomSheetContent.BookmarkRemovedInfo
-import eu.europa.ec.dashboardfeature.ui.documents.detail.DocumentDetailsBottomSheetContent.BookmarkStoredInfo
-import eu.europa.ec.dashboardfeature.ui.documents.detail.DocumentDetailsBottomSheetContent.TrustedRelyingPartyInfo
 import eu.europa.ec.dashboardfeature.ui.documents.detail.model.DocumentDetailsUi
 import eu.europa.ec.dashboardfeature.ui.documents.detail.transformer.DocumentDetailsTransformer.transformToDocumentDetailsUi
 import eu.europa.ec.dashboardfeature.ui.documents.model.DocumentCredentialsInfoUi
@@ -223,7 +220,7 @@ class DocumentDetailsViewModel(
 
             is Event.OnBookmarkStored -> {
                 showBottomSheet(
-                    sheetContent = BookmarkStoredInfo(
+                    sheetContent = DocumentDetailsBottomSheetContent.BookmarkStoredInfo(
                         bottomSheetTextData = getBookmarkStoredBottomSheetTextData()
                     )
                 )
@@ -231,7 +228,7 @@ class DocumentDetailsViewModel(
 
             is Event.OnBookmarkRemoved -> {
                 showBottomSheet(
-                    sheetContent = BookmarkRemovedInfo(
+                    sheetContent = DocumentDetailsBottomSheetContent.BookmarkRemovedInfo(
                         bottomSheetTextData = getBookmarkRemovedBottomSheetTextData()
                     )
                 )
@@ -239,7 +236,7 @@ class DocumentDetailsViewModel(
 
             is Event.IssuerCardPressed -> {
                 showBottomSheet(
-                    sheetContent = TrustedRelyingPartyInfo(
+                    sheetContent = DocumentDetailsBottomSheetContent.TrustedRelyingPartyInfo(
                         bottomSheetTextData = getTrustedRelyingPartyBottomSheetTextData()
                     )
                 )

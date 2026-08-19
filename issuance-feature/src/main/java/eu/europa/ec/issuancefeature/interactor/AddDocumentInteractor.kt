@@ -29,15 +29,16 @@ import eu.europa.ec.corelogic.controller.IssuanceMethod
 import eu.europa.ec.corelogic.controller.IssueDocumentsPartialState
 import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
 import eu.europa.ec.corelogic.model.FormatType
+import eu.europa.ec.corelogic.model.UntrustedIssuerReasonDomain
 import eu.europa.ec.eudi.wallet.document.DocumentId
 import eu.europa.ec.issuancefeature.ui.add.model.AddDocumentUi
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
-import eu.europa.ec.resourceslogic.theme.values.ThemeColors
 import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.ListItemDataUi
 import eu.europa.ec.uilogic.component.ListItemMainContentDataUi
 import eu.europa.ec.uilogic.component.ListItemTrailingContentDataUi
+import eu.europa.ec.uilogic.component.ThemeColorKey
 import eu.europa.ec.uilogic.component.utils.PERCENTAGE_25
 import eu.europa.ec.uilogic.config.ConfigNavigation
 import eu.europa.ec.uilogic.config.NavigationType
@@ -58,7 +59,9 @@ sealed class AddDocumentInteractorIssueDocumentsPartialState {
 
     data class Failure(val errorMessage: String) : AddDocumentInteractorIssueDocumentsPartialState()
 
-    data object IssuerNotTrusted : AddDocumentInteractorIssueDocumentsPartialState()
+    data class IssuerNotTrusted(
+        val reason: UntrustedIssuerReasonDomain,
+    ) : AddDocumentInteractorIssueDocumentsPartialState()
 
     data class UserAuthRequired(
         val crypto: BiometricCrypto,
@@ -72,6 +75,8 @@ sealed class AddDocumentInteractorScopedPartialState {
 
     data class NoOptions(val errorMsg: String) : AddDocumentInteractorScopedPartialState()
     data class Failure(val error: String) : AddDocumentInteractorScopedPartialState()
+
+    data object NoTrustedIssuers : AddDocumentInteractorScopedPartialState()
 }
 
 interface AddDocumentInteractor {
@@ -82,7 +87,7 @@ interface AddDocumentInteractor {
     fun issueDocuments(
         issuanceMethod: IssuanceMethod,
         configIds: List<String>,
-        issuerId: String
+        issuerId: String,
     ): Flow<AddDocumentInteractorIssueDocumentsPartialState>
 
     fun handleUserAuth(
@@ -119,6 +124,10 @@ class AddDocumentInteractorImpl(
                     AddDocumentInteractorScopedPartialState.Failure(
                         error = state.errorMessage
                     )
+                )
+
+                is FetchScopedDocumentsPartialState.NoTrustedIssuers -> emit(
+                    AddDocumentInteractorScopedPartialState.NoTrustedIssuers
                 )
 
                 is FetchScopedDocumentsPartialState.Success -> {
@@ -213,7 +222,7 @@ class AddDocumentInteractorImpl(
     override fun issueDocuments(
         issuanceMethod: IssuanceMethod,
         configIds: List<String>,
-        issuerId: String
+        issuerId: String,
     ): Flow<AddDocumentInteractorIssueDocumentsPartialState> = flow {
 
         walletCoreDocumentsController.issueDocuments(
@@ -224,7 +233,7 @@ class AddDocumentInteractorImpl(
 
             val successIds: MutableList<String> = mutableListOf()
             var isDeferred = false
-            var issuerNotTrusted = false
+            var issuerNotTrustedReason: UntrustedIssuerReasonDomain? = null
             var error: String? = null
             var authenticationData: Pair<BiometricCrypto, DeviceAuthenticationResult>? = null
 
@@ -238,7 +247,7 @@ class AddDocumentInteractorImpl(
                 }
 
                 is IssueDocumentsPartialState.IssuerNotTrusted -> {
-                    issuerNotTrusted = true
+                    issuerNotTrustedReason = state.reason
                 }
 
                 is IssueDocumentsPartialState.PartialSuccess -> {
@@ -258,8 +267,10 @@ class AddDocumentInteractorImpl(
                 }
             }
 
-            val state = if (issuerNotTrusted) {
-                AddDocumentInteractorIssueDocumentsPartialState.IssuerNotTrusted
+            val state = if (issuerNotTrustedReason != null) {
+                AddDocumentInteractorIssueDocumentsPartialState.IssuerNotTrusted(
+                    reason = issuerNotTrustedReason
+                )
             } else if (isDeferred) {
                 AddDocumentInteractorIssueDocumentsPartialState.DeferredSuccess
             } else if (successIds.isNotEmpty()) {
@@ -342,11 +353,11 @@ class AddDocumentInteractorImpl(
             first = SuccessUIConfig.TextElementsConfig(
                 text = resourceProvider.getString(R.string.issuance_add_document_deferred_success_text),
                 description = resourceProvider.getString(R.string.issuance_add_document_deferred_success_description),
-                color = ThemeColors.pending
+                color = ThemeColorKey.Pending
             ),
             second = SuccessUIConfig.ImageConfig(
                 type = SuccessUIConfig.ImageConfig.Type.Drawable(icon = AppIcons.InProgress),
-                tint = ThemeColors.primary,
+                tint = ThemeColorKey.Primary,
                 screenPercentageSize = PERCENTAGE_25,
             ),
             third = resourceProvider.getString(R.string.issuance_add_document_deferred_success_primary_button_text)

@@ -31,7 +31,7 @@
     <string name="generic_close">Close</string>
     <string name="generic_ok">OK</string>
     <string name="generic_dash">-</string>
-    <string name="generic_default_relying_party_name">Relying Party</string>
+    <string name="generic_default_relying_party_name">Unknown Relying Party</string>
     <string name="generic_default_issuer_name">Issuer</string>
     <string name="generic_view_details">View details</string>
     <string name="generic_deferred_success_text">In progress!</string>
@@ -133,6 +133,7 @@
     <!--endregion-->
 
     <!-- region Document Success -->
+    <string name="document_success_banner_text">Authentication successful</string>
     <string name="document_success_header_description">You successfully shared the following information with</string>
     <string name="document_success_header_description_when_error">You successfully shared the information with</string>
     <string name="document_success_relying_party_default_name">@string/generic_default_relying_party_name</string>
@@ -171,11 +172,17 @@
     <!--endregion-->
 
     <!-- region Request Screen -->
-    <string name="request_header_description">The following transaction requires your permission and authentication.</string>
-    <string name="request_header_main_text">DATA SHARING REQUEST</string>
+    <string name="request_screen_title">Data sharing request</string>
     <string name="request_relying_party_default_name">@string/generic_default_relying_party_name</string>
-    <string name="request_relying_party_description">requests the following</string>
-    <string name="request_warning_text">Please review carefully before sharing your data.</string>
+    <string name="request_relying_party_id_format">(ID: %1$s)</string>
+    <string name="request_privacy_policy_section_title">Privacy policy</string>
+    <string name="request_intended_use_section_title">Intended use</string>
+    <string name="request_requested_data_section_title">Requested data</string>
+    <string name="request_cancel_button_text">@string/generic_cancel</string>
+    <string name="request_registration_not_verified_warning_text">Warning: The information registered about the entity could not be obtained. Review carefully before sharing your data.</string>
+    <string name="request_registration_overasked_warning_text">Warning: Some of the requested data are not registered with this interacting party. Review carefully before sharing your data.</string>
+    <string name="request_registration_acknowledge_text">I understand the risks and agree to share my data</string>
+    <string name="request_claim_not_registered_supporting_text">Not registered data</string>
     <string name="request_collapsed_supporting_text">@string/generic_view_details</string>
     <string name="request_combination_option_title">Option %1$d of %2$d</string>
     <string name="request_no_data">The requested document is not available in your EUDI Wallet.
@@ -235,6 +242,8 @@
     <string name="settings_screen_option_show_batch_issuance_counter">Batch issuance counter</string>
     <string name="settings_screen_option_retrieve_logs">Retrieve logs</string>
     <string name="settings_screen_option_changelog">Changelog</string>
+    <string name="settings_screen_option_registration_check">Check Registration Certificates</string>
+    <string name="settings_screen_option_registration_check_restart">Restart the app to apply this change</string>
     <string name="settings_intent_chooser_logs_share_title">Share logs</string>
     <!--endregion-->
 
@@ -416,6 +425,7 @@
     <!--endregion-->
 
     <!-- region Issuance Success Screen -->
+    <string name="issuance_success_banner_text">Document issued</string>
     <string name="issuance_success_header_description">You have successfully added the following to your wallet</string>
     <string name="issuance_success_header_description_when_error">You have successfully added the document(s) to your wallet</string>
     <string name="issuance_success_header_issuer_default_name">@string/generic_default_issuer_name</string>
@@ -427,7 +437,9 @@
     <!--endregion-->
 
     <!-- region Issuance Document Offer -->
-    <string name="issuance_document_offer_primary_button_text_add">Add</string>
+    <string name="issuance_document_offer_screen_title">Issuance request</string>
+    <string name="issuance_document_offer_accept_button_text">Accept</string>
+    <string name="issuance_document_offer_cancel_button_text">@string/generic_cancel</string>
     <string name="issuance_document_offer_deferred_success_text">@string/generic_deferred_success_text</string>
     <string name="issuance_document_offer_deferred_success_description">Your documents from %1$s have been requested. You will be notified when they have been issued to your wallet.</string>
     <string name="issuance_document_offer_deferred_success_primary_button_text">@string/generic_ok</string>
@@ -435,10 +447,7 @@
     <string name="issuance_document_offer_error_invalid_txcode_format">Invalid transaction code format. Length should be between %1$d to %2$d digits and only numeric characters are allowed.</string>
     <string name="issuance_document_offer_error_no_document">Unable to fetch and process the credential offer</string>
 
-    <string name="issuance_document_offer_description">The following transaction requires your permission and authentication.</string>
-    <string name="issuance_document_offer_header_main_text">ISSUANCE REQUEST</string>
     <string name="issuance_document_offer_relying_party_default_name">@string/generic_default_issuer_name</string>
-    <string name="issuance_document_offer_relying_party_description">wants to add the following</string>
     <!--endregion-->
 
     <!-- region Issuance Document Offer Code -->

@@ -26,6 +26,7 @@ import eu.europa.ec.corelogic.model.ClaimPathDomain
 import eu.europa.ec.corelogic.model.ClaimPathDomain.Companion.toClaimPathDomain
 import eu.europa.ec.corelogic.model.ClaimPathSegment
 import eu.europa.ec.corelogic.model.ClaimType
+import eu.europa.ec.corelogic.model.OveraskedClaimDomain
 import eu.europa.ec.corelogic.model.PresentationCombinationDomain
 import eu.europa.ec.corelogic.model.PresentationMatchDomain
 import eu.europa.ec.eudi.sdjwt.vc.ClaimPathElement
@@ -56,7 +57,10 @@ import eu.europa.ec.testfeature.util.mockedValidMdlWithBasicFieldsRequestMatch
 import eu.europa.ec.testfeature.util.mockedValidPidWithBasicFieldsRequestMatch
 import eu.europa.ec.testlogic.extension.runTest
 import eu.europa.ec.testlogic.rule.CoroutineTestRule
+import eu.europa.ec.uilogic.component.ListItemDataUi
+import eu.europa.ec.uilogic.component.ListItemSupportingContentDataUi
 import eu.europa.ec.uilogic.component.ListItemTrailingContentDataUi
+import eu.europa.ec.uilogic.component.ThemeColorKey
 import eu.europa.ec.uilogic.component.wrap.ExpandableListItemUi
 import junit.framework.TestCase.assertEquals
 import junit.framework.TestCase.assertFalse
@@ -87,12 +91,12 @@ class TestRequestTransformer {
     fun before() {
         closeable = MockitoAnnotations.openMocks(this)
 
-        // The transformer reads the locale + the boolean/gender value strings while
-        // materialising the claim tree; this helper stubs all of them (and getLocale()).
+        // The transformer reads the locale, the boolean/gender value strings and the document
+        // header's collapsed supporting text while building the rows; this helper stubs all of them.
         mockTransformToUiItemsStrings(resourceProvider)
-        // Document header's collapsed supporting text (used by transformToUiItems).
-        whenever(resourceProvider.getString(R.string.request_collapsed_supporting_text))
-            .thenReturn(mockedRequestCollapsedSupportingText)
+        // The warning line of a not-registered (overasked) claim row.
+        whenever(resourceProvider.getString(R.string.request_claim_not_registered_supporting_text))
+            .thenReturn(mockedNotRegisteredSupportingText)
     }
 
     @After
@@ -130,6 +134,7 @@ class TestRequestTransformer {
                 uuidProvider = uuidProvider,
                 combinationsDomain = combinationsDomain,
                 claimsAreSelectable = mockedSelectableClaims,
+                overaskedClaims = emptyList(),
             ).getOrThrow()
 
             // Then
@@ -185,6 +190,7 @@ class TestRequestTransformer {
                 uuidProvider = uuidProvider,
                 combinationsDomain = combinationsDomain,
                 claimsAreSelectable = mockedSelectableClaims,
+                overaskedClaims = emptyList(),
             ).getOrThrow()
 
             // Then
@@ -224,6 +230,7 @@ class TestRequestTransformer {
                 uuidProvider = uuidProvider,
                 combinationsDomain = combinationsDomain,
                 claimsAreSelectable = mockedSelectableClaims,
+                overaskedClaims = emptyList(),
             ).getOrThrow()
 
             // Then
@@ -257,6 +264,7 @@ class TestRequestTransformer {
                 uuidProvider = uuidProvider,
                 combinationsDomain = combinationsDomain,
                 claimsAreSelectable = mockedSelectableClaims,
+                overaskedClaims = emptyList(),
             ).getOrThrow()
 
             // Then
@@ -283,6 +291,7 @@ class TestRequestTransformer {
                 uuidProvider = uuidProvider,
                 combinationsDomain = emptyList(),
                 claimsAreSelectable = mockedSelectableClaims,
+                overaskedClaims = emptyList(),
             ).getOrThrow()
 
             // Then
@@ -316,6 +325,7 @@ class TestRequestTransformer {
                 uuidProvider = uuidProvider,
                 combinationsDomain = combinationsDomain,
                 claimsAreSelectable = mockedSelectableClaims,
+                overaskedClaims = emptyList(),
             ).getOrThrow()
 
             // Then
@@ -345,6 +355,7 @@ class TestRequestTransformer {
                 uuidProvider = uuidProvider,
                 combinationsDomain = combinationsDomain,
                 claimsAreSelectable = mockedNonSelectableClaims,
+                overaskedClaims = emptyList(),
             ).getOrThrow()
 
             // Then
@@ -374,6 +385,7 @@ class TestRequestTransformer {
                 uuidProvider = uuidProvider,
                 combinationsDomain = combinationsDomain,
                 claimsAreSelectable = mockedNonSelectableClaims,
+                overaskedClaims = emptyList(),
             ).getOrThrow()
 
             // Then
@@ -410,6 +422,7 @@ class TestRequestTransformer {
                 uuidProvider = uuidProvider,
                 combinationsDomain = combinationsDomain,
                 claimsAreSelectable = mockedNonSelectableClaims,
+                overaskedClaims = emptyList(),
             ).getOrThrow()
 
             // Then
@@ -441,6 +454,7 @@ class TestRequestTransformer {
                 uuidProvider = uuidProvider,
                 combinationsDomain = combinationsDomain,
                 claimsAreSelectable = mockedNonSelectableClaims,
+                overaskedClaims = emptyList(),
             ).getOrThrow()
 
             // Then
@@ -484,6 +498,7 @@ class TestRequestTransformer {
                 uuidProvider = uuidProvider,
                 combinationsDomain = combinationsDomain,
                 claimsAreSelectable = mockedSelectableClaims,
+                overaskedClaims = emptyList(),
             ).getOrThrow()
 
             // Then
@@ -516,6 +531,7 @@ class TestRequestTransformer {
                 uuidProvider = uuidProvider,
                 combinationsDomain = combinationsDomain,
                 claimsAreSelectable = mockedSelectableClaims,
+                overaskedClaims = emptyList(),
             ).getOrThrow()
 
             // Then
@@ -628,6 +644,239 @@ class TestRequestTransformer {
             )
             assertTrue(selectable.single().documents.hasAnyCheckbox())
             assertFalse(readOnly.single().documents.hasAnyCheckbox())
+        }
+    }
+
+    // Case 16:
+    // 1. The verifier requests family_name and given_name of the mdoc PID.
+    // 2. The claims are selectable, and family_name is overasked — not covered by the relying
+    // party's registration entry for the PID attestation.
+    //
+    // Case 16 Expected Result:
+    // Only the family_name row carries the warning "not registered" line and the
+    // pending-tinted checkbox; given_name stays untouched, with an untinted checkbox.
+    @Test
+    fun `Given an overasked claim, When transformToCombinationsUi, Then only its row carries the warning line and checkbox tint`() {
+        coroutineRule.runTest {
+            // Given
+            val familyNamePath = pidPath(dataElement = "family_name")
+            val overaskedClaims = listOf(
+                OveraskedClaimDomain(
+                    path = familyNamePath,
+                    attestationTypes = setOf(mockedMdocPidDocType),
+                ),
+            )
+
+            // When
+            val combinationsUi = RequestTransformer.transformToCombinationsUi(
+                storageDocuments = listOf(getMockedPidWithBasicFields()),
+                resourceProvider = resourceProvider,
+                uuidProvider = uuidProvider,
+                combinationsDomain = listOf(
+                    PresentationCombinationDomain(
+                        matches = listOf(pidMatch("family_name", "given_name")),
+                    )
+                ),
+                claimsAreSelectable = mockedSelectableClaims,
+                overaskedClaims = overaskedClaims,
+            ).getOrThrow()
+
+            // Then
+            val expectedMarkedId = ClaimItemId.Claim(
+                docId = mockedPidId,
+                queryId = null,
+                path = familyNamePath,
+            ).encode()
+            val leafRows = combinationsUi.single().documents.single()
+                .headerUi.nestedItems.collectLeafRows()
+
+            val markedRow = leafRows.single { row -> row.itemId == expectedMarkedId }
+            assertEquals(mockedNotRegisteredMark, markedRow.supportingContentData)
+            val markedCheckbox =
+                markedRow.trailingContentData as ListItemTrailingContentDataUi.Checkbox
+            assertEquals(ThemeColorKey.Pending, markedCheckbox.tint)
+
+            val otherRows = leafRows.filterNot { row -> row.itemId == expectedMarkedId }
+            assertTrue(otherRows.isNotEmpty())
+            assertTrue(otherRows.all { row -> row.supportingContentData == null })
+            assertTrue(
+                otherRows.all { row ->
+                    val checkbox = row.trailingContentData as ListItemTrailingContentDataUi.Checkbox
+                    checkbox.tint == null
+                }
+            )
+        }
+    }
+
+    // Case 17:
+    // 1. The verifier requests family_name and given_name of the mdoc PID.
+    // 2. An overasked claim exists for the same path, but its attestation names the mDL doctype.
+    //
+    // Case 17 Expected Result:
+    // No row is marked — overasked claims are keyed by attestation type, and an overask of the
+    // mDL says nothing about the PID.
+    @Test
+    fun `Given an overasked claim of another attestation, When transformToCombinationsUi, Then no row carries the warning line`() {
+        coroutineRule.runTest {
+            // Given
+            val overaskedClaims = listOf(
+                OveraskedClaimDomain(
+                    path = pidPath(dataElement = "family_name"),
+                    attestationTypes = setOf(mockedMdocMdlDocType),
+                ),
+            )
+
+            // When
+            val combinationsUi = RequestTransformer.transformToCombinationsUi(
+                storageDocuments = listOf(getMockedPidWithBasicFields()),
+                resourceProvider = resourceProvider,
+                uuidProvider = uuidProvider,
+                combinationsDomain = listOf(
+                    PresentationCombinationDomain(
+                        matches = listOf(pidMatch("family_name", "given_name")),
+                    )
+                ),
+                claimsAreSelectable = mockedSelectableClaims,
+                overaskedClaims = overaskedClaims,
+            ).getOrThrow()
+
+            // Then
+            val leafRows = combinationsUi.single().documents.single()
+                .headerUi.nestedItems.collectLeafRows()
+            assertTrue(leafRows.all { row -> row.supportingContentData == null })
+        }
+    }
+
+    // Case 18:
+    // 1. The two-nationalities PID stores BOTH array elements ("GR", "SE"); the verifier
+    // requests the whole array via the trailing wildcard.
+    // 2. The wildcard path itself is overasked, for the PID's vct.
+    //
+    // Case 18 Expected Result:
+    // Every element row carries the warning line — the wildcard marks all its elements.
+    @Test
+    fun `Given an overasked wildcard claim, When transformToCombinationsUi, Then every element row carries the warning line`() {
+        coroutineRule.runTest {
+            // Given
+            val wildcardPath = sdJwtPath(
+                ClaimPathSegment.Key("nationalities"), ClaimPathSegment.AllElements
+            )
+            val match = twoNationalitiesPidMatch(wildcardPath)
+            val overaskedClaims = listOf(
+                OveraskedClaimDomain(
+                    path = wildcardPath,
+                    attestationTypes = setOf(mockedSdJwtPidVct),
+                ),
+            )
+
+            // When
+            val combinationsUi = RequestTransformer.transformToCombinationsUi(
+                storageDocuments = listOf(mockedTwoNationalitiesSdJwtPid()),
+                resourceProvider = resourceProvider,
+                uuidProvider = uuidProvider,
+                combinationsDomain = listOf(
+                    PresentationCombinationDomain(matches = listOf(match)),
+                ),
+                claimsAreSelectable = mockedNonSelectableClaims,
+                overaskedClaims = overaskedClaims,
+            ).getOrThrow()
+
+            // Then
+            val leafRows = combinationsUi.single().documents.single()
+                .headerUi.nestedItems.collectLeafRows()
+            assertEquals(2, leafRows.size)
+            assertTrue(
+                leafRows.all { row ->
+                    row.supportingContentData == mockedNotRegisteredMark
+                }
+            )
+        }
+    }
+
+    // Case 19:
+    // 1. The same two-nationalities request as Case 18 — the verifier asks for the whole array.
+    // 2. The overasked path arrives key-only ("nationalities"), the form it takes whenever the
+    // request names the array itself rather than a wildcard or an index.
+    //
+    // Case 19 Expected Result:
+    // Every element row carries the warning line — the key-only ancestor covers its elements.
+    @Test
+    fun `Given a key-only overasked array claim, When transformToCombinationsUi, Then every element row carries the warning line`() {
+        coroutineRule.runTest {
+            // Given
+            val wildcardPath = sdJwtPath(
+                ClaimPathSegment.Key("nationalities"), ClaimPathSegment.AllElements
+            )
+            val match = twoNationalitiesPidMatch(wildcardPath)
+            val overaskedClaims = listOf(
+                OveraskedClaimDomain(
+                    path = sdJwtPath(ClaimPathSegment.Key("nationalities")),
+                    attestationTypes = setOf(mockedSdJwtPidVct),
+                ),
+            )
+
+            // When
+            val combinationsUi = RequestTransformer.transformToCombinationsUi(
+                storageDocuments = listOf(mockedTwoNationalitiesSdJwtPid()),
+                resourceProvider = resourceProvider,
+                uuidProvider = uuidProvider,
+                combinationsDomain = listOf(
+                    PresentationCombinationDomain(matches = listOf(match)),
+                ),
+                claimsAreSelectable = mockedNonSelectableClaims,
+                overaskedClaims = overaskedClaims,
+            ).getOrThrow()
+
+            // Then
+            val leafRows = combinationsUi.single().documents.single()
+                .headerUi.nestedItems.collectLeafRows()
+            assertEquals(2, leafRows.size)
+            assertTrue(
+                leafRows.all { row ->
+                    row.supportingContentData == mockedNotRegisteredMark
+                }
+            )
+        }
+    }
+
+    // Case 20:
+    // 1. The same two-nationalities request as Case 18.
+    // 2. The overasked claim's attestation names a different vct.
+    //
+    // Case 20 Expected Result:
+    // No row is marked — the overask belongs to another SD-JWT credential type.
+    @Test
+    fun `Given an overasked claim of another vct, When transformToCombinationsUi, Then no row carries the warning line`() {
+        coroutineRule.runTest {
+            // Given
+            val mockedOtherVct = "urn:eudi:other:1"
+            val wildcardPath = sdJwtPath(
+                ClaimPathSegment.Key("nationalities"), ClaimPathSegment.AllElements
+            )
+            val match = twoNationalitiesPidMatch(wildcardPath)
+            val overaskedClaims = listOf(
+                OveraskedClaimDomain(
+                    path = sdJwtPath(ClaimPathSegment.Key("nationalities")),
+                    attestationTypes = setOf(mockedOtherVct),
+                ),
+            )
+
+            // When
+            val combinationsUi = RequestTransformer.transformToCombinationsUi(
+                storageDocuments = listOf(mockedTwoNationalitiesSdJwtPid()),
+                resourceProvider = resourceProvider,
+                uuidProvider = uuidProvider,
+                combinationsDomain = listOf(
+                    PresentationCombinationDomain(matches = listOf(match)),
+                ),
+                claimsAreSelectable = mockedNonSelectableClaims,
+                overaskedClaims = overaskedClaims,
+            ).getOrThrow()
+
+            // Then
+            val leafRows = combinationsUi.single().documents.single()
+                .headerUi.nestedItems.collectLeafRows()
+            assertTrue(leafRows.all { row -> row.supportingContentData == null })
         }
     }
 
@@ -1277,8 +1526,12 @@ class TestRequestTransformer {
 
     //region helpers
 
-    /** The collapsed supporting text the document header shows on the request screen. */
-    private val mockedRequestCollapsedSupportingText = "View details"
+    /** The warning line an overasked claim row carries. */
+    private val mockedNotRegisteredSupportingText = "Not registered data"
+    private val mockedNotRegisteredMark = ListItemSupportingContentDataUi.Text(
+        text = mockedNotRegisteredSupportingText,
+        textColorKey = ThemeColorKey.Pending,
+    )
 
     /**
      * Builds the real UI rows the request screen would render for [matches] against
@@ -1309,7 +1562,7 @@ class TestRequestTransformer {
     /** The document id of the claims-mocked two-nationalities SD-JWT PID. */
     private val mockedTwoNationalitiesSdJwtPidId = "two-nationalities-sd-jwt-pid-id"
 
-    /** Shorthand: transformToCombinationsUi against [storageDocuments], unwrapped. */
+    /** Shorthand: transformToCombinationsUi against [storageDocuments], unwrapped, no overasked claims. */
     private fun transform(
         storageDocuments: List<IssuedDocument>,
         combinationsDomain: List<PresentationCombinationDomain>,
@@ -1320,6 +1573,7 @@ class TestRequestTransformer {
         uuidProvider = uuidProvider,
         combinationsDomain = combinationsDomain,
         claimsAreSelectable = claimsAreSelectable,
+        overaskedClaims = emptyList(),
     ).getOrThrow()
 
     /** A PID mso_mdoc match requesting the given data elements (queryId = null). */
@@ -1463,6 +1717,14 @@ class TestRequestTransformer {
 
         is ExpandableListItemUi.NestedListItem ->
             nestedItems.any { it.hasAnyCheckbox() }
+    }
+
+    /** Depth-first headers of the rendered leaf rows. */
+    private fun List<ExpandableListItemUi>.collectLeafRows(): List<ListItemDataUi> = flatMap {
+        when (it) {
+            is ExpandableListItemUi.SingleListItem -> listOf(it.header)
+            is ExpandableListItemUi.NestedListItem -> it.nestedItems.collectLeafRows()
+        }
     }
 
     /**

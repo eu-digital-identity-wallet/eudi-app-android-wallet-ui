@@ -28,7 +28,6 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SheetState
-import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -42,6 +41,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import eu.europa.ec.commonfeature.ui.request.model.DocumentFormatDomain
 import eu.europa.ec.commonfeature.ui.request.model.DocumentPayloadDomain
+import eu.europa.ec.commonfeature.ui.request.model.RelyingPartyHeaderUi
 import eu.europa.ec.commonfeature.ui.request.model.RequestCombinationUi
 import eu.europa.ec.commonfeature.ui.request.model.RequestDataUi
 import eu.europa.ec.commonfeature.ui.request.model.RequestDocumentItemUi
@@ -53,14 +53,17 @@ import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.theme.values.warning
 import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.ErrorInfo
+import eu.europa.ec.uilogic.component.InfoLinkSection
+import eu.europa.ec.uilogic.component.InfoSection
 import eu.europa.ec.uilogic.component.ListItemDataUi
 import eu.europa.ec.uilogic.component.ListItemMainContentDataUi
+import eu.europa.ec.uilogic.component.ListItemSupportingContentDataUi
 import eu.europa.ec.uilogic.component.ListItemTrailingContentDataUi
+import eu.europa.ec.uilogic.component.RelyingParty
 import eu.europa.ec.uilogic.component.RelyingPartyDataUi
 import eu.europa.ec.uilogic.component.SectionTitle
-import eu.europa.ec.uilogic.component.content.ContentHeader
-import eu.europa.ec.uilogic.component.content.ContentHeaderConfig
 import eu.europa.ec.uilogic.component.content.ContentScreen
+import eu.europa.ec.uilogic.component.content.ContentTitle
 import eu.europa.ec.uilogic.component.content.ScreenNavigateAction
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
@@ -68,22 +71,18 @@ import eu.europa.ec.uilogic.component.utils.OneTimeLaunchedEffect
 import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
 import eu.europa.ec.uilogic.component.utils.SPACING_SMALL
 import eu.europa.ec.uilogic.component.wrap.BottomSheetTextDataUi
-import eu.europa.ec.uilogic.component.wrap.ButtonConfig
-import eu.europa.ec.uilogic.component.wrap.ButtonType
 import eu.europa.ec.uilogic.component.wrap.CheckboxDataUi
 import eu.europa.ec.uilogic.component.wrap.DialogBottomSheet
 import eu.europa.ec.uilogic.component.wrap.ExpandableListItemUi
 import eu.europa.ec.uilogic.component.wrap.SimpleBottomSheet
-import eu.europa.ec.uilogic.component.wrap.StickyBottomConfig
-import eu.europa.ec.uilogic.component.wrap.StickyBottomType
 import eu.europa.ec.uilogic.component.wrap.TextConfig
 import eu.europa.ec.uilogic.component.wrap.TextStyleKey
 import eu.europa.ec.uilogic.component.wrap.WrapExpandableListItem
 import eu.europa.ec.uilogic.component.wrap.WrapModalBottomSheet
 import eu.europa.ec.uilogic.component.wrap.WrapSelectableCard
-import eu.europa.ec.uilogic.component.wrap.WrapStickyBottomContent
 import eu.europa.ec.uilogic.extension.applyTestTag
 import eu.europa.ec.uilogic.extension.finish
+import eu.europa.ec.uilogic.extension.openUrl
 import eu.europa.ec.uilogic.navigation.helper.IntentAction
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.Channel
@@ -115,23 +114,27 @@ fun RequestScreen(
         isLoading = state.isLoading,
         onBack = { viewModel.setEvent(Event.OnBack) },
         stickyBottom = { paddingValues ->
-            WrapStickyBottomContent(
-                modifier = Modifier
-                    .applyTestTag(TestTag.RequestScreen.BUTTON)
-                    .fillMaxWidth()
-                    .padding(paddingValues),
-                stickyBottomConfig = StickyBottomConfig(
-                    type = StickyBottomType.OneButton(
-                        config = ButtonConfig(
-                            type = ButtonType.PRIMARY,
-                            enabled = !state.isLoading && state.allowShare,
-                            onClick = { viewModel.setEvent(Event.StickyButtonPressed) }
+            ConsentStickyBottomSection(
+                modifier = Modifier.fillMaxWidth(),
+                paddingValues = paddingValues,
+                buttonsTestTag = TestTag.RequestScreen.BUTTON,
+                warningSection = ConsentWarningSection(
+                    registrationWarning = state.registrationWarning,
+                    notVerifiedWarningText = stringResource(R.string.request_registration_not_verified_warning_text),
+                    overaskedWarningText = stringResource(R.string.request_registration_overasked_warning_text),
+                    acknowledgeText = stringResource(R.string.request_registration_acknowledge_text),
+                    onAcknowledgeChange = { isAccepted ->
+                        viewModel.setEvent(
+                            Event.RegistrationRiskToggled(isAccepted = isAccepted)
                         )
-                    )
-                )
-            ) {
-                Text(text = stringResource(R.string.request_sticky_button_text))
-            }
+                    },
+                ),
+                primaryButtonText = stringResource(R.string.request_sticky_button_text),
+                cancelButtonText = stringResource(R.string.request_cancel_button_text),
+                primaryButtonEnabled = !state.isLoading && state.allowShare,
+                onPrimaryButtonClick = { viewModel.setEvent(Event.StickyButtonPressed) },
+                onCancelButtonClick = { viewModel.setEvent(Event.OnBack) },
+            )
         },
         contentErrorConfig = state.error
     ) { paddingValues ->
@@ -160,6 +163,10 @@ fun RequestScreen(
                     is Effect.Navigation.Finish -> {
                         context.finish()
                     }
+
+                    is Effect.Navigation.OpenUrlExternally -> {
+                        context.openUrl(uri = navigationEffect.url)
+                    }
                 }
             },
             paddingValues = paddingValues,
@@ -172,11 +179,11 @@ fun RequestScreen(
                 onDismissRequest = {
                     viewModel.setEvent(
                         when (state.sheetContent) {
-                            RequestBottomSheetContent.WARNING -> {
+                            is RequestBottomSheetContent.Warning -> {
                                 Event.BottomSheet.UpdateBottomSheetState(isOpen = false)
                             }
 
-                            RequestBottomSheetContent.VERIFIER_NOT_TRUSTED -> {
+                            is RequestBottomSheetContent.VerifierNotTrusted -> {
                                 Event.BottomSheet.VerifierNotTrusted.Close
                             }
                         }
@@ -225,11 +232,20 @@ private fun Content(
         verticalArrangement = Arrangement.Top
     ) {
         // Screen Header.
-        ContentHeader(
+        ContentTitle(
             modifier = Modifier.fillMaxWidth(),
-            config = state.headerConfig,
-            descriptionTestTag = TestTag.RequestScreen.CONTENT_HEADER_DESCRIPTION,
+            title = stringResource(R.string.request_screen_title),
         )
+
+        state.relyingPartyHeader?.let { safeRelyingPartyHeader ->
+            VerifierHeaderSection(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = SPACING_SMALL.dp),
+                header = safeRelyingPartyHeader,
+                onEventSend = onEventSend,
+            )
+        }
 
         // Screen Main Content.
         DisplayRequestContent(
@@ -254,6 +270,8 @@ private fun Content(
                         if (!modalBottomSheetState.isVisible) {
                             onEventSend(Event.BottomSheet.UpdateBottomSheetState(isOpen = false))
                             onEventSend(Event.BottomSheet.FinishedClosing)
+                        } else {
+                            onEventSend(Event.BottomSheet.UpdateBottomSheetState(isOpen = true))
                         }
                     }
                 }
@@ -263,6 +281,47 @@ private fun Content(
                 }
             }
         }.collect()
+    }
+}
+
+/**
+ * The who-is-asking header: the requester's identity and the verified registration sections
+ * (privacy policy, intended use).
+ */
+@Composable
+private fun VerifierHeaderSection(
+    modifier: Modifier,
+    header: RelyingPartyHeaderUi,
+    onEventSend: (Event) -> Unit,
+) {
+    Column(modifier = modifier) {
+        RelyingParty(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = SPACING_SMALL.dp),
+            relyingPartyData = header.relyingParty,
+        )
+
+        header.privacyPolicyUrl?.let { safePrivacyPolicyUrl ->
+            InfoLinkSection(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = SPACING_SMALL.dp),
+                title = stringResource(R.string.request_privacy_policy_section_title),
+                linkText = safePrivacyPolicyUrl,
+                onLinkClick = { onEventSend(Event.PrivacyPolicyLinkClicked) },
+            )
+        }
+
+        header.intendedUse?.let { safeIntendedUse ->
+            InfoSection(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = SPACING_SMALL.dp),
+                title = stringResource(R.string.request_intended_use_section_title),
+                body = safeIntendedUse,
+            )
+        }
     }
 }
 
@@ -281,21 +340,53 @@ private fun DisplayRequestContent(
             informativeText = stringResource(id = R.string.request_no_data),
         )
 
-        is RequestDataUi.Single -> DisplayRequestItems(
+        is RequestDataUi.Single -> Column(
             modifier = modifier,
-            requestDocuments = requestDataUi.combination.documents,
-            claimsAreSelectable = claimsAreSelectable,
-            onEventSend = onEventSend,
-            showWarning = true,
-        )
+        ) {
+            RequestedDataSectionTitle(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = SPACING_SMALL.dp),
+            )
+            DisplayRequestItems(
+                modifier = Modifier.fillMaxWidth(),
+                requestDocuments = requestDataUi.combination.documents,
+                claimsAreSelectable = claimsAreSelectable,
+                onEventSend = onEventSend,
+            )
+        }
 
-        is RequestDataUi.Multiple -> DisplayCombinationCards(
+        is RequestDataUi.Multiple -> Column(
             modifier = modifier,
-            requestDataUi = requestDataUi,
-            claimsAreSelectable = claimsAreSelectable,
-            onEventSend = onEventSend,
-        )
+        ) {
+            RequestedDataSectionTitle(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = SPACING_SMALL.dp),
+            )
+            DisplayCombinationCards(
+                modifier = Modifier.fillMaxWidth(),
+                requestDataUi = requestDataUi,
+                claimsAreSelectable = claimsAreSelectable,
+                onEventSend = onEventSend,
+            )
+        }
     }
+}
+
+@Composable
+private fun RequestedDataSectionTitle(
+    modifier: Modifier,
+) {
+    SectionTitle(
+        modifier = modifier,
+        text = stringResource(R.string.request_requested_data_section_title),
+        textConfig = TextConfig(
+            styleKey = TextStyleKey.LabelLarge,
+            color = MaterialTheme.colorScheme.onSurface,
+            maxLines = Int.MAX_VALUE,
+        )
+    )
 }
 
 @Composable
@@ -325,16 +416,9 @@ private fun DisplayCombinationCards(
                     requestDocuments = combination.documents,
                     claimsAreSelectable = claimsAreSelectable,
                     onEventSend = onEventSend,
-                    showWarning = false,
                 )
             }
         }
-
-        // the 'review-carefully' note renders once under the whole list here; the
-        // single-combination branch renders it inside DisplayRequestItems instead
-        RequestWarningNote(
-            modifier = Modifier.fillMaxWidth(),
-        )
     }
 }
 
@@ -344,64 +428,37 @@ private fun DisplayRequestItems(
     requestDocuments: List<RequestDocumentItemUi>,
     claimsAreSelectable: Boolean,
     onEventSend: (Event) -> Unit,
-    showWarning: Boolean,
 ) {
     Column(
         modifier = modifier,
+        verticalArrangement = Arrangement.spacedBy(SPACING_MEDIUM.dp)
     ) {
-        Column(
-            modifier = Modifier.fillMaxSize(),
-            verticalArrangement = Arrangement.spacedBy(SPACING_MEDIUM.dp)
-        ) {
-            requestDocuments.forEachIndexed { index, requestDocument ->
-                WrapExpandableListItem(
-                    modifier = Modifier
-                        .applyTestTag(TestTag.RequestScreen.requestedDocument(index = index))
-                        .fillMaxWidth(),
-                    header = requestDocument.headerUi.header,
-                    data = requestDocument.headerUi.nestedItems,
-                    onItemClick = if (claimsAreSelectable) {
-                        { item -> onEventSend(Event.UserIdentificationClicked(itemId = item.itemId)) }
-                    } else {
-                        null
-                    },
-                    onExpandedChange = { expandedItem ->
-                        onEventSend(Event.ExpandOrCollapseRequestDocumentItem(itemId = expandedItem.itemId))
-                    },
-                    isExpanded = requestDocument.headerUi.isExpanded,
-                    throttleClicks = false,
-                    hideSensitiveContent = false,
-                    collapsedMainContentVerticalPadding = SPACING_MEDIUM.dp,
-                    expandedMainContentVerticalPadding = SPACING_MEDIUM.dp,
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.surfaceDim,
-                    ),
-                )
-            }
-        }
-
-        if (showWarning && requestDocuments.isNotEmpty()) {
-            RequestWarningNote(
+        requestDocuments.forEachIndexed { index, requestDocument ->
+            WrapExpandableListItem(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = SPACING_SMALL.dp),
+                    .applyTestTag(TestTag.RequestScreen.requestedDocument(index = index))
+                    .fillMaxWidth(),
+                header = requestDocument.headerUi.header,
+                data = requestDocument.headerUi.nestedItems,
+                onItemClick = if (claimsAreSelectable) {
+                    { item -> onEventSend(Event.UserIdentificationClicked(itemId = item.itemId)) }
+                } else {
+                    null
+                },
+                onExpandedChange = { expandedItem ->
+                    onEventSend(Event.ExpandOrCollapseRequestDocumentItem(itemId = expandedItem.itemId))
+                },
+                isExpanded = requestDocument.headerUi.isExpanded,
+                throttleClicks = false,
+                hideSensitiveContent = false,
+                collapsedMainContentVerticalPadding = SPACING_MEDIUM.dp,
+                expandedMainContentVerticalPadding = SPACING_MEDIUM.dp,
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceDim,
+                ),
             )
         }
     }
-}
-
-@Composable
-private fun RequestWarningNote(
-    modifier: Modifier,
-) {
-    SectionTitle(
-        modifier = modifier,
-        text = stringResource(R.string.request_warning_text),
-        textConfig = TextConfig(
-            styleKey = TextStyleKey.BodySmall,
-            color = MaterialTheme.colorScheme.onSurface,
-        )
-    )
 }
 
 @Composable
@@ -410,7 +467,7 @@ private fun SheetContent(
     onEventSent: (Event) -> Unit,
 ) {
     when (sheetContent) {
-        RequestBottomSheetContent.WARNING -> {
+        is RequestBottomSheetContent.Warning -> {
             SimpleBottomSheet(
                 textData = BottomSheetTextDataUi(
                     title = stringResource(id = R.string.request_bottom_sheet_warning_title),
@@ -421,7 +478,7 @@ private fun SheetContent(
             )
         }
 
-        RequestBottomSheetContent.VERIFIER_NOT_TRUSTED -> {
+        is RequestBottomSheetContent.VerifierNotTrusted -> {
             DialogBottomSheet(
                 textData = BottomSheetTextDataUi(
                     title = stringResource(id = R.string.request_blocked_bottom_sheet_title),
@@ -436,6 +493,23 @@ private fun SheetContent(
     }
 }
 
+@Composable
+private fun previewRelyingPartyHeader(): RelyingPartyHeaderUi {
+    return RelyingPartyHeaderUi(
+        relyingParty = RelyingPartyDataUi(
+            logo = null,
+            isVerified = true,
+            name = "NordicBank A/S",
+            uniqueId = "rp:nordicbank:prod",
+            description = null,
+        ),
+        intendedUse = "We will use your identity and age to verify you for a new current " +
+                "account. Your data will be used once to complete onboarding and to meet " +
+                "anti-money laundering requirements.",
+        privacyPolicyUrl = "https://nordicbank.example/privacy",
+    )
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @ThemeModePreviews
 @Composable
@@ -443,15 +517,7 @@ private fun ContentPreview() {
     PreviewTheme {
         Content(
             state = State(
-                headerConfig = ContentHeaderConfig(
-                    description = stringResource(R.string.request_header_description),
-                    mainText = stringResource(R.string.request_header_main_text),
-                    relyingPartyData = RelyingPartyDataUi(
-                        isVerified = true,
-                        name = stringResource(R.string.request_relying_party_default_name),
-                        description = stringResource(R.string.request_relying_party_description)
-                    )
-                ),
+                relyingPartyHeader = previewRelyingPartyHeader(),
                 requestDataUi = RequestDataUi.Single(
                     combination = RequestCombinationUi(
                         documents = listOf(previewRequestDocumentItem()),
@@ -476,15 +542,7 @@ private fun ContentNoDataPreview() {
     PreviewTheme {
         Content(
             state = State(
-                headerConfig = ContentHeaderConfig(
-                    description = stringResource(R.string.request_header_description),
-                    mainText = stringResource(R.string.request_header_main_text),
-                    relyingPartyData = RelyingPartyDataUi(
-                        isVerified = true,
-                        name = stringResource(R.string.request_relying_party_default_name),
-                        description = stringResource(R.string.request_relying_party_description)
-                    )
-                ),
+                relyingPartyHeader = previewRelyingPartyHeader(),
                 requestDataUi = RequestDataUi.NoData,
             ),
             effectFlow = Channel<Effect>().receiveAsFlow(),
@@ -505,15 +563,7 @@ private fun ContentMultipleCombinationsPreview() {
         val previewItem = previewRequestDocumentItem()
         Content(
             state = State(
-                headerConfig = ContentHeaderConfig(
-                    description = stringResource(R.string.request_header_description),
-                    mainText = stringResource(R.string.request_header_main_text),
-                    relyingPartyData = RelyingPartyDataUi(
-                        isVerified = true,
-                        name = stringResource(R.string.request_relying_party_default_name),
-                        description = stringResource(R.string.request_relying_party_description)
-                    )
-                ),
+                relyingPartyHeader = previewRelyingPartyHeader(),
                 requestDataUi = RequestDataUi.Multiple(
                     combinations = listOf(
                         RequestCombinationUi(
@@ -562,7 +612,9 @@ private fun previewRequestDocumentItem(): RequestDocumentItemUi {
             header = ListItemDataUi(
                 itemId = "000",
                 mainContentData = ListItemMainContentDataUi.Text(text = "Digital ID"),
-                supportingText = stringResource(R.string.request_collapsed_supporting_text),
+                supportingContentData = ListItemSupportingContentDataUi.Text(
+                    text = stringResource(R.string.request_collapsed_supporting_text),
+                ),
                 trailingContentData = ListItemTrailingContentDataUi.Icon(
                     iconData = AppIcons.KeyboardArrowDown
                 ),
@@ -604,7 +656,7 @@ private fun previewRequestDocumentItem(): RequestDocumentItemUi {
 private fun SheetContentWarningPreview() {
     PreviewTheme {
         SheetContent(
-            sheetContent = RequestBottomSheetContent.WARNING,
+            sheetContent = RequestBottomSheetContent.Warning,
             onEventSent = {},
         )
     }
@@ -615,7 +667,7 @@ private fun SheetContentWarningPreview() {
 private fun SheetContentVerifierNotTrustedPreview() {
     PreviewTheme {
         SheetContent(
-            sheetContent = RequestBottomSheetContent.VERIFIER_NOT_TRUSTED,
+            sheetContent = RequestBottomSheetContent.VerifierNotTrusted,
             onEventSent = {},
         )
     }

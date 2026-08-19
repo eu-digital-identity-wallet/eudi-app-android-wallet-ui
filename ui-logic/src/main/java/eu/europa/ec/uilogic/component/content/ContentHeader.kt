@@ -151,8 +151,10 @@ private fun ContentHeaderPreview(
                 description = "Description: $text",
                 mainText = "Title: $text",
                 relyingPartyData = RelyingPartyDataUi(
+                    logo = null,
                     isVerified = true,
                     name = "Relying Party Name: $text",
+                    uniqueId = null,
                     description = "Relying Party Description: $text",
                 )
             )

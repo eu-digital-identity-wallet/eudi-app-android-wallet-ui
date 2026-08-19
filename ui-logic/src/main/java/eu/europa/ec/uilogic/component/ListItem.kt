@@ -25,6 +25,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentWidth
+import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -32,7 +33,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.BlurredEdgeTreatment
 import androidx.compose.ui.draw.blur
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextOverflow
@@ -75,8 +75,9 @@ import eu.europa.ec.uilogic.component.wrap.WrapText
  * the main content.
  * @param overlineText Optional text displayed above the `mainContentData`, providing context
  * or a brief heading for the item.
- * @param supportingText Optional text displayed below the `mainContentData`, offering
- * additional details or description to supplement the main content.
+ * @param supportingContentData Optional data for content displayed below the `mainContentData`,
+ * offering additional details or description to supplement the main content. See
+ * [ListItemSupportingContentDataUi] for details on supported supporting content types.
  * @param leadingContentData Optional data for content displayed at the beginning of the list item.
  * This could be an icon, image, or other visual element. See [ListItemLeadingContentDataUi]
  * for details on supported leading content types.
@@ -88,7 +89,7 @@ data class ListItemDataUi(
     val itemId: String,
     val mainContentData: ListItemMainContentDataUi,
     val overlineText: String? = null,
-    val supportingText: String? = null,
+    val supportingContentData: ListItemSupportingContentDataUi? = null,
     val leadingContentData: ListItemLeadingContentDataUi? = null,
     val trailingContentData: ListItemTrailingContentDataUi? = null,
 )
@@ -102,6 +103,23 @@ data class ListItemDataUi(
 sealed class ListItemMainContentDataUi {
     data class Text(val text: String) : ListItemMainContentDataUi()
     data class Image(val base64Image: String) : ListItemMainContentDataUi()
+}
+
+/**
+ * Represents the supporting content displayed below a list item's main content.
+ *
+ * @property textColorKey Optional [ThemeColorKey] for the supporting content, resolved at
+ * render time. When null, [ListItem] renders it with the default supporting text color,
+ * `onSurfaceVariant`.
+ */
+sealed class ListItemSupportingContentDataUi {
+    abstract val textColorKey: ThemeColorKey?
+
+    data class Text(
+        val text: String,
+        val maxLines: Int = 1,
+        override val textColorKey: ThemeColorKey? = null,
+    ) : ListItemSupportingContentDataUi()
 }
 
 /**
@@ -125,7 +143,7 @@ sealed class ListItemLeadingContentDataUi {
     data class Icon(
         override val size: Int = DEFAULT_ICON_SIZE,
         val iconData: IconDataUi,
-        val tint: Color? = null,
+        val tint: ThemeColorKey? = null,
     ) : ListItemLeadingContentDataUi()
 
     data class UserImage(
@@ -162,16 +180,22 @@ sealed class ListItemLeadingContentDataUi {
  *  - [TextWithIcon]: Represents text and an icon to be displayed as trailing content.
  */
 sealed class ListItemTrailingContentDataUi {
-    data class Icon(val iconData: IconDataUi, val tint: Color? = null) :
-        ListItemTrailingContentDataUi()
+    data class Icon(
+        val iconData: IconDataUi,
+        val tint: ThemeColorKey? = null,
+    ) : ListItemTrailingContentDataUi()
 
-    data class Checkbox(val checkboxData: CheckboxDataUi) : ListItemTrailingContentDataUi()
+    data class Checkbox(
+        val checkboxData: CheckboxDataUi,
+        val tint: ThemeColorKey? = null,
+    ) : ListItemTrailingContentDataUi()
+
     data class RadioButton(val radioButtonData: RadioButtonDataUi) : ListItemTrailingContentDataUi()
     data class Switch(val switchData: SwitchDataUi) : ListItemTrailingContentDataUi()
     data class TextWithIcon(
         val text: String,
         val iconData: IconDataUi,
-        val tint: Color? = null
+        val tint: ThemeColorKey? = null,
     ) : ListItemTrailingContentDataUi()
 }
 
@@ -197,7 +221,7 @@ enum class ClickableArea {
  * **Content Customization:**
  * - **Leading Content:** Can be an icon or a user image specified by [ListItemDataUi.leadingContentData].
  * - **Main Content:** Can be text or an image specified by [ListItemDataUi.mainContentData].
- * - **Supporting Text:** Provides additional information below the main content, specified by [ListItemDataUi.supportingText].
+ * - **Supporting Content:** Provides additional information below the main content, specified by [ListItemDataUi.supportingContentData].
  * - **Trailing Content:** Can be a checkbox or an icon specified by [ListItemDataUi.trailingContentData].
  * - **Overline Text:**  Displays text above the main content, specified by [ListItemDataUi.overlineText].
  *
@@ -228,10 +252,8 @@ fun ListItem(
     overlineTextStyle: TextStyle = MaterialTheme.typography.labelMedium.copy(
         color = MaterialTheme.colorScheme.onSurfaceVariant
     ),
-    supportingTextColor: Color? = null,
     mainContentTextStyle: TextStyle? = null,
 ) {
-    val maxSecondaryTextLines = 1
     val textOverflow = TextOverflow.Ellipsis
     val mainTextStyle = mainContentTextStyle ?: MaterialTheme.typography.bodyLarge.copy(
         color = MaterialTheme.colorScheme.onSurface
@@ -295,7 +317,7 @@ fun ListItem(
                     is ListItemLeadingContentDataUi.Icon -> WrapIcon(
                         modifier = leadingContentModifier,
                         iconData = safeLeadingContentData.iconData,
-                        customTint = safeLeadingContentData.tint
+                        customTint = safeLeadingContentData.tint?.toColor()
                             ?: MaterialTheme.colorScheme.primary,
                     )
 
@@ -376,7 +398,7 @@ fun ListItem(
                                 .padding(start = SPACING_SMALL.dp)
                                 .size(DEFAULT_ICON_SIZE.dp),
                             iconData = trailingContentData.iconData,
-                            customTint = trailingContentData.tint
+                            customTint = trailingContentData.tint?.toColor()
                                 ?: MaterialTheme.colorScheme.primary,
                             onClick = if (clickableAreas.contains(TRAILING_CONTENT)) {
                                 { onItemClick?.invoke(item) }
@@ -386,17 +408,19 @@ fun ListItem(
                     }
                 }
 
-                // Supporting Text
-                supportingText?.let { safeSupportingText ->
-                    Text(
-                        text = safeSupportingText,
-                        style = MaterialTheme.typography.bodyMedium.copy(
-                            color = supportingTextColor
-                                ?: MaterialTheme.colorScheme.onSurfaceVariant
-                        ),
-                        maxLines = maxSecondaryTextLines,
-                        overflow = textOverflow,
-                    )
+                // Supporting Content
+                supportingContentData?.let { safeSupportingContentData ->
+                    when (safeSupportingContentData) {
+                        is ListItemSupportingContentDataUi.Text -> Text(
+                            text = safeSupportingContentData.text,
+                            style = MaterialTheme.typography.bodyMedium.copy(
+                                color = safeSupportingContentData.textColorKey?.toColor()
+                                    ?: MaterialTheme.colorScheme.onSurfaceVariant
+                            ),
+                            maxLines = safeSupportingContentData.maxLines,
+                            overflow = textOverflow,
+                        )
+                    }
                 }
             }
 
@@ -410,6 +434,13 @@ fun ListItem(
                             } else null
                         ),
                         modifier = Modifier.padding(start = SIZE_MEDIUM.dp),
+                        checkboxColors = safeTrailingContentData.tint?.let { safeTint ->
+                            val checkboxColor = safeTint.toColor()
+                            CheckboxDefaults.colors(
+                                checkedColor = checkboxColor,
+                                uncheckedColor = checkboxColor,
+                            )
+                        }
                     )
 
                     is ListItemTrailingContentDataUi.Icon -> WrapIconButton(
@@ -417,7 +448,7 @@ fun ListItem(
                             .padding(start = SIZE_MEDIUM.dp)
                             .size(DEFAULT_ICON_SIZE.dp),
                         iconData = safeTrailingContentData.iconData,
-                        customTint = safeTrailingContentData.tint
+                        customTint = safeTrailingContentData.tint?.toColor()
                             ?: MaterialTheme.colorScheme.primary,
                         onClick = if (clickableAreas.contains(TRAILING_CONTENT)) {
                             { onItemClick?.invoke(item) }
@@ -469,13 +500,15 @@ private fun ListItemPreview() {
                 onItemClick = {},
             )
 
-            // ListItem with overlineText and supportingText
+            // ListItem with overlineText and supporting content
             ListItem(
                 item = ListItemDataUi(
                     itemId = "2",
                     mainContentData = ListItemMainContentDataUi.Text(text = "Item with Overline and Supporting Text"),
                     overlineText = "Overline Text",
-                    supportingText = "Supporting Text"
+                    supportingContentData = ListItemSupportingContentDataUi.Text(
+                        text = "Supporting Text",
+                    )
                 ),
                 modifier = modifier,
                 onItemClick = {},
@@ -517,7 +550,9 @@ private fun ListItemPreview() {
                         text = "1/2",
                         iconData = AppIcons.KeyboardArrowRight
                     ),
-                    supportingText = "Supporting Text"
+                    supportingContentData = ListItemSupportingContentDataUi.Text(
+                        text = "Supporting Text",
+                    )
                 ),
                 modifier = modifier,
                 onItemClick = {},
@@ -720,11 +755,43 @@ private fun ListItemPreview() {
                     itemId = "17",
                     mainContentData = ListItemMainContentDataUi.Text(text = "Full Item Example"),
                     overlineText = "Overline Text",
-                    supportingText = "Supporting Text",
+                    supportingContentData = ListItemSupportingContentDataUi.Text(
+                        text = "Supporting Text",
+                    ),
                     leadingContentData = ListItemLeadingContentDataUi.Icon(iconData = AppIcons.Add),
                     trailingContentData = ListItemTrailingContentDataUi.Icon(
                         iconData = AppIcons.KeyboardArrowDown,
                     )
+                ),
+                modifier = modifier,
+                onItemClick = {},
+            )
+
+            // ListItem with a pending-colored supporting text (e.g. a not-registered request claim)
+            ListItem(
+                item = ListItemDataUi(
+                    itemId = "warning-supporting-text",
+                    mainContentData = ListItemMainContentDataUi.Text(text = "Doe"),
+                    overlineText = "Family name",
+                    supportingContentData = ListItemSupportingContentDataUi.Text(
+                        text = "Not registered data",
+                        textColorKey = ThemeColorKey.Pending,
+                    ),
+                ),
+                modifier = modifier,
+                onItemClick = {},
+            )
+
+            // ListItem with a multi-line supporting text
+            ListItem(
+                item = ListItemDataUi(
+                    itemId = "multiline-supporting-text",
+                    mainContentData = ListItemMainContentDataUi.Text(text = "Item with Multi-line Supporting Text"),
+                    overlineText = "Overline Text",
+                    supportingContentData = ListItemSupportingContentDataUi.Text(
+                        text = "A very very very very very very very very very very very very very very long supporting text",
+                        maxLines = 5,
+                    ),
                 ),
                 modifier = modifier,
                 onItemClick = {},

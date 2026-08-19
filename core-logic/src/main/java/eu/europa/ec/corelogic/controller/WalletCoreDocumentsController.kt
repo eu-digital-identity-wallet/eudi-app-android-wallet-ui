@@ -29,16 +29,20 @@ import eu.europa.ec.corelogic.extension.documentIdentifier
 import eu.europa.ec.corelogic.extension.getLocalizedDisplayName
 import eu.europa.ec.corelogic.extension.parseTransactionLog
 import eu.europa.ec.corelogic.extension.toCoreTransactionLog
+import eu.europa.ec.corelogic.extension.toIssuerRegistrationDomain
 import eu.europa.ec.corelogic.extension.toTransactionLogData
+import eu.europa.ec.corelogic.extension.toUntrustedIssuerReasonOrNull
 import eu.europa.ec.corelogic.model.DeferredDocumentDataDomain
 import eu.europa.ec.corelogic.model.DocumentCategories
 import eu.europa.ec.corelogic.model.DocumentIdentifier
 import eu.europa.ec.corelogic.model.FormatType
+import eu.europa.ec.corelogic.model.IssuerRegistrationDomain
 import eu.europa.ec.corelogic.model.ScopedDocumentDomain
 import eu.europa.ec.corelogic.model.TransactionLogDataDomain
+import eu.europa.ec.corelogic.model.UntrustedIssuerReasonDomain
+import eu.europa.ec.corelogic.model.isBlockedForIssuance
 import eu.europa.ec.corelogic.model.toDocumentIdentifier
 import eu.europa.ec.eudi.openid4vci.CredentialIssuerMetadata
-import eu.europa.ec.eudi.openid4vci.CredentialIssuerMetadataError
 import eu.europa.ec.eudi.openid4vci.MsoMdocCredential
 import eu.europa.ec.eudi.openid4vci.SdJwtVcCredential
 import eu.europa.ec.eudi.statium.Status
@@ -58,7 +62,7 @@ import eu.europa.ec.eudi.wallet.issue.openid4vci.IssueEvent
 import eu.europa.ec.eudi.wallet.issue.openid4vci.Offer
 import eu.europa.ec.eudi.wallet.issue.openid4vci.OfferResult
 import eu.europa.ec.eudi.wallet.issue.openid4vci.OpenId4VciManager
-import eu.europa.ec.eudi.wallet.trust.IssuerNotTrustedException
+import eu.europa.ec.eudi.wallet.registration.RegistrationCertificateResult
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.storagelogic.dao.BookmarkDao
@@ -87,9 +91,13 @@ enum class IssuanceMethod {
 }
 
 sealed class IssueDocumentsPartialState {
-    data class Success(val documentIds: List<DocumentId>) : IssueDocumentsPartialState()
-    data class DeferredSuccess(val deferredDocuments: Map<DocumentId, FormatType>) :
-        IssueDocumentsPartialState()
+    data class Success(
+        val documentIds: List<DocumentId>,
+    ) : IssueDocumentsPartialState()
+
+    data class DeferredSuccess(
+        val deferredDocuments: Map<DocumentId, FormatType>,
+    ) : IssueDocumentsPartialState()
 
     data class PartialSuccess(
         val documentIds: List<DocumentId>,
@@ -103,7 +111,9 @@ sealed class IssueDocumentsPartialState {
 
     data class Failure(val errorMessage: String) : IssueDocumentsPartialState()
 
-    data object IssuerNotTrusted : IssueDocumentsPartialState()
+    data class IssuerNotTrusted(
+        val reason: UntrustedIssuerReasonDomain,
+    ) : IssueDocumentsPartialState()
 
     data class UserAuthRequired(
         val crypto: BiometricCrypto,
@@ -122,17 +132,32 @@ sealed class DeleteAllDocumentsPartialState {
 }
 
 sealed class ResolveDocumentOfferPartialState {
-    data class Success(val offer: Offer) : ResolveDocumentOfferPartialState()
+    data class Success(
+        val offer: Offer,
+        val issuerRegistration: IssuerRegistrationDomain,
+    ) : ResolveDocumentOfferPartialState()
+
     data class Failure(val errorMessage: String) : ResolveDocumentOfferPartialState()
 
-    data object IssuerNotTrusted : ResolveDocumentOfferPartialState()
+    data class IssuerNotTrusted(
+        val reason: UntrustedIssuerReasonDomain,
+    ) : ResolveDocumentOfferPartialState()
 }
 
 sealed class FetchScopedDocumentsPartialState {
-    data class Success(val documents: List<ScopedDocumentDomain>) :
-        FetchScopedDocumentsPartialState()
+    data class Success(
+        val documents: List<ScopedDocumentDomain>
+    ) : FetchScopedDocumentsPartialState()
 
     data class Failure(val errorMessage: String) : FetchScopedDocumentsPartialState()
+
+    data object NoTrustedIssuers : FetchScopedDocumentsPartialState()
+}
+
+private sealed class GetIssuerMetadataPartialState {
+    data class Success(val metadata: CredentialIssuerMetadata) : GetIssuerMetadataPartialState()
+    data object IssuerNotTrusted : GetIssuerMetadataPartialState()
+    data class Failure(val errorMessage: String) : GetIssuerMetadataPartialState()
 }
 
 sealed class IssueDeferredDocumentPartialState {
@@ -289,17 +314,48 @@ class WalletCoreDocumentsControllerImpl(
     override fun getAllIssuedDocuments(): List<IssuedDocument> =
         eudiWallet.getDocuments().filterIsInstance<IssuedDocument>()
 
+    private suspend fun getIssuerMetadata(
+        manager: OpenId4VciManager,
+        issuerId: String
+    ): GetIssuerMetadataPartialState {
+        return runCatching {
+            val metadata = manager.getIssuerMetadata(issuerId)
+                .getOrThrow()
+            GetIssuerMetadataPartialState.Success(metadata)
+        }.getOrElse {
+            if (it.toUntrustedIssuerReasonOrNull() != null) {
+                GetIssuerMetadataPartialState.IssuerNotTrusted
+            } else {
+                GetIssuerMetadataPartialState.Failure(it.localizedMessage ?: genericErrorMessage)
+            }
+        }
+    }
+
     override suspend fun getScopedDocuments(locale: Locale): FetchScopedDocumentsPartialState {
         return withContext(dispatcher) {
             runCatching {
 
-                val metadata: Map<VciConfig, CredentialIssuerMetadata> =
+                // every issuer is resolved on its own: one unreachable, malformed or untrusted
+                // issuer must not hide the documents offered by the others
+                val metadataPerIssuer: Map<VciConfig, GetIssuerMetadataPartialState> =
                     openId4VciManagers.mapValues { (vciConfig, manager) ->
-                        manager.getIssuerMetadata(vciConfig.issuerUrl).getOrThrow()
+                        getIssuerMetadata(
+                            manager = manager,
+                            issuerId = vciConfig.issuerUrl
+                        )
+                    }
+
+                val resolvedMetadata: List<Pair<VciConfig, CredentialIssuerMetadata>> =
+                    metadataPerIssuer.mapNotNull { (vciConfig, response) ->
+                        when (response) {
+                            is GetIssuerMetadataPartialState.Success -> vciConfig to response.metadata
+                            is GetIssuerMetadataPartialState.IssuerNotTrusted -> null
+                            is GetIssuerMetadataPartialState.Failure -> null
+                        }
                     }
 
                 val documents: List<ScopedDocumentDomain> =
-                    metadata.flatMap { (vciConfig, meta) ->
+                    resolvedMetadata.flatMap { (vciConfig, meta) ->
                         meta.credentialConfigurationsSupported.map { (id, credentialConfig) ->
 
                             val name: String =
@@ -331,10 +387,25 @@ class WalletCoreDocumentsControllerImpl(
                         }
                     }
 
-                if (documents.isNotEmpty()) {
-                    FetchScopedDocumentsPartialState.Success(documents = documents)
-                } else {
-                    FetchScopedDocumentsPartialState.Failure(errorMessage = genericErrorMessage)
+                val hasUntrustedIssuer: Boolean = metadataPerIssuer.values.any { response ->
+                    response is GetIssuerMetadataPartialState.IssuerNotTrusted
+                }
+
+                val firstFailureMessage: String? = metadataPerIssuer.values
+                    .filterIsInstance<GetIssuerMetadataPartialState.Failure>()
+                    .firstOrNull()
+                    ?.errorMessage
+
+                when {
+                    documents.isNotEmpty() -> FetchScopedDocumentsPartialState.Success(
+                        documents = documents
+                    )
+
+                    hasUntrustedIssuer -> FetchScopedDocumentsPartialState.NoTrustedIssuers
+
+                    else -> FetchScopedDocumentsPartialState.Failure(
+                        errorMessage = firstFailureMessage ?: genericErrorMessage
+                    )
                 }
             }
         }.getOrElse {
@@ -392,12 +463,14 @@ class WalletCoreDocumentsControllerImpl(
                         )
 
                         is IssueDocumentsPartialState.IssuerNotTrusted -> emit(
-                            IssueDocumentsPartialState.IssuerNotTrusted
+                            IssueDocumentsPartialState.IssuerNotTrusted(
+                                reason = response.reason
+                            )
                         )
 
                         is IssueDocumentsPartialState.Success -> emit(
                             IssueDocumentsPartialState.Success(
-                                response.documentIds
+                                documentIds = response.documentIds
                             )
                         )
 
@@ -410,7 +483,7 @@ class WalletCoreDocumentsControllerImpl(
 
                         is IssueDocumentsPartialState.PartialSuccess -> emit(
                             IssueDocumentsPartialState.Success(
-                                response.documentIds
+                                documentIds = response.documentIds
                             )
                         )
 
@@ -423,7 +496,7 @@ class WalletCoreDocumentsControllerImpl(
 
                         is IssueDocumentsPartialState.DeferredSuccess -> emit(
                             IssueDocumentsPartialState.DeferredSuccess(
-                                response.deferredDocuments
+                                deferredDocuments = response.deferredDocuments
                             )
                         )
                     }
@@ -447,11 +520,24 @@ class WalletCoreDocumentsControllerImpl(
             errorMessage = documentErrorMessage
         ).getOrThrow()
 
-        manager.reissueDocument(
-            documentId,
-            allowAuthorizationFallback,
-            onIssueEvent = issuanceCallback(prioritizeDeferred = prioritizeDeferred)
+        // a successful re-issue makes Wallet Core delete the original document, so the
+        // registration outcome is checked before anything starts
+        // in that way, a refusal here leaves the original document intact
+        val preflightRefusal = preflightRegistrationRefusalOrNull(
+            resolveRegistration = {
+                manager.resolveIssuerRegistration(documentId = documentId)
+            }
         )
+
+        if (preflightRefusal != null) {
+            trySendBlocking(preflightRefusal)
+        } else {
+            manager.reissueDocument(
+                documentId,
+                allowAuthorizationFallback,
+                onIssueEvent = issuanceCallback(prioritizeDeferred = prioritizeDeferred)
+            )
+        }
 
         awaitClose()
 
@@ -481,7 +567,7 @@ class WalletCoreDocumentsControllerImpl(
 
             manager.issueDocumentByOffer(
                 offer = offer,
-                onIssueEvent = issuanceCallback(prioritizeDeferred),
+                onIssueEvent = issuanceCallback(prioritizeDeferred = prioritizeDeferred),
                 txCode = txCode,
             )
             awaitClose()
@@ -589,9 +675,13 @@ class WalletCoreDocumentsControllerImpl(
             manager.resolveDocumentOffer(offerUri) { result ->
                 when (result) {
                     is OfferResult.Failure -> {
+                        val untrustedReason = result.cause.toUntrustedIssuerReasonOrNull()
+
                         trySendBlocking(
-                            if (result.cause.indicatesUntrustedIssuer()) {
-                                ResolveDocumentOfferPartialState.IssuerNotTrusted
+                            if (untrustedReason != null) {
+                                ResolveDocumentOfferPartialState.IssuerNotTrusted(
+                                    reason = untrustedReason
+                                )
                             } else {
                                 ResolveDocumentOfferPartialState.Failure(
                                     result.cause.localizedMessage ?: genericErrorMessage
@@ -601,10 +691,24 @@ class WalletCoreDocumentsControllerImpl(
                     }
 
                     is OfferResult.Success -> {
+                        val issuerRegistration = result.offer.issuerRegistration
+                            .toIssuerRegistrationDomain(locale = resourceProvider.getLocale())
+                        // with the check off Core evaluates nothing, so every offer would
+                        // otherwise refuse for lack of an outcome
+                        val registrationRefused = walletCoreConfig.isRegistrationCheckEnabled &&
+                                issuerRegistration.isBlockedForIssuance
+
                         trySendBlocking(
-                            ResolveDocumentOfferPartialState.Success(
-                                offer = result.offer
-                            )
+                            if (registrationRefused) {
+                                ResolveDocumentOfferPartialState.IssuerNotTrusted(
+                                    reason = UntrustedIssuerReasonDomain.REGISTRATION_CERTIFICATE
+                                )
+                            } else {
+                                ResolveDocumentOfferPartialState.Success(
+                                    offer = result.offer,
+                                    issuerRegistration = issuerRegistration,
+                                )
+                            }
                         )
                     }
                 }
@@ -633,7 +737,7 @@ class WalletCoreDocumentsControllerImpl(
                         when (deferredIssuanceResult) {
                             is DeferredIssueResult.DocumentFailed -> {
                                 trySendBlocking(
-                                    if (deferredIssuanceResult.cause.indicatesUntrustedIssuer()) {
+                                    if (deferredIssuanceResult.cause.toUntrustedIssuerReasonOrNull() != null) {
                                         IssueDeferredDocumentPartialState.IssuerNotTrusted(
                                             documentId = deferredIssuanceResult.documentId
                                         )
@@ -775,11 +879,27 @@ class WalletCoreDocumentsControllerImpl(
                 errorMessage = documentErrorMessage
             ).getOrThrow()
 
-            manager.issueDocumentByConfigurationIdentifiers(
-                issuerUrl = issuerId,
-                credentialConfigurationIds = configIds,
-                onIssueEvent = issuanceCallback(prioritizeDeferred)
+            // wallet-initiated issuance has no approval screen, so the registration outcome
+            // is checked before the flow starts — a refusal here opens no browser and stores
+            // nothing
+            val preflightRefusal = preflightRegistrationRefusalOrNull(
+                resolveRegistration = {
+                    manager.resolveIssuerRegistration(
+                        issuerUrl = issuerId,
+                        credentialConfigurationIds = configIds
+                    )
+                }
             )
+
+            if (preflightRefusal != null) {
+                trySendBlocking(preflightRefusal)
+            } else {
+                manager.issueDocumentByConfigurationIdentifiers(
+                    issuerUrl = issuerId,
+                    credentialConfigurationIds = configIds,
+                    onIssueEvent = issuanceCallback(prioritizeDeferred = prioritizeDeferred)
+                )
+            }
 
             awaitClose()
 
@@ -802,7 +922,7 @@ class WalletCoreDocumentsControllerImpl(
         val listener = OpenId4VciManager.OnIssueEvent { event ->
             when (event) {
                 is IssueEvent.DocumentFailed -> {
-                    if (event.cause.indicatesUntrustedIssuer()) {
+                    if (event.cause.toUntrustedIssuerReasonOrNull() != null) {
                         untrustedDocuments[event.docType] = event.name
                     } else {
                         nonIssuedDocuments[event.docType] = event.name
@@ -882,9 +1002,11 @@ class WalletCoreDocumentsControllerImpl(
                 }
 
                 is IssueEvent.Failure -> {
+                    val untrustedReason = event.cause.toUntrustedIssuerReasonOrNull()
+
                     trySendBlocking(
-                        if (event.cause.indicatesUntrustedIssuer()) {
-                            IssueDocumentsPartialState.IssuerNotTrusted
+                        if (untrustedReason != null) {
+                            IssueDocumentsPartialState.IssuerNotTrusted(reason = untrustedReason)
                         } else {
                             IssueDocumentsPartialState.Failure(
                                 errorMessage = documentErrorMessage
@@ -902,7 +1024,11 @@ class WalletCoreDocumentsControllerImpl(
                     // would be treated as a partial success and navigate the user on the success screen with a deferred
                     // (un-issued) id instead of the "Issuance blocked" sheet.
                     if (untrustedDocuments.isNotEmpty() && issuedDocuments.isEmpty()) {
-                        trySendBlocking(IssueDocumentsPartialState.IssuerNotTrusted)
+                        trySendBlocking(
+                            IssueDocumentsPartialState.IssuerNotTrusted(
+                                reason = UntrustedIssuerReasonDomain.ACCESS_CERTIFICATE
+                            )
+                        )
                         return@OnIssueEvent
                     }
 
@@ -917,7 +1043,11 @@ class WalletCoreDocumentsControllerImpl(
                     }
 
                     if (deferredDocuments.isNotEmpty() && (prioritizeDeferred || (issuedDocuments.isEmpty()))) {
-                        trySendBlocking(IssueDocumentsPartialState.DeferredSuccess(deferredDocuments))
+                        trySendBlocking(
+                            IssueDocumentsPartialState.DeferredSuccess(
+                                deferredDocuments = deferredDocuments
+                            )
+                        )
                         return@OnIssueEvent
                     }
 
@@ -964,6 +1094,52 @@ class WalletCoreDocumentsControllerImpl(
         return listener
     }
 
+    /**
+     * Registration check for a flow with no approval screen, run before it starts. Returns the
+     * terminal state refusing or failing the flow, or null to proceed — always null while the
+     * check is off, which also skips the resolve itself.
+     */
+    private suspend fun preflightRegistrationRefusalOrNull(
+        resolveRegistration: suspend () -> Result<RegistrationCertificateResult>,
+    ): IssueDocumentsPartialState? {
+        if (!walletCoreConfig.isRegistrationCheckEnabled) {
+            return null
+        }
+
+        val resolution = resolveRegistration()
+
+        return resolution.fold(
+            onSuccess = { result ->
+                val issuerRegistration = result
+                    .toIssuerRegistrationDomain(locale = resourceProvider.getLocale())
+                if (issuerRegistration.isBlockedForIssuance) {
+                    IssueDocumentsPartialState.IssuerNotTrusted(
+                        reason = UntrustedIssuerReasonDomain.REGISTRATION_CERTIFICATE
+                    )
+                } else {
+                    null
+                }
+            },
+            onFailure = { cause ->
+                val untrustedReason = cause.toUntrustedIssuerReasonOrNull()
+                when {
+                    untrustedReason != null -> IssueDocumentsPartialState.IssuerNotTrusted(
+                        reason = untrustedReason
+                    )
+
+                    // no registration certificate published; refuse like any unverified outcome
+                    cause is IllegalStateException -> IssueDocumentsPartialState.IssuerNotTrusted(
+                        reason = UntrustedIssuerReasonDomain.REGISTRATION_CERTIFICATE
+                    )
+
+                    else -> IssueDocumentsPartialState.Failure(
+                        errorMessage = documentErrorMessage
+                    )
+                }
+            },
+        )
+    }
+
     private fun extractCredentialIssuerFromOfferUri(offerUri: String): Result<String> =
         runCatching {
             val credentialOffer = offerUri.toUri().getQueryParameter("credential_offer")
@@ -986,27 +1162,4 @@ class WalletCoreDocumentsControllerImpl(
         return manager?.let(Result.Companion::success)
             ?: Result.failure(RuntimeException(errorMessage))
     }
-}
-
-/**
- * Determines whether a failure indicates that the issuer could not be verified as trusted.
- *
- * This checks if the error (or any of its underlying causes) is due to an untrusted
- * credential signer (under the ENFORCE policy), or issuer metadata that is unsigned
- * or fails trust verification when signed metadata is required.
- *
- * @return `true` if the error relates to a lack of trust in the issuer, `false` otherwise.
- */
-private fun Throwable.indicatesUntrustedIssuer(): Boolean {
-    var throwable: Throwable? = this
-    while (throwable != null) {
-        if (throwable is IssuerNotTrustedException ||
-            throwable is CredentialIssuerMetadataError.InvalidSignedMetadata ||
-            throwable is CredentialIssuerMetadataError.MissingSignedMetadata
-        ) {
-            return true
-        }
-        throwable = throwable.cause
-    }
-    return false
 }

@@ -77,6 +77,7 @@ Use this checklist before the first production release.
 | Issuers                 | All OpenID4VCI issuer URLs point to production issuer services controlled or approved by the implementer.                                                                                                                                                                     |
 | Wallet provider         | `walletProviderHost` points to the production Wallet Provider service and supports the expected attestation endpoints.                                                                                                                                                        |
 | Trust anchors           | Demo and development certificates are replaced by production IACA/reader/verifier trust anchors, or by a production ETSI trusted-list (LoTE) source with the dev relaxations removed.                                                                                         |
+| Registration            | Every production issuer and verifier presents a registration certificate that validates against the configured registration trusted list, and every issuer's registered scope covers the documents it offers. Issuance is refused otherwise.                                  |
 | RQES                    | QTSP, TSA, client ID, redirect URI, and certificate retrieval settings are production values.                                                                                                                                                                                 |
 | Secrets                 | No production secret is hardcoded in Kotlin, Gradle, resources, or `BuildConfig`.                                                                                                                                                                                             |
 | Network                 | Cleartext traffic is disabled; trust-all certificate logic is absent; TLS policy and certificate pinning strategy are agreed.                                                                                                                                                 |
@@ -804,7 +805,8 @@ Certificate governance:
 
 Both reference flavors (`dev` and `demo`) configure trust from ETSI TS 119 602 Lists of Trusted
 Entities instead of static certificates. One trust source is built from the configured list URLs
-and shared by issuer trust, status-list signer trust, and reader/verifier authentication:
+and shared by issuer trust, status-list signer trust, reader/verifier authentication, and
+registration-certificate trust:
 
 ```kotlin
 configureEtsiTrust {
@@ -823,6 +825,10 @@ configureIssuerTrust {
   policy {
     default(TrustPolicy.Action.ENFORCE)
   }
+  requireSignedMetadata()
+  // the production target: registration checking on. The reference build instead drives both
+  // policies from the Settings switch, which ships off — see the next section
+  configureIssuerRegistrationPolicy(IssuerRegistrationPolicy.Enabled)
 }
 configureDocumentStatusResolver {
   configureTrust {
@@ -834,6 +840,7 @@ configureDocumentStatusResolver {
 configureReaderTrustStore {
   readerAuthPolicy(ReaderAuthPolicy.EnforceIfPresent)
 }
+configureWrpRegistrationPolicy(WrpRegistrationPolicy.Enabled)
 ```
 
 The behavior differs per area and protocol. For example, untrusted verifiers are handled
@@ -848,6 +855,9 @@ Production requirements for a trusted-list deployment:
   revocation checking — both are dev-PKI workarounds and must not ship.
 * Classify every credential type you issue (`classifications`) so issuer and status-list trust
   actually evaluate it; unclassified types are silently skipped.
+* Configure `wrprcProviders` as well; without it the registration certificates covered in the next
+  section have no trust source. Note that the registration layer also has to be switched on — see
+  the next section.
 * Decide the trust policies deliberately: `INFORM` records the verdict without blocking,
   `ENFORCE` rejects (issuance: document deleted; status: resolution fails). If the app must show
   or act on `INFORM` verdicts, consume `IssueEvent.DocumentIssued.issuerTrustResult`.
@@ -862,6 +872,70 @@ Production requirements for a trusted-list deployment:
   cache) against how quickly distrust must propagate.
 * Test both directions: a verifier/issuer on the list succeeds; one not on the list is refused in
   every protocol.
+
+### Registration Certificates: The Second Trust Layer
+
+Trust is evaluated on two independent layers, and passing one says nothing about the other:
+
+| | Access certificate | Registration certificate |
+|---|---|---|
+| Answers | *who is this party* | *what is it registered to do* |
+| Establishes | authentication of the issuer or verifier | the registered identity, declared purpose, privacy policy, and the attestation types and claims the party may issue or request |
+| Trust source | its own trusted list | the registration-certificate trusted list, from the same LoTE configuration |
+
+The two layers are not interchangeable: an authenticated issuer that is not registered for what it
+offers is refused, and a registered issuer that fails authentication is refused too.
+
+**This layer is off by default and must be switched on.** Access-certificate trust is always
+enforced, but registration-certificate checking is governed by the *Check Registration Certificates*
+setting, which the reference build ships **off**. One setting drives both the issuer policy
+(`configureIssuerRegistrationPolicy`) and the verifier policy (`configureWrpRegistrationPolicy`).
+While it is off, none of the behavior described below happens: nothing is evaluated, nothing is
+refused or warned about, and the verified indicator falls back to the access certificate alone.
+**A production deployment must turn it on** — and should decide whether to keep the switch
+reachable by users at all, since it turns a trust check off.
+
+Everything below describes behavior with the setting on. The app treats the two directions
+differently, and the asymmetry is intentional:
+
+* **Issuance is strict.** A document is stored only when the issuer's registration is verified and
+  covers the credential being issued. Anything short of that — no registration, one that does not
+  pass validation, or one that does not cover the offer — stops the flow and reports it on the same
+  "Issuance blocked" sheet an authentication failure uses, because the distinction does not change
+  what the user can do about it. The refusal lands before anything is stored, and a refused
+  re-issuance leaves the document the user already holds in place.
+* **Presentation warns rather than blocks.** A request whose registration is not verified still
+  reaches the consent screen, shown without the verified indicator and behind a warning the user
+  must acknowledge before sharing. A request whose registration *is* verified but that reaches
+  beyond the registered scope keeps the indicator, marks each requested item outside that scope,
+  and gates sharing behind the same acknowledgement. Access-certificate failures continue to block
+  outright where the protocol allows it.
+
+The verified indicator needs both layers: a trusted access certificate and a registration that did
+not fail validation.
+
+Production requirements:
+
+* **Turn the registration check on**, and decide whether the switch stays user-visible. Shipping it
+  on but toggleable leaves users able to disable a trust check; shipping it on and hidden — or
+  fixing both policies to `Enabled` in your production flavor — is the stricter choice.
+* Configure the registration-certificate trusted list (`wrprcProviders`) alongside the others.
+  Without it, registration certificates have no trust source, and issuance is refused rather than
+  waved through.
+* Confirm with every issuer that it presents a registration certificate the configured trusted list
+  accepts, and that its registered scope covers everything it offers. This is a hard dependency: an
+  issuer that fails either condition cannot deliver documents at all.
+* Confirm with every verifier that its requests carry a registration certificate and stay within
+  the registered scope, so users are not asked to acknowledge a warning on every routine
+  transaction.
+* Confirm that each party's registration and access certificates are issued to the same registered
+  organization, and that the registration certificate's revocation status can be checked. A
+  registration whose status cannot be established does not pass.
+* Test the refusals, not just the happy path: an unregistered issuer, an issuer offering a type
+  outside its registered scope, and a verifier over-asking. Confirm a refused re-issuance leaves
+  the existing document in place and usable.
+* Test both states of the setting if you keep it toggleable, and remember the change only takes
+  effect on the next app start — the SDK reads both policies when it builds its managers.
 
 ## Issuer Configuration: `issuersConfig`
 
@@ -2038,6 +2112,8 @@ Controls to evidence:
 
 * Data minimization is applied.
 * User consent is clear before disclosure.
+* The purpose shown for a presentation request comes from the verifier's registration certificate
+  rather than being self-asserted, and a request beyond the registered scope is visible as such.
 * Analytics avoids personal data.
 * Retention is defined.
 * Logs and transaction history are privacy-reviewed.
@@ -2047,6 +2123,8 @@ Controls to evidence:
 Project-specific actions:
 
 * Review presentation request UI for clarity.
+* Review how the registered identity, purpose, and privacy policy are surfaced on the consent
+  screen, and how an unregistered or over-asking verifier is distinguished from a compliant one.
 * Review transaction log contents.
 * Review analytics providers.
 * Review support log export.
@@ -2070,6 +2148,14 @@ Must provide:
 * Rate limits and fraud controls.
 * Audit logs.
 * Incident and key rotation processes.
+* A registration certificate the wallet's configured registration trusted list accepts, issued to
+  the same registered organization as the issuer's access certificate. An issuer that does not
+  present one cannot issue.
+* Registered attestation types covering every credential configuration the issuer offers. Offering
+  a type outside the registered scope refuses the whole operation, and no app configuration
+  overrides that.
+* A checkable revocation status for the registration certificate. A status that cannot be
+  established counts as a failure, not as a pass.
 
 ### Verifier
 
@@ -2082,6 +2168,15 @@ Must provide:
 * Data minimization by request.
 * Trust framework integration.
 * User-facing legal name and purpose.
+* A registration certificate carried in the request, accepted by the wallet's configured
+  registration trusted list, issued to the same registered organization as the certificate that
+  signs the request, and with a checkable revocation status. Its contents are shown to the user
+  before they share anything: the registered name and identifier, the declared purpose, and the
+  privacy policy link. A verifier without one loses the verified indicator and is presented behind
+  a warning the user must acknowledge.
+* Requested claims kept within the registered scope. Claims beyond it are flagged to the user
+  individually and turn the consent screen into an explicit acknowledgement before sharing, which
+  depresses completion rates.
 
 ### Wallet Provider
 
@@ -2146,9 +2241,14 @@ Before release candidate approval, test:
 * Authorization-code issuance redirect.
 * Deferred issuance.
 * Reissuance.
+* Issuance refused because the provider's registration certificate is absent, invalid, or does not
+  cover the offered document.
+* Reissuance refused for the same reason, confirming the document already held survives it.
 * Revocation.
 * Same-device OpenID4VP presentation.
 * Cross-device presentation.
+* Presentation from a verifier with no valid registration certificate, and from one asking beyond
+  its registered scope.
 * Relayed OpenID4VP request and response handling.
 * Proximity QR/BLE.
 * NFC engagement, if supported.
@@ -2243,7 +2343,8 @@ Before going live, define:
 * QTSP SLA.
 * Incident response contacts.
 * Vulnerability disclosure process.
-* Certificate expiry monitoring.
+* Certificate expiry monitoring, registration certificates included — an expired or revoked one
+  stops every issuance from that provider.
 * Emergency app update process.
 * Forced minimum-version process.
 * Key compromise process.
@@ -2261,6 +2362,8 @@ Rehearse these before launch:
 * Wallet Provider outage.
 * QTSP outage.
 * Production certificate expiry.
+* An issuer or verifier removed from the registration trusted list, or its registration certificate
+  expired or revoked. For an issuer this stops issuance and re-issuance entirely.
 * Bad app release.
 * RASP false positive affecting real users.
 * Play Integrity verdict degradation.
@@ -2278,7 +2381,9 @@ Production UX must clearly explain:
 * Why camera permission is needed.
 * Why Bluetooth/location permissions are needed for proximity.
 * What data a verifier is requesting.
-* Whether the verifier is trusted.
+* Whether the verifier is trusted, and separately whether it is registered for what it is asking —
+  including which requested items fall outside its registration.
+* Why a document could not be added, when the provider is not registered for it.
 * What happens if a document is revoked or expired.
 * What happens if app/device integrity checks fail.
 * How users recover access.
@@ -2295,6 +2400,8 @@ Do not publish until all of these are true:
 * No demo URLs or demo secrets remain in production code/resources.
 * Production signing is controlled and documented.
 * Production trust anchors are installed and documented.
+* Issuer and verifier registration certificates validate end-to-end against the production trusted
+  lists, and every issuer's registered scope covers what it offers.
 * Issuer, verifier, wallet provider, and QTSP integrations pass end-to-end testing.
 * Presentation relay-risk controls and residual risks are documented for verifier scenarios.
 * MASVS assessment is complete with accepted residual risks.

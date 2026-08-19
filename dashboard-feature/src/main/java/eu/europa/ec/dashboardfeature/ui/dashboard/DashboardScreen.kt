@@ -267,7 +267,7 @@ private fun handleNavigationEffect(
 @Composable
 private fun DashboardSheetContent(
     sheetContent: DashboardBottomSheetContent,
-    onEventSent: (even: Event) -> Unit,
+    onEventSent: (event: Event) -> Unit,
 ) {
     when (sheetContent) {
         is DashboardBottomSheetContent.DocumentRevocation -> {

@@ -16,16 +16,14 @@
 
 package eu.europa.ec.commonfeature.config
 
-import androidx.compose.ui.graphics.Color
-import eu.europa.ec.resourceslogic.theme.values.ThemeColors
 import eu.europa.ec.uilogic.component.AppIconAndTextDataUi
 import eu.europa.ec.uilogic.component.IconDataUi
+import eu.europa.ec.uilogic.component.ThemeColorKey
 import eu.europa.ec.uilogic.component.content.ContentHeaderConfig
 import eu.europa.ec.uilogic.component.utils.PERCENTAGE_60
 import eu.europa.ec.uilogic.config.ConfigNavigation
 import eu.europa.ec.uilogic.serializer.UiSerializable
 import eu.europa.ec.uilogic.serializer.UiSerializableParser
-import kotlinx.serialization.Contextual
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -44,7 +42,7 @@ data class SuccessUIConfig(
     @Serializable
     data class ImageConfig(
         val type: Type = Type.Default,
-        @Contextual val tint: Color? = ThemeColors.success,
+        val tint: ThemeColorKey? = ThemeColorKey.Success,
         val screenPercentageSize: Float = PERCENTAGE_60,
     ) {
         @Serializable
@@ -75,7 +73,7 @@ data class SuccessUIConfig(
     data class TextElementsConfig(
         val text: String,
         val description: String,
-        @Contextual val color: Color = ThemeColors.success
+        val color: ThemeColorKey = ThemeColorKey.Success
     )
 
     companion object Parser : UiSerializableParser {

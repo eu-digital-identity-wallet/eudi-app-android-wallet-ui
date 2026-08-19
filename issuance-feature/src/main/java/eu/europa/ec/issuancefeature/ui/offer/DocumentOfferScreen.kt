@@ -26,7 +26,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.SheetState
-import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -43,17 +42,21 @@ import androidx.navigation.NavController
 import eu.europa.ec.commonfeature.config.OfferUiConfig
 import eu.europa.ec.commonfeature.ui.issuance.IssuerNotTrustedSheetContent
 import eu.europa.ec.commonfeature.ui.issuance.IssuerPartiallyTrustedSheetContent
+import eu.europa.ec.commonfeature.ui.request.ConsentStickyBottomSection
+import eu.europa.ec.commonfeature.ui.request.model.RelyingPartyHeaderUi
 import eu.europa.ec.corelogic.util.CoreActions
 import eu.europa.ec.issuancefeature.util.TestTag
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.uilogic.component.ErrorInfo
+import eu.europa.ec.uilogic.component.InfoLinkSection
+import eu.europa.ec.uilogic.component.InfoSection
 import eu.europa.ec.uilogic.component.ListItemDataUi
 import eu.europa.ec.uilogic.component.ListItemMainContentDataUi
+import eu.europa.ec.uilogic.component.RelyingParty
 import eu.europa.ec.uilogic.component.RelyingPartyDataUi
 import eu.europa.ec.uilogic.component.content.BroadcastAction
-import eu.europa.ec.uilogic.component.content.ContentHeader
-import eu.europa.ec.uilogic.component.content.ContentHeaderConfig
 import eu.europa.ec.uilogic.component.content.ContentScreen
+import eu.europa.ec.uilogic.component.content.ContentTitle
 import eu.europa.ec.uilogic.component.content.ScreenNavigateAction
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
@@ -61,18 +64,13 @@ import eu.europa.ec.uilogic.component.utils.LifecycleEffect
 import eu.europa.ec.uilogic.component.utils.SPACING_LARGE
 import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
 import eu.europa.ec.uilogic.component.utils.SPACING_SMALL
-import eu.europa.ec.uilogic.component.wrap.ButtonConfig
-import eu.europa.ec.uilogic.component.wrap.ButtonType
-import eu.europa.ec.uilogic.component.wrap.StickyBottomConfig
-import eu.europa.ec.uilogic.component.wrap.StickyBottomType
 import eu.europa.ec.uilogic.component.wrap.WrapListItem
 import eu.europa.ec.uilogic.component.wrap.WrapModalBottomSheet
-import eu.europa.ec.uilogic.component.wrap.WrapStickyBottomContent
 import eu.europa.ec.uilogic.config.ConfigNavigation
 import eu.europa.ec.uilogic.config.NavigationType
-import eu.europa.ec.uilogic.extension.applyTestTag
 import eu.europa.ec.uilogic.extension.cacheUri
 import eu.europa.ec.uilogic.extension.getPendingUri
+import eu.europa.ec.uilogic.extension.openUrl
 import eu.europa.ec.uilogic.navigation.DashboardScreens
 import eu.europa.ec.uilogic.navigation.IssuanceScreens
 import eu.europa.ec.uilogic.navigation.helper.handleDeepLinkAction
@@ -105,23 +103,17 @@ fun DocumentOfferScreen(
         navigatableAction = ScreenNavigateAction.BACKABLE,
         onBack = { viewModel.setEvent(Event.BackButtonPressed) },
         stickyBottom = { paddingValues ->
-            WrapStickyBottomContent(
-                modifier = Modifier
-                    .applyTestTag(TestTag.DocumentOfferScreen.BUTTON)
-                    .fillMaxWidth()
-                    .padding(paddingValues),
-                stickyBottomConfig = StickyBottomConfig(
-                    type = StickyBottomType.OneButton(
-                        config = ButtonConfig(
-                            type = ButtonType.PRIMARY,
-                            enabled = !state.isLoading && !state.noDocument,
-                            onClick = { viewModel.setEvent(Event.StickyButtonPressed(context)) }
-                        )
-                    )
-                )
-            ) {
-                Text(text = stringResource(R.string.issuance_document_offer_primary_button_text_add))
-            }
+            ConsentStickyBottomSection(
+                modifier = Modifier.fillMaxWidth(),
+                paddingValues = paddingValues,
+                buttonsTestTag = TestTag.DocumentOfferScreen.BUTTON,
+                warningSection = null,
+                primaryButtonText = stringResource(R.string.issuance_document_offer_accept_button_text),
+                cancelButtonText = stringResource(R.string.issuance_document_offer_cancel_button_text),
+                primaryButtonEnabled = !state.isLoading && state.allowAccept,
+                onPrimaryButtonClick = { viewModel.setEvent(Event.StickyButtonPressed(context)) },
+                onCancelButtonClick = { viewModel.setEvent(Event.BackButtonPressed) },
+            )
         },
         broadcastAction = BroadcastAction(
             intentFilters = listOf(
@@ -161,23 +153,10 @@ fun DocumentOfferScreen(
                 },
                 sheetState = bottomSheetState
             ) {
-                when (state.sheetContent) {
-                    is DocumentOfferBottomSheetContent.IssuerNotTrusted -> {
-                        IssuerNotTrustedSheetContent(
-                            onClose = {
-                                viewModel.setEvent(Event.BottomSheet.Close)
-                            },
-                        )
-                    }
-
-                    is DocumentOfferBottomSheetContent.PartialSuccessWithUntrustedIssuer -> {
-                        IssuerPartiallyTrustedSheetContent(
-                            onClose = {
-                                viewModel.setEvent(Event.BottomSheet.Close)
-                            },
-                        )
-                    }
-                }
+                SheetContent(
+                    sheetContent = state.sheetContent,
+                    onEventSent = { viewModel.setEvent(it) }
+                )
             }
         }
     }
@@ -213,11 +192,21 @@ private fun Content(
             .fillMaxSize()
             .padding(paddingValues)
     ) {
-        ContentHeader(
+        // Screen Header.
+        ContentTitle(
             modifier = Modifier.fillMaxWidth(),
-            config = state.headerConfig,
-            descriptionTestTag = TestTag.DocumentOfferScreen.CONTENT_HEADER_DESCRIPTION,
+            title = stringResource(R.string.issuance_document_offer_screen_title),
         )
+
+        state.relyingPartyHeader?.let { safeRelyingPartyHeader ->
+            IssuerHeaderSection(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = SPACING_SMALL.dp),
+                header = safeRelyingPartyHeader,
+                onEventSend = onEventSend,
+            )
+        }
 
         if (state.noDocument) {
             ErrorInfo(
@@ -249,11 +238,78 @@ private fun Content(
                         if (!modalBottomSheetState.isVisible) {
                             onEventSend(Event.BottomSheet.UpdateBottomSheetState(isOpen = false))
                             onEventSend(Event.BottomSheet.FinishedClosing)
+                        } else {
+                            onEventSend(Event.BottomSheet.UpdateBottomSheetState(isOpen = true))
                         }
                     }
                 }
             }
         }.collect()
+    }
+}
+
+@Composable
+private fun SheetContent(
+    sheetContent: DocumentOfferBottomSheetContent,
+    onEventSent: (event: Event) -> Unit,
+) {
+    when (sheetContent) {
+        is DocumentOfferBottomSheetContent.IssuerNotTrusted -> {
+            IssuerNotTrustedSheetContent(
+                onClose = {
+                    onEventSent(Event.BottomSheet.Close)
+                },
+            )
+        }
+
+        is DocumentOfferBottomSheetContent.PartialSuccessWithUntrustedIssuer -> {
+            IssuerPartiallyTrustedSheetContent(
+                onClose = {
+                    onEventSent(Event.BottomSheet.Close)
+                },
+            )
+        }
+    }
+}
+
+/**
+ * The who-is-issuing header: the provider's identity and the verified registration sections
+ * (privacy policy, intended use).
+ */
+@Composable
+private fun IssuerHeaderSection(
+    modifier: Modifier,
+    header: RelyingPartyHeaderUi,
+    onEventSend: (Event) -> Unit,
+) {
+    Column(modifier = modifier) {
+        RelyingParty(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = SPACING_SMALL.dp),
+            relyingPartyData = header.relyingParty,
+        )
+
+        header.privacyPolicyUrl?.let { safePrivacyPolicyUrl ->
+            InfoLinkSection(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = SPACING_SMALL.dp),
+                title = stringResource(R.string.request_privacy_policy_section_title),
+                linkText = safePrivacyPolicyUrl,
+                onLinkClick = { onEventSend(Event.PrivacyPolicyLinkClicked) },
+            )
+        }
+
+        header.intendedUse?.let { safeIntendedUse ->
+            InfoSection(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = SPACING_SMALL.dp),
+                title = stringResource(R.string.request_intended_use_section_title),
+                body = safeIntendedUse,
+            )
+        }
     }
 }
 
@@ -312,6 +368,8 @@ private fun handleNavigationEffect(
         }
 
         is Effect.Navigation.Pop -> navController.popBackStack()
+
+        is Effect.Navigation.OpenUrlExternally -> context.openUrl(uri = navigationEffect.url)
     }
 }
 
@@ -327,18 +385,21 @@ private fun ContentPreview() {
             documents = listOf(
                 ListItemDataUi(
                     itemId = "doc_1",
-                    mainContentData = ListItemMainContentDataUi.Text(text = "PID")
+                    mainContentData = ListItemMainContentDataUi.Text(text = "Boarding Pass")
                 )
             ),
             noDocument = false,
-            headerConfig = ContentHeaderConfig(
-                description = stringResource(R.string.issuance_document_offer_description),
-                mainText = stringResource(R.string.issuance_document_offer_header_main_text),
-                relyingPartyData = RelyingPartyDataUi(
+            relyingPartyHeader = RelyingPartyHeaderUi(
+                relyingParty = RelyingPartyDataUi(
+                    logo = null,
                     isVerified = true,
-                    name = stringResource(R.string.issuance_document_offer_relying_party_default_name),
-                    description = stringResource(R.string.issuance_document_offer_relying_party_description)
-                )
+                    name = "Aegean S.A.",
+                    uniqueId = "rp:aegeanairlines:prod",
+                    description = null,
+                ),
+                intendedUse = "Aegean Airlines is asking your permission to issue the " +
+                        "following to your Wallet.",
+                privacyPolicyUrl = "https://aegean.gr/privacy",
             ),
             offerUiConfig = OfferUiConfig(
                 offerUri = "",

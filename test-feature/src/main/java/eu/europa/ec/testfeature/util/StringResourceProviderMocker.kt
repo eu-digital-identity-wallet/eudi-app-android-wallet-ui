@@ -94,6 +94,9 @@ object StringResourceProviderMocker {
     ) {
         mockCreateKeyValueStrings(resourceProvider)
 
+        whenever(resourceProvider.getString(R.string.request_collapsed_supporting_text))
+            .thenReturn(mockedRequestCollapsedSupportingText)
+
         whenever(resourceProvider.getLocale())
             .thenReturn(mockedDefaultLocale)
     }

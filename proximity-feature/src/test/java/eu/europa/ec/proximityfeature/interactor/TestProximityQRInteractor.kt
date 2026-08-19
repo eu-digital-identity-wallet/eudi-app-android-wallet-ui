@@ -26,6 +26,7 @@ import eu.europa.ec.testfeature.util.mockedExceptionWithMessage
 import eu.europa.ec.testfeature.util.mockedExceptionWithNoMessage
 import eu.europa.ec.testfeature.util.mockedGenericErrorMessage
 import eu.europa.ec.testfeature.util.mockedPlainFailureMessage
+import eu.europa.ec.testfeature.util.mockedRelyingPartyDomain
 import eu.europa.ec.testlogic.extension.expectNoEvents
 import eu.europa.ec.testlogic.extension.runFlowTest
 import eu.europa.ec.testlogic.extension.runTest
@@ -441,8 +442,7 @@ class TestProximityQRInteractor {
                     emit(
                         TransferEventPartialState.RequestReceived(
                             combinationsDomain = emptyList(),
-                            verifierName = null,
-                            verifierIsTrusted = false
+                            relyingParty = mockedRelyingPartyDomain,
                         )
                     )
                     emit(TransferEventPartialState.ResponseSent)

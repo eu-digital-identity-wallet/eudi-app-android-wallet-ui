@@ -32,6 +32,7 @@ import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
 import eu.europa.ec.corelogic.extension.isExpired
 import eu.europa.ec.corelogic.extension.localizedIssuerMetadata
 import eu.europa.ec.corelogic.model.DocumentIdentifier
+import eu.europa.ec.corelogic.model.UntrustedIssuerReasonDomain
 import eu.europa.ec.corelogic.model.toDocumentIdentifier
 import eu.europa.ec.dashboardfeature.ui.documents.detail.model.DocumentDetailsDomain
 import eu.europa.ec.dashboardfeature.ui.documents.detail.transformer.DocumentDetailsTransformer
@@ -52,7 +53,9 @@ sealed class DocumentDetailsInteractorIssuancePartialState {
 
     data class Failure(val errorMessage: String) : DocumentDetailsInteractorIssuancePartialState()
 
-    data object IssuerNotTrusted : DocumentDetailsInteractorIssuancePartialState()
+    data class IssuerNotTrusted(
+        val reason: UntrustedIssuerReasonDomain,
+    ) : DocumentDetailsInteractorIssuancePartialState()
 
     data class UserAuthRequired(
         val crypto: BiometricCrypto,
@@ -112,7 +115,7 @@ interface DocumentDetailsInteractor {
 
     fun reIssueDocument(
         documentId: String,
-        issuerId: String
+        issuerId: String,
     ): Flow<DocumentDetailsInteractorIssuancePartialState>
 
     fun handleUserAuth(
@@ -283,7 +286,7 @@ class DocumentDetailsInteractorImpl(
 
     override fun reIssueDocument(
         documentId: String,
-        issuerId: String
+        issuerId: String,
     ): Flow<DocumentDetailsInteractorIssuancePartialState> = flow {
 
         walletCoreDocumentsController.reIssueDocument(
@@ -294,7 +297,7 @@ class DocumentDetailsInteractorImpl(
 
             val successIds: MutableList<String> = mutableListOf()
             var isDeferred = false
-            var issuerNotTrusted = false
+            var issuerNotTrustedReason: UntrustedIssuerReasonDomain? = null
             var error: String? = null
             var authenticationData: Pair<BiometricCrypto, DeviceAuthenticationResult>? = null
 
@@ -308,7 +311,7 @@ class DocumentDetailsInteractorImpl(
                 }
 
                 is IssueDocumentsPartialState.IssuerNotTrusted -> {
-                    issuerNotTrusted = true
+                    issuerNotTrustedReason = state.reason
                 }
 
                 is IssueDocumentsPartialState.PartialSuccess -> {
@@ -328,8 +331,10 @@ class DocumentDetailsInteractorImpl(
                 }
             }
 
-            val state = if (issuerNotTrusted) {
-                DocumentDetailsInteractorIssuancePartialState.IssuerNotTrusted
+            val state = if (issuerNotTrustedReason != null) {
+                DocumentDetailsInteractorIssuancePartialState.IssuerNotTrusted(
+                    reason = issuerNotTrustedReason
+                )
             } else if (successIds.isNotEmpty() || isDeferred) {
                 DocumentDetailsInteractorIssuancePartialState.Success
             } else if (error != null) {

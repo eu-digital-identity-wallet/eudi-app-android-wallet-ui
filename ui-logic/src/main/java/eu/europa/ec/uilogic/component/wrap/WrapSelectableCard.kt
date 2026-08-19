@@ -42,6 +42,7 @@ import androidx.compose.ui.unit.dp
 import eu.europa.ec.uilogic.component.ListItemDataUi
 import eu.europa.ec.uilogic.component.ListItemLeadingContentDataUi
 import eu.europa.ec.uilogic.component.ListItemMainContentDataUi
+import eu.europa.ec.uilogic.component.ListItemSupportingContentDataUi
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
 import eu.europa.ec.uilogic.component.utils.SPACING_EXTRA_SMALL
@@ -165,7 +166,9 @@ private fun WrapSelectableCardPreview() {
                         mainContentData = ListItemMainContentDataUi.Text(
                             text = "mDL (MSO mDoc)"
                         ),
-                        supportingText = "View details"
+                        supportingContentData = ListItemSupportingContentDataUi.Text(
+                            text = "View details",
+                        )
                     ),
                     onItemClick = null,
                 )
@@ -181,7 +184,9 @@ private fun WrapSelectableCardPreview() {
                         mainContentData = ListItemMainContentDataUi.Text(
                             text = "PhotoID (MSO mDoc)"
                         ),
-                        supportingText = "View details"
+                        supportingContentData = ListItemSupportingContentDataUi.Text(
+                            text = "View details",
+                        )
                     ),
                     onItemClick = null,
                 )

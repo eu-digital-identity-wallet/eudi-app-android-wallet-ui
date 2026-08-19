@@ -41,14 +41,15 @@ import androidx.navigation.NavController
 import eu.europa.ec.commonfeature.config.SuccessUIConfig
 import eu.europa.ec.commonfeature.util.TestTag
 import eu.europa.ec.resourceslogic.R
-import eu.europa.ec.resourceslogic.theme.values.ThemeColors
 import eu.europa.ec.resourceslogic.theme.values.success
 import eu.europa.ec.uilogic.component.AppIcons
+import eu.europa.ec.uilogic.component.ThemeColorKey
 import eu.europa.ec.uilogic.component.content.ContentHeader
 import eu.europa.ec.uilogic.component.content.ContentScreen
 import eu.europa.ec.uilogic.component.content.ScreenNavigateAction
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
+import eu.europa.ec.uilogic.component.toColor
 import eu.europa.ec.uilogic.component.utils.PERCENTAGE_25
 import eu.europa.ec.uilogic.component.utils.SIZE_MEDIUM
 import eu.europa.ec.uilogic.component.utils.SPACING_SMALL
@@ -159,7 +160,7 @@ private fun SuccessScreenView(
                     modifier = Modifier.fillMaxWidth(imageConfig.screenPercentageSize),
                     iconData = imageConfig.type.icon,
                     colorFilter = imageConfig.tint?.let { safeImageColorTint ->
-                        ColorFilter.tint(safeImageColorTint)
+                        ColorFilter.tint(safeImageColorTint.toColor())
                     },
                     contentScale = ContentScale.FillWidth
                 )
@@ -171,7 +172,7 @@ private fun SuccessScreenView(
                     .padding(vertical = SPACING_SMALL.dp),
                 text = state.successConfig.textElementsConfig.text,
                 style = MaterialTheme.typography.headlineLarge.copy(
-                    color = state.successConfig.textElementsConfig.color
+                    color = state.successConfig.textElementsConfig.color.toColor()
                 ),
                 textAlign = TextAlign.Center,
             )
@@ -301,11 +302,11 @@ private fun SuccessPendingPreview() {
                     textElementsConfig = SuccessUIConfig.TextElementsConfig(
                         text = stringResource(R.string.issuance_add_document_deferred_success_text),
                         description = stringResource(R.string.issuance_add_document_deferred_success_description),
-                        color = ThemeColors.pending,
+                        color = ThemeColorKey.Pending,
                     ),
                     imageConfig = SuccessUIConfig.ImageConfig(
                         type = SuccessUIConfig.ImageConfig.Type.Drawable(icon = AppIcons.InProgress),
-                        tint = ThemeColors.primary,
+                        tint = ThemeColorKey.Primary,
                         screenPercentageSize = PERCENTAGE_25,
                     ),
                     buttonConfig = listOf(

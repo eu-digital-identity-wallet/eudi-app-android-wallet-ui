@@ -31,6 +31,8 @@ import eu.europa.ec.corelogic.controller.WalletCorePresentationController
 import eu.europa.ec.corelogic.controller.WalletCorePresentationControllerImpl
 import eu.europa.ec.corelogic.controller.WalletCoreTransactionLogController
 import eu.europa.ec.corelogic.controller.WalletCoreTransactionLogControllerImpl
+import eu.europa.ec.corelogic.provider.RegistrationCheckProvider
+import eu.europa.ec.corelogic.provider.RegistrationCheckProviderImpl
 import eu.europa.ec.corelogic.provider.WalletCoreAttestationProvider
 import eu.europa.ec.corelogic.provider.WalletCoreAttestationProviderImpl
 import eu.europa.ec.eudi.wallet.EudiWallet
@@ -75,7 +77,11 @@ fun provideEudiWallet(
 }
 
 @Single
-fun provideWalletCoreConfig(): WalletCoreConfig = WalletCoreConfigImpl()
+fun provideWalletCoreConfig(
+    registrationCheckProvider: RegistrationCheckProvider
+): WalletCoreConfig = WalletCoreConfigImpl(
+    registrationCheckProvider = registrationCheckProvider
+)
 
 @Factory
 fun provideWalletCoreLogController(logController: LogController): WalletCoreLogController =
@@ -99,6 +105,13 @@ fun provideWalletCoreAttestationProvider(
         walletCoreConfig = walletCoreConfig,
         walletAttestationRepository = walletAttestationRepository
     )
+
+@Factory
+fun provideRegistrationCheckProvider(
+    prefKeys: PrefKeys
+): RegistrationCheckProvider = RegistrationCheckProviderImpl(
+    prefKeys = prefKeys
+)
 
 @Factory
 fun provideWalletCoreDocumentsController(

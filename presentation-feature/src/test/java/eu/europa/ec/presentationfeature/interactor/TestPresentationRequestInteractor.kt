@@ -36,11 +36,10 @@ import eu.europa.ec.testfeature.util.mockedExceptionWithNoMessage
 import eu.europa.ec.testfeature.util.mockedGenericErrorMessage
 import eu.europa.ec.testfeature.util.mockedNonSelectableClaims
 import eu.europa.ec.testfeature.util.mockedPlainFailureMessage
+import eu.europa.ec.testfeature.util.mockedRelyingPartyDomain
 import eu.europa.ec.testfeature.util.mockedSelectableClaims
 import eu.europa.ec.testfeature.util.mockedValidMdlWithBasicFieldsRequestMatch
 import eu.europa.ec.testfeature.util.mockedValidPidWithBasicFieldsRequestMatch
-import eu.europa.ec.testfeature.util.mockedVerifierIsTrusted
-import eu.europa.ec.testfeature.util.mockedVerifierName
 import eu.europa.ec.testlogic.extension.expectNoEvents
 import eu.europa.ec.testlogic.extension.runFlowTest
 import eu.europa.ec.testlogic.extension.runTest
@@ -132,13 +131,11 @@ class TestPresentationRequestInteractor {
     // walletCorePresentationController.events emits:
     // TransferEventPartialState.RequestReceived, with:
     // 1. an empty list of RequestDocument items
-    // 2. a not null String for verifier name,
-    // 3. true for verifierIsTrusted
+    // 2. a relying party
 
     // Case 2 Expected Result:
     // PresentationRequestInteractorPartialState.NoData, with:
-    // 1. the same not null String for verifier name,
-    // 2. true for verifierIsTrusted.
+    // 1. the same relying party.
     @Test
     fun `Given Case 2, When getRequestDocuments is called, Then Case 2 expected result is returned`() =
         coroutineRule.runTest {
@@ -146,16 +143,14 @@ class TestPresentationRequestInteractor {
             mockWalletCorePresentationControllerEventEmission(
                 event = TransferEventPartialState.RequestReceived(
                     combinationsDomain = emptyList(),
-                    verifierName = mockedVerifierName,
-                    verifierIsTrusted = mockedVerifierIsTrusted
+                    relyingParty = mockedRelyingPartyDomain,
                 )
             )
 
             // When
             interactor.getRequestDocuments().runFlowTest {
                 val expectedResult = PresentationRequestInteractorPartialState.NoData(
-                    verifierName = mockedVerifierName,
-                    verifierIsTrusted = mockedVerifierIsTrusted
+                    relyingParty = mockedRelyingPartyDomain,
                 )
 
                 // Then
@@ -195,8 +190,7 @@ class TestPresentationRequestInteractor {
     // 1. walletCorePresentationController.events emits:
     // TransferEventPartialState.RequestReceived, with:
     // 1. a list of RequestDocument items
-    // 2. a verifier name (non-null)
-    // 3. true for verifierIsTrusted
+    // 2. a relying party
     // and 2. walletCoreDocumentsController getAllIssuedDocuments throws an exception
 
     // Case 4 Expected Result:
@@ -212,8 +206,7 @@ class TestPresentationRequestInteractor {
                             matches = listOf(mockedValidMdlWithBasicFieldsRequestMatch)
                         )
                     ),
-                    verifierName = mockedVerifierName,
-                    verifierIsTrusted = mockedVerifierIsTrusted
+                    relyingParty = mockedRelyingPartyDomain,
                 )
             )
             whenever(walletCoreDocumentsController.getAllIssuedDocuments())
@@ -233,14 +226,12 @@ class TestPresentationRequestInteractor {
     // walletCorePresentationController.events emits:
     // TransferEventPartialState.RequestReceived, with:
     // 1. a list of a PID RequestDocument and a mDL RequestDocument
-    // 2. a not null String for verifier name,
-    // 3. true for verifierIsTrusted.
+    // 2. a relying party.
 
     // Case 5 Expected Result:
     // PresentationRequestInteractorPartialState.Success state, with:
     // 1. a list with the transformed basic fields to RequestDocumentsUi items,
-    // 2. the same not null String for verifier name,
-    // 3. true for verifierIsTrusted.
+    // 2. the same relying party.
     @Test
     fun `Given Case 5, When getRequestDocuments is called, Then Case 5 expected result is returned`() =
         coroutineRule.runTest {
@@ -268,8 +259,7 @@ class TestPresentationRequestInteractor {
                             )
                         )
                     ),
-                    verifierName = mockedVerifierName,
-                    verifierIsTrusted = mockedVerifierIsTrusted
+                    relyingParty = mockedRelyingPartyDomain,
                 )
             )
 
@@ -290,8 +280,7 @@ class TestPresentationRequestInteractor {
                     )
 
                     val expectedResult = PresentationRequestInteractorPartialState.Success(
-                        verifierName = mockedVerifierName,
-                        verifierIsTrusted = mockedVerifierIsTrusted,
+                        relyingParty = mockedRelyingPartyDomain,
                         combinationsUi = listOf(
                             RequestCombinationUi(
                                 documents = RequestTransformer.transformToUiItems(
@@ -319,8 +308,7 @@ class TestPresentationRequestInteractor {
     // 1. walletCorePresentationController.events emits:
     // TransferEventPartialState.RequestReceived, with:
     // 1. a list of RequestDocument items
-    // 2. a verifier name (non-null)
-    // 3. true for verifierIsTrusted
+    // 2. a relying party
     // and 2. walletCoreDocumentsController getAllIssuedDocuments throws an exception with message
 
     // Case 6 Expected Result:
@@ -336,8 +324,7 @@ class TestPresentationRequestInteractor {
                             matches = listOf(mockedValidMdlWithBasicFieldsRequestMatch)
                         )
                     ),
-                    verifierName = mockedVerifierName,
-                    verifierIsTrusted = mockedVerifierIsTrusted
+                    relyingParty = mockedRelyingPartyDomain,
                 )
             )
             whenever(walletCoreDocumentsController.getAllIssuedDocuments())
@@ -397,7 +384,7 @@ class TestPresentationRequestInteractor {
     // combinations end up empty and the interactor falls through to NoData.
 
     // Case 9 Expected Result:
-    // PresentationRequestInteractorPartialState.NoData with the verifier name/isTrusted.
+    // PresentationRequestInteractorPartialState.NoData with the relying party.
     @Test
     fun `Given Case 9, When getRequestDocuments is called and all docs are revoked, Then NoData is returned`() =
         coroutineRule.runTest {
@@ -413,8 +400,7 @@ class TestPresentationRequestInteractor {
                             matches = listOf(mockedValidPidWithBasicFieldsRequestMatch)
                         )
                     ),
-                    verifierName = mockedVerifierName,
-                    verifierIsTrusted = mockedVerifierIsTrusted
+                    relyingParty = mockedRelyingPartyDomain,
                 )
             )
 
@@ -423,8 +409,7 @@ class TestPresentationRequestInteractor {
                 // Then
                 assertEquals(
                     PresentationRequestInteractorPartialState.NoData(
-                        verifierName = mockedVerifierName,
-                        verifierIsTrusted = mockedVerifierIsTrusted,
+                        relyingParty = mockedRelyingPartyDomain,
                     ),
                     awaitItem()
                 )
@@ -505,8 +490,7 @@ class TestPresentationRequestInteractor {
                             )
                         )
                     ),
-                    verifierName = mockedVerifierName,
-                    verifierIsTrusted = mockedVerifierIsTrusted
+                    relyingParty = mockedRelyingPartyDomain,
                 )
             )
 
@@ -524,8 +508,7 @@ class TestPresentationRequestInteractor {
                     )
 
                     val expectedResult = PresentationRequestInteractorPartialState.Success(
-                        verifierName = mockedVerifierName,
-                        verifierIsTrusted = mockedVerifierIsTrusted,
+                        relyingParty = mockedRelyingPartyDomain,
                         combinationsUi = listOf(
                             RequestCombinationUi(
                                 documents = RequestTransformer.transformToUiItems(
@@ -568,8 +551,7 @@ class TestPresentationRequestInteractor {
                             matches = listOf(mockedValidPidWithBasicFieldsRequestMatch)
                         )
                     ),
-                    verifierName = mockedVerifierName,
-                    verifierIsTrusted = mockedVerifierIsTrusted
+                    relyingParty = mockedRelyingPartyDomain,
                 )
             )
             mockRequestAllowsClaimSelection(response = mockedNonSelectableClaims)
@@ -584,8 +566,7 @@ class TestPresentationRequestInteractor {
                 )
 
                 val expectedResult = PresentationRequestInteractorPartialState.Success(
-                    verifierName = mockedVerifierName,
-                    verifierIsTrusted = mockedVerifierIsTrusted,
+                    relyingParty = mockedRelyingPartyDomain,
                     combinationsUi = listOf(
                         RequestCombinationUi(
                             documents = RequestTransformer.transformToUiItems(

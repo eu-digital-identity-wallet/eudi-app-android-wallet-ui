@@ -30,6 +30,7 @@ import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.ListItemDataUi
 import eu.europa.ec.uilogic.component.ListItemMainContentDataUi
+import eu.europa.ec.uilogic.component.ListItemSupportingContentDataUi
 import eu.europa.ec.uilogic.component.ListItemTrailingContentDataUi
 import eu.europa.ec.uilogic.component.RelyingPartyDataUi
 import eu.europa.ec.uilogic.component.content.ContentHeaderConfig
@@ -42,6 +43,7 @@ sealed class DocumentIssuanceSuccessInteractorGetUiItemsPartialState {
     data class Success(
         val documentsUi: List<ExpandableListItemUi.NestedListItem>,
         val headerConfig: ContentHeaderConfig,
+        val bannerText: String,
     ) : DocumentIssuanceSuccessInteractorGetUiItemsPartialState()
 
     data class Failed(
@@ -111,7 +113,9 @@ class DocumentIssuanceSuccessInteractorImpl(
                         header = ListItemDataUi(
                             itemId = documentId,
                             mainContentData = ListItemMainContentDataUi.Text(text = document.name),
-                            supportingText = resourceProvider.getString(R.string.document_success_collapsed_supporting_text),
+                            supportingContentData = ListItemSupportingContentDataUi.Text(
+                                text = resourceProvider.getString(R.string.document_success_collapsed_supporting_text),
+                            ),
                             trailingContentData = ListItemTrailingContentDataUi.Icon(
                                 iconData = AppIcons.KeyboardArrowDown
                             )
@@ -134,8 +138,10 @@ class DocumentIssuanceSuccessInteractorImpl(
                 description = headerConfigDescription,
                 relyingPartyData = RelyingPartyDataUi(
                     logo = issuerLogo,
-                    name = issuerName,
                     isVerified = issuerIsTrusted,
+                    name = issuerName,
+                    uniqueId = null,
+                    description = null,
                 )
             )
 
@@ -143,6 +149,7 @@ class DocumentIssuanceSuccessInteractorImpl(
                 DocumentIssuanceSuccessInteractorGetUiItemsPartialState.Success(
                     documentsUi = documentsUi,
                     headerConfig = headerConfig,
+                    bannerText = resourceProvider.getString(R.string.issuance_success_banner_text),
                 )
             )
         }.safeAsync {

@@ -59,17 +59,17 @@ data class State(
 ) : ViewState
 
 sealed class Event : ViewEvent {
-    data object Init : Event()
+    data object OnResume : Event()
     data object StartProximityFlow : Event()
 
     sealed class AuthenticateCard : Event() {
-        data object AuthenticatePressed : Event()
-        data object LearnMorePressed : Event()
+        data object AuthenticatePressed : AuthenticateCard()
+        data object LearnMorePressed : AuthenticateCard()
     }
 
     sealed class SignDocumentCard : Event() {
-        data object SignDocumentPressed : Event()
-        data object LearnMorePressed : Event()
+        data object SignDocumentPressed : SignDocumentCard()
+        data object LearnMorePressed : SignDocumentCard()
     }
 
     sealed class BottomSheet : Event() {
@@ -82,8 +82,8 @@ sealed class Event : ViewEvent {
         }
 
         sealed class SignDocument : BottomSheet() {
-            data object OpenFromDevice : Authenticate()
-            data object OpenScanQR : Authenticate()
+            data object OpenFromDevice : SignDocument()
+            data object OpenScanQR : SignDocument()
         }
 
         sealed class Bluetooth : BottomSheet() {
@@ -128,9 +128,11 @@ class HomeViewModel(
     private val resourceProvider: ResourceProvider
 ) : MviViewModel<Event, State, Effect>() {
 
+    private val defaultWelcomeMessage = resourceProvider.getString(R.string.home_screen_welcome)
+
     override fun setInitialState(): State {
         return State(
-            welcomeUserMessage = resourceProvider.getString(R.string.home_screen_welcome),
+            welcomeUserMessage = defaultWelcomeMessage,
             authenticateCardConfig = ActionCardConfig(
                 title = resourceProvider.getString(R.string.home_screen_authentication_card_title),
                 icon = AppIcons.IdCards,
@@ -149,7 +151,7 @@ class HomeViewModel(
 
     override fun handleEvents(event: Event) {
         when (event) {
-            is Event.Init -> {
+            is Event.OnResume -> {
                 getUserNameViaMainPidDocument()
             }
 
@@ -352,7 +354,7 @@ class HomeViewModel(
     private fun getUserNameViaMainPidDocument() {
         setState {
             copy(
-                isLoading = true
+                isLoading = welcomeUserMessage == defaultWelcomeMessage
             )
         }
         viewModelScope.launch {
@@ -375,7 +377,7 @@ class HomeViewModel(
                                         R.string.home_screen_welcome_user_message,
                                         response.userFirstName
                                     )
-                                } else resourceProvider.getString(R.string.home_screen_welcome)
+                                } else defaultWelcomeMessage
                             )
                         }
                     }

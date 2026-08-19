@@ -51,6 +51,7 @@ import eu.europa.ec.resourceslogic.theme.values.success
 import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.ListItemDataUi
 import eu.europa.ec.uilogic.component.ListItemMainContentDataUi
+import eu.europa.ec.uilogic.component.ListItemSupportingContentDataUi
 import eu.europa.ec.uilogic.component.ListItemTrailingContentDataUi
 import eu.europa.ec.uilogic.component.SectionTitle
 import eu.europa.ec.uilogic.component.content.ContentScreen
@@ -423,7 +424,9 @@ private fun ContentPreview() {
             header = ListItemDataUi(
                 itemId = "0",
                 mainContentData = ListItemMainContentDataUi.Text(text = "Digital ID"),
-                supportingText = "View Details",
+                supportingContentData = ListItemSupportingContentDataUi.Text(
+                    text = "View Details",
+                ),
                 trailingContentData = ListItemTrailingContentDataUi.Icon(
                     iconData = AppIcons.KeyboardArrowDown
                 ),

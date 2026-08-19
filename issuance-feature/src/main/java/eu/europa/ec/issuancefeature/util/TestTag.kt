@@ -25,7 +25,6 @@ object TestTag {
     }
 
     object DocumentOfferScreen {
-        const val CONTENT_HEADER_DESCRIPTION = "document_offer_screen_content_header_description"
         const val BUTTON = "document_offer_screen_button"
     }
 }

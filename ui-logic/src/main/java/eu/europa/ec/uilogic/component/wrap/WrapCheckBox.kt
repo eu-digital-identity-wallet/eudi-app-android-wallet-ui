@@ -16,20 +16,21 @@
 
 package eu.europa.ec.uilogic.component.wrap
 
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.CheckboxColors
 import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.LocalMinimumInteractiveComponentSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
+import eu.europa.ec.uilogic.component.utils.SPACING_EXTRA_SMALL
 
 data class CheckboxDataUi(
     val isChecked: Boolean,
@@ -41,6 +42,7 @@ data class CheckboxDataUi(
 fun WrapCheckbox(
     checkboxData: CheckboxDataUi,
     modifier: Modifier = Modifier,
+    checkboxColors: CheckboxColors? = null,
 ) {
     // This is needed, otherwise M3 adds unwanted space around CheckBoxes.
     CompositionLocalProvider(
@@ -51,9 +53,10 @@ fun WrapCheckbox(
             onCheckedChange = checkboxData.onCheckedChange,
             modifier = modifier,
             enabled = checkboxData.enabled,
-            colors = CheckboxDefaults.colors(
-                uncheckedColor = MaterialTheme.colorScheme.primary
-            )
+            colors = checkboxColors ?: CheckboxDefaults.colors(
+                checkedColor = MaterialTheme.colorScheme.primary,
+                uncheckedColor = MaterialTheme.colorScheme.primary,
+            ),
         )
     }
 }
@@ -61,19 +64,38 @@ fun WrapCheckbox(
 @ThemeModePreviews
 @Composable
 private fun WrapCheckBoxPreview() {
-    var isChecked by remember {
-        mutableStateOf(true)
-    }
-
-    val checkBoxData = CheckboxDataUi(
-        isChecked = isChecked,
-        enabled = true,
-        onCheckedChange = {
-            isChecked = it
-        }
-    )
-
     PreviewTheme {
-        WrapCheckbox(checkboxData = checkBoxData)
+        Column(
+            verticalArrangement = Arrangement.spacedBy(SPACING_EXTRA_SMALL.dp)
+        ) {
+            WrapCheckbox(
+                checkboxData = CheckboxDataUi(
+                    isChecked = true,
+                    enabled = true,
+                    onCheckedChange = {},
+                )
+            )
+            WrapCheckbox(
+                checkboxData = CheckboxDataUi(
+                    isChecked = false,
+                    enabled = true,
+                    onCheckedChange = {},
+                )
+            )
+            WrapCheckbox(
+                checkboxData = CheckboxDataUi(
+                    isChecked = true,
+                    enabled = false,
+                    onCheckedChange = {},
+                )
+            )
+            WrapCheckbox(
+                checkboxData = CheckboxDataUi(
+                    isChecked = false,
+                    enabled = false,
+                    onCheckedChange = {},
+                )
+            )
+        }
     }
 }

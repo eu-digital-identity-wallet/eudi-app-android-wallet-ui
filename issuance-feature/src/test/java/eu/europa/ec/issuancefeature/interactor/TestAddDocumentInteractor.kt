@@ -27,6 +27,7 @@ import eu.europa.ec.corelogic.controller.FetchScopedDocumentsPartialState
 import eu.europa.ec.corelogic.controller.IssuanceMethod
 import eu.europa.ec.corelogic.controller.IssueDocumentsPartialState
 import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
+import eu.europa.ec.corelogic.model.UntrustedIssuerReasonDomain
 import eu.europa.ec.issuancefeature.util.mockedAgeOptionItemUi
 import eu.europa.ec.issuancefeature.util.mockedCombinedPid
 import eu.europa.ec.issuancefeature.util.mockedConfigNavigationTypePopToScreen
@@ -43,7 +44,6 @@ import eu.europa.ec.issuancefeature.util.mockedSuccessDescription
 import eu.europa.ec.issuancefeature.util.mockedSuccessText
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
-import eu.europa.ec.resourceslogic.theme.values.ThemeColors
 import eu.europa.ec.testfeature.util.mockedDefaultLocale
 import eu.europa.ec.testfeature.util.mockedExceptionWithMessage
 import eu.europa.ec.testfeature.util.mockedExceptionWithNoMessage
@@ -58,6 +58,7 @@ import eu.europa.ec.testlogic.extension.runTest
 import eu.europa.ec.testlogic.extension.toFlow
 import eu.europa.ec.testlogic.rule.CoroutineTestRule
 import eu.europa.ec.uilogic.component.AppIcons
+import eu.europa.ec.uilogic.component.ThemeColorKey
 import eu.europa.ec.uilogic.component.utils.PERCENTAGE_25
 import eu.europa.ec.uilogic.serializer.UiSerializer
 import junit.framework.TestCase.assertEquals
@@ -446,6 +447,34 @@ class TestAddDocumentInteractor {
         }
     }
 
+    // Case 10:
+    // 1. flowType == IssuanceFlowType.NoDocument
+    // 2. walletCoreDocumentsController.getScopedDocuments() returns
+    //    FetchScopedDocumentsPartialState.NoTrustedIssuers, i.e. no issuer could be verified.
+
+    // Case 10 Expected Result:
+    // AddDocumentInteractorScopedPartialState.NoTrustedIssuers, so the screen shows the blocked
+    // notice instead of the generic error.
+    @Test
+    fun `Given Case 10, When getAddDocumentOption is called, Then Case 10 Expected Result is returned`() {
+        coroutineRule.runTest {
+            // Given
+            val expectedResponse = FetchScopedDocumentsPartialState.NoTrustedIssuers
+            mockGetScopedDocumentsResponse(expectedResponse)
+
+            // When
+            interactor.getAddDocumentOption(
+                flowType = IssuanceFlowType.NoDocument
+            ).runFlowTest {
+                // Then
+                assertEquals(
+                    AddDocumentInteractorScopedPartialState.NoTrustedIssuers,
+                    awaitItem()
+                )
+            }
+        }
+    }
+
     //region issueDocument
     @Test
     fun `Given an issuance method and a document type, When issueDocument is called, Then it calls walletCoreDocumentsController#issueDocument`() {
@@ -461,13 +490,17 @@ class TestAddDocumentInteractor {
                     configIds = mockedConfigIds,
                     issuerId = mockedIssuerId
                 )
-            ).thenReturn(IssueDocumentsPartialState.Success(listOf(mockedPidId)).toFlow())
+            ).thenReturn(
+                IssueDocumentsPartialState.Success(
+                    documentIds = listOf(mockedPidId),
+                ).toFlow()
+            )
 
             // When
             interactor.issueDocuments(
                 issuanceMethod = mockedIssuanceMethod,
                 configIds = mockedConfigIds,
-                issuerId = mockedIssuerId
+                issuerId = mockedIssuerId,
             ).runFlowTest {
 
                 awaitItem()
@@ -499,7 +532,9 @@ class TestAddDocumentInteractor {
                     issuerId = "issuerId",
                 )
             ).thenReturn(
-                IssueDocumentsPartialState.DeferredSuccess(deferredDocuments = emptyMap()).toFlow()
+                IssueDocumentsPartialState.DeferredSuccess(
+                    deferredDocuments = emptyMap(),
+                ).toFlow()
             )
 
             // When
@@ -663,10 +698,11 @@ class TestAddDocumentInteractor {
     }
 
     // Case E:
-    // walletCoreDocumentsController.issueDocuments returns IssuerNotTrusted
-    // → AddDocumentInteractorIssueDocumentsPartialState.IssuerNotTrusted
+    // walletCoreDocumentsController.issueDocuments returns IssuerNotTrusted refused by the access
+    // certificate
+    // → AddDocumentInteractorIssueDocumentsPartialState.IssuerNotTrusted carrying that reason
     @Test
-    fun `Given controller emits IssuerNotTrusted, When issueDocuments is called, Then IssuerNotTrusted is emitted`() {
+    fun `Given controller emits IssuerNotTrusted for the access certificate, When issueDocuments is called, Then IssuerNotTrusted with that reason is emitted`() {
         coroutineRule.runTest {
             // Given
             whenever(
@@ -676,7 +712,9 @@ class TestAddDocumentInteractor {
                     issuerId = "issuerId",
                 )
             ).thenReturn(
-                IssueDocumentsPartialState.IssuerNotTrusted.toFlow()
+                IssueDocumentsPartialState.IssuerNotTrusted(
+                    reason = UntrustedIssuerReasonDomain.ACCESS_CERTIFICATE
+                ).toFlow()
             )
 
             // When
@@ -687,7 +725,9 @@ class TestAddDocumentInteractor {
             ).runFlowTest {
                 // Then
                 assertEquals(
-                    AddDocumentInteractorIssueDocumentsPartialState.IssuerNotTrusted,
+                    AddDocumentInteractorIssueDocumentsPartialState.IssuerNotTrusted(
+                        reason = UntrustedIssuerReasonDomain.ACCESS_CERTIFICATE
+                    ),
                     awaitItem()
                 )
             }
@@ -751,6 +791,44 @@ class TestAddDocumentInteractor {
                 assertEquals(
                     AddDocumentInteractorIssueDocumentsPartialState.Failure(
                         errorMessage = mockedGenericErrorMessage
+                    ),
+                    awaitItem()
+                )
+            }
+        }
+    }
+
+    // Case H:
+    // walletCoreDocumentsController.issueDocuments returns IssuerNotTrusted refused by the
+    // registration certificate; the pre-flight refuses before the browser opens, so nothing
+    // was stored
+    // → the same interactor state, carrying the registration reason
+    @Test
+    fun `Given controller emits IssuerNotTrusted for the registration certificate, When issueDocuments is called, Then IssuerNotTrusted with that reason is emitted`() {
+        coroutineRule.runTest {
+            // Given
+            whenever(
+                walletCoreDocumentsController.issueDocuments(
+                    issuanceMethod = IssuanceMethod.OPENID4VCI,
+                    configIds = listOf("id"),
+                    issuerId = "issuerId",
+                )
+            ).thenReturn(
+                IssueDocumentsPartialState.IssuerNotTrusted(
+                    reason = UntrustedIssuerReasonDomain.REGISTRATION_CERTIFICATE
+                ).toFlow()
+            )
+
+            // When
+            interactor.issueDocuments(
+                issuanceMethod = IssuanceMethod.OPENID4VCI,
+                configIds = listOf("id"),
+                issuerId = "issuerId",
+            ).runFlowTest {
+                // Then
+                assertEquals(
+                    AddDocumentInteractorIssueDocumentsPartialState.IssuerNotTrusted(
+                        reason = UntrustedIssuerReasonDomain.REGISTRATION_CERTIFICATE
                     ),
                     awaitItem()
                 )
@@ -1024,11 +1102,11 @@ class TestAddDocumentInteractor {
             first = SuccessUIConfig.TextElementsConfig(
                 text = resourceProvider.getString(R.string.issuance_add_document_deferred_success_text),
                 description = resourceProvider.getString(R.string.issuance_add_document_deferred_success_description),
-                color = ThemeColors.pending
+                color = ThemeColorKey.Pending
             ),
             second = SuccessUIConfig.ImageConfig(
                 type = SuccessUIConfig.ImageConfig.Type.Drawable(icon = AppIcons.InProgress),
-                tint = ThemeColors.primary,
+                tint = ThemeColorKey.Primary,
                 screenPercentageSize = PERCENTAGE_25,
             ),
             third = resourceProvider.getString(R.string.issuance_add_document_deferred_success_primary_button_text)
