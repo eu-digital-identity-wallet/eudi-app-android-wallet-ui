@@ -25,8 +25,8 @@ sealed interface IssuerRegistrationDomain {
     data class Verified(val details: RegistrationDetailsDomain) : IssuerRegistrationDomain
 
     /**
-     * Issuance must be refused, not just warned about: the registration is valid but the offer
-     * exceeds its registered scope.
+     * Issuance must be refused, not just warned about: the registration is valid but does not
+     * cover the offer.
      */
     data class Blocked(
         val reason: BlockedReasonDomain,
@@ -52,7 +52,11 @@ sealed interface IssuerRegistrationDomain {
      * Why an issuance is refused.
      */
     enum class BlockedReasonDomain {
-        ATTESTATION_NOT_REGISTERED,
+        /** The offer includes attestations outside the registered provides_attestations scope. */
+        ATTESTATION_OVER_PROVIDED,
+
+        /** The issuer is not registered for the provider role the offered attestations require. */
+        ENTITLEMENT_MISSING,
     }
 }
 
