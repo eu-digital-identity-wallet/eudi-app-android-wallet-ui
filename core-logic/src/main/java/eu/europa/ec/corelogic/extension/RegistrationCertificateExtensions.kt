@@ -65,8 +65,9 @@ fun WrpRegistrationInfo?.toRegistrationStatusDomain(locale: Locale): Registratio
 
 /**
  * Converts the Wallet Core registration evaluation of a credential issuer into the domain
- * outcome. An offer that carried no evaluation maps to [IssuerRegistrationDomain.NotEvaluated],
- * and a verified registration whose offer exceeds the registered scope is a hard stop
+ * outcome. An offer that carried no evaluation maps to [IssuerRegistrationDomain.NotEvaluated].
+ * A registration that does not cover the offer, because the offer exceeds the registered scope
+ * or the issuer lacks the required entitlement, is a hard stop
  * ([IssuerRegistrationDomain.Blocked]) rather than a warning.
  */
 fun RegistrationCertificateResult?.toIssuerRegistrationDomain(
@@ -79,16 +80,28 @@ fun RegistrationCertificateResult?.toIssuerRegistrationDomain(
                 IssuerRegistrationDomain.Verified(details = details)
             } else {
                 IssuerRegistrationDomain.Blocked(
-                    reason = IssuerRegistrationDomain.BlockedReasonDomain.ATTESTATION_NOT_REGISTERED,
+                    reason = IssuerRegistrationDomain.BlockedReasonDomain.ATTESTATION_OVER_PROVIDED,
                     details = details,
                 )
             }
         }
 
-        is RegistrationCertificateResult.Failed -> IssuerRegistrationDomain.NotVerified(
-            reason = reason.toRegistrationFailureReasonDomain(),
-            details = registration?.toRegistrationDetailsDomain(locale = locale),
-        )
+        is RegistrationCertificateResult.Failed -> {
+            val details = registration?.toRegistrationDetailsDomain(locale = locale)
+            // Blocked means a valid registration was parsed, so without its content
+            // the truthful outcome is NotVerified.
+            if (reason == RegistrationFailureReason.ENTITLEMENT_MISSING && details != null) {
+                IssuerRegistrationDomain.Blocked(
+                    reason = IssuerRegistrationDomain.BlockedReasonDomain.ENTITLEMENT_MISSING,
+                    details = details,
+                )
+            } else {
+                IssuerRegistrationDomain.NotVerified(
+                    reason = reason.toRegistrationFailureReasonDomain(),
+                    details = details,
+                )
+            }
+        }
 
         null -> IssuerRegistrationDomain.NotEvaluated
     }
@@ -171,6 +184,7 @@ private fun RegistrationFailureReason.toRegistrationFailureReasonDomain(): Regis
         RegistrationFailureReason.REVOKED -> RegistrationFailureReasonDomain.REVOKED
         RegistrationFailureReason.REVOCATION_STATUS_UNKNOWN -> RegistrationFailureReasonDomain.REVOCATION_STATUS_UNKNOWN
         RegistrationFailureReason.NOT_BOUND_TO_REQUESTER -> RegistrationFailureReasonDomain.NOT_BOUND_TO_REQUESTER
+        RegistrationFailureReason.ENTITLEMENT_MISSING -> RegistrationFailureReasonDomain.ENTITLEMENT_MISSING
     }
 }
 

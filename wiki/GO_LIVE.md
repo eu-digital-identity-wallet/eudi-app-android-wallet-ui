@@ -77,7 +77,7 @@ Use this checklist before the first production release.
 | Issuers                 | All OpenID4VCI issuer URLs point to production issuer services controlled or approved by the implementer.                                                                                                                                                                     |
 | Wallet provider         | `walletProviderHost` points to the production Wallet Provider service and supports the expected attestation endpoints.                                                                                                                                                        |
 | Trust anchors           | Demo and development certificates are replaced by production IACA/reader/verifier trust anchors, or by a production ETSI trusted-list (LoTE) source with the dev relaxations removed.                                                                                         |
-| Registration            | Every production issuer and verifier presents a registration certificate that validates against the configured registration trusted list, and every issuer's registered scope covers the documents it offers. Issuance is refused otherwise.                                  |
+| Registration            | Every production issuer and verifier presents a registration certificate that validates against the configured registration trusted list, every issuer is entitled for the provider role of what it offers, and every issuer's registered scope covers the documents it offers. Issuance is refused otherwise.                                  |
 | RQES                    | QTSP, TSA, client ID, redirect URI, and certificate retrieval settings are production values.                                                                                                                                                                                 |
 | Secrets                 | No production secret is hardcoded in Kotlin, Gradle, resources, or `BuildConfig`.                                                                                                                                                                                             |
 | Network                 | Cleartext traffic is disabled; trust-all certificate logic is absent; TLS policy and certificate pinning strategy are agreed.                                                                                                                                                 |
@@ -880,7 +880,7 @@ Trust is evaluated on two independent layers, and passing one says nothing about
 | | Access certificate | Registration certificate |
 |---|---|---|
 | Answers | *who is this party* | *what is it registered to do* |
-| Establishes | authentication of the issuer or verifier | the registered identity, declared purpose, privacy policy, and the attestation types and claims the party may issue or request |
+| Establishes | authentication of the issuer or verifier | the registered identity, declared purpose, privacy policy, the provider role the party is entitled to, and the attestation types and claims it may issue or request |
 | Trust source | its own trusted list | the registration-certificate trusted list, from the same LoTE configuration |
 
 The two layers are not interchangeable: an authenticated issuer that is not registered for what it
@@ -900,7 +900,8 @@ differently, and the asymmetry is intentional:
 
 * **Issuance is strict.** A document is stored only when the issuer's registration is verified and
   covers the credential being issued. Anything short of that — no registration, one that does not
-  pass validation, or one that does not cover the offer — stops the flow and reports it on the same
+  pass validation, one not entitled to the provider role the offer requires, or one that does not
+  cover the offer — stops the flow and reports it on the same
   "Issuance blocked" sheet an authentication failure uses, because the distinction does not change
   what the user can do about it. The refusal lands before anything is stored, and a refused
   re-issuance leaves the document the user already holds in place.
@@ -923,17 +924,20 @@ Production requirements:
   Without it, registration certificates have no trust source, and issuance is refused rather than
   waved through.
 * Confirm with every issuer that it presents a registration certificate the configured trusted list
-  accepts, and that its registered scope covers everything it offers. This is a hard dependency: an
-  issuer that fails either condition cannot deliver documents at all.
+  accepts, that it carries the entitlement for the provider role its offers require — `PID_Provider`
+  for PIDs, and one of the QEAA, PuB-EAA or EAA provider entitlements for anything else — and that
+  its registered scope covers everything it offers. This is a hard dependency: an issuer that fails
+  any of these conditions cannot deliver documents at all.
 * Confirm with every verifier that its requests carry a registration certificate and stay within
   the registered scope, so users are not asked to acknowledge a warning on every routine
   transaction.
 * Confirm that each party's registration and access certificates are issued to the same registered
   organization, and that the registration certificate's revocation status can be checked. A
   registration whose status cannot be established does not pass.
-* Test the refusals, not just the happy path: an unregistered issuer, an issuer offering a type
-  outside its registered scope, and a verifier over-asking. Confirm a refused re-issuance leaves
-  the existing document in place and usable.
+* Test the refusals, not just the happy path: an unregistered issuer, an issuer whose registration
+  lacks the entitlement for a type it offers, an issuer offering a type outside its registered
+  scope, and a verifier over-asking. Confirm a refused re-issuance leaves the existing document in
+  place and usable.
 * Test both states of the setting if you keep it toggleable, and remember the change only takes
   effect on the next app start — the SDK reads both policies when it builds its managers.
 

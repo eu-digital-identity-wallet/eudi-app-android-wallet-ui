@@ -37,10 +37,25 @@ class TestIssuerRegistrationDomain {
     }
 
     @Test
-    fun `Given an offer beyond the registered scope, When isBlockedForIssuance is read, Then the issuance is refused`() {
+    fun `Given an offer the issuer over-provides, When isBlockedForIssuance is read, Then the issuance is refused`() {
         // Given
         val registration = IssuerRegistrationDomain.Blocked(
-            reason = IssuerRegistrationDomain.BlockedReasonDomain.ATTESTATION_NOT_REGISTERED,
+            reason = IssuerRegistrationDomain.BlockedReasonDomain.ATTESTATION_OVER_PROVIDED,
+            details = mockedDetails,
+        )
+
+        // When
+        val result = registration.isBlockedForIssuance
+
+        // Then
+        assertTrue(result)
+    }
+
+    @Test
+    fun `Given an offer the issuer is not entitled to issue, When isBlockedForIssuance is read, Then the issuance is refused`() {
+        // Given
+        val registration = IssuerRegistrationDomain.Blocked(
+            reason = IssuerRegistrationDomain.BlockedReasonDomain.ENTITLEMENT_MISSING,
             details = mockedDetails,
         )
 
