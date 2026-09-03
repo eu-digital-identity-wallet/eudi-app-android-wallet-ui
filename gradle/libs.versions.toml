@@ -83,7 +83,7 @@ robolectric = "4.16.1"
 turbine = "1.2.1"
 
 # Gradle plugins
-androidGradlePlugin = "9.3.2"
+androidGradlePlugin = "9.4.0"
 baselineprofile = "1.5.0-rc01"
 dependencyGraphPlugin = "0.13.0"
 gmsPlugin = "4.5.0"
