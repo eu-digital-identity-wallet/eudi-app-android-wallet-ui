@@ -20,6 +20,7 @@ import androidx.lifecycle.viewModelScope
 import eu.europa.ec.commonfeature.config.BiometricMode
 import eu.europa.ec.commonfeature.config.BiometricUiConfig
 import eu.europa.ec.commonfeature.config.OnBackNavigationConfig
+import eu.europa.ec.commonfeature.config.PresentationMode
 import eu.europa.ec.commonfeature.config.RequestUriConfig
 import eu.europa.ec.commonfeature.ui.request.Event
 import eu.europa.ec.commonfeature.ui.request.RequestBottomSheetContent
@@ -94,6 +95,19 @@ class PresentationRequestViewModel(
             RequestUriConfig::class.java,
             RequestUriConfig.Parser
         ) ?: throw RuntimeException("RequestUriConfig:: is Missing or invalid")
+
+        if (requestUriConfig.mode is PresentationMode.DcApi && intentAction == null) {
+            setState {
+                copy(
+                    isLoading = false,
+                    error = ContentErrorConfig(
+                        errorSubTitle = resourceProvider.genericErrorMessage(),
+                        onCancel = { setEvent(Event.OnBack) }
+                    )
+                )
+            }
+            return
+        }
 
         setState {
             copy(
