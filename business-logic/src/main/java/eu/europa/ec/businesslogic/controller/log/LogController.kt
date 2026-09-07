@@ -21,7 +21,7 @@ import android.net.Uri
 import android.util.Log
 import androidx.core.content.FileProvider
 import eu.europa.ec.businesslogic.config.ConfigLogic
-import fr.bipi.treessence.file.FileLoggerTree
+import eu.europa.ec.businesslogic.util.FileLoggerTree
 import timber.log.Timber
 import java.io.File
 

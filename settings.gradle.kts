@@ -36,9 +36,6 @@ dependencyResolutionManagement {
             url = uri("https://central.sonatype.com/repository/maven-snapshots/")
             mavenContent { snapshotsOnly() }
         }
-        maven {
-            url = uri("https://jitpack.io")
-        }
         mavenLocal()
     }
 }

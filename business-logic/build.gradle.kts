@@ -38,7 +38,6 @@ dependencies {
     implementation(libs.androidx.appAuth)
     implementation(libs.google.phonenumber)
     implementation(libs.timber)
-    implementation(libs.treessence)
     implementation(libs.androidx.datastore.prefs)
     implementation(libs.androidx.datastore.core)
     implementation(libs.androidx.datastore.tink)

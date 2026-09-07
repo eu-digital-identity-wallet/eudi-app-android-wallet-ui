@@ -55,7 +55,6 @@ eudiLibKmpEtsi1196x2 = "0.4.0-alpha.1"
 # Logging
 slf4j = "2.0.19"
 timber = "5.0.1"
-treessence = "1.1.2"
 
 # Other libraries
 androidDesugarJdkLibs = "2.1.5"
@@ -180,7 +179,6 @@ eudi-lib-kmp-etsi119602-consultation = { module = "eu.europa.ec.eudi:etsi-119602
 # Logging
 slf4j = { group = "org.slf4j", name = "slf4j-simple", version.ref = "slf4j" }
 timber = { group = "com.jakewharton.timber", name = "timber", version.ref = "timber" }
-treessence = { group = "com.github.bastienpaulfr", name = "Treessence", version.ref = "treessence" }
 
 # Other libraries
 android-desugarJdkLibs = { group = "com.android.tools", name = "desugar_jdk_libs", version.ref = "androidDesugarJdkLibs" }
