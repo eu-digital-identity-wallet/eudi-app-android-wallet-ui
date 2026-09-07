@@ -20,7 +20,6 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
-import androidx.core.os.bundleOf
 import androidx.navigation.NavController
 import eu.europa.ec.businesslogic.util.safeLet
 import eu.europa.ec.corelogic.util.CoreActions
@@ -78,7 +77,7 @@ fun handleDeepLinkAction(
             notify(
                 context = navController.context,
                 action = CoreActions.VCI_RESUME_ACTION,
-                bundle = bundleOf(Pair("uri", action.link.toString()))
+                bundle = Bundle().apply { putString("uri", action.link.toString()) }
             )
             return
         }
@@ -92,7 +91,7 @@ fun handleDeepLinkAction(
             notify(
                 context = navController.context,
                 action = CoreActions.VCI_DYNAMIC_PRESENTATION,
-                bundle = bundleOf(Pair("uri", action.link.toString()))
+                bundle = Bundle().apply { putString("uri", action.link.toString()) }
             )
             return
         }
