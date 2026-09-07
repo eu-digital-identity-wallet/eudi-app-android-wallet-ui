@@ -19,24 +19,19 @@ package eu.europa.ec.uilogic.component.utils
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
+import eu.europa.ec.uilogic.mvi.MviViewModel
 
 @Composable
-fun OneTimeLaunchedEffect(
+fun OncePerViewModelEffect(
+    viewModel: MviViewModel<*, *, *>,
+    key: String = MviViewModel.ONE_TIME_INIT_KEY,
     block: () -> Unit
 ) {
-    var initialEffects by rememberSaveable { mutableStateOf(false) }
-    if (!initialEffects) {
-        LaunchedEffect(Unit) {
-            initialEffects = true
-            block()
-        }
+    LaunchedEffect(viewModel, key) {
+        viewModel.runOncePerInstance(key, block)
     }
 }
 

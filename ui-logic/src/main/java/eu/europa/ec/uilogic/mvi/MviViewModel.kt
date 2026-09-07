@@ -16,6 +16,7 @@
 
 package eu.europa.ec.uilogic.mvi
 
+import androidx.annotation.MainThread
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.channels.Channel
@@ -44,6 +45,8 @@ abstract class MviViewModel<Event : ViewEvent, UiState : ViewState, Effect : Vie
     private val _viewStateHistory: Channel<UiState> = Channel()
     val viewStateHistory get() = _viewStateHistory.receiveAsFlow()
 
+    private val firedOneTimeKeys = mutableSetOf<String>()
+
     init {
         subscribeToEvents()
     }
@@ -52,10 +55,28 @@ abstract class MviViewModel<Event : ViewEvent, UiState : ViewState, Effect : Vie
         viewModelScope.launch { _event.emit(event) }
     }
 
+    abstract fun handleEvents(event: Event)
+
     protected fun setState(reducer: UiState.() -> UiState) {
         val newState = viewState.value.reducer()
         _viewState.update { newState }
         notifyViewStateHistoryChanged(newState)
+    }
+
+    protected fun setEffect(builder: () -> Effect) {
+        val effectValue = builder()
+        viewModelScope.launch { _effect.send(effectValue) }
+    }
+
+    @MainThread
+    internal fun runOncePerInstance(key: String = ONE_TIME_INIT_KEY, block: () -> Unit) {
+        if (firedOneTimeKeys.add(key)) {
+            block()
+        }
+    }
+
+    internal companion object {
+        const val ONE_TIME_INIT_KEY = "init"
     }
 
     private fun subscribeToEvents() {
@@ -68,12 +89,5 @@ abstract class MviViewModel<Event : ViewEvent, UiState : ViewState, Effect : Vie
 
     private fun notifyViewStateHistoryChanged(state: UiState) {
         _viewStateHistory.trySend(state)
-    }
-
-    abstract fun handleEvents(event: Event)
-
-    protected fun setEffect(builder: () -> Effect) {
-        val effectValue = builder()
-        viewModelScope.launch { _effect.send(effectValue) }
     }
 }

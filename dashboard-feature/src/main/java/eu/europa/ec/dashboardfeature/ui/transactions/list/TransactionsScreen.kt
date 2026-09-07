@@ -85,7 +85,7 @@ import eu.europa.ec.uilogic.component.content.ScreenNavigateAction
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
 import eu.europa.ec.uilogic.component.utils.HSpacer
 import eu.europa.ec.uilogic.component.utils.LifecycleEffect
-import eu.europa.ec.uilogic.component.utils.OneTimeLaunchedEffect
+import eu.europa.ec.uilogic.component.utils.OncePerViewModelEffect
 import eu.europa.ec.uilogic.component.utils.SPACING_LARGE
 import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
 import eu.europa.ec.uilogic.component.utils.SPACING_SMALL
@@ -218,6 +218,10 @@ fun TransactionsScreen(
             )
         }
     }
+
+    OncePerViewModelEffect(viewModel) {
+        viewModel.setEvent(Event.Init)
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -286,10 +290,6 @@ private fun Content(
         lifecycleEvent = Lifecycle.Event.ON_PAUSE
     ) {
         onEventSend(Event.OnPause)
-    }
-
-    OneTimeLaunchedEffect {
-        onEventSend(Event.Init)
     }
 
     LaunchedEffect(Unit) {
