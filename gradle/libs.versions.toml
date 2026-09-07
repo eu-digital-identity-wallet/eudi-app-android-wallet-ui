@@ -17,10 +17,10 @@ androidxCoreSplashscreen = "1.2.0"
 androidxCredentials = "1.0.0-alpha05"
 androidxLifecycle = "2.11.0"
 androidxMetrics = "1.0.0"
-androidxNavigation = "2.9.8"
+androidxNavigation = "2.10.0"
 androidxProfileinstaller = "1.4.1"
 androidxRoom = "2.8.4"
-androidxTracing = "2.0.0"
+androidxTracing = "2.0.1"
 androidxWindowManager = "1.5.1"
 androidxWork = "2.11.2"
 constraintlayoutVersion = "1.1.2"
@@ -35,10 +35,10 @@ material3 = "1.4.0"
 materialIcons = "1.7.8"
 
 # CameraX
-cameraCore = "1.6.1"
+cameraCore = "1.6.2"
 
 # Coil (image loading)
-coil = "3.5.0"
+coil = "3.6.2"
 
 # Ktor (networking)
 ktor = "3.5.2"
@@ -53,17 +53,17 @@ rqesUiSDK = "0.3.9"
 eudiLibKmpEtsi1196x2 = "0.4.0-alpha.1"
 
 # Logging
-slf4j = "2.0.18"
+slf4j = "2.0.19"
 timber = "5.0.1"
 treessence = "1.1.2"
 
 # Other libraries
 androidDesugarJdkLibs = "2.1.5"
-googlePhoneNumber = "9.0.37"
+googlePhoneNumber = "9.0.38"
 gson = "2.14.0"
-lint = "32.3.2"
+lint = "32.4.0"
 material = "1.14.0"
-protobuf = "4.36.0"
+protobuf = "4.36.1"
 sqlcipher = "4.18.0"
 zxing = "3.5.4"
 
@@ -83,15 +83,15 @@ robolectric = "4.16.1"
 turbine = "1.2.1"
 
 # Gradle plugins
-androidGradlePlugin = "9.3.2"
-baselineprofile = "1.5.0-rc01"
+androidGradlePlugin = "9.4.0"
+baselineprofile = "1.5.0-rc02"
 dependencyGraphPlugin = "0.13.0"
 gmsPlugin = "4.5.0"
 kover = "0.9.9"
 owaspDependencyCheck = "13.0.0"
 protobufPlugin = "0.10.0"
 secrets = "2.0.1"
-sonar = "7.4.0.8496"
+sonar = "7.5.0.8588"
 
 [libraries]
 # Kotlin
