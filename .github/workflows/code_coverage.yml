@@ -13,7 +13,7 @@ permissions:
 
 jobs:
   coverage:
-    uses: eu-digital-identity-wallet/eudi-infra-ci/.github/workflows/code_coverage_android.yml@kover_coverage_report_implementation
+    uses: eu-digital-identity-wallet/eudi-infra-ci/.github/workflows/code_coverage_android.yml@feat/kover_coverage_report_implementation
     with:
       kover_task: koverXmlReportDevDebug
       kover_output_path: assembly-logic/build/reports/kover/
