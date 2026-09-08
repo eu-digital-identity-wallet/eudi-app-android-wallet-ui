@@ -9,7 +9,7 @@ on:
 
 jobs:
   CodeQL_caller:
-    uses: eu-digital-identity-wallet/eudi-infra-ci/.github/workflows/code_ql_sast_android_app.yml@main
+    uses: eu-digital-identity-wallet/eudi-infra-ci/.github/workflows/code_ql_sast_android_app.yml@fix/codeql_sast_android_application
     with:
       gradle-task: assembleDevDebug
 
