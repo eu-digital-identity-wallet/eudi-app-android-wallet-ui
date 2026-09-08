@@ -9,6 +9,7 @@ on:
 
 permissions: 
   security-events: write
+  contents: read
 
 jobs:
   CodeQL_caller:
