@@ -1,51 +1,16 @@
-name: "CodeQL Advanced"
+name: SAST - CodeQL Android
 
 on:
+  push:
+    branches-ignore:
+      - 'dependabot/**'
+  pull_request_target:
   workflow_dispatch:
-  pull_request:
-    branches: [ "main" ]
-    types: [ opened, synchronize, reopened ]
 
 jobs:
-  analyze:
-    name: Analyze (${{ matrix.language }})
-    runs-on: ubuntu-latest
-    permissions:
-      security-events: write
-      packages: read
-      actions: read
-      contents: read
+  CodeQL_caller:
+    uses: eu-digital-identity-wallet/eudi-infra-ci/.github/workflows/code_ql_sast_android_app.yml@main
+    with:
+      gradle-task: assembleDevDebug
 
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - language: java-kotlin
-            build-mode: manual
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v7
-        with:
-          persist-credentials: false
-
-      - name: Set up Java
-        uses: actions/setup-java@v6
-        with:
-          distribution: temurin
-          java-version: 17
-
-      - name: Initialize CodeQL
-        uses: github/codeql-action/init@v4.37.8
-        with:
-          languages: ${{ matrix.language }}
-          build-mode: ${{ matrix.build-mode }}
-          queries: security-extended
-
-      - name: Build
-        run: ./gradlew assembleDevDebug --no-daemon --stacktrace
-
-      - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@v4.37.8
-        with:
-          category: "/language:${{ matrix.language }}"
+    secrets: inherit
