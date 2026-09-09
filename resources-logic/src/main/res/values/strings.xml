@@ -129,6 +129,8 @@
     <!-- region Biometrics -->
     <string name="biometric_no_hardware">Your device does not support biometric authentication</string>
     <string name="biometric_unknown_error">Something went wrong initializing biometric authentication. Please try again</string>
+    <string name="biometric_strong_required">Your current biometric method does not meet the security requirements for this action. Set up a supported method, such as a fingerprint, in your device settings</string>
+    <string name="biometric_authentication_error">Biometric authentication failed. Please try again</string>
     <string name="biometric_default_mode_text_above_pin_field">PIN</string>
     <!--endregion-->
 

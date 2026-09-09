@@ -17,6 +17,7 @@
 package eu.europa.ec.commonfeature.interactor
 
 import android.content.Context
+import androidx.biometric.BiometricManager.Authenticators.BIOMETRIC_STRONG
 import eu.europa.ec.authenticationlogic.config.AuthenticationConfig
 import eu.europa.ec.authenticationlogic.controller.authentication.BiometricAuthenticationController
 import eu.europa.ec.authenticationlogic.controller.authentication.BiometricsAuthenticate
@@ -31,6 +32,7 @@ interface BiometricInteractor {
     val maxFailedPinAttempts: Int
 
     fun getBiometricsAvailability(): BiometricsAvailability
+    fun getBiometricsAvailabilityForCrypto(): BiometricsAvailability
     suspend fun getBiometricUserSelection(): Boolean
     suspend fun storeBiometricsUsageDecision(shouldUseBiometrics: Boolean)
     fun authenticateWithBiometrics(
@@ -83,6 +85,10 @@ class BiometricInteractorImpl(
         return biometricAuthenticationController.getBiometricsAvailability()
     }
 
+    override fun getBiometricsAvailabilityForCrypto(): BiometricsAvailability {
+        return biometricAuthenticationController.getBiometricsAvailabilityForCrypto()
+    }
+
     override fun authenticateWithBiometrics(
         context: Context,
         notifyOnAuthenticationFailure: Boolean,
@@ -96,6 +102,6 @@ class BiometricInteractorImpl(
     }
 
     override fun launchBiometricSystemScreen() {
-        biometricAuthenticationController.launchBiometricSystemScreen()
+        biometricAuthenticationController.launchBiometricSystemScreen(BIOMETRIC_STRONG)
     }
 }

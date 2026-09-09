@@ -70,6 +70,7 @@ import org.mockito.Mock
 import org.mockito.Mockito.mock
 import org.mockito.MockitoAnnotations
 import org.mockito.kotlin.any
+import org.mockito.kotlin.inOrder
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
@@ -875,13 +876,15 @@ class TestAddDocumentInteractor {
     // BiometricsAvailability.NonEnrolled
 
     // Case 2 Expected Result:
-    // deviceAuthenticationInteractor.launchBiometricSystemScreen called once.
+    // End the pending request before opening enrollment so the user can retry afterwards.
     @Test
     fun `Given Case 2, When handleUserAuth is called, Then Case 2 expected result is returned`() {
         // Given
         mockBiometricsAvailabilityResponse(
             response = BiometricsAvailability.NonEnrolled
         )
+        val onError = mock<() -> Unit>()
+        val resultHandler = DeviceAuthenticationResult(onAuthenticationError = onError)
 
         // When
         interactor.handleUserAuth(
@@ -892,8 +895,11 @@ class TestAddDocumentInteractor {
         )
 
         // Then
-        verify(deviceAuthenticationInteractor, times(1))
-            .launchBiometricSystemScreen()
+        inOrder(onError, deviceAuthenticationInteractor) {
+            verify(onError).invoke()
+            verify(deviceAuthenticationInteractor).launchBiometricSystemScreen(crypto)
+            verifyNoMoreInteractions()
+        }
     }
 
     // Case 3:
@@ -901,13 +907,13 @@ class TestAddDocumentInteractor {
     // BiometricsAvailability.Failed
 
     // Case 3 Expected Result:
-    // resultHandler.onAuthenticationFailure called once.
+    // resultHandler.onAuthenticationError called once, even when the scan-failure callback is omitted.
     @Test
     fun `Given Case 3, When handleUserAuth is called, Then Case 3 expected result is returned`() {
         // Given
-        val onFailure = mock<() -> Unit>()
+        val onError = mock<() -> Unit>()
         val resultHandler = DeviceAuthenticationResult(
-            onAuthenticationFailure = onFailure
+            onAuthenticationError = onError
         )
 
         mockBiometricsAvailabilityResponse(
@@ -925,7 +931,7 @@ class TestAddDocumentInteractor {
         )
 
         // Then
-        verify(onFailure).invoke()
+        verify(onError).invoke()
     }
     //endregion
 
@@ -1071,7 +1077,9 @@ class TestAddDocumentInteractor {
     }
 
     private fun mockBiometricsAvailabilityResponse(response: BiometricsAvailability) {
-        whenever(deviceAuthenticationInteractor.getBiometricsAvailability()).thenReturn(response)
+        whenever(deviceAuthenticationInteractor.getBiometricsAvailability(crypto)).thenReturn(
+            response
+        )
     }
 
     private fun mockNoDocumentsString(): String {

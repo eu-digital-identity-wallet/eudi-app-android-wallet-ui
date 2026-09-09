@@ -498,7 +498,6 @@ class DocumentOfferViewModel(
 
     override fun onCleared() {
         getOrNullCredentialOfferScope()?.close()
-        super.onCleared()
     }
 
     private fun goToDocumentIssuanceSuccessScreen(

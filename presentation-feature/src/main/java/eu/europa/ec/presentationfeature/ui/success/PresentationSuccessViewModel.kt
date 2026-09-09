@@ -85,7 +85,6 @@ class PresentationSuccessViewModel(
     }
 
     override fun onCleared() {
-        super.onCleared()
         interactor.stopPresentation()
         getOrNullKoinScope(presentationScopeId)?.close()
     }

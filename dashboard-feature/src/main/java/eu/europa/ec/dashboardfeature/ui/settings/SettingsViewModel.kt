@@ -72,6 +72,9 @@ class SettingsViewModel(
     private val settingsInteractor: SettingsInteractor,
     private val resourceProvider: ResourceProvider,
 ) : MviViewModel<Event, State, Effect>() {
+
+    private var isBiometricAuthenticating: Boolean = false
+
     override fun setInitialState(): State {
         return State(
             screenTitle = resourceProvider.getString(R.string.settings_screen_title),
@@ -123,7 +126,8 @@ class SettingsViewModel(
     ) {
         when (itemType) {
             SettingsMenuItemType.BIOMETRICS_AUTHENTICATION -> {
-                when (val availability = settingsInteractor.getBiometricsAvailability()) {
+                if (isBiometricAuthenticating) return
+                when (val availability = settingsInteractor.getBiometricsAvailabilityForCrypto()) {
                     is BiometricsAvailability.CanAuthenticate -> authenticate(context)
 
                     is BiometricsAvailability.NonEnrolled -> {
@@ -208,26 +212,39 @@ class SettingsViewModel(
     }
 
     private fun authenticate(context: Context) {
+
+        if (isBiometricAuthenticating) return
+        isBiometricAuthenticating = true
+
         settingsInteractor.authenticateWithBiometrics(
             context = context,
-            notifyOnAuthenticationFailure = true,
+            notifyOnAuthenticationFailure = false,
         ) { result ->
             when (result) {
                 is BiometricsAuthenticate.Success -> {
                     viewModelScope.launch {
-                        settingsInteractor.toggleBiometricsAuthentication()
-                        val settingsItems = settingsInteractor.getSettingsItemsUi(
-                            changelogUrl = viewState.value.changelogUrl
-                        )
-                        setState {
-                            copy(
-                                settingsItems = settingsItems,
+                        try {
+                            settingsInteractor.toggleBiometricsAuthentication()
+                            val settingsItems = settingsInteractor.getSettingsItemsUi(
+                                changelogUrl = viewState.value.changelogUrl
                             )
+                            setState { copy(settingsItems = settingsItems) }
+                        } finally {
+                            isBiometricAuthenticating = false
                         }
                     }
                 }
 
-                else -> {}
+                is BiometricsAuthenticate.Failed -> {
+                    isBiometricAuthenticating = false
+                    setEffect {
+                        Effect.ShowSnackbar(message = result.errorMessage)
+                    }
+                }
+
+                BiometricsAuthenticate.Cancelled -> {
+                    isBiometricAuthenticating = false
+                }
             }
         }
     }

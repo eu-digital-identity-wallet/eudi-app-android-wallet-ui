@@ -62,6 +62,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.koin.core.annotation.KoinViewModel
+import kotlin.time.Duration.Companion.milliseconds
 
 data class State(
     val isLoading: Boolean,
@@ -425,7 +426,7 @@ class DocumentsViewModel(
                 return@launch
             }
 
-            delay(5000L)
+            delay(5000L.milliseconds)
 
             interactor.tryIssuingDeferredDocumentsFlow(deferredDocs).collect { response ->
                 when (response) {

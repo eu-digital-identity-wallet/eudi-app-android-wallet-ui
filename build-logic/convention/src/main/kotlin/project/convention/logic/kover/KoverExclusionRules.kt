@@ -169,7 +169,8 @@ sealed interface KoverExclusionRules {
 
         override val packages: List<String>
             get() = commonPackages + listOf(
-                "eu.europa.ec.authenticationlogic.controller",
+                "eu.europa.ec.authenticationlogic.controller.storage",
+                "eu.europa.ec.authenticationlogic.controller.throttle",
                 "eu.europa.ec.authenticationlogic.storage",
             )
     }
