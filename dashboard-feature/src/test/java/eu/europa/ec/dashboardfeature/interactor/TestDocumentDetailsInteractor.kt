@@ -79,6 +79,7 @@ import org.mockito.ArgumentMatchers
 import org.mockito.Mock
 import org.mockito.MockitoAnnotations
 import org.mockito.kotlin.any
+import org.mockito.kotlin.inOrder
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
@@ -1466,7 +1467,7 @@ class TestDocumentDetailsInteractor {
         val context = mockContext
         val crypto = BiometricCrypto(cryptoObject = null)
         val resultHandler = DeviceAuthenticationResult()
-        whenever(deviceAuthenticationInteractor.getBiometricsAvailability())
+        whenever(deviceAuthenticationInteractor.getBiometricsAvailability(crypto))
             .thenReturn(BiometricsAvailability.CanAuthenticate)
 
         // When
@@ -1488,11 +1489,12 @@ class TestDocumentDetailsInteractor {
     }
 
     @Test
-    fun `Given biometrics availability is NonEnrolled, When handleUserAuth is called, Then launchBiometricSystemScreen is invoked`() {
+    fun `Given biometrics are not enrolled, Then end the request before opening enrollment`() {
         // Given
         val crypto = BiometricCrypto(cryptoObject = null)
-        val resultHandler = DeviceAuthenticationResult()
-        whenever(deviceAuthenticationInteractor.getBiometricsAvailability())
+        val onError = mock<() -> Unit>()
+        val resultHandler = DeviceAuthenticationResult(onAuthenticationError = onError)
+        whenever(deviceAuthenticationInteractor.getBiometricsAvailability(crypto))
             .thenReturn(BiometricsAvailability.NonEnrolled)
 
         // When
@@ -1504,17 +1506,20 @@ class TestDocumentDetailsInteractor {
         )
 
         // Then
-        verify(deviceAuthenticationInteractor, times(1))
-            .launchBiometricSystemScreen()
+        inOrder(onError, deviceAuthenticationInteractor) {
+            verify(onError).invoke()
+            verify(deviceAuthenticationInteractor).launchBiometricSystemScreen(crypto)
+            verifyNoMoreInteractions()
+        }
     }
 
     @Test
-    fun `Given biometrics availability is Failure, When handleUserAuth is called, Then resultHandler#onAuthenticationFailure is invoked`() {
+    fun `Given biometrics availability is Failure, When handleUserAuth is called, Then resultHandler#onAuthenticationError is invoked`() {
         // Given
-        val onFailure = mock<() -> Unit>()
-        val resultHandler = DeviceAuthenticationResult(onAuthenticationFailure = onFailure)
+        val onError = mock<() -> Unit>()
+        val resultHandler = DeviceAuthenticationResult(onAuthenticationError = onError)
         val crypto = BiometricCrypto(cryptoObject = null)
-        whenever(deviceAuthenticationInteractor.getBiometricsAvailability())
+        whenever(deviceAuthenticationInteractor.getBiometricsAvailability(crypto))
             .thenReturn(BiometricsAvailability.Failure(errorMessage = mockedPlainFailureMessage))
 
         // When
@@ -1526,7 +1531,7 @@ class TestDocumentDetailsInteractor {
         )
 
         // Then
-        verify(onFailure).invoke()
+        verify(onError).invoke()
     }
     //endregion
 

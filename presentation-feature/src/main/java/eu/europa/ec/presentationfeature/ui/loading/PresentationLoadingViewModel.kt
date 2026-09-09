@@ -40,6 +40,7 @@ import kotlinx.coroutines.launch
 import org.koin.core.annotation.InjectedParam
 import org.koin.core.annotation.KoinViewModel
 import kotlin.time.Duration
+import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.DurationUnit
 import kotlin.time.toDuration
 
@@ -195,7 +196,7 @@ class PresentationLoadingViewModel(
                     if (isFinalAuthentication) {
                         sendRequestedDocumentsAction()
                     } else {
-                        delay(500)
+                        delay(500.milliseconds)
                         openAuthenticationPrompt(
                             context,
                             popEffect,

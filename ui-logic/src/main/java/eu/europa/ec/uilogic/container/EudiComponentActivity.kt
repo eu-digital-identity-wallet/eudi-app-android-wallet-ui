@@ -50,6 +50,7 @@ import kotlinx.coroutines.runBlocking
 import org.koin.android.ext.android.inject
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import org.koin.core.annotation.KoinViewModel
+import kotlin.time.Duration.Companion.milliseconds
 
 open class EudiComponentActivity : FragmentActivity() {
 
@@ -109,7 +110,7 @@ open class EudiComponentActivity : FragmentActivity() {
             var count = 0
             while (!viewModel.hasFlowStarted() && count <= 10) {
                 count++
-                delay(500)
+                delay(500.milliseconds)
             }
             if (count <= 10) {
                 handleDeepLink(intent)
@@ -175,7 +176,6 @@ internal class EudiComponentActivityViewModel(
 
     override fun onCleared() {
         getOrNullKoinScope(sessionId)?.close()
-        super.onCleared()
     }
 
     fun onCreate() {

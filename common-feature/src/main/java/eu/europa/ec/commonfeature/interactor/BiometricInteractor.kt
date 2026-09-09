@@ -17,6 +17,7 @@
 package eu.europa.ec.commonfeature.interactor
 
 import android.content.Context
+import androidx.biometric.BiometricManager.Authenticators.BIOMETRIC_STRONG
 import eu.europa.ec.authenticationlogic.config.AuthenticationConfig
 import eu.europa.ec.authenticationlogic.controller.authentication.BiometricAuthenticationController
 import eu.europa.ec.authenticationlogic.controller.authentication.BiometricsAuthenticate
@@ -80,7 +81,7 @@ class BiometricInteractorImpl(
     }
 
     override fun getBiometricsAvailability(): BiometricsAvailability {
-        return biometricAuthenticationController.getBiometricsAvailability()
+        return biometricAuthenticationController.getBiometricsAvailability(BIOMETRIC_STRONG)
     }
 
     override fun authenticateWithBiometrics(
@@ -96,6 +97,6 @@ class BiometricInteractorImpl(
     }
 
     override fun launchBiometricSystemScreen() {
-        biometricAuthenticationController.launchBiometricSystemScreen()
+        biometricAuthenticationController.launchBiometricSystemScreen(BIOMETRIC_STRONG)
     }
 }

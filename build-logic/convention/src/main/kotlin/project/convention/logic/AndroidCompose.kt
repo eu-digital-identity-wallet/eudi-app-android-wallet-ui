@@ -61,14 +61,6 @@ internal fun Project.configureAndroidCompose(
             add("debugImplementation", libs.findLibrary("androidx.compose.ui.tooling").get())
             add("testImplementation", libs.findLibrary("robolectric").get())
         }
-
-        testOptions.unitTests.apply {
-            isIncludeAndroidResources = true
-            isReturnDefaultValues = true
-            all { test ->
-                test.systemProperty("user.timezone", "UTC")
-            }
-        }
     }
 
     tasks.withType<KotlinCompile>().configureEach {

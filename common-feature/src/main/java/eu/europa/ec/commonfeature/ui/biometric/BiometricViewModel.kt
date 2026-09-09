@@ -46,6 +46,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.koin.core.annotation.InjectedParam
 import org.koin.core.annotation.KoinViewModel
+import kotlin.time.Duration.Companion.milliseconds
 
 sealed class Event : ViewEvent {
     data class OnBiometricsClicked(
@@ -68,7 +69,7 @@ data class State(
     val quickPinError: String? = null,
     val userBiometricsAreEnabled: Boolean = false,
     val isBackable: Boolean = false,
-    val notifyOnAuthenticationFailure: Boolean = true,
+    val notifyOnAuthenticationFailure: Boolean = false,
     val quickPinSize: Int = 6,
     val isLockedOut: Boolean = false,
     val lockoutMessage: String? = null
@@ -113,6 +114,8 @@ class BiometricViewModel(
 
     private var lockoutTickJob: Job? = null
 
+    private var isAuthenticating: Boolean = false
+
     override fun setInitialState(): State {
         val config = uiSerializer.fromBase64(
             biometricConfig,
@@ -150,6 +153,7 @@ class BiometricViewModel(
             }
 
             is Event.OnBiometricsClicked -> {
+                if (isAuthenticating) return
                 setState { copy(error = null) }
                 when (val availability = biometricInteractor.getBiometricsAvailability()) {
                     is BiometricsAvailability.CanAuthenticate -> authenticate(
@@ -229,7 +233,6 @@ class BiometricViewModel(
     override fun onCleared() {
         lockoutTickJob?.cancel()
         lockoutTickJob = null
-        super.onCleared()
     }
 
     private fun authorizeWithPin(pin: SecurePin) {
@@ -278,6 +281,10 @@ class BiometricViewModel(
     }
 
     private fun authenticate(context: Context) {
+
+        if (isAuthenticating) return
+        isAuthenticating = true
+
         biometricInteractor.authenticateWithBiometrics(
             context = context,
             notifyOnAuthenticationFailure = viewState.value.notifyOnAuthenticationFailure
@@ -285,13 +292,31 @@ class BiometricViewModel(
             when (it) {
                 is BiometricsAuthenticate.Success -> {
                     viewModelScope.launch {
-                        biometricInteractor.resetPinThrottle()
-                        stopLockoutTick()
-                        authenticationSuccess()
+                        try {
+                            biometricInteractor.resetPinThrottle()
+                            stopLockoutTick()
+                            authenticationSuccess()
+                        } finally {
+                            isAuthenticating = false
+                        }
                     }
                 }
 
-                else -> {}
+                is BiometricsAuthenticate.Failed -> {
+                    isAuthenticating = false
+                    setState {
+                        copy(
+                            error = ContentErrorConfig(
+                                errorSubTitle = it.errorMessage,
+                                onCancel = { setEvent(Event.OnErrorDismiss) }
+                            )
+                        )
+                    }
+                }
+
+                BiometricsAuthenticate.Cancelled -> {
+                    isAuthenticating = false
+                }
             }
         }
     }
@@ -320,7 +345,7 @@ class BiometricViewModel(
         lockoutTickJob = viewModelScope.launch {
             var remaining = initialRemainingMs
             while (remaining > 0L) {
-                delay(1_000L)
+                delay(1_000L.milliseconds)
                 remaining -= 1_000L
                 if (remaining <= 0L) break
                 setState {

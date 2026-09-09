@@ -63,6 +63,14 @@ internal fun Project.configureKotlinAndroid(
             isCoreLibraryDesugaringEnabled = true
         }
 
+        testOptions.unitTests.apply {
+            isIncludeAndroidResources = true
+            isReturnDefaultValues = true
+            all { test ->
+                test.systemProperty("user.timezone", "UTC")
+            }
+        }
+
         lint.abortOnError = true
     }
 

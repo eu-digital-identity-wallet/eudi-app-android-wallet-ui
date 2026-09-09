@@ -23,7 +23,7 @@ import eu.europa.ec.authenticationlogic.controller.authentication.DeviceAuthenti
 import eu.europa.ec.authenticationlogic.model.BiometricCrypto
 
 interface DeviceAuthenticationInteractor {
-    fun getBiometricsAvailability(): BiometricsAvailability
+    fun getBiometricsAvailability(crypto: BiometricCrypto): BiometricsAvailability
     fun authenticateWithBiometrics(
         context: Context,
         crypto: BiometricCrypto,
@@ -31,19 +31,19 @@ interface DeviceAuthenticationInteractor {
         resultHandler: DeviceAuthenticationResult
     )
 
-    fun launchBiometricSystemScreen()
+    fun launchBiometricSystemScreen(crypto: BiometricCrypto)
 }
 
 class DeviceAuthenticationInteractorImpl(
     private val deviceAuthenticationController: DeviceAuthenticationController,
 ) : DeviceAuthenticationInteractor {
 
-    override fun launchBiometricSystemScreen() {
-        deviceAuthenticationController.launchBiometricSystemScreen()
+    override fun launchBiometricSystemScreen(crypto: BiometricCrypto) {
+        deviceAuthenticationController.launchBiometricSystemScreen(crypto)
     }
 
-    override fun getBiometricsAvailability(): BiometricsAvailability {
-        return deviceAuthenticationController.deviceSupportsBiometrics()
+    override fun getBiometricsAvailability(crypto: BiometricCrypto): BiometricsAvailability {
+        return deviceAuthenticationController.deviceSupportsBiometrics(crypto)
     }
 
     override fun authenticateWithBiometrics(

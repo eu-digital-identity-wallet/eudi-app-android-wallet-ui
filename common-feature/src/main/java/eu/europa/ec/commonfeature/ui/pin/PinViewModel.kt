@@ -48,6 +48,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.koin.core.annotation.InjectedParam
 import org.koin.core.annotation.KoinViewModel
+import kotlin.time.Duration.Companion.milliseconds
 
 enum class PinValidationState {
     ENTER,
@@ -252,7 +253,6 @@ class PinViewModel(
         clearPendingPin()
         lockoutTickJob?.cancel()
         lockoutTickJob = null
-        super.onCleared()
     }
 
     private fun validatePin(currentPin: SecurePin) {
@@ -390,7 +390,7 @@ class PinViewModel(
         lockoutTickJob = viewModelScope.launch {
             var remaining = initialRemainingMs
             while (remaining > 0L) {
-                delay(1_000L)
+                delay(1_000L.milliseconds)
                 remaining -= 1_000L
                 if (remaining <= 0L) break
                 setState {
@@ -463,7 +463,7 @@ class PinViewModel(
      * @param time The duration of the delay in milliseconds. Defaults to 500ms.
      */
     private suspend fun artificialDelay(time: Long = 500L) {
-        delay(time)
+        delay(time.milliseconds)
     }
 
     private fun getNextScreenRoute(): String {

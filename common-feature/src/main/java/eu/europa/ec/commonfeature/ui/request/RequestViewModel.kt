@@ -365,7 +365,6 @@ abstract class RequestViewModel : MviViewModel<Event, State, Effect>() {
     }
 
     override fun onCleared() {
-        super.onCleared()
         unsubscribe()
         cleanUp()
     }
