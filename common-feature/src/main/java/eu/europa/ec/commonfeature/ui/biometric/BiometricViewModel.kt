@@ -155,7 +155,7 @@ class BiometricViewModel(
             is Event.OnBiometricsClicked -> {
                 if (isAuthenticating) return
                 setState { copy(error = null) }
-                when (val availability = biometricInteractor.getBiometricsAvailabilityForCrypto()) {
+                when (val availability = biometricInteractor.getBiometricsAvailability()) {
                     is BiometricsAvailability.CanAuthenticate -> authenticate(
                         event.context
                     )

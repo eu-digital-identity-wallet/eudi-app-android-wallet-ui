@@ -17,7 +17,6 @@
 package eu.europa.ec.commonfeature.interactor
 
 import androidx.biometric.BiometricManager.Authenticators.BIOMETRIC_STRONG
-
 import eu.europa.ec.authenticationlogic.config.AuthenticationConfig
 import eu.europa.ec.authenticationlogic.controller.authentication.BiometricAuthenticationController
 import eu.europa.ec.authenticationlogic.controller.authentication.BiometricsAuthenticate
@@ -164,25 +163,12 @@ class TestBiometricInteractor {
 
     // Case: getBiometricsAvailability behaviour
     @Test
-    fun `When getBiometricsAvailability is called, Then verify deviceSupportsBiometrics is executed`() {
+    fun `When getBiometricsAvailability is called, Then the controller checks strong biometrics`() {
         // When
         interactor.getBiometricsAvailability()
 
         // Then
-        verify(biometricAuthenticationController).getBiometricsAvailability()
-    }
-    //endregion
-
-    //region getBiometricsAvailabilityForCrypto
-
-    // Case: getBiometricsAvailabilityForCrypto behaviour
-    @Test
-    fun `When getBiometricsAvailabilityForCrypto is called, Then verify getBiometricsAvailabilityForCrypto is executed on the controller`() {
-        // When
-        interactor.getBiometricsAvailabilityForCrypto()
-
-        // Then
-        verify(biometricAuthenticationController).getBiometricsAvailabilityForCrypto()
+        verify(biometricAuthenticationController).getBiometricsAvailability(BIOMETRIC_STRONG)
     }
     //endregion
 

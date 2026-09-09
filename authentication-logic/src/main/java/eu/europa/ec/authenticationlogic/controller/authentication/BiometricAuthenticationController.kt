@@ -54,9 +54,7 @@ enum class BiometricsAuthError(val code: Int) {
 }
 
 interface BiometricAuthenticationController {
-    fun getBiometricsAvailability(authenticators: Int = BIOMETRIC_WEAK): BiometricsAvailability
-
-    fun getBiometricsAvailabilityForCrypto(): BiometricsAvailability
+    fun getBiometricsAvailability(authenticators: Int): BiometricsAvailability
 
     fun authenticate(
         context: Context,
@@ -80,10 +78,6 @@ class BiometricAuthenticationControllerImpl(
     private val biometryStorageController: BiometryStorageController,
     private val dispatcher: CoroutineDispatcher = Dispatchers.IO
 ) : BiometricAuthenticationController {
-
-    override fun getBiometricsAvailabilityForCrypto(): BiometricsAvailability {
-        return getBiometricsAvailability(BIOMETRIC_STRONG)
-    }
 
     override fun getBiometricsAvailability(authenticators: Int): BiometricsAvailability {
         val biometricManager = BiometricManager.from(resourceProvider.provideContext())

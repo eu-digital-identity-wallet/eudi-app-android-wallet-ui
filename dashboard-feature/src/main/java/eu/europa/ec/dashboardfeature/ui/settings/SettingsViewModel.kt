@@ -127,7 +127,7 @@ class SettingsViewModel(
         when (itemType) {
             SettingsMenuItemType.BIOMETRICS_AUTHENTICATION -> {
                 if (isBiometricAuthenticating) return
-                when (val availability = settingsInteractor.getBiometricsAvailabilityForCrypto()) {
+                when (val availability = settingsInteractor.getBiometricsAvailability()) {
                     is BiometricsAvailability.CanAuthenticate -> authenticate(context)
 
                     is BiometricsAvailability.NonEnrolled -> {

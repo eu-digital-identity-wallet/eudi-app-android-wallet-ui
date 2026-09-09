@@ -454,7 +454,7 @@ class TestBiometricAuthenticationFlow {
     }
 
     @Test
-    fun `availability uses strong for crypto and retains weak for device authentication`() {
+    fun `availability enforces the requested biometric strength`() {
         whenever(manager.canAuthenticate(BIOMETRIC_STRONG))
             .thenReturn(BiometricManager.BIOMETRIC_ERROR_NONE_ENROLLED)
         whenever(manager.canAuthenticate(BIOMETRIC_WEAK))
@@ -465,11 +465,11 @@ class TestBiometricAuthenticationFlow {
 
             assertEquals(
                 BiometricsAvailability.Failure(activity.getString(R.string.biometric_strong_required)),
-                controller.getBiometricsAvailabilityForCrypto()
+                controller.getBiometricsAvailability(BIOMETRIC_STRONG)
             )
             assertEquals(
                 BiometricsAvailability.CanAuthenticate,
-                controller.getBiometricsAvailability()
+                controller.getBiometricsAvailability(BIOMETRIC_WEAK)
             )
             verify(manager).canAuthenticate(BIOMETRIC_STRONG)
         }

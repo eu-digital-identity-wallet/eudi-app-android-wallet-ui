@@ -96,7 +96,7 @@ class TestBiometricViewModel {
                 BiometricUiConfig.Parser
             )
         ).thenReturn(config)
-        whenever(interactor.getBiometricsAvailabilityForCrypto())
+        whenever(interactor.getBiometricsAvailability())
             .thenReturn(BiometricsAvailability.CanAuthenticate)
 
         doAnswer {
@@ -156,7 +156,7 @@ class TestBiometricViewModel {
 
     @Test
     fun `unavailable automatic biometrics leaves PIN available without an error overlay`() {
-        whenever(interactor.getBiometricsAvailabilityForCrypto())
+        whenever(interactor.getBiometricsAvailability())
             .thenReturn(BiometricsAvailability.Failure("Unsupported biometrics"))
 
         viewModel.handleEvents(click.copy(shouldThrowErrorIfNotAvailable = false))
@@ -168,7 +168,7 @@ class TestBiometricViewModel {
 
     @Test
     fun `manual attempt explains unsupported biometrics`() {
-        whenever(interactor.getBiometricsAvailabilityForCrypto())
+        whenever(interactor.getBiometricsAvailability())
             .thenReturn(BiometricsAvailability.Failure("Unsupported biometrics"))
 
         viewModel.handleEvents(click)

@@ -80,7 +80,7 @@ class TestSettingsViewModel {
 
         whenever(resources.getString(any())).thenReturn("Settings")
         whenever(interactor.getAppVersion()).thenReturn("test")
-        whenever(interactor.getBiometricsAvailabilityForCrypto())
+        whenever(interactor.getBiometricsAvailability())
             .thenReturn(BiometricsAvailability.CanAuthenticate)
 
         doAnswer {
@@ -110,7 +110,7 @@ class TestSettingsViewModel {
 
         assertEquals(1, callbacks.size)
         verify(interactor).authenticateWithBiometrics(eq(context), eq(false), any())
-        verify(interactor, times(1)).getBiometricsAvailabilityForCrypto()
+        verify(interactor, times(1)).getBiometricsAvailability()
         verify(interactor, never()).toggleBiometricsAuthentication()
     }
 
@@ -190,7 +190,7 @@ class TestSettingsViewModel {
     @Test
     fun `unsuitable biometrics show explanation without starting authentication`() =
         coroutineRule.runTest {
-            whenever(interactor.getBiometricsAvailabilityForCrypto())
+            whenever(interactor.getBiometricsAvailability())
                 .thenReturn(BiometricsAvailability.Failure("Set up a supported biometric"))
 
             viewModel.effect.runFlowTest {
@@ -203,7 +203,7 @@ class TestSettingsViewModel {
 
     @Test
     fun `no enrollment opens system setup without authenticating`() = coroutineRule.runTest {
-        whenever(interactor.getBiometricsAvailabilityForCrypto())
+        whenever(interactor.getBiometricsAvailability())
             .thenReturn(BiometricsAvailability.NonEnrolled)
 
         viewModel.effect.runFlowTest {
