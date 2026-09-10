@@ -156,47 +156,6 @@ class BiometricAuthenticationControllerImpl(
         }
     }
 
-    private suspend fun authenticateWithCrypto(
-        activity: FragmentActivity,
-        notifyOnAuthenticationFailure: Boolean,
-    ): BiometricsAuthenticate {
-        val storedCrypto = retrieveCrypto()
-        val biometricData = storedCrypto.first
-        val cipher = storedCrypto.second ?: return BiometricsAuthenticate.Failed(
-            activity.getString(
-                R.string.biometric_authentication_error
-            )
-        )
-
-        val data = authenticate(
-            activity = activity,
-            biometryCrypto = BiometricCrypto(BiometricPrompt.CryptoObject(cipher)),
-            promptInfo = BiometricPrompt.PromptInfo.Builder()
-                .setTitle(activity.getString(R.string.biometric_prompt_title))
-                .setSubtitle(activity.getString(R.string.biometric_prompt_subtitle))
-                .setAllowedAuthenticators(BIOMETRIC_STRONG)
-                .setNegativeButtonText(activity.getString(R.string.generic_cancel))
-                .build(),
-            notifyOnAuthenticationFailure = notifyOnAuthenticationFailure
-        )
-
-        return if (data.authenticationResult != null) {
-            verifyCrypto(
-                context = activity,
-                result = data.authenticationResult,
-                biometricAuthentication = biometricData
-            )
-        } else if (BiometricsAuthError.entries.any { it.code == data.errorCode }) {
-            BiometricsAuthenticate.Cancelled
-        } else {
-            BiometricsAuthenticate.Failed(
-                data.errorString.toString().ifBlank {
-                    activity.getString(R.string.biometric_authentication_error)
-                }
-            )
-        }
-    }
-
     override fun launchBiometricSystemScreen(authenticators: Int) {
         val enrollIntent = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             Intent(Settings.ACTION_BIOMETRIC_ENROLL).apply {
@@ -262,6 +221,47 @@ class BiometricAuthenticationControllerImpl(
                 it
             )
         } ?: prompt.authenticate(promptInfo)
+    }
+
+    private suspend fun authenticateWithCrypto(
+        activity: FragmentActivity,
+        notifyOnAuthenticationFailure: Boolean,
+    ): BiometricsAuthenticate {
+        val storedCrypto = retrieveCrypto()
+        val biometricData = storedCrypto.first
+        val cipher = storedCrypto.second ?: return BiometricsAuthenticate.Failed(
+            activity.getString(
+                R.string.biometric_authentication_error
+            )
+        )
+
+        val data = authenticate(
+            activity = activity,
+            biometryCrypto = BiometricCrypto(BiometricPrompt.CryptoObject(cipher)),
+            promptInfo = BiometricPrompt.PromptInfo.Builder()
+                .setTitle(activity.getString(R.string.biometric_prompt_title))
+                .setSubtitle(activity.getString(R.string.biometric_prompt_subtitle))
+                .setAllowedAuthenticators(BIOMETRIC_STRONG)
+                .setNegativeButtonText(activity.getString(R.string.generic_cancel))
+                .build(),
+            notifyOnAuthenticationFailure = notifyOnAuthenticationFailure
+        )
+
+        return if (data.authenticationResult != null) {
+            verifyCrypto(
+                context = activity,
+                result = data.authenticationResult,
+                biometricAuthentication = biometricData
+            )
+        } else if (BiometricsAuthError.entries.any { it.code == data.errorCode }) {
+            BiometricsAuthenticate.Cancelled
+        } else {
+            BiometricsAuthenticate.Failed(
+                data.errorString.toString().ifBlank {
+                    activity.getString(R.string.biometric_authentication_error)
+                }
+            )
+        }
     }
 
     private suspend fun retrieveCrypto(): Pair<BiometricAuthentication?, Cipher?> =
