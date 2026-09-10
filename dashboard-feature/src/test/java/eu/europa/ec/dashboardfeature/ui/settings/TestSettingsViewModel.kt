@@ -17,12 +17,17 @@
 package eu.europa.ec.dashboardfeature.ui.settings
 
 import android.content.Context
+import android.content.Intent
+import android.net.Uri
+import androidx.core.content.IntentCompat
+import androidx.core.net.toUri
 import androidx.lifecycle.ViewModelStore
 import eu.europa.ec.authenticationlogic.controller.authentication.BiometricsAuthenticate
 import eu.europa.ec.authenticationlogic.controller.authentication.BiometricsAvailability
 import eu.europa.ec.dashboardfeature.interactor.SettingsInteractor
 import eu.europa.ec.dashboardfeature.ui.settings.model.SettingsItemUi
 import eu.europa.ec.dashboardfeature.ui.settings.model.SettingsMenuItemType
+import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.testlogic.extension.runFlowTest
 import eu.europa.ec.testlogic.extension.runTest
@@ -31,6 +36,8 @@ import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.test.runCurrent
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -79,6 +86,10 @@ class TestSettingsViewModel {
         click = Event.ItemClicked(SettingsMenuItemType.BIOMETRICS_AUTHENTICATION, context)
 
         whenever(resources.getString(any())).thenReturn("Settings")
+        whenever(resources.getString(R.string.settings_screen_option_registration_check_restart))
+            .thenReturn(RESTART_STRING)
+        whenever(resources.getString(R.string.settings_intent_chooser_logs_share_title))
+            .thenReturn(LOGS_CHOOSER_TITLE)
         whenever(interactor.getAppVersion()).thenReturn("test")
         whenever(interactor.getBiometricsAvailability())
             .thenReturn(BiometricsAvailability.CanAuthenticate)
@@ -214,7 +225,160 @@ class TestSettingsViewModel {
         }
     }
 
+    @Test
+    fun `init shows a loading pass before publishing the settings items`() =
+        coroutineRule.runTest {
+            val items = listOf(settingsItem)
+            val released = CompletableDeferred<Unit>()
+            whenever(interactor.getSettingsItemsUi(null)).doSuspendableAnswer {
+                released.await()
+                items
+            }
+
+            viewModel.handleEvents(Event.Init)
+            coroutineRule.testScope.runCurrent()
+
+            assertTrue(viewModel.viewState.value.isLoading)
+            assertEquals(emptyList<SettingsItemUi>(), viewModel.viewState.value.settingsItems)
+
+            released.complete(Unit)
+            coroutineRule.testScope.runCurrent()
+
+            assertFalse(viewModel.viewState.value.isLoading)
+            assertEquals(items, viewModel.viewState.value.settingsItems)
+        }
+
+    @Test
+    fun `pop requests navigation back`() = coroutineRule.runTest {
+        viewModel.effect.runFlowTest {
+            viewModel.handleEvents(Event.Pop)
+
+            assertEquals(Effect.Navigation.Pop, awaitItem())
+        }
+    }
+
+    @Test
+    fun `launch biometric system screen delegates to the interactor`() = coroutineRule.runTest {
+        viewModel.handleEvents(Event.LaunchBiometricSystemScreen)
+
+        verify(interactor).launchBiometricSystemScreen()
+        assertEquals(0, callbacks.size)
+    }
+
+    @Test
+    fun `toggling the batch issuance counter refreshes the settings items`() =
+        coroutineRule.runTest {
+            val updatedItems = listOf(settingsItem)
+            whenever(interactor.getSettingsItemsUi(null)).thenReturn(updatedItems)
+
+            viewModel.handleEvents(
+                Event.ItemClicked(SettingsMenuItemType.SHOW_BATCH_ISSUANCE_COUNTER, context)
+            )
+            coroutineRule.testScope.runCurrent()
+
+            verify(interactor).toggleShowBatchIssuanceCounter()
+            assertEquals(updatedItems, viewModel.viewState.value.settingsItems)
+            verify(interactor, never()).authenticateWithBiometrics(any(), any(), any())
+        }
+
+    @Test
+    fun `toggling the registration check refreshes the items and asks for a restart`() =
+        coroutineRule.runTest {
+            val updatedItems = listOf(settingsItem)
+            whenever(interactor.getSettingsItemsUi(null)).thenReturn(updatedItems)
+
+            viewModel.effect.runFlowTest {
+                viewModel.handleEvents(
+                    Event.ItemClicked(SettingsMenuItemType.REGISTRATION_CHECK, context)
+                )
+                coroutineRule.testScope.runCurrent()
+
+                verify(interactor).toggleRegistrationCheck()
+                assertEquals(updatedItems, viewModel.viewState.value.settingsItems)
+                assertEquals(Effect.ShowSnackbar(RESTART_STRING), awaitItem())
+            }
+        }
+
+    @Test
+    fun `retrieving logs shares every log file`() = coroutineRule.runTest {
+        val logs = arrayListOf("content://logs/1".toUri(), "content://logs/2".toUri())
+        whenever(interactor.retrieveLogFileUris()).thenReturn(logs)
+
+        viewModel.effect.runFlowTest {
+            viewModel.handleEvents(Event.ItemClicked(SettingsMenuItemType.RETRIEVE_LOGS, context))
+
+            val effect = awaitItem()
+            assertTrue(effect is Effect.ShareLogFile)
+            val shareLogFile = effect as Effect.ShareLogFile
+            assertEquals(Intent.ACTION_SEND_MULTIPLE, shareLogFile.intent.action)
+            assertEquals("text/*", shareLogFile.intent.type)
+            assertEquals(LOGS_CHOOSER_TITLE, shareLogFile.chooserTitle)
+            assertEquals(
+                logs,
+                IntentCompat.getParcelableArrayListExtra(
+                    shareLogFile.intent,
+                    Intent.EXTRA_STREAM,
+                    Uri::class.java
+                )
+            )
+        }
+    }
+
+    @Test
+    fun `retrieving logs stays silent when there is nothing to share`() = coroutineRule.runTest {
+        whenever(interactor.retrieveLogFileUris()).thenReturn(arrayListOf())
+
+        viewModel.effect.runFlowTest {
+            viewModel.handleEvents(Event.ItemClicked(SettingsMenuItemType.RETRIEVE_LOGS, context))
+            coroutineRule.testScope.runCurrent()
+
+            expectNoEvents()
+        }
+    }
+
+    @Test
+    fun `changelog opens the configured url externally`() = coroutineRule.runTest {
+        whenever(interactor.getChangelogUrl()).thenReturn(CHANGELOG_URL)
+        val withChangelog = newViewModel("withChangelog")
+
+        withChangelog.effect.runFlowTest {
+            withChangelog.handleEvents(Event.ItemClicked(SettingsMenuItemType.CHANGELOG, context))
+
+            assertEquals(
+                Effect.Navigation.OpenUrlExternally(CHANGELOG_URL.toUri()),
+                awaitItem()
+            )
+        }
+    }
+
+    @Test
+    fun `changelog stays silent when no url is configured`() = coroutineRule.runTest {
+        whenever(interactor.getChangelogUrl()).thenReturn(null)
+        val withoutChangelog = newViewModel("withoutChangelog")
+
+        withoutChangelog.effect.runFlowTest {
+            withoutChangelog.handleEvents(
+                Event.ItemClicked(SettingsMenuItemType.CHANGELOG, context)
+            )
+            coroutineRule.testScope.runCurrent()
+
+            expectNoEvents()
+        }
+    }
+
     private fun completeAuthentication(result: BiometricsAuthenticate) {
         callbacks.single().invoke(result)
+    }
+
+    private fun newViewModel(key: String): SettingsViewModel = SettingsViewModel(
+        settingsInteractor = interactor,
+        resourceProvider = resources
+    ).also { store.put(key, it) }
+
+    private companion object {
+        const val SETTINGS_STRING = "Settings"
+        const val RESTART_STRING = "Restart required"
+        const val LOGS_CHOOSER_TITLE = "Share logs"
+        const val CHANGELOG_URL = "https://example.org/changelog"
     }
 }
