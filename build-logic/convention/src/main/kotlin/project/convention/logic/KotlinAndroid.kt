@@ -68,6 +68,9 @@ internal fun Project.configureKotlinAndroid(
             isReturnDefaultValues = true
             all { test ->
                 test.systemProperty("user.timezone", "UTC")
+                // Robolectric 4.17+ reaches jdk.internal.access.SharedSecrets when setting up
+                // the SDK 37+ application environment; java.base does not export that package.
+                test.jvmArgs("--add-exports=java.base/jdk.internal.access=ALL-UNNAMED")
             }
         }
 
