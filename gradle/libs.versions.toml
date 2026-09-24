@@ -48,7 +48,7 @@ koin = "4.2.2"
 # Pinned: koin-compiler-plugin 1.2.1 regressed compile-safety validation (KOIN-D001
 # false positives for library types provided by @Single functions, e.g. Json/HttpClient).
 # issue has been submitted: https://github.com/InsertKoinIO/koin-compiler-plugin/issues/114
-koinPlugin = "1.1.0"
+koinPlugin = "1.2.1"
 
 # EUDI wallet SDKs
 eudiWalletCore = "0.30.2"
