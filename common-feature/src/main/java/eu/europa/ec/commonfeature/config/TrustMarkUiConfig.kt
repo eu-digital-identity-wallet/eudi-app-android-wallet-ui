@@ -14,17 +14,27 @@
  * governing permissions and limitations under the Licence.
  */
 
-package eu.europa.ec.dashboardfeature.ui.dashboard.model
+package eu.europa.ec.commonfeature.config
 
-import eu.europa.ec.uilogic.component.ListItemDataUi
+import eu.europa.ec.uilogic.serializer.UiSerializable
+import eu.europa.ec.uilogic.serializer.UiSerializableParser
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
-data class SideMenuItemUi(
-    val type: SideMenuTypeUi,
-    val data: ListItemDataUi,
-)
+@Serializable
+sealed interface TrustMarkMode {
+    @Serializable
+    @SerialName("Welcome")
+    data class Welcome(val continuationRoute: String) : TrustMarkMode
 
-enum class SideMenuTypeUi(val itemId: String) {
-    CHANGE_PIN("changePinId"),
-    SETTINGS("settingsId"),
-    ABOUT("aboutId"),
+    @Serializable
+    @SerialName("About")
+    data object About : TrustMarkMode
+}
+
+@Serializable
+data class TrustMarkUiConfig(val mode: TrustMarkMode) : UiSerializable {
+    companion object Parser : UiSerializableParser {
+        override val serializedKeyName = "trustMarkConfig"
+    }
 }

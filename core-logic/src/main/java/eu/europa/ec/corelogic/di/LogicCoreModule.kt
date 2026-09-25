@@ -33,6 +33,8 @@ import eu.europa.ec.corelogic.controller.WalletCoreTransactionLogController
 import eu.europa.ec.corelogic.controller.WalletCoreTransactionLogControllerImpl
 import eu.europa.ec.corelogic.controller.WalletCoreTransactionRecordingController
 import eu.europa.ec.corelogic.controller.WalletCoreTransactionRecordingControllerImpl
+import eu.europa.ec.corelogic.controller.WalletCoreTrustMarkController
+import eu.europa.ec.corelogic.controller.WalletCoreTrustMarkControllerImpl
 import eu.europa.ec.corelogic.provider.RegistrationCheckProvider
 import eu.europa.ec.corelogic.provider.RegistrationCheckProviderImpl
 import eu.europa.ec.corelogic.provider.WalletCoreAttestationProvider
@@ -74,12 +76,22 @@ fun provideEudiWallet(
 ): EudiWallet = EudiWallet(
     context = context,
     config = walletCoreConfig.config,
-    walletProvider = walletCoreAttestationProvider
+    walletProvider = walletCoreAttestationProvider,
+    trustMarkSource = walletCoreConfig.trustMarkSource,
 ) {
     withLogger(walletCoreLogController)
     withTransactionLogger(walletCoreTransactionLogController)
     withKtorHttpClientFactory { httpClient }
 }
+
+@Factory
+fun provideWalletCoreTrustMarkController(
+    prefKeys: PrefKeys,
+    resourceProvider: ResourceProvider,
+): WalletCoreTrustMarkController = WalletCoreTrustMarkControllerImpl(
+    prefKeys = prefKeys,
+    resourceProvider = resourceProvider,
+)
 
 @Single
 fun provideWalletCoreConfig(

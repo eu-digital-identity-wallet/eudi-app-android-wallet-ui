@@ -19,6 +19,7 @@ package eu.europa.ec.dashboardfeature.ui.transactions.detail
 import android.content.Context
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBarsPadding
@@ -735,6 +736,7 @@ private fun PresentationActionSection(
                     modifier = Modifier.fillMaxWidth(),
                     text = text,
                     enabled = isHistoryEnabled,
+                    contentPadding = PaddingValues(vertical = 10.dp),
                     contentAlignment = Alignment.Start,
                     shape = RectangleShape,
                     trailingIcon = AppIcons.KeyboardArrowRight,

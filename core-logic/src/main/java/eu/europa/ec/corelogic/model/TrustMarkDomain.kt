@@ -14,17 +14,13 @@
  * governing permissions and limitations under the Licence.
  */
 
-package eu.europa.ec.dashboardfeature.ui.dashboard.model
+package eu.europa.ec.corelogic.model
 
-import eu.europa.ec.uilogic.component.ListItemDataUi
-
-data class SideMenuItemUi(
-    val type: SideMenuTypeUi,
-    val data: ListItemDataUi,
+data class TrustMarkDomain(
+    val resourceUrl: String,
+    val imageName: String,
+    val imageUrl: String,
+    val localisedText: String?,
+    val certifiedWalletsUrl: String,
+    val walletSolutionUrl: String,
 )
-
-enum class SideMenuTypeUi(val itemId: String) {
-    CHANGE_PIN("changePinId"),
-    SETTINGS("settingsId"),
-    ABOUT("aboutId"),
-}

@@ -17,6 +17,8 @@
 package eu.europa.ec.uilogic.component.wrap
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -37,23 +39,60 @@ fun WrapAsyncImage(
     error: IconDataUi? = null,
     fallback: IconDataUi? = null,
 ) {
+    WrapAsyncImage(
+        source = source,
+        modifier = modifier,
+        contentDescription = contentDescription,
+        contentScale = contentScale,
+        placeholder = placeholder,
+        error = error,
+        fallback = fallback,
+        onLoading = {},
+        onSuccess = {},
+        onError = {},
+    )
+}
+
+@Composable
+fun WrapAsyncImage(
+    source: String,
+    modifier: Modifier,
+    contentDescription: String?,
+    contentScale: ContentScale,
+    placeholder: IconDataUi?,
+    error: IconDataUi?,
+    fallback: IconDataUi?,
+    onLoading: () -> Unit,
+    onSuccess: () -> Unit,
+    onError: () -> Unit,
+) {
     val context = LocalContext.current
-    val imageLoader = ImageLoader.Builder(context)
-        .components {
-            add(SvgDecoder.Factory())
-        }
-        .build()
+    val imageLoader = remember(context) {
+        ImageLoader.Builder(context)
+            .components {
+                add(SvgDecoder.Factory())
+            }
+            .build()
+    }
+    val request = remember(context, source) {
+        ImageRequest.Builder(context).data(source).build()
+    }
+
+    DisposableEffect(imageLoader) {
+        onDispose { imageLoader.shutdown() }
+    }
 
     AsyncImage(
         modifier = modifier,
-        model = ImageRequest.Builder(context)
-            .data(source)
-            .build(),
+        model = request,
         imageLoader = imageLoader,
         contentDescription = contentDescription,
         contentScale = contentScale,
-        error = error?.resourceId?.let { painterResource(it) },
-        fallback = fallback?.resourceId?.let { painterResource(it) },
-        placeholder = placeholder?.resourceId?.let { painterResource(it) }
+        error = error?.resourceId?.let { resourceId -> painterResource(resourceId) },
+        fallback = fallback?.resourceId?.let { resourceId -> painterResource(resourceId) },
+        placeholder = placeholder?.resourceId?.let { resourceId -> painterResource(resourceId) },
+        onLoading = { onLoading() },
+        onSuccess = { onSuccess() },
+        onError = { onError() },
     )
 }

@@ -28,6 +28,11 @@ sealed class StartupScreens {
 }
 
 sealed class CommonScreens {
+    data object TrustMark : Screen(
+        name = "TRUST_MARK",
+        parameters = "?trustMarkConfig={trustMarkConfig}"
+    )
+
     data object Success : Screen(name = "SUCCESS", parameters = "?successConfig={successConfig}")
     data object Biometric : Screen(
         name = "BIOMETRIC",
