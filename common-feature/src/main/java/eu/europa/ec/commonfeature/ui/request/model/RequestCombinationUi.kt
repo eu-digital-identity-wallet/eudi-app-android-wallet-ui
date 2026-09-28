@@ -31,6 +31,7 @@ import eu.europa.ec.uilogic.component.wrap.ExpandableListItemUi
 data class RequestCombinationUi(
     val documents: List<RequestDocumentItemUi>,
     val matches: List<PresentationMatchDomain>,
+    val transactionData: RequestTransactionDataUi?,
 )
 
 data class RequestDocumentItemUi(

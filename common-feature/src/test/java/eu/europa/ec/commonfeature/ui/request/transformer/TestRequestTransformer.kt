@@ -29,12 +29,14 @@ import eu.europa.ec.corelogic.model.ClaimType
 import eu.europa.ec.corelogic.model.OveraskedClaimDomain
 import eu.europa.ec.corelogic.model.PresentationCombinationDomain
 import eu.europa.ec.corelogic.model.PresentationMatchDomain
+import eu.europa.ec.corelogic.model.PresentationTransactionDataDomain
 import eu.europa.ec.eudi.sdjwt.vc.ClaimPathElement
 import eu.europa.ec.eudi.wallet.document.IssuedDocument
 import eu.europa.ec.eudi.wallet.document.format.SdJwtVcData
 import eu.europa.ec.eudi.wallet.document.format.SdJwtVcFormat
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
+import eu.europa.ec.testfeature.util.StringResourceProviderMocker.mockTransactionDataStrings
 import eu.europa.ec.testfeature.util.StringResourceProviderMocker.mockTransformToUiItemsStrings
 import eu.europa.ec.testfeature.util.copy
 import eu.europa.ec.testfeature.util.getMockedMdlWithBasicFields
@@ -53,17 +55,22 @@ import eu.europa.ec.testfeature.util.mockedSdJwtPidId
 import eu.europa.ec.testfeature.util.mockedSdJwtPidVct
 import eu.europa.ec.testfeature.util.mockedSdJwtVcClaim
 import eu.europa.ec.testfeature.util.mockedSelectableClaims
+import eu.europa.ec.testfeature.util.mockedTransactionDataApproval
+import eu.europa.ec.testfeature.util.mockedTransactionQueryId
+import eu.europa.ec.testfeature.util.mockedUuid
 import eu.europa.ec.testfeature.util.mockedValidMdlWithBasicFieldsRequestMatch
 import eu.europa.ec.testfeature.util.mockedValidPidWithBasicFieldsRequestMatch
 import eu.europa.ec.testlogic.extension.runTest
 import eu.europa.ec.testlogic.rule.CoroutineTestRule
 import eu.europa.ec.uilogic.component.ListItemDataUi
+import eu.europa.ec.uilogic.component.ListItemMainContentDataUi
 import eu.europa.ec.uilogic.component.ListItemSupportingContentDataUi
 import eu.europa.ec.uilogic.component.ListItemTrailingContentDataUi
 import eu.europa.ec.uilogic.component.ThemeColorKey
 import eu.europa.ec.uilogic.component.wrap.ExpandableListItemUi
 import junit.framework.TestCase.assertEquals
 import junit.framework.TestCase.assertFalse
+import junit.framework.TestCase.assertNull
 import junit.framework.TestCase.assertTrue
 import org.junit.After
 import org.junit.Before
@@ -478,6 +485,7 @@ class TestRequestTransformer {
                 documentId = mockedPidId,
                 credentialId = "$mockedPidId-cred",
                 queryId = null,
+                transactionData = emptyList(),
                 requestedClaims = listOf(
                     ClaimPathDomain(
                         segments = emptyList(),
@@ -879,6 +887,178 @@ class TestRequestTransformer {
             assertTrue(leafRows.all { row -> row.supportingContentData == null })
         }
     }
+
+    // Case 21:
+    // 1. Alternative combinations contain the same credential/query but different signing documents.
+    //
+    // Case 21 Expected Result:
+    // Each combination has only its own collapsed section and distinct IDs.
+    @Test
+    fun `Given Case 21, When transformToCombinationsUi is called, Then Case 21 Expected Result is returned`() =
+        coroutineRule.runTest {
+            // Given
+            mockTransactionSectionDependencies()
+            val firstMatch = mockedValidPidWithBasicFieldsRequestMatch.copy(
+                queryId = mockedTransactionQueryId,
+                transactionData = listOf(mockedTransactionDataApproval),
+            )
+            val secondApproval = mockedTransactionDataApproval.copy(
+                documentDigests = listOf(
+                    mockedTransactionDataApproval.documentDigests.single().copy(label = "Second.pdf"),
+                ),
+            )
+
+            // When
+            val combinations = transform(
+                storageDocuments = listOf(getMockedPidWithBasicFields()),
+                combinationsDomain = listOf(
+                    PresentationCombinationDomain(matches = listOf(firstMatch)),
+                    PresentationCombinationDomain(
+                        matches = listOf(firstMatch.copy(transactionData = listOf(secondApproval))),
+                    ),
+                ),
+                claimsAreSelectable = mockedNonSelectableClaims,
+            )
+
+            // Then
+            assertEquals(listOf("file-sample_150kB.pdf"), combinations[0].transactionValues("Document"))
+            assertEquals(listOf("Second.pdf"), combinations[1].transactionValues("Document"))
+            val sections = combinations.map { combination -> combination.transactionData!! }
+            assertTrue(sections.all { section -> !section.details.isExpanded })
+            assertEquals(2, sections.map { section -> section.details.header.itemId }.toSet().size)
+            assertTrue(sections.all { section ->
+                section.details.header.itemId.startsWith("transaction-data:")
+            })
+            assertEquals(
+                listOf(mockedTransactionQueryId),
+                combinations[0].transactionValues("Requested credentials"),
+            )
+        }
+
+    // Case 22:
+    // 1. A valid match shares its identity with matches that have empty or unavailable claims.
+    // 2. A further match references a missing stored document.
+    //
+    // Case 22 Expected Result:
+    // Only the actual represented match contributes metadata, even when document/query identities are equal.
+    @Test
+    fun `Given Case 22, When transformToCombinationsUi is called, Then Case 22 Expected Result is returned`() =
+        coroutineRule.runTest {
+            // Given
+            mockTransactionSectionDependencies()
+            val valid = mockedValidPidWithBasicFieldsRequestMatch.copy(
+                transactionData = listOf(mockedTransactionDataApproval),
+            )
+            val unrepresented = valid.copy(
+                transactionData = listOf(PresentationTransactionDataDomain.Unavailable),
+            )
+            val matches = listOf(
+                unrepresented.copy(documentId = "missing-document"),
+                unrepresented.copy(requestedClaims = emptyList()),
+                valid,
+                unrepresented.copy(requestedClaims = listOf(pidPath("not_stored"))),
+            )
+
+            // When
+            val combination = transform(
+                storageDocuments = listOf(getMockedPidWithBasicFields()),
+                combinationsDomain = listOf(PresentationCombinationDomain(matches = matches)),
+                claimsAreSelectable = mockedSelectableClaims,
+            ).single()
+
+            // Then
+            assertEquals(1, combination.documents.size)
+            assertEquals(matches, combination.matches)
+            assertEquals(listOf("file-sample_150kB.pdf"), combination.transactionValues("Document"))
+            assertTrue(combination.transactionData!!.details.nestedItems.none { item ->
+                (item.header.mainContentData as ListItemMainContentDataUi.Text).text ==
+                        "Details for this transaction are unavailable."
+            })
+        }
+
+    // Case 23:
+    // 1. Multiple represented matches contain repeated approvals and an unsupported entry.
+    // 2. Credential rows include an overasked-claim mark.
+    //
+    // Case 23 Expected Result:
+    // One section preserves occurrence order; metadata has no claim marks/checkboxes and selections are unchanged.
+    @Test
+    fun `Given Case 23, When transformToCombinationsUi is called, Then Case 23 Expected Result is returned`() =
+        coroutineRule.runTest {
+            // Given
+            mockTransactionSectionDependencies()
+            val pid = mockedValidPidWithBasicFieldsRequestMatch.copy(
+                transactionData = listOf(mockedTransactionDataApproval, mockedTransactionDataApproval),
+            )
+            val mdl = mockedValidMdlWithBasicFieldsRequestMatch.copy(
+                transactionData = listOf(PresentationTransactionDataDomain.Unavailable),
+            )
+            val documents = listOf(getMockedPidWithBasicFields(), getMockedMdlWithBasicFields())
+
+            // When
+            val combination = RequestTransformer.transformToCombinationsUi(
+                storageDocuments = documents,
+                resourceProvider = resourceProvider,
+                uuidProvider = uuidProvider,
+                combinationsDomain = listOf(PresentationCombinationDomain(matches = listOf(pid, mdl))),
+                claimsAreSelectable = mockedSelectableClaims,
+                overaskedClaims = listOf(
+                    OveraskedClaimDomain(path = pidPath("family_name"), attestationTypes = setOf(mockedMdocPidDocType)),
+                ),
+            ).getOrThrow().single()
+
+            // Then
+            val section = combination.transactionData!!
+            assertEquals(listOf("eIDAS"), combination.transactionValues("Trust framework"))
+            assertEquals(listOf("1", "1"), combination.transactionValues("Number of signatures"))
+            assertTrue(section.details.nestedItems.all { item ->
+                item.header.supportingContentData == null && item.header.trailingContentData == null
+            })
+            assertEquals(
+                listOf("Transaction 1", "Transaction 2", "Transaction 3", "Details for this transaction are unavailable."),
+                section.details.nestedItems.filter { item -> item.header.overlineText == null }
+                    .map { item -> (item.header.mainContentData as ListItemMainContentDataUi.Text).text },
+            )
+            val baselineDocuments = render(storageDocuments = documents, matches = listOf(pid, mdl))
+            assertEquals(
+                RequestTransformer.createSelectionsDomain(
+                    documentItemsUi = baselineDocuments,
+                    matchesDomain = listOf(pid, mdl),
+                    claimsAreSelectable = mockedSelectableClaims,
+                ),
+                RequestTransformer.createSelectionsDomain(
+                    documentItemsUi = combination.documents,
+                    matchesDomain = combination.matches,
+                    claimsAreSelectable = mockedSelectableClaims,
+                ),
+            )
+        }
+
+    // Case 24:
+    // 1. Every match has transaction data but no claims that can be displayed.
+    //
+    // Case 24 Expected Result:
+    // No transaction section rescues an empty combination or changes the existing NoData eligibility.
+    @Test
+    fun `Given Case 24, When transformToCombinationsUi is called, Then Case 24 Expected Result is returned`() =
+        coroutineRule.runTest {
+            // Given
+            val match = mockedValidPidWithBasicFieldsRequestMatch.copy(
+                requestedClaims = emptyList(),
+                transactionData = listOf(mockedTransactionDataApproval),
+            )
+
+            // When
+            val combination = transform(
+                storageDocuments = listOf(getMockedPidWithBasicFields()),
+                combinationsDomain = listOf(PresentationCombinationDomain(matches = listOf(match))),
+                claimsAreSelectable = mockedSelectableClaims,
+            ).single()
+
+            // Then
+            assertTrue(combination.documents.isEmpty())
+            assertNull(combination.transactionData)
+        }
 
     //endregion
 
@@ -1526,6 +1706,15 @@ class TestRequestTransformer {
 
     //region helpers
 
+    private fun mockTransactionSectionDependencies() {
+        mockTransactionDataStrings(resourceProvider = resourceProvider)
+        whenever(uuidProvider.provideUuid()).thenReturn(mockedUuid)
+    }
+
+    private fun RequestCombinationUi.transactionValues(label: String): List<String> =
+        transactionData!!.details.nestedItems.filter { item -> item.header.overlineText == label }
+            .map { item -> (item.header.mainContentData as ListItemMainContentDataUi.Text).text }
+
     /** The warning line an overasked claim row carries. */
     private val mockedNotRegisteredSupportingText = "Not registered data"
     private val mockedNotRegisteredMark = ListItemSupportingContentDataUi.Text(
@@ -1603,6 +1792,7 @@ class TestRequestTransformer {
             credentialId = "$mockedTwoNationalitiesSdJwtPidId-cred",
             queryId = null,
             requestedClaims = requestedClaims.toList(),
+            transactionData = emptyList(),
         )
 
     private fun mockedTwoNationalitiesSdJwtPid(): IssuedDocument {
@@ -1676,6 +1866,7 @@ class TestRequestTransformer {
             credentialId = "$mockedSdJwtPidId-cred",
             queryId = null,
             requestedClaims = requestedClaims.toList(),
+            transactionData = emptyList(),
         )
 
     /** A typed SD-JWT VC path of plain object keys, e.g. `["address", "country"]`. */

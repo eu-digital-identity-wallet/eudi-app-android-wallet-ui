@@ -16,6 +16,10 @@
 
 package eu.europa.ec.commonfeature.ui.request.model
 
+import eu.europa.ec.uilogic.component.wrap.ExpandableListItemUi
+import eu.europa.ec.uilogic.extension.toggleExpansionState
+import eu.europa.ec.uilogic.extension.withExpansionIcon
+
 /**
  * The request screen's state: still loading ([Initial]), nothing to disclose ([NoData]), one
  * combination ([Single]), or several to choose between ([Multiple]).
@@ -82,6 +86,48 @@ sealed interface RequestDataUi {
         )
     }
 
+    fun toggleTransactionDataExpansion(sectionId: String, itemId: String): RequestDataUi {
+        val section = selectedCombination?.transactionData ?: return this
+        if (section.details.header.itemId != sectionId) return this
+        if (section.details.findVisibleItem(itemId) !is ExpandableListItemUi.NestedListItem) return this
+
+        val updatedSection = section.copy(
+            details = if (sectionId == itemId) {
+                val isExpanded = !section.details.isExpanded
+                section.details.copy(
+                    header = section.details.header.withExpansionIcon(isExpanded = isExpanded),
+                    isExpanded = isExpanded,
+                )
+            } else {
+                section.details.copy(
+                    nestedItems = section.details.nestedItems.toggleExpansionState(id = itemId),
+                )
+            },
+        )
+
+        return when (this) {
+            is Initial -> this
+            is NoData -> this
+            is Single -> copy(combination = combination.copy(transactionData = updatedSection))
+            is Multiple -> copy(
+                combinations = combinations.mapIndexed { index, combination ->
+                    if (index == selectedIndex) {
+                        combination.copy(transactionData = updatedSection)
+                    } else {
+                        combination
+                    }
+                },
+            )
+        }
+    }
+
+    fun transactionDocumentUrl(sectionId: String, itemId: String): String? {
+        val section = selectedCombination?.transactionData ?: return null
+        if (section.details.header.itemId != sectionId || !section.details.isExpanded) return null
+        if (section.details.findVisibleItem(itemId) !is ExpandableListItemUi.SingleListItem) return null
+        return section.documentUrlsByItemId[itemId]
+    }
+
     companion object {
         /**
          * Maps the controller's combinations onto the right variant: none → [NoData],
@@ -91,6 +137,24 @@ sealed interface RequestDataUi {
             combinations.isEmpty() -> NoData
             combinations.size == 1 -> Single(combination = combinations.first())
             else -> Multiple(combinations = combinations, selectedIndex = 0)
+        }
+    }
+}
+
+private fun ExpandableListItemUi.findVisibleItem(itemId: String): ExpandableListItemUi? {
+    if (header.itemId == itemId) return this
+
+    return when (this) {
+        is ExpandableListItemUi.SingleListItem -> null
+
+        is ExpandableListItemUi.NestedListItem -> {
+            if (isExpanded) {
+                nestedItems.firstNotNullOfOrNull { item ->
+                    item.findVisibleItem(itemId)
+                }
+            } else {
+                null
+            }
         }
     }
 }

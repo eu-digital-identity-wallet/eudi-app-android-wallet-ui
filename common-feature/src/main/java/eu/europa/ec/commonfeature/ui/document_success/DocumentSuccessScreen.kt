@@ -266,6 +266,7 @@ private fun Content(
                         header = successItem.header,
                         data = successItem.nestedItems,
                         onItemClick = null,
+                        isItemClickable = { true },
                         onExpandedChange = { expandedItem ->
                             onEventSend(Event.ExpandOrCollapseSuccessDocumentItem(itemId = expandedItem.itemId))
                         },

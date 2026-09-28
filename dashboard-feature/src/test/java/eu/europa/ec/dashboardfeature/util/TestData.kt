@@ -365,6 +365,7 @@ internal val mockedIssuanceDetails = IssuanceDetailsDomain(
     isUserTriggered = true,
 )
 internal val mockedPresentationLogDomain = TransactionLogDomain.Presentation(
+    transactionData = emptyList(),
     id = "presentation",
     time = mockedTransactionDateTime,
     result = TransactionResultDomain.Completed,
@@ -614,6 +615,7 @@ internal val mockedNestedTransactionClaims = listOf(
     )
 )
 internal val mockedTransactionDetailsStrings = mapOf(
+    R.string.transaction_details_signing_request_title to "SIGNING REQUEST",
     R.string.transaction_details_data_requested_section_title to "DATA REQUESTED",
     R.string.transaction_details_relying_party_section_title to "RELYING PARTY",
     R.string.transaction_details_authority_section_title to "DATA PROTECTION AUTHORITY",

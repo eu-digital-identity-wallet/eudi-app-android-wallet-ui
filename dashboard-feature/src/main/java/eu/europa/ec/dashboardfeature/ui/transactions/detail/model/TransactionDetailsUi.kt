@@ -59,11 +59,13 @@ sealed interface TransactionDetailsBodyUi {
     data class Presentation(
         val requested: TransactionDetailsSectionUi,
         val shared: TransactionDetailsSectionUi,
+        val transactionData: TransactionDetailsSectionUi?,
         val deletionContacts: List<TransactionContactUi>,
         val reportContacts: List<TransactionContactUi>,
         val actionCounts: PresentationActionCountsUiState,
     ) : TransactionDetailsBodyUi {
-        override val sections: List<TransactionDetailsSectionUi> = listOf(requested, shared)
+        override val sections: List<TransactionDetailsSectionUi> =
+            listOfNotNull(requested, shared, transactionData)
     }
 
     data class Issuance(

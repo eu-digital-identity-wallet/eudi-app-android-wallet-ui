@@ -97,7 +97,11 @@ fun WrapCard(
                         onClick()
                     }
                 }
-            } else Modifier.clickable(enabled = false, onClick = {})
+            } else if (!enabled) {
+                Modifier.clickable(enabled = false, onClick = {})
+            } else {
+                Modifier
+            }
         )
 
     Card(

@@ -37,6 +37,7 @@ import eu.europa.ec.eudi.wallet.transactionLogging.model.ClaimPath
 import eu.europa.ec.eudi.wallet.transactionLogging.model.MultiLangString
 import eu.europa.ec.eudi.wallet.transactionLogging.model.TransactionEntry
 import eu.europa.ec.eudi.wallet.transactionLogging.model.TransactionResult
+import eu.europa.ec.eudi.wallet.transfer.openId4vp.TransactionDataType
 import java.time.Instant
 import java.util.Locale
 
@@ -53,6 +54,7 @@ internal fun TransactionEntry.toTransactionLogDomain(
     userLocale: Locale,
     parentPresentationId: String?,
     communicationMethod: String?,
+    transactionDataTypes: List<TransactionDataType>,
 ): TransactionLogDomain? {
     val method = communicationMethod.toCommunicationMethodDomainOrNull()
 
@@ -77,6 +79,9 @@ internal fun TransactionEntry.toTransactionLogDomain(
             registration = toPresentationRegistrationDomain(userLocale = userLocale),
             claimsRequested = listOfClaimsRequested.toCredentialClaimsDomain(),
             claimsPresented = listOfClaimsPresented.toCredentialClaimsDomain(),
+            transactionData = transactionalData
+                ?.toPresentationTransactionDataDomains(types = transactionDataTypes)
+                .orEmpty(),
         )
 
         is TransactionEntry.CredentialIssuance -> TransactionLogDomain.CredentialIssuance(

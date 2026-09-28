@@ -3,6 +3,7 @@
 ## Table of contents
 
 * [General configuration](#general-configuration)
+* [Transaction data configuration](#transaction-data-configuration)
 * [Trust Mark configuration](#trust-mark-configuration)
 * [Production configuration reference](#production-configuration-reference)
 * [Deep link scheme configuration](#deep-link-scheme-configuration)
@@ -366,6 +367,24 @@ overridden by a flavor when needed.
         val forcePidActivation: Boolean get() = false
    }
     ```
+
+## Transaction data configuration
+
+Both `dev` and `demo` enable QES approval and QES request transaction data in their
+`WalletCoreConfigImpl` OpenID4VP configuration:
+
+```kotlin
+configureOpenId4Vp {
+    withTransactionDataTypes(
+        TransactionDataType.QES_APPROVAL,
+        TransactionDataType.QES
+    )
+}
+```
+
+Keep this alongside the other OpenID4VP settings in any flavor that supports these requests.
+The configured types are also used to display recorded signing-request details in transaction
+history. See [Transaction history](GO_LIVE.md#transaction-history) for the displayed information.
 
 ## Trust Mark configuration
 
