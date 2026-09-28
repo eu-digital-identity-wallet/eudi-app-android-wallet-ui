@@ -71,6 +71,24 @@ class DashboardInteractorImpl(
                     )
                 )
             )
+
+            add(
+                SideMenuItemUi(
+                    type = SideMenuTypeUi.ABOUT,
+                    data = ListItemDataUi(
+                        itemId = SideMenuTypeUi.ABOUT.itemId,
+                        mainContentData = ListItemMainContentDataUi.Text(
+                            text = resourceProvider.getString(R.string.trust_mark_about_title)
+                        ),
+                        leadingContentData = ListItemLeadingContentDataUi.Icon(
+                            iconData = AppIcons.Info
+                        ),
+                        trailingContentData = ListItemTrailingContentDataUi.Icon(
+                            iconData = AppIcons.KeyboardArrowRight
+                        ),
+                    ),
+                )
+            )
         }
     }
 }

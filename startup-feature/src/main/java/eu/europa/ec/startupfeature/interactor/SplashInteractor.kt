@@ -17,11 +17,14 @@
 package eu.europa.ec.startupfeature.interactor
 
 import eu.europa.ec.businesslogic.config.ConfigLogic
+import eu.europa.ec.businesslogic.controller.storage.PrefKeys
 import eu.europa.ec.commonfeature.config.BiometricMode
 import eu.europa.ec.commonfeature.config.BiometricUiConfig
 import eu.europa.ec.commonfeature.config.IssuanceFlowType
 import eu.europa.ec.commonfeature.config.IssuanceUiConfig
 import eu.europa.ec.commonfeature.config.OnBackNavigationConfig
+import eu.europa.ec.commonfeature.config.TrustMarkMode
+import eu.europa.ec.commonfeature.config.TrustMarkUiConfig
 import eu.europa.ec.commonfeature.interactor.QuickPinInteractor
 import eu.europa.ec.commonfeature.model.PinFlow
 import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
@@ -35,9 +38,16 @@ import eu.europa.ec.uilogic.navigation.IssuanceScreens
 import eu.europa.ec.uilogic.navigation.helper.generateComposableArguments
 import eu.europa.ec.uilogic.navigation.helper.generateComposableNavigationLink
 import eu.europa.ec.uilogic.serializer.UiSerializer
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+
+sealed interface SplashRoutePartialState {
+    data class Success(val route: String) : SplashRoutePartialState
+    data class Failure(val error: String) : SplashRoutePartialState
+}
 
 interface SplashInteractor {
-    suspend fun getAfterSplashRoute(): String
+    suspend fun getAfterSplashRoute(): SplashRoutePartialState
 }
 
 class SplashInteractorImpl(
@@ -45,7 +55,8 @@ class SplashInteractorImpl(
     private val uiSerializer: UiSerializer,
     private val resourceProvider: ResourceProvider,
     private val walletCoreDocumentsController: WalletCoreDocumentsController,
-    private val configLogic: ConfigLogic
+    private val configLogic: ConfigLogic,
+    private val prefKeys: PrefKeys,
 ) : SplashInteractor {
 
     private val hasDocuments: Boolean
@@ -54,15 +65,40 @@ class SplashInteractorImpl(
     private val shouldActivateWithPid: Boolean
         get() = configLogic.forcePidActivation && !hasDocuments
 
-    override suspend fun getAfterSplashRoute(): String = when (quickPinInteractor.hasPin()) {
-        true -> {
-            getBiometricsConfig()
+    override suspend fun getAfterSplashRoute(): SplashRoutePartialState =
+        withContext(Dispatchers.IO) {
+            runCatching {
+                val continuationRoute = if (quickPinInteractor.hasPin()) {
+                    getBiometricsConfig()
+                } else {
+                    getQuickPinConfig()
+                }
+                val route = if (prefKeys.getTrustMarkIntroductionCompleted()) {
+                    continuationRoute
+                } else {
+                    val config = uiSerializer.toBase64(
+                        model = TrustMarkUiConfig(
+                            mode = TrustMarkMode.Welcome(continuationRoute = continuationRoute)
+                        ),
+                        parser = TrustMarkUiConfig.Parser,
+                    )
+                    if (config.isNullOrBlank()) {
+                        return@runCatching SplashRoutePartialState.Failure(
+                            error = resourceProvider.genericErrorMessage()
+                        )
+                    }
+                    generateComposableNavigationLink(
+                        screen = CommonScreens.TrustMark,
+                        arguments = generateComposableArguments(
+                            mapOf(TrustMarkUiConfig.serializedKeyName to config)
+                        ),
+                    )
+                }
+                SplashRoutePartialState.Success(route = route)
+            }.getOrElse {
+                SplashRoutePartialState.Failure(error = resourceProvider.genericErrorMessage())
+            }
         }
-
-        false -> {
-            getQuickPinConfig()
-        }
-    }
 
     private fun getQuickPinConfig(): String {
         return generateComposableNavigationLink(

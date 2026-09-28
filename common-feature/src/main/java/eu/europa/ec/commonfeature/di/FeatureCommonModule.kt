@@ -22,6 +22,7 @@ import eu.europa.ec.authenticationlogic.controller.authentication.DeviceAuthenti
 import eu.europa.ec.authenticationlogic.controller.storage.BiometryStorageController
 import eu.europa.ec.authenticationlogic.controller.storage.PinStorageController
 import eu.europa.ec.authenticationlogic.controller.throttle.PinThrottleController
+import eu.europa.ec.businesslogic.controller.storage.PrefKeys
 import eu.europa.ec.businesslogic.validator.FormValidator
 import eu.europa.ec.commonfeature.interactor.BiometricInteractor
 import eu.europa.ec.commonfeature.interactor.BiometricInteractorImpl
@@ -31,6 +32,9 @@ import eu.europa.ec.commonfeature.interactor.QrScanInteractor
 import eu.europa.ec.commonfeature.interactor.QrScanInteractorImpl
 import eu.europa.ec.commonfeature.interactor.QuickPinInteractor
 import eu.europa.ec.commonfeature.interactor.QuickPinInteractorImpl
+import eu.europa.ec.commonfeature.interactor.TrustMarkInteractor
+import eu.europa.ec.commonfeature.interactor.TrustMarkInteractorImpl
+import eu.europa.ec.corelogic.controller.WalletCoreTrustMarkController
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import org.koin.core.annotation.ComponentScan
 import org.koin.core.annotation.Configuration
@@ -41,6 +45,17 @@ import org.koin.core.annotation.Module
 @Configuration
 @ComponentScan("eu.europa.ec.commonfeature")
 class FeatureCommonModule
+
+@Factory
+fun provideTrustMarkInteractor(
+    walletCoreTrustMarkController: WalletCoreTrustMarkController,
+    prefKeys: PrefKeys,
+    resourceProvider: ResourceProvider,
+): TrustMarkInteractor = TrustMarkInteractorImpl(
+    walletCoreTrustMarkController = walletCoreTrustMarkController,
+    prefKeys = prefKeys,
+    resourceProvider = resourceProvider,
+)
 
 @Factory
 fun provideQuickPinInteractor(

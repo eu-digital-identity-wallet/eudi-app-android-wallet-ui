@@ -17,17 +17,22 @@
 package eu.europa.ec.startupfeature.interactor
 
 import eu.europa.ec.businesslogic.config.ConfigLogic
+import eu.europa.ec.businesslogic.controller.storage.PrefKeys
 import eu.europa.ec.commonfeature.config.BiometricMode
 import eu.europa.ec.commonfeature.config.BiometricUiConfig
 import eu.europa.ec.commonfeature.config.IssuanceFlowType
 import eu.europa.ec.commonfeature.config.IssuanceUiConfig
 import eu.europa.ec.commonfeature.config.OnBackNavigationConfig
+import eu.europa.ec.commonfeature.config.TrustMarkMode
+import eu.europa.ec.commonfeature.config.TrustMarkUiConfig
 import eu.europa.ec.commonfeature.interactor.QuickPinInteractor
 import eu.europa.ec.commonfeature.model.PinFlow
 import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.testfeature.util.getMockedFullDocuments
+import eu.europa.ec.testfeature.util.mockedExceptionWithMessage
+import eu.europa.ec.testfeature.util.mockedGenericErrorMessage
 import eu.europa.ec.testlogic.extension.runTest
 import eu.europa.ec.testlogic.rule.CoroutineTestRule
 import eu.europa.ec.uilogic.config.ConfigNavigation
@@ -43,6 +48,9 @@ import org.junit.Rule
 import org.junit.Test
 import org.mockito.Mock
 import org.mockito.MockitoAnnotations
+import org.mockito.kotlin.any
+import org.mockito.kotlin.never
+import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 
 class TestSplashInteractor {
@@ -65,6 +73,9 @@ class TestSplashInteractor {
     @Mock
     private lateinit var configLogic: ConfigLogic
 
+    @Mock
+    private lateinit var prefKeys: PrefKeys
+
     private lateinit var interactor: SplashInteractor
 
     private lateinit var closeable: AutoCloseable
@@ -72,13 +83,15 @@ class TestSplashInteractor {
     @Before
     fun before() {
         closeable = MockitoAnnotations.openMocks(this)
+        whenever(resourceProvider.genericErrorMessage()).thenReturn(mockedGenericErrorMessage)
 
         interactor = SplashInteractorImpl(
             quickPinInteractor = quickPinInteractor,
             uiSerializer = uiSerializer,
             resourceProvider = resourceProvider,
             walletCoreDocumentsController = walletCoreDocumentsController,
-            configLogic = configLogic
+            configLogic = configLogic,
+            prefKeys = prefKeys,
         )
     }
 
@@ -101,6 +114,7 @@ class TestSplashInteractor {
     fun `Given Case 1, When getAfterSplashRoute is called, Then Case 1 Expected Result is returned`() {
         coroutineRule.runTest {
             // Given
+            mockIntroductionCompletedCall(completed = mockedIntroductionCompleted)
             whenever(quickPinInteractor.hasPin()).thenReturn(false)
             whenever(configLogic.forcePidActivation).thenReturn(true)
             whenever(walletCoreDocumentsController.getAllDocuments()).thenReturn(emptyList())
@@ -111,7 +125,7 @@ class TestSplashInteractor {
             // Then
             val expectedResult =
                 "${CommonScreens.QuickPin.screenName}?pinFlow=${PinFlow.CREATE_WITH_ACTIVATION}"
-            assertEquals(expectedResult, result)
+            assertEquals(SplashRoutePartialState.Success(expectedResult), result)
         }
     }
 
@@ -127,6 +141,7 @@ class TestSplashInteractor {
     fun `Given Case 2, When getAfterSplashRoute is called, Then Case 2 Expected Result is returned`() {
         coroutineRule.runTest {
             // Given
+            mockIntroductionCompletedCall(completed = mockedIntroductionCompleted)
             whenever(quickPinInteractor.hasPin()).thenReturn(false)
             whenever(configLogic.forcePidActivation).thenReturn(true)
             val mockedFullDocuments = getMockedFullDocuments()
@@ -139,7 +154,7 @@ class TestSplashInteractor {
             // Then
             val expectedResult =
                 "${CommonScreens.QuickPin.screenName}?pinFlow=${PinFlow.CREATE_WITHOUT_ACTIVATION}"
-            assertEquals(expectedResult, result)
+            assertEquals(SplashRoutePartialState.Success(expectedResult), result)
         }
     }
 
@@ -154,6 +169,7 @@ class TestSplashInteractor {
     fun `Given Case 3, When getAfterSplashRoute is called, Then Case 3 Expected Result is returned`() {
         coroutineRule.runTest {
             // Given
+            mockIntroductionCompletedCall(completed = mockedIntroductionCompleted)
             whenever(quickPinInteractor.hasPin()).thenReturn(false)
             whenever(configLogic.forcePidActivation).thenReturn(false)
             whenever(walletCoreDocumentsController.getAllDocuments()).thenReturn(emptyList())
@@ -164,7 +180,7 @@ class TestSplashInteractor {
             // Then
             val expectedResult =
                 "${CommonScreens.QuickPin.screenName}?pinFlow=${PinFlow.CREATE_WITHOUT_ACTIVATION}"
-            assertEquals(expectedResult, result)
+            assertEquals(SplashRoutePartialState.Success(expectedResult), result)
         }
     }
 
@@ -180,6 +196,7 @@ class TestSplashInteractor {
     fun `Given Case 4, When getAfterSplashRoute is called, Then Case 4 Expected Result is returned`() {
         coroutineRule.runTest {
             // Given
+            mockIntroductionCompletedCall(completed = mockedIntroductionCompleted)
             whenever(quickPinInteractor.hasPin()).thenReturn(true)
             whenever(configLogic.forcePidActivation).thenReturn(false)
             whenever(walletCoreDocumentsController.getAllDocuments()).thenReturn(emptyList())
@@ -194,7 +211,7 @@ class TestSplashInteractor {
             // Then
             val expectedResult =
                 "${CommonScreens.Biometric.screenName}?biometricConfig=$mockedBiometricConfigBase64"
-            assertEquals(expectedResult, result)
+            assertEquals(SplashRoutePartialState.Success(expectedResult), result)
         }
     }
 
@@ -211,6 +228,7 @@ class TestSplashInteractor {
     fun `Given Case 5, When getAfterSplashRoute is called, Then Case 5 Expected Result is returned`() {
         coroutineRule.runTest {
             // Given
+            mockIntroductionCompletedCall(completed = mockedIntroductionCompleted)
             whenever(quickPinInteractor.hasPin()).thenReturn(true)
             whenever(configLogic.forcePidActivation).thenReturn(true)
             val mockedFullDocuments = getMockedFullDocuments()
@@ -227,7 +245,7 @@ class TestSplashInteractor {
             // Then
             val expectedResult =
                 "${CommonScreens.Biometric.screenName}?biometricConfig=$mockedBiometricConfigBase64"
-            assertEquals(expectedResult, result)
+            assertEquals(SplashRoutePartialState.Success(expectedResult), result)
         }
     }
 
@@ -245,6 +263,7 @@ class TestSplashInteractor {
     fun `Given Case 6, When getAfterSplashRoute is called, Then Case 6 Expected Result is returned`() {
         coroutineRule.runTest {
             // Given
+            mockIntroductionCompletedCall(completed = mockedIntroductionCompleted)
             whenever(quickPinInteractor.hasPin()).thenReturn(true)
             whenever(configLogic.forcePidActivation).thenReturn(true)
             whenever(walletCoreDocumentsController.getAllDocuments()).thenReturn(emptyList())
@@ -266,7 +285,7 @@ class TestSplashInteractor {
             // Then
             val expectedResult =
                 "${CommonScreens.Biometric.screenName}?biometricConfig=$mockedBiometricConfigBase64"
-            assertEquals(expectedResult, result)
+            assertEquals(SplashRoutePartialState.Success(expectedResult), result)
         }
     }
 
@@ -282,6 +301,7 @@ class TestSplashInteractor {
     fun `Given Case 7, When getAfterSplashRoute is called, Then Case 7 Expected Result is returned`() {
         coroutineRule.runTest {
             // Given
+            mockIntroductionCompletedCall(completed = mockedIntroductionCompleted)
             whenever(quickPinInteractor.hasPin()).thenReturn(true)
             whenever(configLogic.forcePidActivation).thenReturn(false)
             whenever(walletCoreDocumentsController.getAllDocuments()).thenReturn(emptyList())
@@ -300,13 +320,128 @@ class TestSplashInteractor {
 
             // Then
             val expectedResult = "${CommonScreens.Biometric.screenName}?biometricConfig="
-            assertEquals(expectedResult, result)
+            assertEquals(SplashRoutePartialState.Success(expectedResult), result)
+        }
+    }
+
+    // Case 8:
+    // 1. The introduction is incomplete and no PIN exists.
+    // 2. PID activation is tested both enabled and disabled.
+    // Case 8 Expected Result:
+    // Welcome carries the existing PIN route without recording completion.
+    @Test
+    fun `Given Case 8, When getAfterSplashRoute is called, Then Case 8 Expected Result is returned`() {
+        coroutineRule.runTest {
+            // Given
+            mockIntroductionCompletedCall(false)
+            whenever(quickPinInteractor.hasPin()).thenReturn(false)
+            whenever(walletCoreDocumentsController.getAllDocuments()).thenReturn(emptyList())
+            listOf(true, false).forEach { forcePidActivation ->
+                whenever(configLogic.forcePidActivation).thenReturn(forcePidActivation)
+                val pinFlow = if (forcePidActivation) {
+                    PinFlow.CREATE_WITH_ACTIVATION
+                } else PinFlow.CREATE_WITHOUT_ACTIVATION
+                mockWelcomeConfigSerialization(
+                    continuationRoute = "${CommonScreens.QuickPin.screenName}?pinFlow=$pinFlow",
+                    response = mockedWelcomeConfigBase64,
+                )
+
+                // When
+                val result = interactor.getAfterSplashRoute()
+
+                // Then
+                assertEquals(SplashRoutePartialState.Success(mockedWelcomeRoute), result)
+            }
+            verify(prefKeys, never()).setTrustMarkIntroductionCompleted(any())
+        }
+    }
+
+    // Case 9:
+    // 1. A PIN exists but the introduction remains incomplete.
+    // Case 9 Expected Result:
+    // Welcome preserves the biometric continuation, without inferring completion from the PIN.
+    @Test
+    fun `Given Case 9, When getAfterSplashRoute is called, Then Case 9 Expected Result is returned`() {
+        coroutineRule.runTest {
+            // Given
+            mockIntroductionCompletedCall(false)
+            whenever(quickPinInteractor.hasPin()).thenReturn(true)
+            whenever(configLogic.forcePidActivation).thenReturn(false)
+            mockBiometricLoginStrings()
+            mockBiometricConfigSerialization(buildBiometricUiConfig(shouldActivateWithPid = false))
+            mockWelcomeConfigSerialization(
+                continuationRoute = "${CommonScreens.Biometric.screenName}?biometricConfig=$mockedBiometricConfigBase64",
+                response = mockedWelcomeConfigBase64,
+            )
+
+            // When
+            val result = interactor.getAfterSplashRoute()
+
+            // Then
+            assertEquals(SplashRoutePartialState.Success(mockedWelcomeRoute), result)
+        }
+    }
+
+    // Case 10:
+    // 1. Reading introduction completion fails.
+    // Case 10 Expected Result:
+    // A recoverable failure is returned instead of bypassing Welcome.
+    @Test
+    fun `Given Case 10, When getAfterSplashRoute is called, Then Case 10 Expected Result is returned`() {
+        coroutineRule.runTest {
+            // Given
+            whenever(prefKeys.getTrustMarkIntroductionCompleted()).thenThrow(mockedExceptionWithMessage)
+            whenever(quickPinInteractor.hasPin()).thenReturn(false)
+            whenever(configLogic.forcePidActivation).thenReturn(false)
+
+            // When
+            val result = interactor.getAfterSplashRoute()
+
+            // Then
+            assertEquals(SplashRoutePartialState.Failure(mockedGenericErrorMessage), result)
+        }
+    }
+
+    // Case 11:
+    // 1. Welcome configuration cannot be serialized.
+    // Case 11 Expected Result:
+    // A recoverable failure is returned without selecting another destination.
+    @Test
+    fun `Given Case 11, When getAfterSplashRoute is called, Then Case 11 Expected Result is returned`() {
+        coroutineRule.runTest {
+            // Given
+            mockIntroductionCompletedCall(false)
+            whenever(quickPinInteractor.hasPin()).thenReturn(false)
+            whenever(configLogic.forcePidActivation).thenReturn(false)
+            mockWelcomeConfigSerialization(
+                continuationRoute = "${CommonScreens.QuickPin.screenName}?pinFlow=${PinFlow.CREATE_WITHOUT_ACTIVATION}",
+                response = null,
+            )
+
+            // When
+            val result = interactor.getAfterSplashRoute()
+
+            // Then
+            assertEquals(SplashRoutePartialState.Failure(mockedGenericErrorMessage), result)
         }
     }
 
     //endregion
 
     //region helper functions
+    private suspend fun mockIntroductionCompletedCall(completed: Boolean) {
+        whenever(prefKeys.getTrustMarkIntroductionCompleted()).thenReturn(completed)
+    }
+
+    private fun mockWelcomeConfigSerialization(continuationRoute: String, response: String?) {
+        whenever(
+            uiSerializer.toBase64(
+                model = TrustMarkUiConfig(TrustMarkMode.Welcome(continuationRoute)),
+                parser = TrustMarkUiConfig.Parser,
+            )
+        ).thenReturn(response)
+    }
+
     private fun mockBiometricLoginStrings() {
         whenever(resourceProvider.getString(R.string.biometric_login_title))
             .thenReturn(mockedBiometricLoginTitle)
@@ -363,5 +498,9 @@ class TestSplashInteractor {
         "Biometric subtitle when biometrics not enabled"
     private val mockedIssuanceConfigBase64 = "mockedIssuanceConfigBase64"
     private val mockedBiometricConfigBase64 = "mockedBiometricConfigBase64"
+    private val mockedIntroductionCompleted = true
+    private val mockedWelcomeConfigBase64 = "mockedWelcomeConfigBase64"
+    private val mockedWelcomeRoute =
+        "${CommonScreens.TrustMark.screenName}?${TrustMarkUiConfig.serializedKeyName}=$mockedWelcomeConfigBase64"
     //endregion
 }

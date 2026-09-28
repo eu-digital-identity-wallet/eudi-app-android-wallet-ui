@@ -3,6 +3,7 @@
 ## Table of contents
 
 * [General configuration](#general-configuration)
+* [Trust Mark configuration](#trust-mark-configuration)
 * [Production configuration reference](#production-configuration-reference)
 * [Deep link scheme configuration](#deep-link-scheme-configuration)
 * [Scoped Issuance Document Configuration](#scoped-issuance-document-configuration)
@@ -14,8 +15,9 @@
 
 ## General configuration
 
-All core network and trust settings are centralized in the `WalletCoreConfig` interface inside the
-**core-logic** module:
+Wallet Core settings are exposed through the `WalletCoreConfig` interface inside the
+**core-logic** module. `LogicCoreModule` constructs and injects SDK dependencies using this
+configuration:
 
 ```kotlin
 interface WalletCoreConfig {
@@ -36,16 +38,21 @@ interface WalletCoreConfig {
 
     // 6. Wallet Provider Host.
     val walletProviderHost: String
+
+    // 7. Trust Mark source.
+    val trustMarkSource: TrustMarkSource
 }
 ```
 
-You configure these properties **per flavor** by providing a `WalletCoreConfigImpl` for each build
-variant:
+Configure environment-specific values **per flavor** by providing a `WalletCoreConfigImpl` for
+each build variant:
 
 * `core-logic/src/demo/java/eu/europa/ec/corelogic/config/WalletCoreConfigImpl.kt`
 * `core-logic/src/dev/java/eu/europa/ec/corelogic/config/WalletCoreConfigImpl.kt`
 
 Each flavor can use different issuer configs, wallet provider hosts, and trust stores.
+Shared defaults are defined on `WalletCoreConfig` and can be
+overridden by a flavor when needed.
 
 1. Issuing API
 
@@ -359,6 +366,57 @@ Each flavor can use different issuer configs, wallet provider hosts, and trust s
         val forcePidActivation: Boolean get() = false
    }
     ```
+
+## Trust Mark configuration
+
+[`WalletCoreConfig.trustMarkSource`](../core-logic/src/main/java/eu/europa/ec/corelogic/config/WalletCoreConfig.kt)
+selects how Trust Mark information is supplied. Both reference flavors inherit this shared static
+default:
+
+```kotlin
+val trustMarkSource: TrustMarkSource
+    get() = TrustMarkSource.Static(
+        information = TrustMarkInformation(
+            trustMarkResourceURL = "https://gist.githubusercontent.com/sraptis-scy/025334375fe26177d9a7bcb60fd8a93f/raw/TrustMarkResource.json",
+            listOfCertifiedWalletsURL = "https://eidas.ec.europa.eu/efda/wallet/certified",
+            walletSolutionInfoPageURL = "https://eidas.ec.europa.eu/efda/wallet/certified?id=WALLET_SOLUTION_ID",
+        )
+    )
+```
+
+`provideEudiWallet` in
+[`LogicCoreModule`](../core-logic/src/main/java/eu/europa/ec/corelogic/di/LogicCoreModule.kt)
+passes the configured source to the SDK:
+
+```kotlin
+EudiWallet(
+    context = context,
+    config = walletCoreConfig.config,
+    walletProvider = walletCoreAttestationProvider,
+    trustMarkSource = walletCoreConfig.trustMarkSource,
+) {
+    withLogger(walletCoreLogController)
+    withTransactionLogger(walletCoreTransactionLogController)
+    withKtorHttpClientFactory { httpClient }
+}
+```
+
+To change the Trust Mark settings for a build flavor, override `trustMarkSource` in its
+`WalletCoreConfigImpl`. Use `TrustMarkSource.Static` for predefined information, or
+`TrustMarkSource.Dynamic` with a `TrustMarkProvider` that supplies the information at runtime.
+
+The SDK fetches JSON from `trustMarkResourceURL`. The Trust Mark screen displays the image from
+`image.url` above the localized text from the resource.
+
+"EUDI Wallet Provider Trusted List" opens `listOfCertifiedWalletsURL` in the browser.
+"Certification information page" opens `walletSolutionInfoPageURL` in the browser.
+Both links include an external-link icon and are available in the introduction and About views.
+
+Static configuration does not bundle the resource or make it available offline. The configured
+Gist is a development sample and `WALLET_SOLUTION_ID` is a literal placeholder. Displaying the
+information does not verify certification, recognition, expiry, revocation or wallet instance
+attestation. See [Trust Mark deployment](GO_LIVE.md#trust-mark-deployment) before using a production
+configuration.
 
 ## Production configuration reference
 

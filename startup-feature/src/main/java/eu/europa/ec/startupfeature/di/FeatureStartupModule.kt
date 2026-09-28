@@ -17,6 +17,7 @@
 package eu.europa.ec.startupfeature.di
 
 import eu.europa.ec.businesslogic.config.ConfigLogic
+import eu.europa.ec.businesslogic.controller.storage.PrefKeys
 import eu.europa.ec.commonfeature.interactor.QuickPinInteractor
 import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
@@ -39,11 +40,13 @@ fun provideSplashInteractor(
     uiSerializer: UiSerializer,
     resourceProvider: ResourceProvider,
     walletCoreDocumentsController: WalletCoreDocumentsController,
-    configLogic: ConfigLogic
+    configLogic: ConfigLogic,
+    prefKeys: PrefKeys,
 ): SplashInteractor = SplashInteractorImpl(
     quickPinInteractor,
     uiSerializer,
     resourceProvider,
     walletCoreDocumentsController,
-    configLogic
+    configLogic,
+    prefKeys,
 )

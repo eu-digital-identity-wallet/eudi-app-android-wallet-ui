@@ -21,6 +21,8 @@ import android.net.Uri
 import eu.europa.ec.commonfeature.config.OfferUiConfig
 import eu.europa.ec.commonfeature.config.PresentationMode
 import eu.europa.ec.commonfeature.config.RequestUriConfig
+import eu.europa.ec.commonfeature.config.TrustMarkMode
+import eu.europa.ec.commonfeature.config.TrustMarkUiConfig
 import eu.europa.ec.commonfeature.model.PinFlow
 import eu.europa.ec.corelogic.model.RevokedDocumentDataDomain
 import eu.europa.ec.dashboardfeature.interactor.DashboardInteractor
@@ -264,6 +266,25 @@ class DashboardViewModel(
             SideMenuTypeUi.SETTINGS -> {
                 hideSideMenu()
                 setEffect { Effect.Navigation.SwitchScreen(screenRoute = DashboardScreens.Settings.screenRoute) }
+            }
+
+            SideMenuTypeUi.ABOUT -> {
+                val nextScreenRoute = generateComposableNavigationLink(
+                    screen = CommonScreens.TrustMark,
+                    arguments = generateComposableArguments(
+                        mapOf(
+                            TrustMarkUiConfig.serializedKeyName to uiSerializer.toBase64(
+                                model = TrustMarkUiConfig(
+                                    mode = TrustMarkMode.About
+                                ),
+                                parser = TrustMarkUiConfig.Parser,
+                            ).orEmpty()
+                        )
+                    )
+                )
+
+                hideSideMenu()
+                setEffect { Effect.Navigation.SwitchScreen(screenRoute = nextScreenRoute) }
             }
         }
     }

@@ -50,6 +50,21 @@
     <string name="generic_unknown_issuer">Unknown</string>
     <!--endregion-->
 
+    <!-- region Trust Mark -->
+    <string name="trust_mark_about_title">About EUDI Wallet</string>
+    <string name="trust_mark_welcome_title">Welcome to the</string>
+    <string name="trust_mark_wallet_name">EU Digital Identity Wallet</string>
+    <string name="trust_mark_image_description">EUDI Wallet Trust Mark</string>
+    <string name="trust_mark_certification_description">This wallet application has been certified conformant with the EUDI Wallet’s security and privacy requirements and is part of the %1$s.</string>
+    <string name="trust_mark_certified_wallets_link">EUDI Wallet Provider Trusted List</string>
+    <string name="trust_mark_certification_information_description">See the %1$s for detailed certification information of this wallet.</string>
+    <string name="trust_mark_certification_information_link">Certification information page</string>
+    <string name="trust_mark_loading">Loading Trust Mark information…</string>
+    <string name="trust_mark_load_error">Unable to load Trust Mark information. Please try again.</string>
+    <string name="trust_mark_image_error">Unable to load the Trust Mark image.</string>
+    <string name="trust_mark_browser_error">Unable to open this link.</string>
+    <!--endregion-->
+
     <!-- region Content Description -->
     <string name="content_description_image_or_placeholder_icon">Image or placeholder icon</string>
     <string name="content_description_user_signature_icon">User signature</string>

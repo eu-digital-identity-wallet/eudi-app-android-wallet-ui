@@ -18,10 +18,12 @@ package eu.europa.ec.uilogic.component.wrap
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.LocalRippleConfiguration
 import androidx.compose.material3.MaterialTheme
@@ -29,6 +31,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.Stable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Shape
@@ -41,26 +44,46 @@ import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
 import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
 import eu.europa.ec.uilogic.component.utils.SPACING_SMALL
 
+@Stable
+object WrapTextButtonDefaults {
+
+    val contentPadding = PaddingValues(
+        horizontal = SPACING_SMALL.dp,
+        vertical = 10.dp,
+    )
+
+    val contentAlignment = Alignment.CenterHorizontally
+
+    val shape: Shape
+        @Composable
+        get() = ButtonDefaults.textShape
+
+    const val IS_RIPPLE_ENABLED = true
+}
+
 @Composable
 fun WrapTextButton(
-    modifier: Modifier,
+    modifier: Modifier = Modifier,
     text: String,
     enabled: Boolean,
-    contentAlignment: Alignment.Horizontal = Alignment.CenterHorizontally,
-    shape: Shape? = null,
+    contentPadding: PaddingValues = WrapTextButtonDefaults.contentPadding,
+    contentAlignment: Alignment.Horizontal = WrapTextButtonDefaults.contentAlignment,
+    shape: Shape = WrapTextButtonDefaults.shape,
     trailingIcon: IconDataUi?,
-    isRippleEnabled: Boolean = true,
+    isRippleEnabled: Boolean = WrapTextButtonDefaults.IS_RIPPLE_ENABLED,
     onClick: () -> Unit,
 ) {
     val rippleConfiguration = if (isRippleEnabled) LocalRippleConfiguration.current else null
 
     CompositionLocalProvider(LocalRippleConfiguration provides rippleConfiguration) {
         TextButton(
-            modifier = modifier,
+            // Size the button to its content unless the caller constrains its width.
+            // The inner Row fills this width to position the text and icon.
+            modifier = modifier.width(IntrinsicSize.Max),
             enabled = enabled,
-            shape = shape ?: ButtonDefaults.textShape,
+            shape = shape,
             onClick = onClick,
-            contentPadding = PaddingValues(vertical = 10.dp),
+            contentPadding = contentPadding,
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -96,6 +119,7 @@ private fun WrapTextButtonPreview() {
                 modifier = Modifier.fillMaxWidth(),
                 text = "View previous data deletion requests (2)",
                 enabled = true,
+                contentPadding = PaddingValues(vertical = 10.dp),
                 contentAlignment = Alignment.Start,
                 trailingIcon = AppIcons.KeyboardArrowRight,
                 isRippleEnabled = false,
@@ -105,6 +129,7 @@ private fun WrapTextButtonPreview() {
                 modifier = Modifier.fillMaxWidth(),
                 text = "View previous transaction reports (2)",
                 enabled = false,
+                contentPadding = PaddingValues(vertical = 10.dp),
                 contentAlignment = Alignment.Start,
                 trailingIcon = AppIcons.KeyboardArrowRight,
                 isRippleEnabled = false,
@@ -114,8 +139,13 @@ private fun WrapTextButtonPreview() {
                 modifier = Modifier.fillMaxWidth(),
                 text = "View details",
                 enabled = true,
-                contentAlignment = Alignment.CenterHorizontally,
-                shape = null,
+                contentPadding = PaddingValues(vertical = 10.dp),
+                trailingIcon = null,
+                onClick = {},
+            )
+            WrapTextButton(
+                text = "Retry",
+                enabled = true,
                 trailingIcon = null,
                 onClick = {},
             )

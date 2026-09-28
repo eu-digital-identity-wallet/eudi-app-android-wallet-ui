@@ -22,6 +22,8 @@ import eu.europa.ec.corelogic.model.DocumentIdentifier
 import eu.europa.ec.eudi.wallet.EudiWalletConfig
 import eu.europa.ec.eudi.wallet.document.CreateDocumentSettings.CredentialPolicy
 import eu.europa.ec.eudi.wallet.issue.openid4vci.OpenId4VciManager
+import eu.europa.ec.eudi.wallet.trustmark.TrustMarkInformation
+import eu.europa.ec.eudi.wallet.trustmark.TrustMarkSource
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
 
@@ -203,4 +205,17 @@ interface WalletCoreConfig {
      * Host for the Wallet Provider.
      */
     val walletProviderHost: String
+
+    /**
+     * Provides the information used to display the wallet's Trust Mark and link to its
+     * certification page and the list of certified wallets.
+     */
+    val trustMarkSource: TrustMarkSource
+        get() = TrustMarkSource.Static(
+            information = TrustMarkInformation(
+                trustMarkResourceURL = "https://gist.githubusercontent.com/sraptis-scy/025334375fe26177d9a7bcb60fd8a93f/raw/TrustMarkResource.json",
+                listOfCertifiedWalletsURL = "https://eidas.ec.europa.eu/efda/wallet/certified",
+                walletSolutionInfoPageURL = "https://eidas.ec.europa.eu/efda/wallet/certified?id=WALLET_SOLUTION_ID",
+            )
+        )
 }

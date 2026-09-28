@@ -441,10 +441,13 @@ interface WalletCoreConfig {
     val revocationInterval: Duration
     val documentIssuanceConfig: DocumentIssuanceConfig
     val walletProviderHost: String
+    val trustMarkSource: TrustMarkSource
 }
 ```
 
-Each property must be reviewed.
+Each property must be reviewed, including inherited defaults on `WalletCoreConfig`.
+For Trust Mark settings, see
+[Trust Mark configuration](CONFIGURATION.md#trust-mark-configuration).
 
 ## `EudiWalletConfig`
 
@@ -549,7 +552,8 @@ inside `provideEudiWallet(...)`:
 EudiWallet(
     context = context,
     config = walletCoreConfig.config,
-    walletProvider = walletCoreAttestationProvider
+    walletProvider = walletCoreAttestationProvider,
+    trustMarkSource = walletCoreConfig.trustMarkSource,
 ) {
     withLogger(walletCoreLogController)
     withTransactionLogger(walletCoreTransactionLogController)
@@ -1078,6 +1082,37 @@ The production Wallet Provider must:
 * Have availability targets aligned with issuance and reissuance flows.
 
 Do not point production builds to EUDI demo wallet-provider services.
+
+## Trust Mark Deployment
+
+Set `WalletCoreConfig.trustMarkSource` to the Trust Mark configuration for your wallet solution.
+The default uses a sample Gist resource and a certification-page URL containing
+`WALLET_SOLUTION_ID`. Replace the sample values in your production flavor with the correct
+resource and certification URLs. See
+[Trust Mark configuration](CONFIGURATION.md#trust-mark-configuration) for instructions.
+
+The app does not check certification, recognition, expiry, revocation or wallet instance
+attestation, or automatically remove the mark when certification changes. Check that the
+displayed image, text and links match your wallet's actual certification status before release.
+
+Test the following:
+
+* On a clean install, the introduction appears after splash, Continue proceeds to PIN setup,
+  and later launches skip the completed introduction.
+* "About EUDI Wallet" opens from the side menu.
+* In both the introduction and About views, "EUDI Wallet Provider Trusted List" opens the
+  list of certified wallets and "Certification information page" opens your wallet's
+  certification page in the browser. Both links display an external-link icon.
+* The Trust Mark image is centered above its localized text and keeps its original proportions.
+  Check long text and larger fonts: the text should use the available width, wrap fully and
+  scroll with the screen while Welcome's Continue remains available. Resource and image
+  loading errors offer Retry.
+
+For an upgrade release, confirm whether existing users should see the introduction and test
+that flow.
+
+The app can report when it cannot open a link. Once the browser opens, page-loading and network
+errors are handled by the browser.
 
 ## Document Issuance Rules
 

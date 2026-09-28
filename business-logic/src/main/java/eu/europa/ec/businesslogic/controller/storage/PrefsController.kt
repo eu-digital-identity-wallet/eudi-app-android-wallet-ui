@@ -179,6 +179,9 @@ class PrefsControllerImpl(
 }
 
 interface PrefKeys {
+    suspend fun getTrustMarkIntroductionCompleted(): Boolean
+    suspend fun setTrustMarkIntroductionCompleted(value: Boolean)
+
     suspend fun getShowBatchIssuanceCounter(): Boolean
     suspend fun setShowBatchIssuanceCounter(value: Boolean)
 
@@ -196,6 +199,14 @@ interface PrefKeys {
 class PrefKeysImpl(
     private val prefsController: PrefsController
 ) : PrefKeys {
+
+    override suspend fun getTrustMarkIntroductionCompleted(): Boolean {
+        return prefsController.getBool("TrustMarkIntroductionCompleted", false)
+    }
+
+    override suspend fun setTrustMarkIntroductionCompleted(value: Boolean) {
+        prefsController.setBool("TrustMarkIntroductionCompleted", value)
+    }
 
     override suspend fun getShowBatchIssuanceCounter(): Boolean {
         return prefsController.getBool("ShowBatchIssuanceCounter", true)
