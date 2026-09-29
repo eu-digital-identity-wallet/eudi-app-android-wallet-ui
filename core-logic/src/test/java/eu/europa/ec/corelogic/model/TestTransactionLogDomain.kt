@@ -132,6 +132,7 @@ class TestTransactionLogDomain {
         claims = listOf(ClaimRefDomain(segments = mockedClaimSegments)),
     )
     private val mockedPresentation = TransactionLogDomain.Presentation(
+        transactionData = emptyList(),
         id = mockedTransactionId,
         time = mockedTransactionTime.atZone(ZoneOffset.UTC).toLocalDateTime(),
         result = TransactionResultDomain.Completed,

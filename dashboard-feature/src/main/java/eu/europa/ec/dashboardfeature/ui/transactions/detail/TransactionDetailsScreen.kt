@@ -606,6 +606,7 @@ private fun CredentialGroup(
         header = group.header,
         data = group.items,
         onItemClick = null,
+        isItemClickable = { true },
         onExpandedChange = { onExpandedChange() },
         isExpanded = isExpanded,
         collapsedMainContentVerticalPadding = SPACING_MEDIUM.dp,
@@ -824,6 +825,7 @@ private class TransactionDetailsPreviewProvider : PreviewParameterProvider<State
             val presentation = TransactionDetailsBodyUi.Presentation(
                 requested = previewClaims("requested", "DATA REQUESTED", isExpanded = false),
                 shared = previewClaims("shared", "DATA SHARED", isExpanded = false),
+                transactionData = null,
                 deletionContacts = listOf(contact),
                 reportContacts = listOf(contact),
                 actionCounts = PresentationActionCountsUiState.Content(2, 2),
@@ -1121,6 +1123,92 @@ private class TransactionDetailsPreviewProvider : PreviewParameterProvider<State
                 ),
             ),
             emptyItem = null,
+        )
+    }
+}
+
+@ThemeModePreviews
+@Composable
+private fun RecordedSigningRequestPreview(
+    @PreviewParameter(RecordedSigningRequestPreviewProvider::class) preview: RecordedSigningRequestPreviewData,
+) {
+    PreviewTheme {
+        DetailsSection(
+            section = preview.section,
+            expandedGroupIds = preview.expandedGroupIds,
+            onGroupExpandedChange = {},
+            onLinkClick = {},
+        )
+    }
+}
+
+private data class RecordedSigningRequestPreviewData(
+    val section: TransactionDetailsSectionUi,
+    val expandedGroupIds: Set<String>,
+)
+
+private class RecordedSigningRequestPreviewProvider : PreviewParameterProvider<RecordedSigningRequestPreviewData> {
+    override val values: Sequence<RecordedSigningRequestPreviewData>
+        get() = sequenceOf(
+            signingRequestPreview(isExpanded = false, isUnavailable = false),
+            signingRequestPreview(isExpanded = true, isUnavailable = false),
+            signingRequestPreview(isExpanded = true, isUnavailable = true),
+        )
+
+    private fun signingRequestPreview(
+        isExpanded: Boolean,
+        isUnavailable: Boolean,
+    ): RecordedSigningRequestPreviewData {
+        val groupId = "transaction-data"
+        val fields = if (isUnavailable) {
+            listOf(null to "Details for this transaction are unavailable.")
+        } else {
+            listOf(
+                "Trust framework" to "eIDAS",
+                null to "Transaction 1",
+                "Requested credentials" to "query_0",
+                "Number of signatures" to "1",
+                "Document" to "file-sample_150kB.pdf",
+                "DTBSR hash" to "jDudt7/CCgNAacyhuKo4A6aiDzUYUG5MWQibmUGMPXg=",
+                "DTBSR hash algorithm" to "SHA-256",
+                null to "Transaction 2",
+                "Document" to "Document 1",
+                "Signature type" to "Qualified electronic seal",
+                "Signature format" to "PAdES",
+                "Conformance level" to "AdES-B-LT",
+                "Document location" to "https://documents.example/contract.pdf?reference=recorded",
+                "One-time password (OTP)" to "000123",
+                "Response URI" to "https://signer.example/response",
+            )
+        }
+        return RecordedSigningRequestPreviewData(
+            section = TransactionDetailsSectionUi(
+                title = "SIGNING REQUEST",
+                items = emptyList(),
+                groups = listOf(
+                    TransactionDetailsGroupUi(
+                        header = ListItemDataUi(
+                            itemId = groupId,
+                            mainContentData = ListItemMainContentDataUi.Text("Signature details"),
+                            supportingContentData = ListItemSupportingContentDataUi.Text("View details"),
+                            trailingContentData = ListItemTrailingContentDataUi.Icon(
+                                iconData = if (isExpanded) AppIcons.KeyboardArrowUp else AppIcons.KeyboardArrowDown,
+                            ),
+                        ),
+                        items = fields.mapIndexed { index, (label, value) ->
+                            ExpandableListItemUi.SingleListItem(
+                                header = ListItemDataUi(
+                                    itemId = "$groupId/field-$index",
+                                    overlineText = label,
+                                    mainContentData = ListItemMainContentDataUi.Text(value),
+                                ),
+                            )
+                        },
+                    )
+                ),
+                emptyItem = null,
+            ),
+            expandedGroupIds = if (isExpanded) setOf(groupId) else emptySet(),
         )
     }
 }

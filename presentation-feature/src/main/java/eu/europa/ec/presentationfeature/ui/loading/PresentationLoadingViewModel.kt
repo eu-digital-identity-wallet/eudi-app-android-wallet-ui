@@ -19,6 +19,7 @@ package eu.europa.ec.presentationfeature.ui.loading
 import android.content.Context
 import androidx.lifecycle.viewModelScope
 import eu.europa.ec.authenticationlogic.controller.authentication.DeviceAuthenticationResult
+import eu.europa.ec.businesslogic.extension.toUri
 import eu.europa.ec.commonfeature.ui.loading.Effect
 import eu.europa.ec.commonfeature.ui.loading.Event
 import eu.europa.ec.commonfeature.ui.loading.LoadingViewModel
@@ -35,6 +36,7 @@ import eu.europa.ec.uilogic.navigation.PresentationScreens
 import eu.europa.ec.uilogic.navigation.Screen
 import eu.europa.ec.uilogic.navigation.helper.generateComposableArguments
 import eu.europa.ec.uilogic.navigation.helper.generateComposableNavigationLink
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.koin.core.annotation.InjectedParam
@@ -50,6 +52,8 @@ class PresentationLoadingViewModel(
     private val interactor: PresentationLoadingInteractor,
     @InjectedParam private val presentationScopeId: String
 ) : LoadingViewModel() {
+
+    private var observationJob: Job? = null
 
     override fun getHeaderConfig(): ContentHeaderConfig {
         return ContentHeaderConfig(
@@ -77,18 +81,19 @@ class PresentationLoadingViewModel(
     override fun getCancellableTimeout(): Duration = 5.toDuration(DurationUnit.SECONDS)
 
     override fun doWork(context: Context) {
-        viewModelScope.launch {
+        observationJob?.cancel()
+        observationJob = viewModelScope.launch {
 
             interactor.setScopeId(presentationScopeId)
 
-            interactor.observeResponse().collect {
-                when (it) {
+            interactor.observeResponse().collect { response ->
+                when (response) {
                     is PresentationLoadingObserveResponsePartialState.Failure -> {
                         setState {
                             copy(
                                 error = ContentErrorConfig(
                                     onRetry = { setEvent(Event.DoWork(context)) },
-                                    errorSubTitle = it.error,
+                                    errorSubTitle = response.error,
                                     onCancel = {
                                         setEvent(Event.DismissError)
                                         doNavigation(NavigationType.PopTo(getPreviousScreen()))
@@ -106,6 +111,17 @@ class PresentationLoadingViewModel(
                         onSuccess()
                     }
 
+                    is PresentationLoadingObserveResponsePartialState.Rejected -> {
+                        showRejection(
+                            headerConfig = ContentHeaderConfig(
+                                description = null,
+                                mainText = resourceProvider.getString(R.string.loading_rejection_description),
+                            ),
+                            initiatorRoute = interactor.initiatorRoute,
+                            redirectUri = response.redirectUri?.toString()?.toUri(),
+                        )
+                    }
+
                     is PresentationLoadingObserveResponsePartialState.RequestReadyToBeSent -> {
                         sendRequestedDocuments(event = Event.DoWork(context))
                     }
@@ -119,7 +135,7 @@ class PresentationLoadingViewModel(
                         openAuthenticationPrompt(
                             context,
                             popEffect,
-                            it.authenticationData,
+                            response.authenticationData,
                             {
                                 sendRequestedDocuments(event = Event.DoWork(context))
                             }
@@ -192,21 +208,27 @@ class PresentationLoadingViewModel(
             notifyOnAuthenticationFailure = viewState.value.notifyOnAuthenticationFailure,
             resultHandler = DeviceAuthenticationResult(
                 onAuthenticationSuccess = {
-                    authenticationData.onAuthenticationSuccess()
-                    if (isFinalAuthentication) {
-                        sendRequestedDocumentsAction()
-                    } else {
-                        delay(500.milliseconds)
-                        openAuthenticationPrompt(
-                            context,
-                            popEffect,
-                            authenticationDataList,
-                            sendRequestedDocumentsAction,
-                            index + 1
-                        )
+                    viewModelScope.launch {
+                        authenticationData.onAuthenticationSuccess()
+                        if (isFinalAuthentication) {
+                            sendRequestedDocumentsAction()
+                        } else {
+                            delay(500.milliseconds)
+                            openAuthenticationPrompt(
+                                context,
+                                popEffect,
+                                authenticationDataList,
+                                sendRequestedDocumentsAction,
+                                index + 1
+                            )
+                        }
                     }
                 },
-                onAuthenticationError = { setEffect { popEffect } }
+                onAuthenticationError = {
+                    viewModelScope.launch {
+                        setEffect { popEffect }
+                    }
+                }
             )
         )
     }

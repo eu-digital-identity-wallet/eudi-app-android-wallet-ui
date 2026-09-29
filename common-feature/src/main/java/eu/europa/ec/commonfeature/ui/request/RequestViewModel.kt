@@ -77,6 +77,9 @@ sealed class Event : ViewEvent {
     data class UserIdentificationClicked(val itemId: String) : Event()
     data class ExpandOrCollapseRequestDocumentItem(val itemId: String) : Event()
 
+    data class TransactionDataExpansionToggled(val sectionId: String, val itemId: String) : Event()
+    data class TransactionDocumentClicked(val sectionId: String, val itemId: String) : Event()
+
     data class CombinationSelected(val index: Int) : Event()
 
     data object PrivacyPolicyLinkClicked : Event()
@@ -180,6 +183,28 @@ abstract class RequestViewModel : MviViewModel<Event, State, Effect>() {
 
             is Event.ExpandOrCollapseRequestDocumentItem -> {
                 expandOrCollapseRequestDocumentItem(id = event.itemId)
+            }
+
+            is Event.TransactionDataExpansionToggled -> {
+                setState {
+                    copy(
+                        requestDataUi = requestDataUi.toggleTransactionDataExpansion(
+                            sectionId = event.sectionId,
+                            itemId = event.itemId,
+                        ),
+                    )
+                }
+            }
+
+            is Event.TransactionDocumentClicked -> {
+                viewState.value.requestDataUi.transactionDocumentUrl(
+                    sectionId = event.sectionId,
+                    itemId = event.itemId,
+                )?.let { safeUrl ->
+                    setEffect {
+                        Effect.Navigation.OpenUrlExternally(url = safeUrl.toUri())
+                    }
+                }
             }
 
             is Event.CombinationSelected -> {

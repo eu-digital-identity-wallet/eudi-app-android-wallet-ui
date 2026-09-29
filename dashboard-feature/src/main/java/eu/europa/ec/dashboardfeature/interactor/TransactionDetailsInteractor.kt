@@ -20,6 +20,7 @@ import eu.europa.ec.businesslogic.extension.safeAsync
 import eu.europa.ec.businesslogic.provider.UuidProvider
 import eu.europa.ec.businesslogic.util.FULL_DATETIME_PATTERN
 import eu.europa.ec.businesslogic.util.formatLocalDateTime
+import eu.europa.ec.commonfeature.ui.request.transformer.TransactionDataTransformer
 import eu.europa.ec.corelogic.controller.RecordTransactionPartialState
 import eu.europa.ec.corelogic.controller.WalletCoreTransactionLogController
 import eu.europa.ec.corelogic.controller.WalletCoreTransactionRecordingController
@@ -34,6 +35,7 @@ import eu.europa.ec.corelogic.model.CredentialRefDomain
 import eu.europa.ec.corelogic.model.DpaContactDomain
 import eu.europa.ec.corelogic.model.InteractingPartyDomain
 import eu.europa.ec.corelogic.model.IssuanceDetailsDomain
+import eu.europa.ec.corelogic.model.PresentationTransactionDataDomain
 import eu.europa.ec.corelogic.model.PrivacyContactDomain
 import eu.europa.ec.corelogic.model.TransactionLogDomain
 import eu.europa.ec.corelogic.model.TransactionResultDomain
@@ -674,6 +676,7 @@ class TransactionDetailsInteractorImpl(
                 claims = claimsPresented,
                 emptyRes = R.string.transaction_details_no_data_shared,
             ),
+            transactionData = transactionDataSection(transactions = transactionData),
             deletionContacts = actionContacts(TransactionDataProtectionAction.RequestDataDeletion),
             reportContacts = actionContacts(TransactionDataProtectionAction.ReportSuspiciousTransaction),
             actionCounts = PresentationActionCountsUiState.Loading,
@@ -729,6 +732,36 @@ class TransactionDetailsInteractorImpl(
                 country = dpaCountry,
                 contacts = emptyList()
             ).toAuthoritySection()
+        )
+    }
+
+    private fun transactionDataSection(
+        transactions: List<PresentationTransactionDataDomain>,
+    ): TransactionDetailsSectionUi? {
+        if (transactions.isEmpty()) return null
+        val sectionId = "transaction-data"
+        return TransactionDetailsSectionUi(
+            title = resourceProvider.getString(R.string.transaction_details_signing_request_title),
+            items = emptyList(),
+            groups = listOf(
+                TransactionDetailsGroupUi(
+                    header = ListItemDataUi(
+                        itemId = sectionId,
+                        mainContentData = ListItemMainContentDataUi.Text(
+                            text = resourceProvider.getString(R.string.request_transaction_details_title),
+                        ),
+                        supportingContentData = ListItemSupportingContentDataUi.Text(
+                            text = resourceProvider.getString(R.string.request_collapsed_supporting_text),
+                        ),
+                        trailingContentData = ListItemTrailingContentDataUi.Icon(
+                            iconData = AppIcons.KeyboardArrowDown,
+                        ),
+                    ),
+                    items = TransactionDataTransformer(resourceProvider = resourceProvider)
+                        .transformRecordedToUi(transactions = transactions, sectionId = sectionId),
+                )
+            ),
+            emptyItem = null,
         )
     }
 

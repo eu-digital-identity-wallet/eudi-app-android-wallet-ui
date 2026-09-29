@@ -522,6 +522,7 @@ private fun TransactionsSheetContent(
                                         WrapExpandableListItem(
                                             header = filter.header,
                                             data = filter.nestedItems,
+                                            isItemClickable = { true },
                                             isExpanded = filter.isExpanded,
                                             onExpandedChange = {
                                                 onEventSent(

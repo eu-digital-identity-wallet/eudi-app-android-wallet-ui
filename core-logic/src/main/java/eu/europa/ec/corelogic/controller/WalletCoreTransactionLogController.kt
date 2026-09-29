@@ -26,6 +26,7 @@ import eu.europa.ec.corelogic.model.TransactionLogDomain.PresentationAction
 import eu.europa.ec.eudi.wallet.transactionLogging.TransactionLogger
 import eu.europa.ec.eudi.wallet.transactionLogging.model.TransactionEntry
 import eu.europa.ec.eudi.wallet.transactionLogging.toJson
+import eu.europa.ec.eudi.wallet.transfer.openId4vp.TransactionDataType
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.storagelogic.dao.TransactionLogDao
 import kotlinx.coroutines.CancellationException
@@ -76,6 +77,7 @@ interface WalletCoreTransactionLogController : TransactionLogger {
 class WalletCoreTransactionLogControllerImpl(
     private val transactionLogDao: TransactionLogDao,
     private val resourceProvider: ResourceProvider,
+    private val transactionDataTypes: List<TransactionDataType>,
     private val dispatcher: CoroutineDispatcher = Dispatchers.IO,
     coroutineScope: CoroutineScope = CoroutineScope(dispatcher + SupervisorJob()),
 ) : WalletCoreTransactionLogController {
@@ -223,6 +225,7 @@ class WalletCoreTransactionLogControllerImpl(
         userLocale = userLocale,
         parentPresentationId = parentPresentationId,
         communicationMethod = communicationMethod,
+        transactionDataTypes = transactionDataTypes,
     )
 
     private suspend fun persist(

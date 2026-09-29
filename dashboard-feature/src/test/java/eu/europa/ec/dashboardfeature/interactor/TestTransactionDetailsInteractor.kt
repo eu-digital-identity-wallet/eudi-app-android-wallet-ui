@@ -30,6 +30,7 @@ import eu.europa.ec.corelogic.model.CredentialRefDomain
 import eu.europa.ec.corelogic.model.DpaContactDomain
 import eu.europa.ec.corelogic.model.InteractingPartyDomain
 import eu.europa.ec.corelogic.model.LocalizedTextDomain
+import eu.europa.ec.corelogic.model.PresentationTransactionDataDomain
 import eu.europa.ec.corelogic.model.TransactionLogDomain
 import eu.europa.ec.corelogic.model.TransactionResultDomain
 import eu.europa.ec.dashboardfeature.ui.transactions.detail.model.PendingTransactionActionUi
@@ -37,6 +38,7 @@ import eu.europa.ec.dashboardfeature.ui.transactions.detail.model.PresentationAc
 import eu.europa.ec.dashboardfeature.ui.transactions.detail.model.TransactionDataProtectionAction
 import eu.europa.ec.dashboardfeature.ui.transactions.detail.model.TransactionDetailsBodyUi
 import eu.europa.ec.dashboardfeature.ui.transactions.detail.model.TransactionDetailsFieldUi
+import eu.europa.ec.dashboardfeature.ui.transactions.detail.model.TransactionDetailsUi
 import eu.europa.ec.dashboardfeature.util.mockedDataDeletionLogDomain
 import eu.europa.ec.dashboardfeature.util.mockedDeletionLogDomain
 import eu.europa.ec.dashboardfeature.util.mockedDetailedPresentationLogDomain
@@ -66,9 +68,11 @@ import eu.europa.ec.dashboardfeature.util.mockedTransactionTypeLabels
 import eu.europa.ec.dashboardfeature.util.mockedUnnamedTransactionLogDomains
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
+import eu.europa.ec.testfeature.util.StringResourceProviderMocker.mockTransactionDataStrings
 import eu.europa.ec.testfeature.util.mockedExceptionWithMessage
 import eu.europa.ec.testfeature.util.mockedExceptionWithNoMessage
 import eu.europa.ec.testfeature.util.mockedGenericErrorMessage
+import eu.europa.ec.testfeature.util.mockedTransactionDataApproval
 import eu.europa.ec.testlogic.extension.runFlowTest
 import eu.europa.ec.testlogic.extension.runTest
 import eu.europa.ec.testlogic.rule.CoroutineTestRule
@@ -140,6 +144,7 @@ class TestTransactionDetailsInteractor {
 
         whenever(resourceProvider.genericErrorMessage()).thenReturn(mockedGenericErrorMessage)
         mockTransactionDetailsStrings()
+        mockTransactionDataStrings(resourceProvider = resourceProvider)
         whenever(uuidProvider.provideUuid()).thenReturn(mockedAttemptId)
     }
 
@@ -3073,6 +3078,115 @@ class TestTransactionDetailsInteractor {
     }
     //endregion
 
+    //region recorded transaction data
+
+    // Case 1:
+    // 1. A presentation with privacy actions receives two recorded approval entries.
+    //
+    // Case 1 Expected Result:
+    // One collapsed group follows the claim sections; its data does not alter status or actions.
+    @Test
+    fun `Given recorded signing requests, When details are prepared, Then presentation behavior is preserved`() {
+        coroutineRule.runTest {
+            // Given
+            val baseline = mockedPresentationLogDomain.copy(
+                party = mockedTransactionPartyWithContacts,
+                registration = mockedTransactionRegistration,
+            )
+            mockGetTransactionLogCall(response = baseline)
+            lateinit var original: TransactionDetailsUi
+            interactor.getTransactionDetails(transactionId = baseline.id).runFlowTest {
+                original = (awaitItem() as TransactionDetailsInteractorPartialState.Success).transactionDetailsUi
+            }
+            val recorded = baseline.copy(
+                transactionData = List(2) { mockedTransactionDataApproval.copy(displayName = null) },
+            )
+            mockGetTransactionLogCall(response = recorded)
+
+            // When
+            interactor.getTransactionDetails(transactionId = recorded.id).runFlowTest {
+                // Then
+                val details = (awaitItem() as TransactionDetailsInteractorPartialState.Success).transactionDetailsUi
+                val body = details.body as TransactionDetailsBodyUi.Presentation
+                assertEquals(original.transactionDetailsCardUi, details.transactionDetailsCardUi)
+                assertEquals(original.body, body.copy(transactionData = null))
+                val section = body.transactionData!!
+                assertEquals(listOf(body.requested, body.shared, section), body.sections)
+                assertEquals("SIGNING REQUEST", section.title)
+                assertTrue(section.items.isEmpty())
+                val group = section.groups.single()
+                assertEquals("Signature details", group.header.textValue())
+                assertEquals(
+                    ListItemTrailingContentDataUi.Icon(iconData = AppIcons.KeyboardArrowDown),
+                    group.header.trailingContentData,
+                )
+                assertEquals(2, group.items.count { row -> row.header.overlineText == "Document" })
+                assertTrue(group.items.none { row -> row.header.overlineText == "Transaction type" })
+                assertTrue(group.items.all { row -> row.header.trailingContentData == null })
+                val groupIds = body.sections.flatMap { item -> item.groups }.map { item -> item.header.itemId }
+                assertEquals(groupIds.size, groupIds.distinct().size)
+            }
+            verifyNoInteractions(walletCoreTransactionRecordingController)
+        }
+    }
+
+    // Case 2:
+    // 1. An older presentation has no recorded transaction data.
+    //
+    // Case 2 Expected Result:
+    // Only its existing requested/shared sections remain.
+    @Test
+    fun `Given a presentation without transaction data, When details are prepared, Then no signing request section is added`() {
+        coroutineRule.runTest {
+            // Given
+            mockGetTransactionLogCall(response = mockedPresentationLogDomain)
+
+            // When
+            interactor.getTransactionDetails(transactionId = mockedPresentationLogDomain.id).runFlowTest {
+                // Then
+                val body = (awaitItem() as TransactionDetailsInteractorPartialState.Success)
+                    .transactionDetailsUi.body as TransactionDetailsBodyUi.Presentation
+                assertNull(body.transactionData)
+                assertEquals(listOf(body.requested, body.shared), body.sections)
+            }
+        }
+    }
+
+    // Case 3:
+    // 1. A failed presentation contains one unavailable transaction-data entry and one valid approval.
+    //
+    // Case 3 Expected Result:
+    // Both entries are represented without changing the recorded failure or hiding shared claims.
+    @Test
+    fun `Given unavailable data in a failed presentation, When details are prepared, Then the remaining record stays visible`() {
+        coroutineRule.runTest {
+            // Given
+            val transaction = mockedPresentationLogDomain.copy(
+                result = TransactionResultDomain.NotCompleted(reason = mockedGenericErrorMessage),
+                transactionData = listOf(
+                    PresentationTransactionDataDomain.Unavailable,
+                    mockedTransactionDataApproval.copy(displayName = null),
+                ),
+            )
+            mockGetTransactionLogCall(response = transaction)
+
+            // When
+            interactor.getTransactionDetails(transactionId = transaction.id).runFlowTest {
+                // Then
+                val details = (awaitItem() as TransactionDetailsInteractorPartialState.Success).transactionDetailsUi
+                assertEquals(false, details.transactionDetailsCardUi.transactionIsCompleted)
+                assertEquals(mockedGenericErrorMessage, details.transactionDetailsCardUi.nonCompletionReason)
+                val body = details.body as TransactionDetailsBodyUi.Presentation
+                assertTrue(body.shared.groups.isNotEmpty())
+                val rows = body.transactionData!!.groups.single().items
+                assertTrue(rows.any { row -> row.header.textValue() == "Details for this transaction are unavailable." })
+                assertTrue(rows.any { row -> row.header.textValue() == mockedTransactionDataApproval.documentDigests.single().label })
+            }
+        }
+    }
+
+    //endregion
+
     //region helper functions
     private fun ListItemDataUi.textValue(): String =
         (mainContentData as ListItemMainContentDataUi.Text).text
@@ -3131,11 +3245,11 @@ class TestTransactionDetailsInteractor {
     }
 
     private fun mockTransactionDetailsStrings() {
-        whenever(resourceProvider.getString(any())).thenAnswer { invocation ->
-            (mockedTransactionDetailsStrings + mockedPrivacyActionStrings +
-                    (R.string.transaction_details_action_unavailable to mockedActionUnavailable))
-                .getValue(invocation.getArgument(0))
-        }
+        (mockedTransactionDetailsStrings + mockedPrivacyActionStrings +
+                (R.string.transaction_details_action_unavailable to mockedActionUnavailable))
+            .forEach { (resourceId, value) ->
+                whenever(resourceProvider.getString(resourceId)).thenReturn(value)
+            }
         listOf(
             R.string.data_deletion_website_description,
             R.string.data_deletion_email_description,

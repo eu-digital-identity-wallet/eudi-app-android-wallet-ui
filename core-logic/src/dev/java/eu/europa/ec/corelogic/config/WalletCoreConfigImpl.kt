@@ -35,6 +35,7 @@ import eu.europa.ec.eudi.wallet.registration.issuer.IssuerRegistrationPolicy
 import eu.europa.ec.eudi.wallet.registration.relyingparty.WrpRegistrationPolicy
 import eu.europa.ec.eudi.wallet.transfer.openId4vp.ClientIdScheme
 import eu.europa.ec.eudi.wallet.transfer.openId4vp.Format
+import eu.europa.ec.eudi.wallet.transfer.openId4vp.TransactionDataType
 import eu.europa.ec.eudi.wallet.trust.TrustPolicy
 import kotlinx.coroutines.runBlocking
 import kotlin.time.Duration.Companion.hours
@@ -77,6 +78,10 @@ internal class WalletCoreConfigImpl(
                         )
                         withFormats(
                             Format.MsoMdoc.ES256, Format.SdJwtVc.ES256
+                        )
+                        withTransactionDataTypes(
+                            TransactionDataType.QES_APPROVAL,
+                            TransactionDataType.QES
                         )
                     }
 

@@ -24,6 +24,8 @@ import eu.europa.ec.corelogic.model.ClaimType
 import eu.europa.ec.corelogic.model.IssuerRegistrationDomain
 import eu.europa.ec.corelogic.model.PresentationMatchDomain
 import eu.europa.ec.corelogic.model.PresentationSelectionDomain
+import eu.europa.ec.corelogic.model.PresentationTransactionDataDomain
+import eu.europa.ec.corelogic.model.QesDocumentDigestDomain
 import eu.europa.ec.corelogic.model.RegistrationDetailsDomain
 import eu.europa.ec.corelogic.model.RegistrationStatusDomain
 import eu.europa.ec.corelogic.model.RelyingPartyDomain
@@ -456,6 +458,7 @@ fun mockedMdocPresentationMatch(
         credentialId = credentialId,
         queryId = null,
         requestedClaims = requestedClaims,
+        transactionData = emptyList(),
     )
 }
 
@@ -546,6 +549,28 @@ val mockedValidMdlWithBasicFieldsRequestMatch: PresentationMatchDomain =
             "sex",
         ),
     )
+
+const val mockedTransactionQueryId = "query_0"
+
+val mockedTransactionDataApproval = PresentationTransactionDataDomain.QesApproval(
+    displayName = "QES approval",
+    credentialIds = listOf(mockedTransactionQueryId),
+    credentialId = "signing-credential-id",
+    signatureQualifier = null,
+    numSignatures = 1,
+    hashAlgorithmOid = "2.16.840.1.101.3.4.2.1",
+    documentDigests = listOf(
+        QesDocumentDigestDomain(
+            label = "file-sample_150kB.pdf",
+            hash = "YWJjZA==",
+            hashType = "dtbsr",
+            signedProperties = null,
+            href = null,
+            checksum = null,
+            oneTimePassword = null,
+        ),
+    ),
+)
 
 val mockedRelyingPartyDomain = RelyingPartyDomain(
     name = mockedVerifierName,

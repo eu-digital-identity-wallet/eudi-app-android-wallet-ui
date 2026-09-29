@@ -38,16 +38,23 @@ internal fun RqesSigningRecord.toSigningEntries(
         )
     }
 
-    return documents.map { document ->
-        TransactionEntry.SigningSealing(
-            transactionIdentifier = idProvider(),
-            time = time,
-            transactionResult = result,
-            certificateIdentifier = certificateSerialNumber,
-            dtbsr = document.dtbsr,
-            fileName = document.label,
-            fileSize = document.sizeBytes?.toString(),
-            interactingPartyName = partyName,
-        )
-    }
+    val signingTransactionIdentifier = idProvider()
+
+    return documents
+        .ifEmpty {
+            listOf(null)
+        }
+        .map { document ->
+            TransactionEntry.SigningSealing(
+                transactionIdentifier = idProvider(),
+                signingTransactionIdentifier = signingTransactionIdentifier,
+                time = time,
+                transactionResult = result,
+                certificateIdentifier = certificateSerialNumber,
+                dtbsr = document?.dtbsr,
+                fileName = document?.label,
+                fileSize = document?.sizeBytes?.toString(),
+                interactingPartyName = partyName,
+            )
+        }
 }

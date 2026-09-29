@@ -257,6 +257,7 @@ internal class TransactionDetailsViewModel(
         is TransactionDetailsBodyUi.Presentation -> copy(
             requested = requested.withExpansionIcons(expandedGroupIds),
             shared = shared.withExpansionIcons(expandedGroupIds),
+            transactionData = transactionData?.withExpansionIcons(expandedGroupIds),
         )
 
         is TransactionDetailsBodyUi.DataDeletionRequest -> copy(

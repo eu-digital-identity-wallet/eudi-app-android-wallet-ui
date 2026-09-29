@@ -616,6 +616,10 @@ configureOpenId4Vp {
     withFormats(
         Format.MsoMdoc.ES256, Format.SdJwtVc.ES256
     )
+    withTransactionDataTypes(
+        TransactionDataType.QES_APPROVAL,
+        TransactionDataType.QES
+    )
 }
 ```
 
@@ -628,6 +632,7 @@ Production meaning:
 | `ClientIdScheme.Preregistered` | Verifiers are explicitly configured in the wallet. | Use for closed pilots or controlled ecosystems. Add production verifier API URL, legal name, and client ID. |
 | `withSchemes` | URI schemes the app accepts for OpenID4VP. | Keep only schemes required by your supported protocols and profiles. |
 | `withFormats` | Credential formats and algorithms supported in presentation. | Keep only formats and algorithms your issuers and verifiers support and that are approved by your security profile. |
+| `withTransactionDataTypes` | Signing transaction-data types accepted with a presentation request. | Keep QES approval and QES request enabled when supporting these flows; see [Transaction data configuration](CONFIGURATION.md#transaction-data-configuration). |
 
 If using preregistered verifiers, add:
 
@@ -1632,6 +1637,13 @@ Wallet operations and RQES signing activity appear in the app's locally stored t
 Keep transaction logging configured for every flavor, including release builds. Later updates to a
 transaction refresh its existing record.
 
+When a presentation includes recorded signing-request information, its details show one
+**SIGNING REQUEST / Signature details** section. It is read-only, including any document locations.
+Signing results appear in separate history entries.
+
+Available hashes and expected document checksums are displayed as supplied information. They do
+not represent a document-integrity verification result.
+
 Data-deletion request and DPA-report attempts are associated with their originating presentation
 and communication method. They appear in that presentation's history rather than the main
 transaction list. An attempt records that the external application opened; it does not confirm that
@@ -2313,6 +2325,9 @@ Before release candidate approval, test:
 * Revocation.
 * Same-device OpenID4VP presentation.
 * Cross-device presentation.
+* Remote presentation rejection with and without a redirect. Confirm that **Close** and Android Back
+  both exit to the initiating screen, including when the presentation starts during issuance. When a
+  redirect is supplied, confirm it opens and returning to the Wallet does not reopen the presentation.
 * Presentation from a verifier with no valid registration certificate, and from one asking beyond
   its registered scope.
 * Relayed OpenID4VP request and response handling.
@@ -2335,6 +2350,9 @@ Exercise these cases in the release artifact that will be distributed, with R8 e
 
 * Record issuance, reissuance, credential deletion, presentation, and signing activity; restart
   the app and verify that the records remain available and display correctly.
+* Exercise QES approval and QES requests with transaction data. Check the details under each
+  applicable request option, document links where supplied, and the read-only recorded details
+  after restarting the app. Also check that requests without transaction data show no extra section.
 * Confirm that updates to the same transaction refresh its existing entry. Delete a pending
   issuance log and verify that a later completion can create the log again, as intended.
 * Verify exact-presentation association and communication methods in deletion-request/report

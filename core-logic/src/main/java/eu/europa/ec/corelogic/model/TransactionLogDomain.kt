@@ -45,6 +45,7 @@ sealed interface TransactionLogDomain {
         val registration: PresentationRegistrationDomain?,
         val claimsRequested: List<CredentialClaimsDomain>,
         val claimsPresented: List<CredentialClaimsDomain>,
+        val transactionData: List<PresentationTransactionDataDomain>,
     ) : TransactionLogDomain {
         /** A failed presentation may still have shared data. */
         val canRequestDataDeletion: Boolean
