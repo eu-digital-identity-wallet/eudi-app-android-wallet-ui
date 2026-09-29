@@ -17,6 +17,7 @@
 package eu.europa.ec.commonfeature.ui.loading
 
 import android.content.Context
+import android.net.Uri
 import androidx.lifecycle.viewModelScope
 import eu.europa.ec.uilogic.component.content.ContentErrorConfig
 import eu.europa.ec.uilogic.component.content.ContentHeaderConfig
@@ -30,8 +31,15 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.time.Duration
 
+data class RejectionState(
+    val initiatorRoute: String,
+    val redirectUri: Uri?,
+    val isClosing: Boolean,
+)
+
 data class State(
     val error: ContentErrorConfig? = null,
+    val rejection: RejectionState? = null,
     val headerConfig: ContentHeaderConfig,
     val isCancellable: Boolean,
     val notifyOnAuthenticationFailure: Boolean = false
@@ -41,12 +49,18 @@ sealed class Event : ViewEvent {
     data class DoWork(val context: Context) : Event()
     data object Initialize : Event()
     data object GoBack : Event()
+    data object CloseRejection : Event()
     data object DismissError : Event()
 }
 
 sealed class Effect : ViewSideEffect {
     sealed class Navigation : Effect() {
         data class SwitchScreen(val screenRoute: String) : Navigation()
+        data class CloseRejection(
+            val initiatorRoute: String,
+            val redirectUri: Uri?
+        ) : Navigation()
+
         data class PopBackStackUpTo(
             val screenRoute: String,
             val inclusive: Boolean
@@ -102,6 +116,8 @@ abstract class LoadingViewModel : MviViewModel<Event, State, Effect>() {
 
             is Event.DoWork -> doWork(event.context)
 
+            is Event.CloseRejection -> closeRejection()
+
             is Event.GoBack -> {
                 setState {
                     copy(error = null)
@@ -117,6 +133,37 @@ abstract class LoadingViewModel : MviViewModel<Event, State, Effect>() {
         }
     }
 
+    protected fun showRejection(
+        initiatorRoute: String,
+        redirectUri: Uri?,
+        headerConfig: ContentHeaderConfig,
+    ) {
+        setState {
+            copy(
+                error = null,
+                rejection = RejectionState(
+                    initiatorRoute = initiatorRoute,
+                    redirectUri = redirectUri,
+                    isClosing = false,
+                ),
+                headerConfig = headerConfig,
+            )
+        }
+    }
+
+    private fun closeRejection() {
+        val rejection = viewState.value.rejection ?: return
+        if (rejection.isClosing) return
+
+        setState { copy(rejection = rejection.copy(isClosing = true)) }
+        setEffect {
+            Effect.Navigation.CloseRejection(
+                initiatorRoute = rejection.initiatorRoute,
+                redirectUri = rejection.redirectUri,
+            )
+        }
+    }
+
     protected fun doNavigation(navigationType: NavigationType) {
         when (navigationType) {
             is NavigationType.PushScreen -> {
@@ -125,7 +172,7 @@ abstract class LoadingViewModel : MviViewModel<Event, State, Effect>() {
                 }
             }
 
-            is NavigationType.Pop, NavigationType.Finish -> {
+            is NavigationType.Pop, is NavigationType.Finish -> {
                 setEffect {
                     Effect.Navigation.PopBackStackUpTo(
                         screenRoute = getPreviousScreen().screenRoute,

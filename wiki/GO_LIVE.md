@@ -2325,6 +2325,9 @@ Before release candidate approval, test:
 * Revocation.
 * Same-device OpenID4VP presentation.
 * Cross-device presentation.
+* Remote presentation rejection with and without a redirect. Confirm that **Close** and Android Back
+  both exit to the initiating screen, including when the presentation starts during issuance. When a
+  redirect is supplied, confirm it opens and returning to the Wallet does not reopen the presentation.
 * Presentation from a verifier with no valid registration certificate, and from one asking beyond
   its registered scope.
 * Relayed OpenID4VP request and response handling.

@@ -34,6 +34,7 @@ import eu.europa.ec.testlogic.extension.runTest
 import eu.europa.ec.testlogic.extension.toFlow
 import eu.europa.ec.testlogic.rule.CoroutineTestRule
 import junit.framework.TestCase.assertEquals
+import kotlinx.coroutines.flow.asFlow
 import org.junit.After
 import org.junit.Before
 import org.junit.Rule
@@ -42,6 +43,7 @@ import org.mockito.Mock
 import org.mockito.Mockito.mock
 import org.mockito.MockitoAnnotations
 import org.mockito.kotlin.inOrder
+import org.mockito.kotlin.never
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
@@ -196,6 +198,62 @@ class TestProximityLoadingInteractor {
                 }
         }
     }
+    //endregion
+
+    //region observeResponse rejection
+
+    // Case 1:
+    // 1. A remote rejection with a URI is followed by a proximity success.
+    // Case 1 Expected Result:
+    // The rejection is ignored and the ordinary success is still emitted.
+    @Test
+    fun `Given rejection with a URI followed by success, When observeResponse is called, Then proximity success is preserved`() {
+        coroutineRule.runTest {
+            // Given
+            mockWalletCorePresentationControllerEventEmissions(
+                events = listOf(
+                    WalletCorePartialState.Rejected(redirectUri = URI(mockedUriPath1)),
+                    WalletCorePartialState.Success,
+                )
+            )
+
+            // When
+            interactor.observeResponse().runFlowTest {
+                // Then
+                assertEquals(ProximityLoadingObserveResponsePartialState.Success, awaitItem())
+                awaitComplete()
+                verify(walletCorePresentationController, never()).stopPresentation()
+                verify(walletCorePresentationController, never()).sendRequestedDocuments()
+            }
+        }
+    }
+
+    // Case 2:
+    // 1. A remote rejection without a URI is followed by a proximity success.
+    // Case 2 Expected Result:
+    // The rejection is ignored and the ordinary success is still emitted.
+    @Test
+    fun `Given rejection without a URI followed by success, When observeResponse is called, Then proximity success is preserved`() {
+        coroutineRule.runTest {
+            // Given
+            mockWalletCorePresentationControllerEventEmissions(
+                events = listOf(
+                    WalletCorePartialState.Rejected(redirectUri = null),
+                    WalletCorePartialState.Success,
+                )
+            )
+
+            // When
+            interactor.observeResponse().runFlowTest {
+                // Then
+                assertEquals(ProximityLoadingObserveResponsePartialState.Success, awaitItem())
+                awaitComplete()
+                verify(walletCorePresentationController, never()).stopPresentation()
+                verify(walletCorePresentationController, never()).sendRequestedDocuments()
+            }
+        }
+    }
+
     //endregion
 
     //region handleUserAuthentication
@@ -415,6 +473,11 @@ class TestProximityLoadingInteractor {
     private fun mockWalletCorePresentationControllerEventEmission(event: WalletCorePartialState) {
         whenever(walletCorePresentationController.observeSentDocumentsRequest())
             .thenReturn(event.toFlow())
+    }
+
+    private fun mockWalletCorePresentationControllerEventEmissions(events: List<WalletCorePartialState>) {
+        whenever(walletCorePresentationController.observeSentDocumentsRequest())
+            .thenReturn(events.asFlow())
     }
 
     private fun mockBiometricsAvailabilityResponse(response: BiometricsAvailability) {

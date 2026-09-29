@@ -178,6 +178,10 @@ To delete a document, navigate to the 'Documents' tab within the 'Dashboard' scr
 11. A browser will open, confirming that the Verifier has accepted your request.
 12. Return to the app. The flow is now complete.
 
+If the relying party rejects the response, the Wallet displays "The Relying Party rejected the
+response." Select **Close** or use Android Back to leave the presentation. The Wallet returns to
+the screen that initiated it and opens the relying party's redirect, if supplied.
+
 When a presentation request includes transaction data for signing, each applicable option shows a
 **Data to be signed** section below its requested data. Expand the initially collapsed
 **Signature details** row to view the supplied document and signature information. These details

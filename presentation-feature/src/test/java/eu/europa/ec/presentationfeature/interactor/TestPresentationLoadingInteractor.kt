@@ -27,12 +27,14 @@ import eu.europa.ec.corelogic.controller.WalletCorePresentationController
 import eu.europa.ec.corelogic.model.AuthenticationData
 import eu.europa.ec.testfeature.util.mockedNotifyOnAuthenticationFailure
 import eu.europa.ec.testfeature.util.mockedPlainFailureMessage
+import eu.europa.ec.testfeature.util.mockedUriPath1
 import eu.europa.ec.testlogic.extension.runFlowTest
 import eu.europa.ec.testlogic.extension.runTest
 import eu.europa.ec.testlogic.extension.toFlow
 import eu.europa.ec.testlogic.rule.CoroutineTestRule
 import junit.framework.TestCase
 import junit.framework.TestCase.assertEquals
+import kotlinx.coroutines.flow.asFlow
 import org.junit.After
 import org.junit.Before
 import org.junit.Rule
@@ -41,6 +43,7 @@ import org.mockito.Mock
 import org.mockito.Mockito.mock
 import org.mockito.MockitoAnnotations
 import org.mockito.kotlin.inOrder
+import org.mockito.kotlin.never
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
@@ -209,6 +212,123 @@ class TestPresentationLoadingInteractor {
                     )
                 }
         }
+    }
+
+    //endregion
+
+    //region observeResponse rejection
+
+    // Case 1:
+    // 1. The response is rejected with a redirect URI.
+    // Case 1 Expected Result:
+    // The URI is preserved without completing observation or stopping the presentation.
+    @Test
+    fun `Given rejection with a redirect, When observeResponse is called, Then rejection preserves the URI`() {
+        coroutineRule.runTest {
+            // Given
+            val mockedRedirectUri = URI(mockedUriPath1)
+            mockWalletCorePresentationControllerEventEmission(
+                event = WalletCorePartialState.Rejected(redirectUri = mockedRedirectUri)
+            )
+
+            // When
+            interactor.observeResponse().runFlowTest {
+                // Then
+                assertEquals(
+                    PresentationLoadingObserveResponsePartialState.Rejected(mockedRedirectUri),
+                    awaitItem(),
+                )
+                verify(walletCorePresentationController, never()).stopPresentation()
+                expectNoEvents()
+            }
+        }
+    }
+
+    // Case 2:
+    // 1. The response is rejected without a redirect URI.
+    // Case 2 Expected Result:
+    // Rejection retains the absent URI without completing observation or stopping the presentation.
+    @Test
+    fun `Given Case 2 without a redirect, When observeResponse is called, Then rejection is returned`() {
+        coroutineRule.runTest {
+            // Given
+            mockWalletCorePresentationControllerEventEmission(
+                event = WalletCorePartialState.Rejected(redirectUri = null)
+            )
+
+            // When
+            interactor.observeResponse().runFlowTest {
+                // Then
+                assertEquals(
+                    PresentationLoadingObserveResponsePartialState.Rejected(redirectUri = null),
+                    awaitItem(),
+                )
+                verify(walletCorePresentationController, never()).stopPresentation()
+                expectNoEvents()
+            }
+        }
+    }
+
+    // Case 3:
+    // 1. Rejection is followed by success, readiness to send and another rejection.
+    // Case 3 Expected Result:
+    // All events are mapped in order, without sending documents or stopping the presentation.
+    @Test
+    fun `Given rejection followed by more events, When observeResponse is called, Then all events are mapped in order`() {
+        coroutineRule.runTest {
+            // Given
+            val mockedRejection = WalletCorePartialState.Rejected(redirectUri = null)
+            mockWalletCorePresentationControllerEventEmissions(
+                events = listOf(
+                    mockedRejection,
+                    WalletCorePartialState.Success,
+                    WalletCorePartialState.RequestIsReadyToBeSent,
+                    mockedRejection,
+                )
+            )
+
+            // When
+            interactor.observeResponse().runFlowTest {
+                // Then
+                assertEquals(
+                    PresentationLoadingObserveResponsePartialState.Rejected(redirectUri = null),
+                    awaitItem(),
+                )
+                assertEquals(PresentationLoadingObserveResponsePartialState.Success, awaitItem())
+                assertEquals(
+                    PresentationLoadingObserveResponsePartialState.RequestReadyToBeSent,
+                    awaitItem(),
+                )
+                assertEquals(
+                    PresentationLoadingObserveResponsePartialState.Rejected(redirectUri = null),
+                    awaitItem(),
+                )
+                awaitComplete()
+                verify(walletCorePresentationController, never()).stopPresentation()
+                verify(walletCorePresentationController, never()).sendRequestedDocuments()
+            }
+        }
+    }
+
+    //endregion
+
+    //region initiatorRoute
+
+    // Case 1:
+    // 1. The presentation belongs to an existing initiating screen.
+    // Case 1 Expected Result:
+    // That screen's route remains available for the redirect exit.
+    @Test
+    fun `Given an initiating route, When initiatorRoute is read, Then the recorded route is returned`() {
+        // Given
+        val mockedInitiatorRoute = "initiator-route"
+        whenever(walletCorePresentationController.initiatorRoute).thenReturn(mockedInitiatorRoute)
+
+        // When
+        val result = interactor.initiatorRoute
+
+        // Then
+        assertEquals(mockedInitiatorRoute, result)
     }
 
     //endregion
@@ -438,6 +558,11 @@ class TestPresentationLoadingInteractor {
     private fun mockWalletCorePresentationControllerEventEmission(event: WalletCorePartialState) {
         whenever(walletCorePresentationController.observeSentDocumentsRequest())
             .thenReturn(event.toFlow())
+    }
+
+    private fun mockWalletCorePresentationControllerEventEmissions(events: List<WalletCorePartialState>) {
+        whenever(walletCorePresentationController.observeSentDocumentsRequest())
+            .thenReturn(events.asFlow())
     }
 
     private fun mockBiometricsAvailabilityResponse(response: BiometricsAvailability) {

@@ -257,6 +257,7 @@
 
     <!-- region Loading Screen -->
     <string name="loading_header_description">Please wait…</string>
+    <string name="loading_rejection_description">The Relying Party rejected the response.</string>
     <string name="loading_biometry_biometrics_enabled_description">Use your biometrics to approve the transaction.</string>
     <string name="loading_biometry_biometrics_not_enabled_description">To approve the transaction you need to verify your identity.</string>
     <!--endregion-->

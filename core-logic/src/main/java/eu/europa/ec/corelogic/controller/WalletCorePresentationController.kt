@@ -44,6 +44,7 @@ import eu.europa.ec.eudi.wallet.dcapi.process.openid4vp.ProcessedOpenId4VpDCAPIR
 import eu.europa.ec.eudi.wallet.document.DocumentExtensions.getDefaultKeyUnlockData
 import eu.europa.ec.eudi.wallet.transfer.openId4vp.dcql.ProcessedDcqlRequest
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -92,6 +93,7 @@ sealed class TransferEventPartialState {
 
     data object ResponseSent : TransferEventPartialState()
     data class Redirect(val uri: URI) : TransferEventPartialState()
+    data class Rejected(val redirectUri: URI?) : TransferEventPartialState()
     data class IntentToSend(val intent: Intent) : TransferEventPartialState()
 }
 
@@ -112,6 +114,7 @@ sealed class SendRequestedDocumentsPartialState {
 sealed class ResponseReceivedPartialState {
     data object Success : ResponseReceivedPartialState()
     data class Redirect(val uri: URI) : ResponseReceivedPartialState()
+    data class Rejected(val redirectUri: URI?) : ResponseReceivedPartialState()
     data class Failure(val error: String) : ResponseReceivedPartialState()
     data class IntentToSend(val intent: Intent) : ResponseReceivedPartialState()
 }
@@ -124,6 +127,7 @@ sealed class WalletCorePartialState {
     data class Failure(val error: String) : WalletCorePartialState()
     data object Success : WalletCorePartialState()
     data class Redirect(val uri: URI) : WalletCorePartialState()
+    data class Rejected(val redirectUri: URI?) : WalletCorePartialState()
     data object RequestIsReadyToBeSent : WalletCorePartialState()
     data class IntentToSend(val intent: Intent) : WalletCorePartialState()
 }
@@ -343,6 +347,10 @@ class WalletCorePresentationControllerImpl(
                 )
             },
 
+            onRejected = { uri ->
+                trySendBlocking(TransferEventPartialState.Rejected(redirectUri = uri))
+            },
+
             intentToSend = { intent ->
                 pendingIntent = intent
                 trySendBlocking(
@@ -467,24 +475,17 @@ class WalletCorePresentationControllerImpl(
                 }
             }.toMap()
 
-            processed.generateResponse(
+            val generatedResponse = processed.generateResponse(
                 selection = walletCoreSelection,
                 keyUnlockData = keyUnlockData,
-            ).toKotlinResult()
-                .fold(
-                    onSuccess = {
-                        eudiWallet.sendResponse(it.response)
-                        SendRequestedDocumentsPartialState.RequestSent
-                    },
-                    onFailure = {
-                        SendRequestedDocumentsPartialState.Failure(
-                            error = it.localizedMessage ?: genericErrorMessage
-                        )
-                    }
-                )
-        }.getOrElse {
+            ).toKotlinResult().getOrThrow()
+            eudiWallet.sendResponse(generatedResponse.response)
+            SendRequestedDocumentsPartialState.RequestSent
+        }.getOrElse { exception ->
+            if (exception is CancellationException) throw exception
+
             SendRequestedDocumentsPartialState.Failure(
-                error = it.localizedMessage ?: genericErrorMessage
+                error = exception.localizedMessage ?: genericErrorMessage
             )
         }
     }
@@ -504,6 +505,10 @@ class WalletCorePresentationControllerImpl(
 
                 is TransferEventPartialState.Redirect -> {
                     ResponseReceivedPartialState.Redirect(uri = response.uri)
+                }
+
+                is TransferEventPartialState.Rejected -> {
+                    ResponseReceivedPartialState.Rejected(redirectUri = response.redirectUri)
                 }
 
                 is TransferEventPartialState.Disconnected -> {
@@ -529,24 +534,28 @@ class WalletCorePresentationControllerImpl(
     }
 
     override fun observeSentDocumentsRequest(): Flow<WalletCorePartialState> =
-        merge(checkForKeyUnlock(), mappedCallbackStateFlow()).map {
-            when (it) {
+        merge(checkForKeyUnlock(), mappedCallbackStateFlow()).map { response ->
+            when (response) {
                 is CheckKeyUnlockPartialState.Failure -> {
-                    WalletCorePartialState.Failure(it.error)
+                    WalletCorePartialState.Failure(response.error)
                 }
 
                 is CheckKeyUnlockPartialState.UserAuthenticationRequired -> {
-                    WalletCorePartialState.UserAuthenticationRequired(it.authenticationData)
+                    WalletCorePartialState.UserAuthenticationRequired(response.authenticationData)
                 }
 
                 is ResponseReceivedPartialState.Failure -> {
-                    WalletCorePartialState.Failure(it.error)
+                    WalletCorePartialState.Failure(response.error)
                 }
 
                 is ResponseReceivedPartialState.Redirect -> {
                     WalletCorePartialState.Redirect(
-                        uri = it.uri
+                        uri = response.uri
                     )
+                }
+
+                is ResponseReceivedPartialState.Rejected -> {
+                    WalletCorePartialState.Rejected(redirectUri = response.redirectUri)
                 }
 
                 is CheckKeyUnlockPartialState.RequestIsReadyToBeSent -> {
@@ -554,7 +563,7 @@ class WalletCorePresentationControllerImpl(
                 }
 
                 is ResponseReceivedPartialState.IntentToSend -> {
-                    WalletCorePartialState.IntentToSend(intent = it.intent)
+                    WalletCorePartialState.IntentToSend(intent = response.intent)
                 }
 
                 else -> {
