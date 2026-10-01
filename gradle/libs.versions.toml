@@ -61,7 +61,7 @@ timber = "5.0.1"
 
 # Other libraries
 androidDesugarJdkLibs = "2.1.5"
-googlePhoneNumber = "9.0.39"
+googlePhoneNumber = "9.0.40"
 gson = "2.14.0"
 lint = "32.4.1"
 material = "1.14.0"
