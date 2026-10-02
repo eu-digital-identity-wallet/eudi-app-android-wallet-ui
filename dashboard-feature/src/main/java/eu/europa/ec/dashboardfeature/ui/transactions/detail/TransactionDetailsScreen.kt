@@ -1147,7 +1147,8 @@ private data class RecordedSigningRequestPreviewData(
     val expandedGroupIds: Set<String>,
 )
 
-private class RecordedSigningRequestPreviewProvider : PreviewParameterProvider<RecordedSigningRequestPreviewData> {
+private class RecordedSigningRequestPreviewProvider :
+    PreviewParameterProvider<RecordedSigningRequestPreviewData> {
     override val values: Sequence<RecordedSigningRequestPreviewData>
         get() = sequenceOf(
             signingRequestPreview(isExpanded = false, isUnavailable = false),

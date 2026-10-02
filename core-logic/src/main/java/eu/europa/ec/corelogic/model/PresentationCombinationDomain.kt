@@ -18,7 +18,6 @@ package eu.europa.ec.corelogic.model
 
 import eu.europa.ec.corelogic.extension.toClaimPath
 import eu.europa.ec.corelogic.extension.toPresentationTransactionDataDomain
-import eu.europa.ec.corelogic.model.PresentationMatchDomain.Companion.from
 import org.multipaz.presentment.CredentialMatchSourceIso18013
 import org.multipaz.presentment.CredentialMatchSourceOpenID4VP
 import org.multipaz.presentment.CredentialPresentmentSetOptionMemberMatch

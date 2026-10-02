@@ -629,6 +629,7 @@ class TestPresentationRequestInteractor {
 
         assertEquals("DefaultPresentationScopeId", newInteractor.presentationScopeId)
     }
+
     // Case 15:
     // 1. A revoked PID and a valid mDL each carry transaction data.
     //
@@ -646,7 +647,11 @@ class TestPresentationRequestInteractor {
             mockGetAllIssuedDocumentsCall(response = listOf(pid, mdl))
             mockIsDocumentRevoked(revokedIds = setOf(pid.id))
             val matches = listOf(
-                mockedValidPidWithBasicFieldsRequestMatch.copy(transactionData = listOf(mockedTransactionDataApproval)),
+                mockedValidPidWithBasicFieldsRequestMatch.copy(
+                    transactionData = listOf(
+                        mockedTransactionDataApproval
+                    )
+                ),
                 mockedValidMdlWithBasicFieldsRequestMatch.copy(
                     queryId = mockedTransactionQueryId,
                     transactionData = listOf(mockedTransactionDataApproval),
@@ -664,7 +669,9 @@ class TestPresentationRequestInteractor {
                 // Then
                 val result = awaitItem() as PresentationRequestInteractorPartialState.Success
                 val combination = result.combinationsUi.single()
-                assertEquals(listOf(mdl.id), combination.documents.map { document -> document.domainPayload.docId })
+                assertEquals(
+                    listOf(mdl.id),
+                    combination.documents.map { document -> document.domainPayload.docId })
                 val section = combination.transactionData!!
                 val rows = section.details.nestedItems.map { item -> item.header }
                 assertEquals(false, section.details.isExpanded)

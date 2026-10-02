@@ -135,7 +135,11 @@ class TestPresentationMatchDomain {
             result.requestedClaims,
         )
         assertEquals(
-            listOf(mockedFirstSignatureCount, mockedSecondSignatureCount, mockedFirstSignatureCount),
+            listOf(
+                mockedFirstSignatureCount,
+                mockedSecondSignatureCount,
+                mockedFirstSignatureCount
+            ),
             result.transactionData.map { transaction ->
                 (transaction as PresentationTransactionDataDomain.QesApproval).numSignatures
             },

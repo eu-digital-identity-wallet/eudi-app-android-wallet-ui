@@ -148,7 +148,12 @@ object StringResourceProviderMocker {
             .thenReturn(mockedRequestCollapsedSupportingText)
         whenever(resourceProvider.getString(eq(R.string.request_transaction_numbered), any()))
             .thenAnswer { invocation -> "Transaction ${invocation.getArgument<Any>(1)}" }
-        whenever(resourceProvider.getString(eq(R.string.request_transaction_document_numbered), any()))
+        whenever(
+            resourceProvider.getString(
+                eq(R.string.request_transaction_document_numbered),
+                any()
+            )
+        )
             .thenAnswer { invocation -> "Document ${invocation.getArgument<Any>(1)}" }
     }
 

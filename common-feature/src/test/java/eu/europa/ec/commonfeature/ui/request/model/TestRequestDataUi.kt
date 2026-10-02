@@ -49,8 +49,10 @@ class TestRequestDataUi {
         val original = RequestDataUi.Single(mockedCombination(mockedFirstSectionId))
 
         // When
-        val expanded = original.toggleTransactionDataExpansion(mockedFirstSectionId, mockedFirstSectionId)
-        val collapsed = expanded.toggleTransactionDataExpansion(mockedFirstSectionId, mockedFirstSectionId)
+        val expanded =
+            original.toggleTransactionDataExpansion(mockedFirstSectionId, mockedFirstSectionId)
+        val collapsed =
+            expanded.toggleTransactionDataExpansion(mockedFirstSectionId, mockedFirstSectionId)
 
         // Then
         val originalSection = original.combination.transactionData!!
@@ -82,14 +84,21 @@ class TestRequestDataUi {
     fun `Given Case 2, When toggleTransactionDataExpansion is called, Then Case 2 Expected Result is returned`() {
         // Given
         val original = mockedMultiple()
-        val firstExpanded = original.toggleTransactionDataExpansion(mockedFirstSectionId, mockedFirstSectionId)
-                as RequestDataUi.Multiple
+        val firstExpanded =
+            original.toggleTransactionDataExpansion(mockedFirstSectionId, mockedFirstSectionId)
+                    as RequestDataUi.Multiple
 
         // When
         val secondExpanded = firstExpanded.copy(selectedIndex = 1)
-            .toggleTransactionDataExpansion(mockedSecondSectionId, mockedSecondSectionId) as RequestDataUi.Multiple
+            .toggleTransactionDataExpansion(
+                mockedSecondSectionId,
+                mockedSecondSectionId
+            ) as RequestDataUi.Multiple
         val firstCollapsed = secondExpanded.copy(selectedIndex = 0)
-            .toggleTransactionDataExpansion(mockedFirstSectionId, mockedFirstSectionId) as RequestDataUi.Multiple
+            .toggleTransactionDataExpansion(
+                mockedFirstSectionId,
+                mockedFirstSectionId
+            ) as RequestDataUi.Multiple
 
         // Then
         assertEquals(0, firstExpanded.selectedIndex)
@@ -115,8 +124,12 @@ class TestRequestDataUi {
         val original = mockedMultiple()
 
         // When
-        val unselected = original.toggleTransactionDataExpansion(mockedSecondSectionId, mockedSecondSectionId)
-        val stale = original.toggleTransactionDataExpansion(mockedReplacementSectionId, mockedReplacementSectionId)
+        val unselected =
+            original.toggleTransactionDataExpansion(mockedSecondSectionId, mockedSecondSectionId)
+        val stale = original.toggleTransactionDataExpansion(
+            mockedReplacementSectionId,
+            mockedReplacementSectionId
+        )
 
         // Then
         assertSame(original, unselected)
@@ -140,7 +153,12 @@ class TestRequestDataUi {
         )
 
         // When
-        val results = states.map { state -> state.toggleTransactionDataExpansion(mockedFirstSectionId, mockedFirstSectionId) }
+        val results = states.map { state ->
+            state.toggleTransactionDataExpansion(
+                mockedFirstSectionId,
+                mockedFirstSectionId
+            )
+        }
 
         // Then
         states.zip(results).forEach { (original, result) -> assertSame(original, result) }
@@ -156,12 +174,15 @@ class TestRequestDataUi {
         // Given
         val original = RequestDataUi.Single(mockedNestedCombination(mockedFirstSectionId))
         val originalSection = original.combination.transactionData!!
-        val originalGroup = originalSection.details.nestedItems[1] as ExpandableListItemUi.NestedListItem
+        val originalGroup =
+            originalSection.details.nestedItems[1] as ExpandableListItemUi.NestedListItem
         val originalNested = originalGroup.nestedItems[1] as ExpandableListItemUi.NestedListItem
 
         // When
-        val expanded = original.toggleTransactionDataExpansion(mockedFirstSectionId, mockedNestedGroupId)
-        val collapsed = expanded.toggleTransactionDataExpansion(mockedFirstSectionId, mockedNestedGroupId)
+        val expanded =
+            original.toggleTransactionDataExpansion(mockedFirstSectionId, mockedNestedGroupId)
+        val collapsed =
+            expanded.toggleTransactionDataExpansion(mockedFirstSectionId, mockedNestedGroupId)
 
         // Then
         val section = expanded.selectedCombination!!.transactionData!!
@@ -192,12 +213,22 @@ class TestRequestDataUi {
     fun `Given Case 6, When toggleTransactionDataExpansion is called, Then Case 6 Expected Result is returned`() {
         // Given
         val original = RequestDataUi.Single(mockedNestedCombination(mockedFirstSectionId))
-        val collapsedParent = original.toggleTransactionDataExpansion(mockedFirstSectionId, mockedParentGroupId)
+        val collapsedParent =
+            original.toggleTransactionDataExpansion(mockedFirstSectionId, mockedParentGroupId)
 
         // When
-        val leaf = original.toggleTransactionDataExpansion(mockedFirstSectionId, "$mockedFirstSectionId/location")
-        val unknown = original.toggleTransactionDataExpansion(mockedFirstSectionId, "$mockedFirstSectionId/unknown")
-        val hidden = collapsedParent.toggleTransactionDataExpansion(mockedFirstSectionId, mockedNestedGroupId)
+        val leaf = original.toggleTransactionDataExpansion(
+            mockedFirstSectionId,
+            "$mockedFirstSectionId/location"
+        )
+        val unknown = original.toggleTransactionDataExpansion(
+            mockedFirstSectionId,
+            "$mockedFirstSectionId/unknown"
+        )
+        val hidden = collapsedParent.toggleTransactionDataExpansion(
+            mockedFirstSectionId,
+            mockedNestedGroupId
+        )
 
         // Then
         assertSame(original, leaf)
@@ -221,14 +252,17 @@ class TestRequestDataUi {
             ),
             selectedIndex = 0,
         )
-        val expanded = original.toggleTransactionDataExpansion(mockedFirstSectionId, mockedNestedGroupId)
-            as RequestDataUi.Multiple
+        val expanded =
+            original.toggleTransactionDataExpansion(mockedFirstSectionId, mockedNestedGroupId)
+                    as RequestDataUi.Multiple
 
         // When
-        val closed = expanded.toggleTransactionDataExpansion(mockedFirstSectionId, mockedFirstSectionId)
-            as RequestDataUi.Multiple
+        val closed =
+            expanded.toggleTransactionDataExpansion(mockedFirstSectionId, mockedFirstSectionId)
+                    as RequestDataUi.Multiple
         val switchedBack = closed.copy(selectedIndex = 1).copy(selectedIndex = 0)
-        val reopened = switchedBack.toggleTransactionDataExpansion(mockedFirstSectionId, mockedFirstSectionId)
+        val reopened =
+            switchedBack.toggleTransactionDataExpansion(mockedFirstSectionId, mockedFirstSectionId)
 
         // Then
         assertEquals(expanded, reopened)
@@ -303,13 +337,19 @@ class TestRequestDataUi {
     @Test
     fun `Given Case 3, When transactionDocumentUrl is called, Then Case 3 Expected Result is returned`() {
         // Given
-        val firstExpanded = mockedMultiple().toggleTransactionDataExpansion(mockedFirstSectionId, mockedFirstSectionId)
+        val firstExpanded = mockedMultiple().toggleTransactionDataExpansion(
+            mockedFirstSectionId,
+            mockedFirstSectionId
+        )
                 as RequestDataUi.Multiple
         val states = listOf(
             mockedMultiple(),
             firstExpanded.copy(selectedIndex = 1),
             RequestDataUi.Single(mockedCombination(mockedReplacementSectionId))
-                .toggleTransactionDataExpansion(mockedReplacementSectionId, mockedReplacementSectionId),
+                .toggleTransactionDataExpansion(
+                    mockedReplacementSectionId,
+                    mockedReplacementSectionId
+                ),
             RequestDataUi.Initial,
             RequestDataUi.NoData,
             RequestDataUi.Single(
@@ -338,15 +378,23 @@ class TestRequestDataUi {
     fun `Given Case 4, When transactionDocumentUrl is called, Then Case 4 Expected Result is returned`() {
         // Given
         val original = RequestDataUi.Single(mockedNestedCombination(mockedFirstSectionId))
-        val expanded = original.toggleTransactionDataExpansion(mockedFirstSectionId, mockedNestedGroupId)
-        val closedParent = expanded.toggleTransactionDataExpansion(mockedFirstSectionId, mockedParentGroupId)
-        val reopenedParent = closedParent.toggleTransactionDataExpansion(mockedFirstSectionId, mockedParentGroupId)
-        val closedSection = expanded.toggleTransactionDataExpansion(mockedFirstSectionId, mockedFirstSectionId)
+        val expanded =
+            original.toggleTransactionDataExpansion(mockedFirstSectionId, mockedNestedGroupId)
+        val closedParent =
+            expanded.toggleTransactionDataExpansion(mockedFirstSectionId, mockedParentGroupId)
+        val reopenedParent =
+            closedParent.toggleTransactionDataExpansion(mockedFirstSectionId, mockedParentGroupId)
+        val closedSection =
+            expanded.toggleTransactionDataExpansion(mockedFirstSectionId, mockedFirstSectionId)
 
         // When
-        val urls = listOf(original, expanded, closedParent, reopenedParent, closedSection).map { state ->
-            state.transactionDocumentUrl(sectionId = mockedFirstSectionId, itemId = mockedNestedActionId)
-        }
+        val urls =
+            listOf(original, expanded, closedParent, reopenedParent, closedSection).map { state ->
+                state.transactionDocumentUrl(
+                    sectionId = mockedFirstSectionId,
+                    itemId = mockedNestedActionId
+                )
+            }
 
         // Then
         assertEquals(listOf(null, mockedDocumentUrl, null, mockedDocumentUrl, null), urls)
@@ -406,7 +454,10 @@ class TestRequestDataUi {
 
         // Then
         assertEquals(updatedDocuments, updated.selectedDocuments)
-        assertSame(original.selectedCombination!!.transactionData, updated.selectedCombination!!.transactionData)
+        assertSame(
+            original.selectedCombination!!.transactionData,
+            updated.selectedCombination!!.transactionData
+        )
         assertSame(original.selectedCombination!!.matches, updated.selectedCombination!!.matches)
     }
 
@@ -418,10 +469,16 @@ class TestRequestDataUi {
     @Test
     fun `Given Case 2, When withSelectedDocuments is called, Then Case 2 Expected Result is returned`() {
         // Given
-        val firstExpanded = mockedMultiple().toggleTransactionDataExpansion(mockedFirstSectionId, mockedFirstSectionId)
+        val firstExpanded = mockedMultiple().toggleTransactionDataExpansion(
+            mockedFirstSectionId,
+            mockedFirstSectionId
+        )
                 as RequestDataUi.Multiple
         val original = firstExpanded.copy(selectedIndex = 1)
-            .toggleTransactionDataExpansion(mockedSecondSectionId, mockedSecondSectionId) as RequestDataUi.Multiple
+            .toggleTransactionDataExpansion(
+                mockedSecondSectionId,
+                mockedSecondSectionId
+            ) as RequestDataUi.Multiple
         val updatedDocuments = emptyList<RequestDocumentItemUi>()
 
         // When
@@ -431,7 +488,10 @@ class TestRequestDataUi {
         assertEquals(1, updated.selectedIndex)
         assertEquals(updatedDocuments, updated.selectedDocuments)
         assertSame(original.combinations[0], updated.combinations[0])
-        assertSame(original.combinations[1].transactionData, updated.combinations[1].transactionData)
+        assertSame(
+            original.combinations[1].transactionData,
+            updated.combinations[1].transactionData
+        )
         assertSame(original.combinations[1].matches, updated.combinations[1].matches)
     }
 

@@ -146,7 +146,10 @@ class TestTransactionDataTransformer {
         )!!
 
         // Then
-        assertEquals(listOf("Qualified electronic signature (QES)"), section.values("Signature type"))
+        assertEquals(
+            listOf("Qualified electronic signature (QES)"),
+            section.values("Signature type")
+        )
         assertEquals(listOf("4"), section.values("Number of signatures"))
         assertEquals(listOf(" Contract.pdf "), section.values("Document"))
         assertEquals(listOf("Y2hlY2s="), section.values("Expected document checksum"))
@@ -154,14 +157,18 @@ class TestTransactionDataTransformer {
         assertEquals(listOf("SHA-256"), section.values("DTBSR hash algorithm"))
         assertEquals(listOf(mockedOtp), section.values("One-time password (OTP)"))
         assertEquals(listOf(" Signing\ncontract "), section.values("Reason"))
-        assertTrue(section.rows().any { row -> row.overlineText == null && row.text() == "Name only" })
+        assertTrue(
+            section.rows().any { row -> row.overlineText == null && row.text() == "Name only" })
         assertEquals(listOf(""), section.values("Empty"))
         assertTrue(section.values("RP origin").isEmpty())
         assertTrue(section.values("RP identifier").isEmpty())
         assertEquals(listOf(mockedDocumentUrl), section.documentUrlsByItemId.values.toList())
         val action = section.rows().single { row -> row.itemId in section.documentUrlsByItemId }
         assertEquals("Open document", action.text())
-        assertEquals(ListItemTrailingContentDataUi.Icon(AppIcons.OpenNew), action.trailingContentData)
+        assertEquals(
+            ListItemTrailingContentDataUi.Icon(AppIcons.OpenNew),
+            action.trailingContentData
+        )
         assertTrue(section.rows().filter { row -> row.itemId != action.itemId }
             .all { row -> row.trailingContentData == null })
     }
@@ -177,7 +184,10 @@ class TestTransactionDataTransformer {
         val reference = mockedSignature.copy(
             label = "Reference.pdf",
             href = mockedDocumentUrl,
-            checksum = DocumentChecksumDomain(value = "ZXhwZWN0ZWQ=", algorithmOid = mockedSha384Oid),
+            checksum = DocumentChecksumDomain(
+                value = "ZXhwZWN0ZWQ=",
+                algorithmOid = mockedSha384Oid
+            ),
             oneTimePassword = mockedOtp,
             signatureQualifier = "eu_eidas_qeseal",
             signatureFormat = "P",
@@ -277,7 +287,10 @@ class TestTransactionDataTransformer {
             displayName = mockedRequestDisplayName,
             credentialIds = emptyList(),
             signatureRequests = qualifiers.mapIndexed { index, qualifier ->
-                mockedSignature.copy(signatureQualifier = qualifier, signatureFormat = formats[index])
+                mockedSignature.copy(
+                    signatureQualifier = qualifier,
+                    signatureFormat = formats[index]
+                )
             },
         )
 
@@ -296,8 +309,10 @@ class TestTransactionDataTransformer {
             ),
             section.values("Signature type"),
         )
-        assertEquals(listOf("CAdES", "XAdES", "PAdES", "JAdES", "", "future-format"),
-            section.values("Signature format"))
+        assertEquals(
+            listOf("CAdES", "XAdES", "PAdES", "JAdES", "", "future-format"),
+            section.values("Signature format")
+        )
     }
 
     // Case 6:
@@ -320,9 +335,15 @@ class TestTransactionDataTransformer {
         )!!
 
         // Then
-        val headings = section.rows().filter { row -> row.overlineText == null }.map { row -> row.text() }
+        val headings =
+            section.rows().filter { row -> row.overlineText == null }.map { row -> row.text() }
         assertEquals(
-            listOf("Transaction 1", "Transaction 2", "Details for this transaction are unavailable.", "Transaction 3"),
+            listOf(
+                "Transaction 1",
+                "Transaction 2",
+                "Details for this transaction are unavailable.",
+                "Transaction 3"
+            ),
             headings,
         )
         assertEquals(listOf("YWJjZA==", "YWJjZA=="), section.values("DTBSR hash"))
@@ -386,12 +407,24 @@ class TestTransactionDataTransformer {
     @Test
     fun `Given Case 9, When transformToUi is called, Then Case 9 Expected Result is returned`() {
         // Given
-        val valid = listOf(mockedDocumentUrl, "http://example.org:8080/file", "HTTPS://example.org/file#page=2")
+        val valid = listOf(
+            mockedDocumentUrl,
+            "http://example.org:8080/file",
+            "HTTPS://example.org/file#page=2"
+        )
         val invalid = listOf(
-            "file:///document.pdf", "content://documents/1", "javascript:alert(1)", "/relative.pdf",
-            "https:///missing-host", "https://user:password@example.org/file", "https://example.org/has space",
-            "https://example.org/%zz", "https://example.org:99999/file", "https://example.org:0/file",
-            "https://example.org/\nfile", "",
+            "file:///document.pdf",
+            "content://documents/1",
+            "javascript:alert(1)",
+            "/relative.pdf",
+            "https:///missing-host",
+            "https://user:password@example.org/file",
+            "https://example.org/has space",
+            "https://example.org/%zz",
+            "https://example.org:99999/file",
+            "https://example.org:0/file",
+            "https://example.org/\nfile",
+            "",
         )
         val locations = valid + invalid
         val request = PresentationTransactionDataDomain.Qes(
@@ -452,7 +485,9 @@ class TestTransactionDataTransformer {
         // Then
         assertTrue(section.values("RP identifier").isEmpty())
         assertTrue(section.values("RP origin").isEmpty())
-        assertTrue(section.rows().any { row -> row.text() == "Details for this transaction are unavailable." })
+        assertTrue(
+            section.rows()
+                .any { row -> row.text() == "Details for this transaction are unavailable." })
         assertTrue(section.documentUrlsByItemId.isEmpty())
     }
 
@@ -516,7 +551,11 @@ class TestTransactionDataTransformer {
         assertFalse(approvalRows.any { row -> row.overlineText == "Response URI" })
         assertTrue(requestRows.any { row -> row.text() == mockedResponseUri })
         assertTrue(requestRows.none { row ->
-            row.overlineText in listOf("Number of signatures", "DTBSR hash", "Signing credential ID")
+            row.overlineText in listOf(
+                "Number of signatures",
+                "DTBSR hash",
+                "Signing credential ID"
+            )
         })
         assertEquals(listOf("eIDAS"), section.values("Trust framework"))
     }
@@ -549,8 +588,16 @@ class TestTransactionDataTransformer {
                     responseUri = mockedResponseUri,
                     signatureFormat = "P",
                     conformanceLevel = "AdES-B-LT",
-                    checksum = DocumentChecksumDomain(value = "expected", algorithmOid = mockedSha384Oid),
-                    signedProperties = listOf(SigningAttributeDomain(name = "reason", value = "Contract")),
+                    checksum = DocumentChecksumDomain(
+                        value = "expected",
+                        algorithmOid = mockedSha384Oid
+                    ),
+                    signedProperties = listOf(
+                        SigningAttributeDomain(
+                            name = "reason",
+                            value = "Contract"
+                        )
+                    ),
                 )
             ),
         )
@@ -577,7 +624,8 @@ class TestTransactionDataTransformer {
         assertTrue(values.contains("reason" to "Contract"))
         assertEquals(
             listOf(mockedTransactionQueryId, mockedTransactionQueryId),
-            values.filter { (label, _) -> label == "Requested credentials" }.map { (_, value) -> value },
+            values.filter { (label, _) -> label == "Requested credentials" }
+                .map { (_, value) -> value },
         )
         assertTrue(rows.all { row -> row.trailingContentData == null })
         assertFalse(rows.any { row -> row.itemId.endsWith("/open") })
@@ -600,10 +648,15 @@ class TestTransactionDataTransformer {
             transactions = unavailable,
             sectionId = mockedSectionId,
         )
-        val absent = transformer.transformRecordedToUi(transactions = emptyList(), sectionId = mockedSectionId)
+        val absent = transformer.transformRecordedToUi(
+            transactions = emptyList(),
+            sectionId = mockedSectionId
+        )
 
         // Then
-        assertEquals(2, rows.count { row -> row.header.text() == "Details for this transaction are unavailable." })
+        assertEquals(
+            2,
+            rows.count { row -> row.header.text() == "Details for this transaction are unavailable." })
         assertEquals(rows.size, rows.map { row -> row.header.itemId }.distinct().size)
         assertTrue(absent.isEmpty())
     }

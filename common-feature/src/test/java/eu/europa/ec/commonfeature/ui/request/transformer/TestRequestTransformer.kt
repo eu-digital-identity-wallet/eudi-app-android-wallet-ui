@@ -904,7 +904,8 @@ class TestRequestTransformer {
             )
             val secondApproval = mockedTransactionDataApproval.copy(
                 documentDigests = listOf(
-                    mockedTransactionDataApproval.documentDigests.single().copy(label = "Second.pdf"),
+                    mockedTransactionDataApproval.documentDigests.single()
+                        .copy(label = "Second.pdf"),
                 ),
             )
 
@@ -921,7 +922,10 @@ class TestRequestTransformer {
             )
 
             // Then
-            assertEquals(listOf("file-sample_150kB.pdf"), combinations[0].transactionValues("Document"))
+            assertEquals(
+                listOf("file-sample_150kB.pdf"),
+                combinations[0].transactionValues("Document")
+            )
             assertEquals(listOf("Second.pdf"), combinations[1].transactionValues("Document"))
             val sections = combinations.map { combination -> combination.transactionData!! }
             assertTrue(sections.all { section -> !section.details.isExpanded })
@@ -988,7 +992,10 @@ class TestRequestTransformer {
             // Given
             mockTransactionSectionDependencies()
             val pid = mockedValidPidWithBasicFieldsRequestMatch.copy(
-                transactionData = listOf(mockedTransactionDataApproval, mockedTransactionDataApproval),
+                transactionData = listOf(
+                    mockedTransactionDataApproval,
+                    mockedTransactionDataApproval
+                ),
             )
             val mdl = mockedValidMdlWithBasicFieldsRequestMatch.copy(
                 transactionData = listOf(PresentationTransactionDataDomain.Unavailable),
@@ -1000,10 +1007,20 @@ class TestRequestTransformer {
                 storageDocuments = documents,
                 resourceProvider = resourceProvider,
                 uuidProvider = uuidProvider,
-                combinationsDomain = listOf(PresentationCombinationDomain(matches = listOf(pid, mdl))),
+                combinationsDomain = listOf(
+                    PresentationCombinationDomain(
+                        matches = listOf(
+                            pid,
+                            mdl
+                        )
+                    )
+                ),
                 claimsAreSelectable = mockedSelectableClaims,
                 overaskedClaims = listOf(
-                    OveraskedClaimDomain(path = pidPath("family_name"), attestationTypes = setOf(mockedMdocPidDocType)),
+                    OveraskedClaimDomain(
+                        path = pidPath("family_name"),
+                        attestationTypes = setOf(mockedMdocPidDocType)
+                    ),
                 ),
             ).getOrThrow().single()
 
@@ -1015,7 +1032,12 @@ class TestRequestTransformer {
                 item.header.supportingContentData == null && item.header.trailingContentData == null
             })
             assertEquals(
-                listOf("Transaction 1", "Transaction 2", "Transaction 3", "Details for this transaction are unavailable."),
+                listOf(
+                    "Transaction 1",
+                    "Transaction 2",
+                    "Transaction 3",
+                    "Details for this transaction are unavailable."
+                ),
                 section.details.nestedItems.filter { item -> item.header.overlineText == null }
                     .map { item -> (item.header.mainContentData as ListItemMainContentDataUi.Text).text },
             )

@@ -71,7 +71,8 @@ object RequestTransformer {
                         presentationMatchDomain = match,
                     )?.let { documentDomain -> match to documentDomain }
                 }
-                val documentsDomain = representedMatches.map { (_, documentDomain) -> documentDomain }
+                val documentsDomain =
+                    representedMatches.map { (_, documentDomain) -> documentDomain }
 
                 val documentsUi = transformToUiItems(
                     documentsDomain = documentsDomain,

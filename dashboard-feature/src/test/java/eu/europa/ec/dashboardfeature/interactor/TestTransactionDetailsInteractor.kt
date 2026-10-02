@@ -3096,7 +3096,8 @@ class TestTransactionDetailsInteractor {
             mockGetTransactionLogCall(response = baseline)
             lateinit var original: TransactionDetailsUi
             interactor.getTransactionDetails(transactionId = baseline.id).runFlowTest {
-                original = (awaitItem() as TransactionDetailsInteractorPartialState.Success).transactionDetailsUi
+                original =
+                    (awaitItem() as TransactionDetailsInteractorPartialState.Success).transactionDetailsUi
             }
             val recorded = baseline.copy(
                 transactionData = List(2) { mockedTransactionDataApproval.copy(displayName = null) },
@@ -3106,7 +3107,8 @@ class TestTransactionDetailsInteractor {
             // When
             interactor.getTransactionDetails(transactionId = recorded.id).runFlowTest {
                 // Then
-                val details = (awaitItem() as TransactionDetailsInteractorPartialState.Success).transactionDetailsUi
+                val details =
+                    (awaitItem() as TransactionDetailsInteractorPartialState.Success).transactionDetailsUi
                 val body = details.body as TransactionDetailsBodyUi.Presentation
                 assertEquals(original.transactionDetailsCardUi, details.transactionDetailsCardUi)
                 assertEquals(original.body, body.copy(transactionData = null))
@@ -3123,7 +3125,8 @@ class TestTransactionDetailsInteractor {
                 assertEquals(2, group.items.count { row -> row.header.overlineText == "Document" })
                 assertTrue(group.items.none { row -> row.header.overlineText == "Transaction type" })
                 assertTrue(group.items.all { row -> row.header.trailingContentData == null })
-                val groupIds = body.sections.flatMap { item -> item.groups }.map { item -> item.header.itemId }
+                val groupIds =
+                    body.sections.flatMap { item -> item.groups }.map { item -> item.header.itemId }
                 assertEquals(groupIds.size, groupIds.distinct().size)
             }
             verifyNoInteractions(walletCoreTransactionRecordingController)
@@ -3142,13 +3145,14 @@ class TestTransactionDetailsInteractor {
             mockGetTransactionLogCall(response = mockedPresentationLogDomain)
 
             // When
-            interactor.getTransactionDetails(transactionId = mockedPresentationLogDomain.id).runFlowTest {
-                // Then
-                val body = (awaitItem() as TransactionDetailsInteractorPartialState.Success)
-                    .transactionDetailsUi.body as TransactionDetailsBodyUi.Presentation
-                assertNull(body.transactionData)
-                assertEquals(listOf(body.requested, body.shared), body.sections)
-            }
+            interactor.getTransactionDetails(transactionId = mockedPresentationLogDomain.id)
+                .runFlowTest {
+                    // Then
+                    val body = (awaitItem() as TransactionDetailsInteractorPartialState.Success)
+                        .transactionDetailsUi.body as TransactionDetailsBodyUi.Presentation
+                    assertNull(body.transactionData)
+                    assertEquals(listOf(body.requested, body.shared), body.sections)
+                }
         }
     }
 
@@ -3173,9 +3177,13 @@ class TestTransactionDetailsInteractor {
             // When
             interactor.getTransactionDetails(transactionId = transaction.id).runFlowTest {
                 // Then
-                val details = (awaitItem() as TransactionDetailsInteractorPartialState.Success).transactionDetailsUi
+                val details =
+                    (awaitItem() as TransactionDetailsInteractorPartialState.Success).transactionDetailsUi
                 assertEquals(false, details.transactionDetailsCardUi.transactionIsCompleted)
-                assertEquals(mockedGenericErrorMessage, details.transactionDetailsCardUi.nonCompletionReason)
+                assertEquals(
+                    mockedGenericErrorMessage,
+                    details.transactionDetailsCardUi.nonCompletionReason
+                )
                 val body = details.body as TransactionDetailsBodyUi.Presentation
                 assertTrue(body.shared.groups.isNotEmpty())
                 val rows = body.transactionData!!.groups.single().items

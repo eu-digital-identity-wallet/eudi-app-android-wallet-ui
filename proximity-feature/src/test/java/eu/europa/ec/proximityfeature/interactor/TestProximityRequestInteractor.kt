@@ -858,6 +858,7 @@ class TestProximityRequestInteractor {
 
         assertEquals("DefaultPresentationScopeId", newInteractor.presentationScopeId)
     }
+
     // Case 18:
     // 1. A represented match has transaction data.
     //
@@ -898,7 +899,8 @@ class TestProximityRequestInteractor {
                     emptyList<String>(),
                     section.details.nestedItems.filter { item ->
                         item.header.overlineText == "RP origin" || item.header.overlineText == "RP identifier"
-                    }.map { item -> (item.header.mainContentData as ListItemMainContentDataUi.Text).text },
+                    }
+                        .map { item -> (item.header.mainContentData as ListItemMainContentDataUi.Text).text },
                 )
             }
         }

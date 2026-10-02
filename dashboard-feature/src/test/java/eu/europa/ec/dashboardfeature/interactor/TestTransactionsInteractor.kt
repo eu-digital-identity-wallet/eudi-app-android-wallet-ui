@@ -945,7 +945,8 @@ class TestTransactionsInteractor {
             interactor.getTransactions().runFlowTest {
                 // Then
                 val result = awaitItem() as TransactionInteractorGetTransactionsPartialState.Success
-                val rows = result.allTransactions.items.map { item -> item.payload as TransactionUi }
+                val rows =
+                    result.allTransactions.items.map { item -> item.payload as TransactionUi }
                 assertEquals(
                     mockedListTransactionLogDomains.map { transaction -> transaction.id },
                     rows.map { row -> row.uiData.header.itemId })
@@ -1097,7 +1098,9 @@ class TestTransactionsInteractor {
                     (awaitItem() as TransactionInteractorGetTransactionsPartialState.Success).allTransactions
                 val attributes =
                     source.items.map { item -> item.attributes as TransactionsFilterableAttributes }
-                assertEquals(mockedListTransactionPartyNames, attributes.map { item -> item.partyName })
+                assertEquals(
+                    mockedListTransactionPartyNames,
+                    attributes.map { item -> item.partyName })
                 assertEquals(
                     listOf(
                         listOf(mockedTransactionPartyName, mockedTransactionIntermediaryName),
@@ -1618,7 +1621,8 @@ class TestTransactionsInteractor {
                 assertEquals("Relying Party", group.name)
                 assertEquals(mockedNoPartyFilterName, group.filters.first().name)
                 assertEquals(
-                    mockedListTransactionPartyNames.distinct().sortedBy { partyName -> partyName.lowercase() },
+                    mockedListTransactionPartyNames.distinct()
+                        .sortedBy { partyName -> partyName.lowercase() },
                     group.filters.drop(1).map { filter -> filter.name },
                 )
                 val allSelected = group.filterableAction.applyFilter(source, group)
@@ -1657,7 +1661,10 @@ class TestTransactionsInteractor {
         // When
         @Suppress("UNCHECKED_CAST")
         val group =
-            interactor.addDynamicFilters(source, interactor.getFilters()).filterGroups.first { filterGroup ->
+            interactor.addDynamicFilters(
+                source,
+                interactor.getFilters()
+            ).filterGroups.first { filterGroup ->
                 filterGroup.id == TransactionFilterIds.FILTER_BY_PARTY_GROUP_ID
             } as FilterGroup.MultipleSelectionFilterGroup<TransactionsFilterableAttributes>
         val namedFilter = group.filters.single { filter -> filter.name == name }
@@ -1696,7 +1703,8 @@ class TestTransactionsInteractor {
                 ).filterGroups.first { filterGroup ->
                     filterGroup.id == TransactionFilterIds.FILTER_BY_PARTY_GROUP_ID
                 } as FilterGroup.MultipleSelectionFilterGroup<TransactionsFilterableAttributes>
-                val issuer = group.filters.single { filter -> filter.name == mockedTransactionIssuerName }
+                val issuer =
+                    group.filters.single { filter -> filter.name == mockedTransactionIssuerName }
                 val filtered =
                     group.filterableAction.applyFilter(source, group.copy(filters = listOf(issuer)))
                 val providerMatches =
@@ -2133,7 +2141,8 @@ class TestTransactionsInteractor {
     }
 
     private fun TransactionInteractorFilterPartialState.FilterApplyResult.transactionIds(): List<String> {
-        return transactions.flatMap { (_, items) -> items }.map { transaction -> transaction.uiData.header.itemId }
+        return transactions.flatMap { (_, items) -> items }
+            .map { transaction -> transaction.uiData.header.itemId }
     }
 
     private suspend fun mockGetTransactionLogsCall(response: List<TransactionLogDomain>) {

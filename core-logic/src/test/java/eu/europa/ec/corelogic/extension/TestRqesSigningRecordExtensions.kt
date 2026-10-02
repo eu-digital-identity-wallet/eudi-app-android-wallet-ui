@@ -89,7 +89,9 @@ class TestRqesSigningRecordExtensions {
             ),
             entries.map { entry -> entry.transactionResult },
         )
-        assertEquals(listOf(mockedFileName, mockedFileName), entries.map { entry -> entry.fileName })
+        assertEquals(
+            listOf(mockedFileName, mockedFileName),
+            entries.map { entry -> entry.fileName })
         assertEquals(
             listOf(mockedSigningTransactionId, mockedOtherSigningTransactionId),
             entries.map { entry -> entry.signingTransactionIdentifier },
@@ -168,13 +170,19 @@ class TestRqesSigningRecordExtensions {
         // Then
         assertEquals(mockedEntryIds, entries.map { entry -> entry.transactionIdentifier })
         assertEquals(
-            listOf(mockedSigningTransactionId, mockedSigningTransactionId, mockedSigningTransactionId),
+            listOf(
+                mockedSigningTransactionId,
+                mockedSigningTransactionId,
+                mockedSigningTransactionId
+            ),
             entries.map { entry -> entry.signingTransactionIdentifier },
         )
         assertEquals(
             listOf(mockedFileName, mockedFileName, mockedOtherFileName),
             entries.map { entry -> entry.fileName })
-        assertEquals(listOf(mockedDigest, mockedDigest, mockedDigest), entries.map { entry -> entry.dtbsr })
+        assertEquals(
+            listOf(mockedDigest, mockedDigest, mockedDigest),
+            entries.map { entry -> entry.dtbsr })
         assertEquals(
             listOf(mockedTransactionTime, mockedTransactionTime, mockedTransactionTime),
             entries.map { entry -> entry.time })

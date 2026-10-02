@@ -1412,11 +1412,14 @@ class TestTransactionEntryExtensions {
         )
         val results = listOf(
             TransactionResult.Completed to TransactionResultDomain.Completed,
-            TransactionResult.NotCompleted(mockedReason) to TransactionResultDomain.NotCompleted(mockedReason),
+            TransactionResult.NotCompleted(mockedReason) to TransactionResultDomain.NotCompleted(
+                mockedReason
+            ),
         )
 
         results.forEach { (outcome, expectedResult) ->
-            val entry = mockedPresentation.copy(transactionalData = recorded, transactionResult = outcome)
+            val entry =
+                mockedPresentation.copy(transactionalData = recorded, transactionResult = outcome)
 
             // When
             val result = entry.toJson().toTransactionEntryOrNull()?.toTransactionLogDomain(
@@ -1432,7 +1435,8 @@ class TestTransactionEntryExtensions {
             assertEquals(expectedResult, result.result)
             assertEquals(mockedRawClaims, result.claimsRequested)
             assertEquals(emptyList<CredentialClaimsDomain>(), result.claimsPresented)
-            val approval = result.transactionData.single() as PresentationTransactionDataDomain.QesApproval
+            val approval =
+                result.transactionData.single() as PresentationTransactionDataDomain.QesApproval
             assertNull(approval.displayName)
             assertEquals(mockedFileName, approval.documentDigests.single().label)
             assertEquals("AQID", approval.documentDigests.single().hash)

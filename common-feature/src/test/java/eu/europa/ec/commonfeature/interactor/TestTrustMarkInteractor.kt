@@ -447,7 +447,8 @@ class TestTrustMarkInteractor {
         whenever(resourceProvider.getString(textRes, label)).thenReturn(text)
     }
 
-    private val mockedTrustMarkLoadError = "Unable to load Trust Mark information. Please try again."
+    private val mockedTrustMarkLoadError =
+        "Unable to load Trust Mark information. Please try again."
     private val mockedEnglishText = "SampleText-for-Users"
     private val mockedTrustedListLabel = "Trusted wallets"
     private val mockedInformationLabel = "details"

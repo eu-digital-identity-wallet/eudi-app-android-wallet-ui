@@ -390,7 +390,9 @@ class TestSplashInteractor {
     fun `Given Case 10, When getAfterSplashRoute is called, Then Case 10 Expected Result is returned`() {
         coroutineRule.runTest {
             // Given
-            whenever(prefKeys.getTrustMarkIntroductionCompleted()).thenThrow(mockedExceptionWithMessage)
+            whenever(prefKeys.getTrustMarkIntroductionCompleted()).thenThrow(
+                mockedExceptionWithMessage
+            )
             whenever(quickPinInteractor.hasPin()).thenReturn(false)
             whenever(configLogic.forcePidActivation).thenReturn(false)
 

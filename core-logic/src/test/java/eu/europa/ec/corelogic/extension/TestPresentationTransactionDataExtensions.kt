@@ -482,7 +482,8 @@ class TestPresentationTransactionDataExtensions {
     @Test
     fun `Given an undeclared recorded type, When mapped, Then its details are unavailable`() {
         // Given
-        val recorded = TransactionalData(JsonArray(listOf(Json.encodeToJsonElement(mockedApproval))))
+        val recorded =
+            TransactionalData(JsonArray(listOf(Json.encodeToJsonElement(mockedApproval))))
 
         // When
         val result = recorded.toPresentationTransactionDataDomains(types = emptyList())
