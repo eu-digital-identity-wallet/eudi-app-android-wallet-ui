@@ -287,6 +287,14 @@ class WalletCoreDocumentsControllerImpl(
         get() = resourceProvider.getString(R.string.issuance_generic_error)
 
     /**
+     * The manager whose authorization the user is completing in the browser. Its redirect is
+     * resumed there, because another issuer's manager may still hold an authorization the user
+     * abandoned.
+     */
+    @Volatile
+    private var authorizingManager: OpenId4VciManager? = null
+
+    /**
      * A map of [OpenId4VciManager] instances, keyed by their [VciConfig].
      * This is initialized lazily, creating a manager for each configuration defined in
      * `[WalletCoreConfig.issuersConfig]`. This allows the controller to interact with multiple
@@ -555,6 +563,7 @@ class WalletCoreDocumentsControllerImpl(
                 errorMessage = documentErrorMessage
             ).getOrThrow()
 
+            authorizingManager = manager
             manager.issueDocumentByOffer(
                 offer = offer,
                 onIssueEvent = issuanceCallback(prioritizeDeferred = prioritizeDeferred),
@@ -791,6 +800,13 @@ class WalletCoreDocumentsControllerImpl(
         }
 
     override fun resumeOpenId4VciWithAuthorization(uri: String) {
+        authorizingManager?.let { manager ->
+            try {
+                manager.resumeWithAuthorization(uri)
+            } catch (_: Exception) {
+            }
+            return
+        }
         for (manager in openId4VciManagers.values) {
             try {
                 manager.resumeWithAuthorization(uri)
@@ -865,6 +881,7 @@ class WalletCoreDocumentsControllerImpl(
             if (preflightRefusal != null) {
                 trySendBlocking(preflightRefusal)
             } else {
+                authorizingManager = manager
                 manager.issueDocumentByConfigurationIdentifiers(
                     issuerUrl = issuerId,
                     credentialConfigurationIds = configIds,
