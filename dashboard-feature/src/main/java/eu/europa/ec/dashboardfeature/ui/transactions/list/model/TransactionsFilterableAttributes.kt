@@ -26,5 +26,5 @@ data class TransactionsFilterableAttributes(
     val transactionStatus: TransactionStatusUi,
     val transactionType: TransactionTypeUi,
     val creationLocalDateTime: LocalDateTime?,
-    val relyingPartyName: String?,
+    val partyName: String?,
 ) : FilterableAttributes

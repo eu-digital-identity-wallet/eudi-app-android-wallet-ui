@@ -16,13 +16,16 @@
 
 package eu.europa.ec.dashboardfeature.ui.transactions.detail.model
 
+import eu.europa.ec.uilogic.component.AppIcons
+import eu.europa.ec.uilogic.component.ListItemDataUi
+import eu.europa.ec.uilogic.component.ListItemMainContentDataUi
+import eu.europa.ec.uilogic.component.ListItemTrailingContentDataUi
 import eu.europa.ec.uilogic.component.wrap.ExpandableListItemUi
 
 data class TransactionDetailsUi(
     val transactionId: String,
     val transactionDetailsCardUi: TransactionDetailsCardUi,
-    val transactionDetailsDataShared: TransactionDetailsDataSharedHolderUi,
-    val transactionDetailsDataSigned: TransactionDetailsDataSignedHolderUi?,
+    val body: TransactionDetailsBodyUi,
 )
 
 data class TransactionDetailsCardUi(
@@ -30,14 +33,108 @@ data class TransactionDetailsCardUi(
     val transactionStatusLabel: String,
     val transactionIsCompleted: Boolean,
     val transactionDate: String,
-    val relyingPartyName: String?,
-    val relyingPartyIsVerified: Boolean?,
+    val partyName: String?,
+    val providerType: String?,
+    val nonCompletionReason: String?,
+    val metadata: List<TransactionDetailsMetadataUi>,
 )
 
-data class TransactionDetailsDataSharedHolderUi(
-    val dataSharedItems: List<ExpandableListItemUi.NestedListItem>,
+data class TransactionDetailsMetadataUi(
+    val fields: List<TransactionDetailsFieldUi>,
 )
 
-data class TransactionDetailsDataSignedHolderUi(
-    val dataSignedItems: List<ExpandableListItemUi.NestedListItem>,
+sealed interface PresentationActionCountsUiState {
+    data object Loading : PresentationActionCountsUiState
+    data class Content(
+        val dataDeletionRequests: Int,
+        val dpaReports: Int,
+    ) : PresentationActionCountsUiState
+
+    data class Failure(val errorMessage: String) : PresentationActionCountsUiState
+}
+
+sealed interface TransactionDetailsBodyUi {
+    val sections: List<TransactionDetailsSectionUi>
+
+    data class Presentation(
+        val requested: TransactionDetailsSectionUi,
+        val shared: TransactionDetailsSectionUi,
+        val transactionData: TransactionDetailsSectionUi?,
+        val deletionContacts: List<TransactionContactUi>,
+        val reportContacts: List<TransactionContactUi>,
+        val actionCounts: PresentationActionCountsUiState,
+    ) : TransactionDetailsBodyUi {
+        override val sections: List<TransactionDetailsSectionUi> =
+            listOfNotNull(requested, shared, transactionData)
+    }
+
+    data class Issuance(
+        val credentials: TransactionDetailsSectionUi?,
+    ) : TransactionDetailsBodyUi {
+        override val sections: List<TransactionDetailsSectionUi> = listOfNotNull(credentials)
+    }
+
+    data class Reissuance(
+        val credentials: TransactionDetailsSectionUi?,
+    ) : TransactionDetailsBodyUi {
+        override val sections: List<TransactionDetailsSectionUi> = listOfNotNull(credentials)
+    }
+
+    data class Deletion(
+        val credential: TransactionDetailsSectionUi?,
+    ) : TransactionDetailsBodyUi {
+        override val sections: List<TransactionDetailsSectionUi> = listOfNotNull(credential)
+    }
+
+    data class Signing(
+        val document: TransactionDetailsSectionUi?,
+    ) : TransactionDetailsBodyUi {
+        override val sections: List<TransactionDetailsSectionUi> = listOfNotNull(document)
+    }
+
+    data class DataDeletionRequest(
+        val party: TransactionDetailsSectionUi,
+        val claims: TransactionDetailsSectionUi,
+    ) : TransactionDetailsBodyUi {
+        override val sections: List<TransactionDetailsSectionUi> = listOf(party, claims)
+    }
+
+    data class DpaReport(
+        val authority: TransactionDetailsSectionUi,
+    ) : TransactionDetailsBodyUi {
+        override val sections: List<TransactionDetailsSectionUi> = listOf(authority)
+    }
+}
+
+data class TransactionDetailsSectionUi(
+    val title: String,
+    val items: List<TransactionDetailsItemUi>,
+    val groups: List<TransactionDetailsGroupUi>,
+    val emptyItem: ListItemDataUi?,
 )
+
+data class TransactionDetailsGroupUi(
+    val header: ListItemDataUi,
+    val items: List<ExpandableListItemUi>,
+)
+
+data class TransactionDetailsItemUi(
+    val item: ListItemDataUi,
+    val url: String?,
+)
+
+data class TransactionDetailsFieldUi(
+    val id: String,
+    val label: String?,
+    val value: String,
+    val url: String?,
+) {
+    val item: ListItemDataUi = ListItemDataUi(
+        itemId = id,
+        overlineText = label,
+        mainContentData = ListItemMainContentDataUi.Text(value),
+        trailingContentData = url?.let {
+            ListItemTrailingContentDataUi.Icon(iconData = AppIcons.OpenNew)
+        },
+    )
+}

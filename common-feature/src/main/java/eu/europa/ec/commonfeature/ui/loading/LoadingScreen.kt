@@ -22,17 +22,31 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
+import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.uilogic.component.content.ContentHeader
+import eu.europa.ec.uilogic.component.content.ContentHeaderConfig
 import eu.europa.ec.uilogic.component.content.ContentScreen
 import eu.europa.ec.uilogic.component.content.ScreenNavigateAction
+import eu.europa.ec.uilogic.component.preview.PreviewTheme
+import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
 import eu.europa.ec.uilogic.component.utils.OncePerViewModelEffect
+import eu.europa.ec.uilogic.component.wrap.ButtonConfig
+import eu.europa.ec.uilogic.component.wrap.ButtonType
+import eu.europa.ec.uilogic.component.wrap.StickyBottomConfig
+import eu.europa.ec.uilogic.component.wrap.StickyBottomType
+import eu.europa.ec.uilogic.component.wrap.WrapStickyBottomContent
+import eu.europa.ec.uilogic.extension.openUrl
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.onEach
@@ -44,20 +58,33 @@ fun LoadingScreen(
 ) {
     val state: State by viewModel.viewState.collectAsStateWithLifecycle()
     val context = LocalContext.current
+    val rejection = state.rejection
+    val isRejected = rejection != null
 
     ContentScreen(
-        isLoading = state.error != null,
-        navigatableAction = if (state.isCancellable) {
+        isLoading = state.error != null && !isRejected,
+        navigatableAction = if (state.isCancellable && !isRejected) {
             ScreenNavigateAction.CANCELABLE
         } else {
             ScreenNavigateAction.NONE
         },
-        onBack = if (state.isCancellable) {
+        onBack = if (isRejected) {
+            { viewModel.setEvent(Event.CloseRejection) }
+        } else if (state.isCancellable) {
             { viewModel.setEvent(Event.GoBack) }
         } else {
             null
         },
-        contentErrorConfig = state.error
+        contentErrorConfig = state.error,
+        stickyBottom = if (rejection != null) {
+            { paddingValues ->
+                RejectionAction(
+                    paddingValues = paddingValues,
+                    enabled = !rejection.isClosing,
+                    onClose = { viewModel.setEvent(Event.CloseRejection) },
+                )
+            }
+        } else null,
     ) { paddingValues ->
         Content(
             state = state,
@@ -77,6 +104,16 @@ fun LoadingScreen(
                             route = navigationEffect.screenRoute,
                             inclusive = navigationEffect.inclusive
                         )
+                    }
+
+                    is Effect.Navigation.CloseRejection -> {
+                        navController.popBackStack(
+                            route = navigationEffect.initiatorRoute,
+                            inclusive = false,
+                        )
+                        navigationEffect.redirectUri?.let { redirectUri ->
+                            context.openUrl(uri = redirectUri)
+                        }
                     }
                 }
             },
@@ -100,7 +137,8 @@ private fun Content(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(paddingValues),
+            .padding(paddingValues)
+            .verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.Top
     ) {
 
@@ -116,5 +154,59 @@ private fun Content(
                 is Effect.Navigation -> onNavigationRequested(effect)
             }
         }.collect()
+    }
+}
+
+@Composable
+private fun RejectionAction(
+    paddingValues: PaddingValues,
+    enabled: Boolean,
+    onClose: () -> Unit,
+) {
+    WrapStickyBottomContent(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(paddingValues),
+        stickyBottomConfig = StickyBottomConfig(
+            type = StickyBottomType.OneButton(
+                config = ButtonConfig(
+                    type = ButtonType.PRIMARY,
+                    enabled = enabled,
+                    onClick = onClose,
+                ),
+            ),
+            showDivider = false,
+        ),
+    ) {
+        Text(text = stringResource(R.string.generic_close))
+    }
+}
+
+@ThemeModePreviews
+@Composable
+private fun RejectionPreview() {
+    PreviewTheme {
+        ContentScreen(
+            navigatableAction = ScreenNavigateAction.NONE,
+            onBack = {},
+            stickyBottom = { paddingValues ->
+                RejectionAction(
+                    paddingValues = paddingValues,
+                    enabled = true,
+                    onClose = {},
+                )
+            },
+        ) { paddingValues ->
+            ContentHeader(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(paddingValues)
+                    .verticalScroll(rememberScrollState()),
+                config = ContentHeaderConfig(
+                    description = null,
+                    mainText = stringResource(R.string.loading_rejection_description),
+                ),
+            )
+        }
     }
 }

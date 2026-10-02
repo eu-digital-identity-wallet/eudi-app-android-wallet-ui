@@ -34,6 +34,7 @@
     <string name="generic_default_relying_party_name">Unknown Relying Party</string>
     <string name="generic_default_issuer_name">Issuer</string>
     <string name="generic_view_details">View details</string>
+    <string name="generic_hide_details">Hide details</string>
     <string name="generic_deferred_success_text">In progress!</string>
     <string name="generic_bottom_sheet_delete_title">Remove document?</string>
     <string name="generic_bottom_sheet_delete_subtitle">This document will be removed from your wallet and may affect access to services.</string>
@@ -49,6 +50,21 @@
     <string name="generic_unknown_issuer">Unknown</string>
     <!--endregion-->
 
+    <!-- region Trust Mark -->
+    <string name="trust_mark_about_title">About EUDI Wallet</string>
+    <string name="trust_mark_welcome_title">Welcome to the</string>
+    <string name="trust_mark_wallet_name">EU Digital Identity Wallet</string>
+    <string name="trust_mark_image_description">EUDI Wallet Trust Mark</string>
+    <string name="trust_mark_certification_description">This wallet application has been certified conformant with the EUDI Wallet’s security and privacy requirements and is part of the %1$s.</string>
+    <string name="trust_mark_certified_wallets_link">EUDI Wallet Provider Trusted List</string>
+    <string name="trust_mark_certification_information_description">See the %1$s for detailed certification information of this wallet.</string>
+    <string name="trust_mark_certification_information_link">Certification information page</string>
+    <string name="trust_mark_loading">Loading Trust Mark information…</string>
+    <string name="trust_mark_load_error">Unable to load Trust Mark information. Please try again.</string>
+    <string name="trust_mark_image_error">Unable to load the Trust Mark image.</string>
+    <string name="trust_mark_browser_error">Unable to open this link.</string>
+    <!--endregion-->
+
     <!-- region Content Description -->
     <string name="content_description_image_or_placeholder_icon">Image or placeholder icon</string>
     <string name="content_description_user_signature_icon">User signature</string>
@@ -60,6 +76,7 @@
     <string name="content_description_error_icon">Error</string>
     <string name="content_description_error_filled_icon">Error</string>
     <string name="content_description_delete_icon">Delete</string>
+    <string name="content_description_delete_filled_icon">Delete</string>
     <string name="content_description_touch_id_icon">Touch id</string>
     <string name="content_description_qr_icon">QR</string>
     <string name="content_description_qr_scanner_icon">QR Scanner</string>
@@ -186,6 +203,43 @@
     <string name="request_registration_acknowledge_text">I understand the risks and agree to share my data</string>
     <string name="request_claim_not_registered_supporting_text">Not registered data</string>
     <string name="request_collapsed_supporting_text">@string/generic_view_details</string>
+    <string name="request_transaction_section_title">Data to be signed</string>
+    <string name="request_transaction_details_title">Signature details</string>
+    <string name="request_transaction_trust_framework">Trust framework</string>
+    <string name="request_transaction_trust_framework_value">eIDAS</string>
+    <string name="request_transaction_numbered">Transaction %1$d</string>
+    <string name="request_transaction_type">Transaction type</string>
+    <string name="request_transaction_signature_type">Signature type</string>
+    <string name="request_transaction_requested_credentials">Requested credentials</string>
+    <string name="request_transaction_signing_credential_id">Signing credential ID</string>
+    <string name="request_transaction_signature_count">Number of signatures</string>
+    <string name="request_transaction_document">Document</string>
+    <string name="request_transaction_document_numbered">Document %1$d</string>
+    <string name="request_transaction_document_location">Document location</string>
+    <string name="request_transaction_open_document">Open document</string>
+    <string name="request_transaction_expected_checksum">Expected document checksum</string>
+    <string name="request_transaction_checksum_algorithm">Checksum algorithm</string>
+    <string name="request_transaction_hash_representation">Hash representation</string>
+    <string name="request_transaction_dtbsr_hash">DTBSR hash</string>
+    <string name="request_transaction_dtbsr_algorithm">DTBSR hash algorithm</string>
+    <string name="request_transaction_sdr_hash">SDR hash</string>
+    <string name="request_transaction_sdr_algorithm">SDR hash algorithm</string>
+    <string name="request_transaction_sodr_hash">SODR hash</string>
+    <string name="request_transaction_sodr_algorithm">SODR hash algorithm</string>
+    <string name="request_transaction_document_hash">Document hash</string>
+    <string name="request_transaction_document_hash_algorithm">Document hash algorithm</string>
+    <string name="request_transaction_signature_format">Signature format</string>
+    <string name="request_transaction_conformance_level">Conformance level</string>
+    <string name="request_transaction_signed_attributes">Signed attributes</string>
+    <string name="request_transaction_otp">One-time password (OTP)</string>
+    <string name="request_transaction_response_uri">Response URI</string>
+    <string name="request_transaction_unavailable">Details for this transaction are unavailable.</string>
+    <string name="request_transaction_qes">Qualified electronic signature (QES)</string>
+    <string name="request_transaction_qeseal">Qualified electronic seal</string>
+    <string name="request_transaction_aes">Advanced electronic signature</string>
+    <string name="request_transaction_aeseal">Advanced electronic seal</string>
+    <string name="request_transaction_aesqc">Advanced electronic signature with a qualified certificate</string>
+    <string name="request_transaction_aesealqc">Advanced electronic seal with a qualified certificate</string>
     <string name="request_combination_option_title">Option %1$d of %2$d</string>
     <string name="request_no_data">The requested document is not available in your EUDI Wallet.
         Please contact the authorised issuer for further information.</string>
@@ -203,6 +257,7 @@
 
     <!-- region Loading Screen -->
     <string name="loading_header_description">Please wait…</string>
+    <string name="loading_rejection_description">The Relying Party rejected the response.</string>
     <string name="loading_biometry_biometrics_enabled_description">Use your biometrics to approve the transaction.</string>
     <string name="loading_biometry_biometrics_not_enabled_description">To approve the transaction you need to verify your identity.</string>
     <!--endregion-->
@@ -326,11 +381,15 @@
     <string name="transactions_screen_filters_filter_by_transaction_type">Transaction Type</string>
     <string name="transactions_screen_filters_filter_by_transaction_type_presentation">Presentation</string>
     <string name="transactions_screen_filters_filter_by_transaction_type_issuance">Issuance</string>
+    <string name="transactions_screen_filters_filter_by_transaction_type_reissuance">Re-issuance</string>
+    <string name="transactions_screen_filters_filter_by_transaction_type_deletion">Deletion</string>
+    <string name="transaction_type_data_deletion_request">Data Deletion Requests</string>
+    <string name="transaction_type_dpa_report">Suspicious Transaction Reports</string>
     <string name="transactions_screen_filters_filter_by_transaction_type_signing">Signing</string>
     <string name="transactions_screen_filters_date_from">Date from</string>
     <string name="transactions_screen_filters_date_to">Date to</string>
     <string name="transactions_filter_item_status_completed">Completed</string>
-    <string name="transactions_filter_item_status_failed">Failed</string>
+    <string name="transactions_filter_item_status_not_completed">Not completed</string>
     <string name="transactions_filter_item_no_relying_party_transactions">No Relying Party</string>
     <string name="transactions_screen_filters_apply">@string/generic_filters_apply</string>
     <string name="transactions_screen_filters_reset">@string/generic_filters_reset</string>
@@ -389,14 +448,54 @@
 
     <!-- region Transaction Details -->
     <string name="transaction_details_screen_title">Transaction information</string>
+    <string name="transaction_details_delete_button">Delete</string>
+    <string name="transaction_details_bottom_sheet_delete_title">Delete transaction?</string>
+    <string name="transaction_details_bottom_sheet_delete_subtitle">This transaction record will be permanently deleted from your wallet. Losing this record may make it harder to exercise your data protection rights, including requesting data deletion or reporting misuse.</string>
     <string name="transaction_details_screen_card_date_label">Date</string>
-    <string name="transaction_details_request_deletion_message">You can request to stop processing personal data linked to this transaction. This may affect your access to services.</string>
-    <string name="transaction_details_report_transaction_message">If you believe this relying party has unlawfully requested personal data, you can report this transaction to the authorities.</string>
-    <string name="transaction_details_request_deletion_button">Request data deletion</string>
-    <string name="transaction_details_report_transaction_button">Report suspicious transaction</string>
+    <string name="transaction_details_request_deletion_section_title">REQUEST DATA DELETION</string>
+    <string name="transaction_details_report_transaction_section_title">REPORT THIS TRANSACTION</string>
+    <string name="transaction_details_request_deletion_message">You can request to stop this relying party from processing your personal data linked to this transaction. However, this may affect your access to services.</string>
+    <string name="transaction_details_report_transaction_message">If you believe this Relying Party has unlawfully requested your personal data, you can report it to the relevant Member State’s data protection authority.</string>
+    <string name="transaction_details_request_deletion_button">Initiate deletion request</string>
+    <string name="transaction_details_report_transaction_button">Initiate transaction report</string>
+    <string name="transaction_details_action_unavailable">This action is unavailable. No suitable contact or shared data was recorded for it.</string>
+    <string name="transaction_details_action_open_failed">This contact could not be opened. No attempt was recorded. Retry to open it again, or cancel to return to the transaction.</string>
+    <string name="transaction_details_action_save_failed">The external application opened, but this attempt could not be saved in your history. Retry to save it without opening the application again.</string>
+    <string name="transaction_details_deletion_email_subject">Personal data erasure request under Article 17 — %1$s</string>
+    <string name="transaction_details_deletion_email_body">I request the erasure of all personal data shared with the relying party in the transaction below, under Article 17 of the GDPR.\n\nRelying party:\n%1$s\n\nTransaction date: %2$s\n\nPlease let me know how to complete this request.</string>
+    <string name="transaction_details_report_email_subject">Report of a potentially unlawful or suspicious data request — %1$s</string>
+    <string name="transaction_details_report_email_body">I would like to report a potentially unlawful or suspicious request for personal data from the relying party identified below.\n\nRelying party:\n%1$s\n\nTransaction date: %2$s\n\nPlease investigate this request. I can provide further details about my concerns.</string>
     <string name="transaction_details_data_shared_section_title">DATA SHARED</string>
     <string name="transaction_details_data_signed_section_title">DATA SIGNED</string>
+    <string name="transaction_details_signing_request_title">SIGNING REQUEST</string>
     <string name="transaction_details_collapsed_supporting_text">@string/generic_view_details</string>
+    <string name="transaction_details_data_requested_section_title">DATA REQUESTED</string>
+    <string name="transaction_details_relying_party_section_title">RELYING PARTY</string>
+    <string name="transaction_details_authority_section_title">DATA PROTECTION AUTHORITY</string>
+    <string name="transaction_details_credentials_section_title">CREDENTIALS</string>
+    <string name="transaction_details_credentials_issued_section_title">CREDENTIALS ISSUED</string>
+    <string name="transaction_details_data_deletion_section_title">DATA REQUESTED FOR DELETION</string>
+    <string name="transaction_details_no_data_requested">No data requested</string>
+    <string name="transaction_details_no_data_shared">No data shared</string>
+    <string name="transaction_details_no_claims">No attributes recorded</string>
+    <string name="transaction_details_no_information">No information recorded</string>
+    <string name="transaction_details_unknown_claim">Attribute identifier unavailable</string>
+    <string name="transaction_details_name_label">Name</string>
+    <string name="transaction_details_intermediary_name_label">Intermediary name</string>
+    <string name="transaction_details_identifier_label">Identifier</string>
+    <string name="transaction_details_identifier_scheme_label">Identifier scheme</string>
+    <string name="transaction_details_contact_label">Contact</string>
+    <string name="transaction_details_intermediary_contact_label">Intermediary contact</string>
+    <string name="transaction_details_country_label">Country</string>
+    <string name="transaction_details_purpose_label">Intended use</string>
+    <string name="transaction_details_privacy_policy_label">Privacy policy</string>
+    <string name="transaction_details_requested_count_label">Credentials requested</string>
+    <string name="transaction_details_issued_count_label">Credentials issued</string>
+    <string name="transaction_details_trigger_label">Initiated by</string>
+    <string name="transaction_details_requested_by_you">Wallet holder</string>
+    <string name="transaction_details_renewed_by_wallet">The Wallet</string>
+    <string name="transaction_details_filename_label">File name</string>
+    <string name="transaction_details_signing_identifier_label">Signing transaction identifier</string>
     <!--endregion-->
 
     <!-- region Proximity QR -->
@@ -483,5 +582,52 @@
     <string name="transaction_category_this_week">THIS WEEK</string>">
     <string name="transaction_category_month_year">MONTH</string>">
     <!--endregion-->
+
+
+    <!-- Data deletion request -->
+    <string name="data_deletion_screen_title">Before you continue</string>
+    <string name="data_deletion_relying_party_default_name">Relying party</string>
+    <string name="data_deletion_website_description">You\'re about to leave the wallet and go to %1$s’s website, where you can fill in a form to request deletion of the data you shared.</string>
+    <string name="data_deletion_email_description">This will open your email application with a message ready to send to %1$s, so you can request deletion of the data you shared.</string>
+    <string name="data_deletion_phone_description">This will call %1$s directly, so you can request deletion of the data you shared.</string>
+    <string name="data_deletion_website_responsibility">&lt;b>The wallet doesn\'t send or manage this request for you.&lt;/b> Once you\'re on the form, it\'s up to you to complete and submit it.</string>
+    <string name="data_deletion_email_responsibility">&lt;b>The wallet doesn\'t send this email or manage the request for you.&lt;/b> You\'ll need to review, complete, and send it yourself.</string>
+    <string name="data_deletion_phone_responsibility">&lt;b>The wallet doesn\'t make this request for you.&lt;/b> You\'ll need to explain what you\'re asking for yourself once you\'re on the call.</string>
+    <string name="data_deletion_retention_notice">%1$s may still be required to keep some of your data for legal reasons, even after your request. Any updates on the outcome will come from %1$s directly, not the wallet.</string>
+    <string name="data_deletion_website_button">Continue to %1$s’s website</string>
+    <string name="data_deletion_email_button">Open email to %1$s</string>
+    <string name="data_deletion_phone_button">Call %1$s</string>
+
+    <!-- DPA report -->
+    <string name="dpa_report_screen_title">Initiate transaction report</string>
+    <string name="dpa_report_authority_label">Responsible data protection authority</string>
+    <string name="dpa_report_responsibility">&lt;b>The wallet doesn\'t submit or track this report.&lt;/b> To report this transaction, contact the responsible data protection authority directly, using whichever method works best for you below.</string>
+    <string name="dpa_report_follow_up">You will need to describe the transaction yourself. Any follow-up on the outcome will come from the data protection authority directly, not the wallet.</string>
+    <string name="dpa_report_call_button">Call</string>
+    <string name="dpa_report_email_button">Open email</string>
+    <string name="dpa_report_website_button">Visit website</string>
+    <string name="transaction_details_report_email_intermediary">\n\nIntermediary:\n%1$s</string>
+    <string name="content_description_call_icon">Phone</string>
+    <string name="content_description_email_icon">Email</string>
+    <string name="content_description_link_icon">Website</string>
+
+    <!-- Transaction attempt history -->
+    <string name="privacy_history_deletion_link">View previous data deletion requests (%1$d)</string>
+    <string name="privacy_history_report_link">View previous transaction reports (%1$d)</string>
+    <string name="privacy_history_loading">Loading previous attempts…</string>
+    <string name="privacy_history_retry">Retry loading previous attempts</string>
+    <string name="privacy_history_deletion_title">Previous data deletion requests for %1$s</string>
+    <string name="privacy_history_report_title">Previous transaction reports for %1$s</string>
+    <string name="privacy_history_relying_party_default_name">Relying party</string>
+    <string name="privacy_history_deletion_disclaimer">Data deletion requests are completed outside the Wallet; therefore their final outcome cannot be tracked.</string>
+    <string name="privacy_history_report_disclaimer">Transaction reports are completed outside the Wallet; therefore their final outcome cannot be tracked.</string>
+    <string name="privacy_history_deletion_intro">You have previously attempted to initiate a data deletion request with this Relying Party via the following methods:</string>
+    <string name="privacy_history_report_intro">You have previously attempted to initiate a transaction report with the responsible data protection authority via the following methods:</string>
+    <string name="privacy_history_deletion_empty">No previous data deletion request attempts for this transaction.</string>
+    <string name="privacy_history_report_empty">No previous transaction report attempts for this transaction.</string>
+    <string name="privacy_history_method_web_form">Web form</string>
+    <string name="privacy_history_method_website">Website</string>
+    <string name="privacy_history_method_email">Email</string>
+    <string name="privacy_history_method_phone">Phone call</string>
 
 </resources>

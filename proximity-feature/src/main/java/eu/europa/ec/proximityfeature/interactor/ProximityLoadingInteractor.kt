@@ -70,6 +70,7 @@ class ProximityLoadingInteractorImpl(
                 )
 
                 is WalletCorePartialState.Redirect,
+                is WalletCorePartialState.Rejected,
                 is WalletCorePartialState.IntentToSend -> null
 
                 is WalletCorePartialState.Success -> ProximityLoadingObserveResponsePartialState.Success

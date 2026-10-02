@@ -16,6 +16,7 @@
 
 package eu.europa.ec.uilogic.extension
 
+import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.ContextWrapper
 import android.content.Intent
@@ -71,6 +72,17 @@ fun Context.openUrl(uri: Uri) {
     try {
         startActivity(Intent(Intent.ACTION_VIEW, uri))
     } catch (_: Exception) {
+    }
+}
+
+fun Context.tryOpenUrl(uri: Uri): Boolean {
+    return try {
+        startActivity(Intent(Intent.ACTION_VIEW, uri))
+        true
+    } catch (_: ActivityNotFoundException) {
+        false
+    } catch (_: SecurityException) {
+        false
     }
 }
 

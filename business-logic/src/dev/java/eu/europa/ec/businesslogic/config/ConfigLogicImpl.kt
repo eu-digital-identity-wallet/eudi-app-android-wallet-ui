@@ -17,14 +17,21 @@
 package eu.europa.ec.businesslogic.config
 
 import android.content.Context
+import eu.europa.ec.eudi.rqes.core.RqesSigningLogger
 import eu.europa.ec.eudi.rqesui.infrastructure.config.EudiRQESUiConfig
 
-class ConfigLogicImpl(val context: Context) : ConfigLogic {
+class ConfigLogicImpl(
+    val context: Context,
+    private val signingLogger: RqesSigningLogger,
+) : ConfigLogic {
     override val appFlavor: AppFlavor
         get() = AppFlavor.DEV
 
     override val rqesConfig: EudiRQESUiConfig
-        get() = RQESConfigImpl(context)
+        get() = RQESConfigImpl(
+            context = context,
+            signingLogger = signingLogger,
+        )
 
     override val changelogUrl: String?
         get() = null

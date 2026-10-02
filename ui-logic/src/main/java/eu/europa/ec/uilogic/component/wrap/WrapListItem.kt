@@ -77,6 +77,7 @@ fun WrapListItem(
     throttleClicks: Boolean = true,
     hideSensitiveContent: Boolean = false,
     mainContentVerticalPadding: Dp? = null,
+    contentHorizontalPadding: Dp? = null,
     mainContentTextStyle: TextStyle? = null,
     overlineTextStyle: (@Composable (item: ListItemDataUi) -> TextStyle)? = null,
     clickableAreas: List<ClickableArea>? = null,
@@ -95,6 +96,7 @@ fun WrapListItem(
             onItemClick = onItemClick,
             hideSensitiveContent = hideSensitiveContent,
             mainContentVerticalPadding = mainContentVerticalPadding,
+            contentHorizontalPadding = contentHorizontalPadding,
             mainContentTextStyle = mainContentTextStyle,
             overlineTextStyle = overlineTextStyle?.invoke(item)
                 ?: MaterialTheme.typography.labelMedium.copy(

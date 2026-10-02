@@ -28,7 +28,10 @@ import eu.europa.ec.dashboardfeature.ui.dashboard.DashboardScreen
 import eu.europa.ec.dashboardfeature.ui.document_sign.DocumentSignScreen
 import eu.europa.ec.dashboardfeature.ui.documents.detail.DocumentDetailsScreen
 import eu.europa.ec.dashboardfeature.ui.settings.SettingsScreen
+import eu.europa.ec.dashboardfeature.ui.transactions.data_deletion.DataDeletionRequestScreen
 import eu.europa.ec.dashboardfeature.ui.transactions.detail.TransactionDetailsScreen
+import eu.europa.ec.dashboardfeature.ui.transactions.dpa_report.DpaReportScreen
+import eu.europa.ec.dashboardfeature.ui.transactions.history.TransactionHistoryScreen
 import eu.europa.ec.uilogic.navigation.DashboardScreens
 import eu.europa.ec.uilogic.navigation.ModuleRoute
 import org.koin.androidx.compose.koinViewModel
@@ -101,6 +104,66 @@ fun NavGraphBuilder.featureDashboardGraph(navController: NavController) {
                         )
                     }
                 )
+            )
+        }
+
+        composable(
+            route = DashboardScreens.DataDeletionRequest.screenRoute,
+            arguments = listOf(
+                navArgument("transactionId") {
+                    type = NavType.StringType
+                },
+            )
+        ) {
+            DataDeletionRequestScreen(
+                navController = navController,
+                viewModel = koinViewModel(
+                    parameters = {
+                        parametersOf(it.arguments?.getString("transactionId").orEmpty())
+                    }
+                ),
+            )
+        }
+
+        composable(
+            route = DashboardScreens.DpaReport.screenRoute,
+            arguments = listOf(
+                navArgument("transactionId") {
+                    type = NavType.StringType
+                },
+            )
+        ) {
+            DpaReportScreen(
+                navController = navController,
+                viewModel = koinViewModel(
+                    parameters = {
+                        parametersOf(it.arguments?.getString("transactionId").orEmpty())
+                    }
+                ),
+            )
+        }
+
+        composable(
+            route = DashboardScreens.TransactionHistory.screenRoute,
+            arguments = listOf(
+                navArgument("transactionId") {
+                    type = NavType.StringType
+                },
+                navArgument("actionType") {
+                    type = NavType.StringType
+                },
+            )
+        ) {
+            TransactionHistoryScreen(
+                navController = navController,
+                viewModel = koinViewModel(
+                    parameters = {
+                        parametersOf(
+                            it.arguments?.getString("transactionId").orEmpty(),
+                            it.arguments?.getString("actionType").orEmpty(),
+                        )
+                    }
+                ),
             )
         }
 

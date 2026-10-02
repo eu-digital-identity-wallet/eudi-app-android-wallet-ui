@@ -22,6 +22,8 @@ import eu.europa.ec.businesslogic.validator.model.FilterableList
 import eu.europa.ec.businesslogic.validator.model.Filters
 
 fun FilterableList.filterByQuery(searchQuery: String): FilterableList {
+    if (searchQuery.isEmpty()) return this
+
     return copy(
         items = items.filter { item ->
             item.attributes.searchTags.any { searchTag ->

@@ -39,6 +39,7 @@ enum class ThemeColorKey {
     Error,
     Success,
     Primary,
+    OnSurfaceVariant,
 }
 
 /**
@@ -52,4 +53,5 @@ fun ThemeColorKey.toColor(): Color = when (this) {
     ThemeColorKey.Error -> MaterialTheme.colorScheme.error
     ThemeColorKey.Success -> MaterialTheme.colorScheme.success
     ThemeColorKey.Primary -> MaterialTheme.colorScheme.primary
+    ThemeColorKey.OnSurfaceVariant -> MaterialTheme.colorScheme.onSurfaceVariant
 }

@@ -20,7 +20,6 @@ import android.content.Context
 import android.net.Uri
 import android.util.Log
 import androidx.core.content.FileProvider
-import eu.europa.ec.businesslogic.config.ConfigLogic
 import eu.europa.ec.businesslogic.util.FileLoggerTree
 import timber.log.Timber
 import java.io.File
@@ -41,7 +40,7 @@ interface LogController {
 
 class LogControllerImpl(
     private val context: Context,
-    configLogic: ConfigLogic
+    private val tag: String,
 ) : LogController {
 
     companion object {
@@ -64,8 +63,6 @@ class LogControllerImpl(
     init {
         Timber.plant(Timber.DebugTree(), fileLoggerTree)
     }
-
-    private val tag: String = "EUDI Wallet ${configLogic.appFlavor}-${configLogic.appBuildType}"
 
     override fun d(tag: String, message: () -> String) {
         Timber.tag(tag).d(message())

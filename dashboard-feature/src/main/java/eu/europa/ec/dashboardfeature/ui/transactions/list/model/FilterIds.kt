@@ -22,16 +22,18 @@ object TransactionFilterIds {
 
     const val FILTER_BY_STATUS_GROUP_ID = "status_group_id"
     const val FILTER_BY_STATUS_COMPLETE = "status_complete"
-    const val FILTER_BY_STATUS_FAILED = "status_failed"
+    const val FILTER_BY_STATUS_NOT_COMPLETED = "status_not_completed"
 
     const val FILTER_BY_TRANSACTION_DATE_GROUP_ID = "transaction_date_group_id"
     const val FILTER_BY_TRANSACTION_DATE_RANGE = "by_transaction_date_range"
 
-    const val FILTER_BY_RELYING_PARTY_GROUP_ID = "relying_party_group_id"
-    const val FILTER_BY_RELYING_PARTY_WITHOUT_NAME = "by_transaction_without_relying_party"
+    const val FILTER_BY_PARTY_GROUP_ID = "party_group_id"
+    const val FILTER_BY_PARTY_WITHOUT_NAME = "by_transaction_without_party"
 
     const val FILTER_BY_TRANSACTION_TYPE_GROUP_ID = "transaction_type_group_id"
     const val FILTER_BY_TRANSACTION_TYPE_PRESENTATION = "by_transaction_type_presentation"
     const val FILTER_BY_TRANSACTION_TYPE_ISSUANCE = "by_transaction_type_issuance"
+    const val FILTER_BY_TRANSACTION_TYPE_REISSUANCE = "by_transaction_type_reissuance"
+    const val FILTER_BY_TRANSACTION_TYPE_DELETION = "by_transaction_type_deletion"
     const val FILTER_BY_TRANSACTION_TYPE_SIGNING = "by_transaction_type_signing"
 }

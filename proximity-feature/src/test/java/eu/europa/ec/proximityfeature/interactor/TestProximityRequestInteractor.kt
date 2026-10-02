@@ -25,6 +25,7 @@ import eu.europa.ec.corelogic.controller.WalletCorePresentationController
 import eu.europa.ec.corelogic.model.PresentationCombinationDomain
 import eu.europa.ec.eudi.wallet.document.IssuedDocument
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
+import eu.europa.ec.testfeature.util.StringResourceProviderMocker.mockTransactionDataStrings
 import eu.europa.ec.testfeature.util.StringResourceProviderMocker.mockTransformToUiItemsStrings
 import eu.europa.ec.testfeature.util.getMockedMdlWithBasicFields
 import eu.europa.ec.testfeature.util.getMockedPidWithBasicFields
@@ -34,6 +35,9 @@ import eu.europa.ec.testfeature.util.mockedGenericErrorMessage
 import eu.europa.ec.testfeature.util.mockedPlainFailureMessage
 import eu.europa.ec.testfeature.util.mockedRelyingPartyDomain
 import eu.europa.ec.testfeature.util.mockedSelectableClaims
+import eu.europa.ec.testfeature.util.mockedTransactionDataApproval
+import eu.europa.ec.testfeature.util.mockedTransactionQueryId
+import eu.europa.ec.testfeature.util.mockedUuid
 import eu.europa.ec.testfeature.util.mockedValidMdlWithBasicFieldsRequestMatch
 import eu.europa.ec.testfeature.util.mockedValidPidWithBasicFieldsRequestMatch
 import eu.europa.ec.testlogic.extension.expectNoEvents
@@ -41,6 +45,7 @@ import eu.europa.ec.testlogic.extension.runFlowTest
 import eu.europa.ec.testlogic.extension.runTest
 import eu.europa.ec.testlogic.extension.toFlow
 import eu.europa.ec.testlogic.rule.CoroutineTestRule
+import eu.europa.ec.uilogic.component.ListItemMainContentDataUi
 import junit.framework.TestCase.assertEquals
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.flow
@@ -341,6 +346,7 @@ class TestProximityRequestInteractor {
                             relyingParty = mockedRelyingPartyDomain,
                             combinationsUi = listOf(
                                 RequestCombinationUi(
+                                    transactionData = null,
                                     documents = RequestTransformer.transformToUiItems(
                                         documentsDomain = requestDataUi.getOrThrow(),
                                         resourceProvider = resourceProvider,
@@ -406,6 +412,7 @@ class TestProximityRequestInteractor {
                             relyingParty = mockedRelyingPartyDomain,
                             combinationsUi = listOf(
                                 RequestCombinationUi(
+                                    transactionData = null,
                                     documents = RequestTransformer.transformToUiItems(
                                         documentsDomain = requestDataUi.getOrThrow(),
                                         resourceProvider = resourceProvider,
@@ -484,6 +491,7 @@ class TestProximityRequestInteractor {
                             relyingParty = mockedRelyingPartyDomain,
                             combinationsUi = listOf(
                                 RequestCombinationUi(
+                                    transactionData = null,
                                     documents = RequestTransformer.transformToUiItems(
                                         documentsDomain = requestDataUi.getOrThrow(),
                                         resourceProvider = resourceProvider,
@@ -565,6 +573,7 @@ class TestProximityRequestInteractor {
                             relyingParty = mockedRelyingPartyDomain,
                             combinationsUi = listOf(
                                 RequestCombinationUi(
+                                    transactionData = null,
                                     documents = RequestTransformer.transformToUiItems(
                                         documentsDomain = requestDataUi.getOrThrow(),
                                         resourceProvider = resourceProvider,
@@ -797,6 +806,7 @@ class TestProximityRequestInteractor {
                             relyingParty = mockedRelyingPartyDomain,
                             combinationsUi = listOf(
                                 RequestCombinationUi(
+                                    transactionData = null,
                                     documents = RequestTransformer.transformToUiItems(
                                         documentsDomain = survivingDomainItems.getOrThrow(),
                                         resourceProvider = resourceProvider,
@@ -848,6 +858,53 @@ class TestProximityRequestInteractor {
 
         assertEquals("DefaultPresentationScopeId", newInteractor.presentationScopeId)
     }
+
+    // Case 18:
+    // 1. A represented match has transaction data.
+    //
+    // Case 18 Expected Result:
+    // The shared transformer prepares a collapsed section with payload fields and no RP origin or identifier.
+    @Test
+    fun `Given Case 18, When getRequestDocuments is called, Then Case 18 Expected Result is returned`() =
+        coroutineRule.runTest {
+            // Given
+            mockTransformToUiItemsStrings(resourceProvider = resourceProvider)
+            mockTransactionDataStrings(resourceProvider = resourceProvider)
+            whenever(uuidProvider.provideUuid()).thenReturn(mockedUuid)
+            mockGetAllIssuedDocumentsCall(response = listOf(getMockedPidWithBasicFields()))
+            mockIsDocumentRevoked(isRevoked = false)
+            val match = mockedValidPidWithBasicFieldsRequestMatch.copy(
+                queryId = mockedTransactionQueryId,
+                transactionData = listOf(mockedTransactionDataApproval),
+            )
+            mockWalletCorePresentationControllerEventEmission(
+                event = TransferEventPartialState.RequestReceived(
+                    combinationsDomain = listOf(PresentationCombinationDomain(matches = listOf(match))),
+                    relyingParty = mockedRelyingPartyDomain,
+                ),
+            )
+
+            // When
+            interactor.getRequestDocuments().runFlowTest {
+                // Then
+                val result = awaitItem() as ProximityRequestInteractorPartialState.Success
+                val section = result.combinationsUi.single().transactionData!!
+                assertEquals(false, section.details.isExpanded)
+                assertEquals(
+                    listOf(mockedTransactionQueryId),
+                    section.details.nestedItems.filter { item -> item.header.overlineText == "Requested credentials" }
+                        .map { item -> (item.header.mainContentData as ListItemMainContentDataUi.Text).text },
+                )
+                assertEquals(
+                    emptyList<String>(),
+                    section.details.nestedItems.filter { item ->
+                        item.header.overlineText == "RP origin" || item.header.overlineText == "RP identifier"
+                    }
+                        .map { item -> (item.header.mainContentData as ListItemMainContentDataUi.Text).text },
+                )
+            }
+        }
+
     //endregion
 
     //region stopPresentation
@@ -900,6 +957,7 @@ class TestProximityRequestInteractor {
                 uuidProvider = uuidProvider,
             ).getOrThrow()
             val selectedCombination = RequestCombinationUi(
+                transactionData = null,
                 documents = RequestTransformer.transformToUiItems(
                     documentsDomain = domainItems,
                     resourceProvider = resourceProvider,

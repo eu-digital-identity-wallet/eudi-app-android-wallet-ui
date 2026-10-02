@@ -82,6 +82,18 @@ enum class AppIconKey(
         contentDescriptionId = R.string.content_description_arrow_back_icon,
         imageVector = Icons.AutoMirrored.Filled.ArrowBack,
     ),
+    Call(
+        resourceId = R.drawable.ic_phone,
+        contentDescriptionId = R.string.content_description_call_icon,
+    ),
+    Email(
+        resourceId = R.drawable.ic_mail,
+        contentDescriptionId = R.string.content_description_email_icon,
+    ),
+    Link(
+        resourceId = R.drawable.ic_link,
+        contentDescriptionId = R.string.content_description_link_icon,
+    ),
     Close(
         contentDescriptionId = R.string.content_description_close_icon,
         imageVector = Icons.Filled.Close,
@@ -99,12 +111,16 @@ enum class AppIconKey(
         contentDescriptionId = R.string.content_description_error_icon,
     ),
     ErrorFilled(
-        contentDescriptionId = R.string.content_description_error_icon,
+        contentDescriptionId = R.string.content_description_error_filled_icon,
         imageVector = Icons.Default.Info,
     ),
     Delete(
         resourceId = R.drawable.ic_delete,
         contentDescriptionId = R.string.content_description_delete_icon,
+    ),
+    DeleteFilled(
+        resourceId = R.drawable.ic_delete_filled,
+        contentDescriptionId = R.string.content_description_delete_filled_icon,
     ),
     TouchId(
         resourceId = R.drawable.ic_touch_id,
@@ -328,12 +344,16 @@ enum class AppIconKey(
  */
 object AppIcons {
     val ArrowBack: IconDataUi = IconDataUi(AppIconKey.ArrowBack)
+    val Call: IconDataUi = IconDataUi(AppIconKey.Call)
+    val Email: IconDataUi = IconDataUi(AppIconKey.Email)
+    val Link: IconDataUi = IconDataUi(AppIconKey.Link)
     val Close: IconDataUi = IconDataUi(AppIconKey.Close)
     val VerticalMore: IconDataUi = IconDataUi(AppIconKey.VerticalMore)
     val Warning: IconDataUi = IconDataUi(AppIconKey.Warning)
     val Error: IconDataUi = IconDataUi(AppIconKey.Error)
     val ErrorFilled: IconDataUi = IconDataUi(AppIconKey.ErrorFilled)
     val Delete: IconDataUi = IconDataUi(AppIconKey.Delete)
+    val DeleteFilled: IconDataUi = IconDataUi(AppIconKey.DeleteFilled)
     val TouchId: IconDataUi = IconDataUi(AppIconKey.TouchId)
     val QR: IconDataUi = IconDataUi(AppIconKey.QR)
     val NFC: IconDataUi = IconDataUi(AppIconKey.NFC)

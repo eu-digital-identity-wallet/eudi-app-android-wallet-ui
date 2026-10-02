@@ -34,7 +34,7 @@ import eu.europa.ec.storagelogic.model.TransactionLog
         TransactionLog::class,
         FailedReIssuedDocument::class
     ],
-    version = 2
+    version = 1
 )
 abstract class DatabaseService : RoomDatabase() {
     abstract fun bookmarkDao(): BookmarkDao

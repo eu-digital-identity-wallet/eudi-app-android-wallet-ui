@@ -14,18 +14,19 @@
  * governing permissions and limitations under the Licence.
  */
 
-import eu.europa.ec.businesslogic.validator.FilterValidator
-import eu.europa.ec.businesslogic.validator.FilterValidatorImpl
-import eu.europa.ec.businesslogic.validator.FilterValidatorPartialState
+package eu.europa.ec.businesslogic.validator
+
 import eu.europa.ec.businesslogic.validator.model.FilterAction
 import eu.europa.ec.businesslogic.validator.model.FilterElement
 import eu.europa.ec.businesslogic.validator.model.FilterGroup
 import eu.europa.ec.businesslogic.validator.model.FilterMultipleAction
 import eu.europa.ec.businesslogic.validator.model.FilterSort
+import eu.europa.ec.businesslogic.validator.model.FilterableItem
 import eu.europa.ec.businesslogic.validator.model.FilterableList
 import eu.europa.ec.businesslogic.validator.model.Filters
 import eu.europa.ec.businesslogic.validator.model.SortOrder
 import eu.europa.ec.businesslogic.validator.util.TestAttributes
+import eu.europa.ec.businesslogic.validator.util.TestPayload
 import eu.europa.ec.businesslogic.validator.util.filterItemsMultiple
 import eu.europa.ec.businesslogic.validator.util.filterItemsSingle
 import eu.europa.ec.businesslogic.validator.util.filterableList
@@ -425,6 +426,101 @@ class TestFilterValidator {
                 assertTrue(emittedState is FilterValidatorPartialState.FilterListResult.FilterListEmptyResult)
             }
         }
+
+    //region applySearch
+
+    // Case 1:
+    // 1. Two items have search tags differing only by the number of internal spaces.
+    // 2. Queries have outer whitespace and different casing.
+    //
+    // Case 1 Expected Result:
+    // Outer whitespace is ignored and matching remains case-insensitive, preserving internal spaces.
+    @Test
+    fun `Given Case 1, When applySearch is called, Then Case 1 Expected Result is returned`() {
+        coroutineRule.runTest {
+            // Given
+            val singleSpaceItem = FilterableItem(
+                payload = TestPayload(name = "Single space"),
+                attributes = TestAttributes(
+                    searchTags = listOf("Example issuer"),
+                    name = "Single space"
+                ),
+            )
+            val doubleSpaceItem = FilterableItem(
+                payload = TestPayload(name = "Double space"),
+                attributes = TestAttributes(
+                    searchTags = listOf("Example  issuer"),
+                    name = "Double space"
+                ),
+            )
+            filterValidator.initializeValidator(
+                filters = Filters.emptyFilters(),
+                filterableList = FilterableList(items = listOf(singleSpaceItem, doubleSpaceItem)),
+            )
+
+            filterValidator.onFilterStateChange().runFlowTest {
+                mapOf(
+                    " \tEXAMPLE issuer\n " to singleSpaceItem,
+                    " \tExample  ISSUER\n " to doubleSpaceItem,
+                ).forEach { (query, expectedItem) ->
+                    // When
+                    filterValidator.applySearch(query = query)
+
+                    // Then
+                    val result =
+                        awaitItem() as FilterValidatorPartialState.FilterListResult.FilterApplyResult
+                    assertEquals(listOf(expectedItem), result.filteredList.items)
+                }
+            }
+        }
+    }
+
+    // Case 2:
+    // 1. Active filters allow PID, mDL and Age Verification items, including one without search tags.
+    // 2. An empty or whitespace-only query is applied after searching for PID.
+    //
+    // Case 2 Expected Result:
+    // Each blank query restores all items allowed by the active filters, including the tagless item.
+    @Test
+    fun `Given Case 2, When applySearch is called, Then Case 2 Expected Result is returned`() {
+        coroutineRule.runTest {
+            // Given
+            filterValidator.onFilterStateChange().runFlowTest {
+                filterValidator.initializeValidator(
+                    filters = filtersWithMultipleSelection,
+                    filterableList = filterableList,
+                )
+                filterValidator.updateFilter(
+                    filterGroupId = multipleSelectionGroup.id,
+                    filterId = filterItemsMultiple.first().id,
+                )
+                val selectedFilters =
+                    (awaitItem() as FilterValidatorPartialState.FilterUpdateResult).updatedFilters
+                val expectedItems = filterableList.items.take(5).toSet()
+
+                listOf("", "   ", "\t\n ").forEach { query ->
+                    filterValidator.applySearch(query = "PID")
+                    val searched =
+                        awaitItem() as FilterValidatorPartialState.FilterListResult.FilterApplyResult
+                    assertEquals(
+                        listOf(filterableList.items[0], filterableList.items[3]),
+                        searched.filteredList.items,
+                    )
+
+                    // When
+                    filterValidator.applySearch(query = query)
+
+                    // Then
+                    val cleared =
+                        awaitItem() as FilterValidatorPartialState.FilterListResult.FilterApplyResult
+                    assertEquals(expectedItems, cleared.filteredList.items.toSet())
+                    assertEquals(selectedFilters, cleared.updatedFilters)
+                }
+            }
+        }
+    }
+
+    //endregion
 
     //region ReversibleSingleSelectionFilterGroup / ReversibleMultipleSelectionFilterGroup
     // These two filter-group variants are exercised by updateFilter and applyFilters paths in
@@ -988,4 +1084,3 @@ class TestFilterValidator {
         }
     //endregion
 }
-

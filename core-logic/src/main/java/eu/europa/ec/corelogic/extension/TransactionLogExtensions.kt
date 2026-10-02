@@ -16,31 +16,10 @@
 
 package eu.europa.ec.corelogic.extension
 
-import com.nimbusds.jose.shaded.gson.Gson
-import eu.europa.ec.eudi.wallet.transactionLogging.TransactionLog
-import eu.europa.ec.eudi.wallet.transactionLogging.presentation.PresentationTransactionLog
+import eu.europa.ec.eudi.wallet.transactionLogging.model.TransactionEntry
+import eu.europa.ec.eudi.wallet.transactionLogging.toTransactionEntryOrNull
 import eu.europa.ec.storagelogic.model.TransactionLog as StorageTransaction
 
-internal fun StorageTransaction.toCoreTransactionLog(): TransactionLog? = try {
-    Gson().fromJson(
-        this.value,
-        TransactionLog::class.java
-    )
-} catch (_: Exception) {
-    null
-}
-
-// TODO RETURN PROPER OBJECTS ONCE READY FROM CORE ISSUANCE,SIGNING
-@Throws(IllegalArgumentException::class)
-internal fun TransactionLog.parseTransactionLog(): Any? =
-    when (this.type) {
-        TransactionLog.Type.Presentation ->
-            PresentationTransactionLog.fromTransactionLog(this)
-                .getOrNull()
-
-        TransactionLog.Type.Issuance ->
-            throw IllegalArgumentException("UnSupported transaction log type")
-
-        TransactionLog.Type.Signing ->
-            throw IllegalArgumentException("UnSupported transaction log type")
-    }
+// Returns null if the stored transaction cannot be read.
+internal fun StorageTransaction.toCoreTransactionLog(): TransactionEntry? =
+    this.value.toTransactionEntryOrNull()

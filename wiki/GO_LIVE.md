@@ -441,10 +441,13 @@ interface WalletCoreConfig {
     val revocationInterval: Duration
     val documentIssuanceConfig: DocumentIssuanceConfig
     val walletProviderHost: String
+    val trustMarkSource: TrustMarkSource
 }
 ```
 
-Each property must be reviewed.
+Each property must be reviewed, including inherited defaults on `WalletCoreConfig`.
+For Trust Mark settings, see
+[Trust Mark configuration](CONFIGURATION.md#trust-mark-configuration).
 
 ## `EudiWalletConfig`
 
@@ -549,7 +552,8 @@ inside `provideEudiWallet(...)`:
 EudiWallet(
     context = context,
     config = walletCoreConfig.config,
-    walletProvider = walletCoreAttestationProvider
+    walletProvider = walletCoreAttestationProvider,
+    trustMarkSource = walletCoreConfig.trustMarkSource,
 ) {
     withLogger(walletCoreLogController)
     withTransactionLogger(walletCoreTransactionLogController)
@@ -612,6 +616,10 @@ configureOpenId4Vp {
     withFormats(
         Format.MsoMdoc.ES256, Format.SdJwtVc.ES256
     )
+    withTransactionDataTypes(
+        TransactionDataType.QES_APPROVAL,
+        TransactionDataType.QES
+    )
 }
 ```
 
@@ -624,6 +632,7 @@ Production meaning:
 | `ClientIdScheme.Preregistered` | Verifiers are explicitly configured in the wallet. | Use for closed pilots or controlled ecosystems. Add production verifier API URL, legal name, and client ID. |
 | `withSchemes` | URI schemes the app accepts for OpenID4VP. | Keep only schemes required by your supported protocols and profiles. |
 | `withFormats` | Credential formats and algorithms supported in presentation. | Keep only formats and algorithms your issuers and verifiers support and that are approved by your security profile. |
+| `withTransactionDataTypes` | Signing transaction-data types accepted with a presentation request. | Keep QES approval and QES request enabled when supporting these flows; see [Transaction data configuration](CONFIGURATION.md#transaction-data-configuration). |
 
 If using preregistered verifiers, add:
 
@@ -771,8 +780,9 @@ static trust store built from PEM files under:
 resources-logic/src/main/res/raw
 ```
 
-The two models are either/or: a custom store wins over the ETSI store, which wins over static
-certificates.
+Use the configured ETSI trusted lists or supply explicit trust anchors for reader authentication.
+Explicit `trustedCertificates(...)` take precedence over the shared trusted-list configuration for
+reader authentication.
 
 The repository still ships development/demo trust-anchor resources, although the reference
 flavors no longer load them for reader trust. If your deployment uses the static model, in
@@ -787,11 +797,14 @@ production:
 Example:
 
 ```kotlin
-configureReaderTrustStore(
-    context,
-    R.raw.ms_iaca_2026,
-    R.raw.ms_reader_root_2026
-)
+configureReaderAuthentication {
+    trustedCertificates(
+        context,
+        R.raw.ms_iaca_2026,
+        R.raw.ms_reader_root_2026
+    )
+    enforceIfPresent()
+}
 ```
 
 Certificate governance:
@@ -803,10 +816,14 @@ Certificate governance:
 
 ### ETSI Trusted Lists (LoTE)
 
-Both reference flavors (`dev` and `demo`) configure trust from ETSI TS 119 602 Lists of Trusted
-Entities instead of static certificates. One trust source is built from the configured list URLs
-and shared by issuer trust, status-list signer trust, reader/verifier authentication, and
-registration-certificate trust:
+Both reference flavors (`dev` and `demo`) configure ETSI TS 119 602 trusted lists in
+`WalletCoreConfigImpl.kt`. Their credential issuer-trust policy uses `ENFORCE` for the configured
+mdoc and SD-JWT PID types and defaults to `INFORM` for other attestations. The Wallet classifies
+only those PID types. See [CONFIGURATION.md](CONFIGURATION.md) for the reference configuration
+and its expected behavior.
+
+For a production deployment that requires `ENFORCE` for every issued credential type, the example
+below uses global enforcement and requires corresponding approved trust classifications:
 
 ```kotlin
 configureEtsiTrust {
@@ -837,41 +854,32 @@ configureDocumentStatusResolver {
     }
   }
 }
-configureReaderTrustStore {
-  readerAuthPolicy(ReaderAuthPolicy.EnforceIfPresent)
+configureReaderAuthentication {
+  enforceIfPresent()
 }
 configureWrpRegistrationPolicy(WrpRegistrationPolicy.Enabled)
 ```
 
-The behavior differs per area and protocol. For example, untrusted verifiers are handled
-differently by OpenID4VP (request rejected at resolution) and by the ISO 18013 paths (consent
-shown; disclosure then gated at send by `ReaderAuthPolicy`). Change this configuration carefully.
+Validate the chosen configuration with the issuance and presentation services supported by your
+deployment.
 
 Production requirements for a trusted-list deployment:
 
 * Use production LoTE URLs from the approved trust framework, over HTTPS.
-* Remove the dev relaxations. `relaxCertificateProfiles()` disables the ETSI TS 119 412-6 /
-  TS 119 411-8 end-entity certificate profile checks and `relaxPkixRevocation()` disables CRL/OCSP
-  revocation checking — both are dev-PKI workarounds and must not ship.
-* Classify every credential type you issue (`classifications`) so issuer and status-list trust
-  actually evaluate it; unclassified types are silently skipped.
-* Configure `wrprcProviders` as well; without it the registration certificates covered in the next
-  section have no trust source. Note that the registration layer also has to be switched on — see
-  the next section.
-* Decide the trust policies deliberately: `INFORM` records the verdict without blocking,
-  `ENFORCE` rejects (issuance: document deleted; status: resolution fails). If the app must show
-  or act on `INFORM` verdicts, consume `IssueEvent.DocumentIssued.issuerTrustResult`.
-* Decide the `ReaderAuthPolicy`. `AlwaysRequire` refuses any reader without verified reader
-  authentication (empty status-10 response); `EnforceIfPresent` admits readers that send no
-  reader authentication.
-* Verify how the trusted-list JWTs themselves are authenticated. The SDK's default verifier
-  checks each list's signature against the certificate embedded in the list itself; if your trust
-  framework requires pinning or full chain validation of the list signer, provide a custom
-  `jwtSignatureVerifier`.
-* Review the cache windows (defaults: 24-hour on-disk list cache, 20-minute in-memory anchor
-  cache) against how quickly distrust must propagate.
-* Test both directions: a verifier/issuer on the list succeeds; one not on the list is refused in
-  every protocol.
+* Remove the development-only trust relaxations (`relaxCertificateProfiles()` and
+  `relaxPkixRevocation()`) from production configuration.
+* Review which credential types require trust enforcement and configure their classifications
+  and trusted lists accordingly. Decide how those classifications will be maintained.
+* Configure the registration-certificate list (`wrprcProviders`) and enable registration checking
+  as described in the next section.
+* Review the issuer-trust and status-list-trust policies against the deployment's requirements.
+  For credential issuer trust, `ENFORCE` requires verified trust for issuance; `INFORM` makes this
+  check nonblocking, including when issuer trust is unverified or untrusted.
+* Choose the reader-authentication policy required by the deployment.
+* Review trusted-list verification and cache settings against the deployment's trust requirements.
+* Test credential issuer trust for both PID and non-PID issuance, covering trusted, untrusted and
+  unverifiable credentials. Confirm the configured policy and remaining issuance checks behave as expected.
+  Test status checks and reader/verifier authentication for each supported protocol.
 
 ### Registration Certificates: The Second Trust Layer
 
@@ -938,8 +946,8 @@ Production requirements:
   lacks the entitlement for a type it offers, an issuer offering a type outside its registered
   scope, and a verifier over-asking. Confirm a refused re-issuance leaves the existing document in
   place and usable.
-* Test both states of the setting if you keep it toggleable, and remember the change only takes
-  effect on the next app start — the SDK reads both policies when it builds its managers.
+* Test both states of the setting if you keep it toggleable, including applying changes after an
+  app restart.
 
 ## Issuer Configuration: `issuersConfig`
 
@@ -1073,6 +1081,37 @@ The production Wallet Provider must:
 * Have availability targets aligned with issuance and reissuance flows.
 
 Do not point production builds to EUDI demo wallet-provider services.
+
+## Trust Mark Deployment
+
+Set `WalletCoreConfig.trustMarkSource` to the Trust Mark configuration for your wallet solution.
+The default uses a sample Gist resource and a certification-page URL containing
+`WALLET_SOLUTION_ID`. Replace the sample values in your production flavor with the correct
+resource and certification URLs. See
+[Trust Mark configuration](CONFIGURATION.md#trust-mark-configuration) for instructions.
+
+The app does not check certification, recognition, expiry, revocation or wallet instance
+attestation, or automatically remove the mark when certification changes. Check that the
+displayed image, text and links match your wallet's actual certification status before release.
+
+Test the following:
+
+* On a clean install, the introduction appears after splash, Continue proceeds to PIN setup,
+  and later launches skip the completed introduction.
+* "About EUDI Wallet" opens from the side menu.
+* In both the introduction and About views, "EUDI Wallet Provider Trusted List" opens the
+  list of certified wallets and "Certification information page" opens your wallet's
+  certification page in the browser. Both links display an external-link icon.
+* The Trust Mark image is centered above its localized text and keeps its original proportions.
+  Check long text and larger fonts: the text should use the available width, wrap fully and
+  scroll with the screen while Welcome's Continue remains available. Resource and image
+  loading errors offer Retry.
+
+For an upgrade release, confirm whether existing users should see the introduction and test
+that flow.
+
+The app can report when it cannot open a link. Once the browser opens, page-loading and network
+errors are handled by the browser.
 
 ## Document Issuance Rules
 
@@ -1211,16 +1250,22 @@ QtspData(
 
 Do not use demo RQES values in production.
 
-| Field | Meaning | Production value |
-| --- | --- | --- |
-| `name` | QTSP display name. | Official QTSP/service name shown to users. |
-| `endpoint` | CSC or QTSP signing endpoint. | Production HTTPS endpoint from the QTSP. |
-| `tsaUrl` | Timestamp authority URL. | Approved TSA endpoint, if required by the signing profile. |
-| `clientId` | OAuth/client identifier for the wallet or broker. | Production client ID issued by QTSP or authorization server. |
-| `clientSecret` | OAuth client secret in current SDK config. | Avoid embedding real confidential secrets in the app. Use a backend broker or public-client profile where possible. |
-| `authFlowRedirectionURI` | Redirect URI for RQES authorization. | Must match manifest placeholders and QTSP registration. |
-| `hashAlgorithm` | Hash algorithm for signing. | Use approved algorithm, currently SHA-256 in the reference config. |
-| `documentRetrievalConfig` | Certificate/trust config for retrieving documents. | Replace demo certificates with production trusted certificates. |
+When creating the production flavor, keep the `signingLogger` supplied through `ConfigLogicImpl`
+to `RQESConfigImpl` so signing activity appears in transaction history. This remains active when
+`printLogs` is false. See the [RQES example](CONFIGURATION.md#general-configuration) and
+[transaction-history behavior](#transaction-history).
+
+| Field                     | Meaning                                            | Production value                                                                                                    |
+|---------------------------|----------------------------------------------------|---------------------------------------------------------------------------------------------------------------------|
+| `name`                    | QTSP display name.                                 | Official QTSP/service name shown to users.                                                                          |
+| `endpoint`                | CSC or QTSP signing endpoint.                      | Production HTTPS endpoint from the QTSP.                                                                            |
+| `tsaUrl`                  | Timestamp authority URL.                           | Approved TSA endpoint, if required by the signing profile.                                                          |
+| `clientId`                | OAuth/client identifier for the wallet or broker.  | Production client ID issued by QTSP or authorization server.                                                        |
+| `clientSecret`            | OAuth client secret in current SDK config.         | Avoid embedding real confidential secrets in the app. Use a backend broker or public-client profile where possible. |
+| `authFlowRedirectionURI`  | Redirect URI for RQES authorization.               | Must match manifest placeholders and QTSP registration.                                                             |
+| `hashAlgorithm`           | Hash algorithm for signing.                        | Use approved algorithm, currently SHA-256 in the reference config.                                                  |
+| `documentRetrievalConfig` | Certificate/trust config for retrieving documents. | Replace demo certificates with production trusted certificates.                                                     |
+| `signingLogger`           | Records signing activity in transaction history.   | Keep the provided logger configured independently of diagnostic logging.                                            |
 
 Important:
 
@@ -1580,6 +1625,29 @@ The app has:
 * File logging through `LogControllerImpl`.
 * Transaction logging through `WalletCoreTransactionLogControllerImpl`.
 
+### Transaction history
+
+Wallet operations and RQES signing activity appear in the app's locally stored transaction history.
+Keep transaction logging configured for every flavor, including release builds. Later updates to a
+transaction refresh its existing record.
+
+When a presentation includes recorded signing-request information, its details show one
+**SIGNING REQUEST / Signature details** section. It is read-only, including any document locations.
+Signing results appear in separate history entries.
+
+Available hashes and expected document checksums are displayed as supplied information. They do
+not represent a document-integrity verification result.
+
+Data-deletion request and DPA-report attempts are associated with their originating presentation
+and communication method. They appear in that presentation's history rather than the main
+transaction list. An attempt records that the external application opened; it does not confirm that
+a request was sent, received, or fulfilled. Deleting a presentation also deletes its linked attempts.
+
+Deleting a pending issuance log removes its current entry. When issuance later completes, a log
+can appear again. Log deletion does not cancel issuance.
+
+### Diagnostic logging
+
 Production logging rules:
 
 * Do not log PID attributes.
@@ -1604,7 +1672,7 @@ consider:
 Example production-safe pattern:
 
 ```kotlin
-if (configLogic.appBuildType == AppBuildType.DEBUG) {
+if (BuildConfig.DEBUG) {
     Timber.plant(Timber.DebugTree(), fileLoggerTree)
 } else {
     Timber.plant(ReleaseRedactingTree())
@@ -2251,6 +2319,9 @@ Before release candidate approval, test:
 * Revocation.
 * Same-device OpenID4VP presentation.
 * Cross-device presentation.
+* Remote presentation rejection with and without a redirect. Confirm that **Close** and Android Back
+  both exit to the initiating screen, including when the presentation starts during issuance. When a
+  redirect is supplied, confirm it opens and returning to the Wallet does not reopen the presentation.
 * Presentation from a verifier with no valid registration certificate, and from one asking beyond
   its registered scope.
 * Relayed OpenID4VP request and response handling.
@@ -2266,6 +2337,24 @@ Before release candidate approval, test:
 * Malformed deep links.
 * Malicious credential offer.
 * App update from previous production version.
+
+### Verify transaction history in a minified release
+
+Exercise these cases in the release artifact that will be distributed, with R8 enabled:
+
+* Record issuance, reissuance, credential deletion, presentation, and signing activity; restart
+  the app and verify that the records remain available and display correctly.
+* Exercise QES approval and QES requests with transaction data. Check the details under each
+  applicable request option, document links where supplied, and the read-only recorded details
+  after restarting the app. Also check that requests without transaction data show no extra section.
+* Confirm that updates to the same transaction refresh its existing entry. Delete a pending
+  issuance log and verify that a later completion can create the log again, as intended.
+* Verify exact-presentation association and communication methods in deletion-request/report
+  histories. Confirm that deleting the presentation removes its linked attempts.
+* Check external-launch failures and persistence failures separately. Retrying a failed save must
+  retain the same attempt and must not reopen the external application.
+
+Verify these behaviors in the minified release; passing debug tests alone is insufficient.
 
 ## Production Test Matrix
 

@@ -17,11 +17,26 @@
 package eu.europa.ec.storagelogic.model
 
 import androidx.room.Entity
+import androidx.room.ForeignKey
+import androidx.room.Index
 import androidx.room.PrimaryKey
 
-@Entity(tableName = "transactionLogs")
+@Entity(
+    tableName = "transactionLogs",
+    foreignKeys = [
+        ForeignKey(
+            entity = TransactionLog::class,
+            parentColumns = ["identifier"],
+            childColumns = ["parentPresentationId"],
+            onDelete = ForeignKey.CASCADE
+        )
+    ],
+    indices = [Index(value = ["parentPresentationId"])]
+)
 data class TransactionLog(
     @PrimaryKey
     val identifier: String,
-    val value: String
+    val value: String,
+    val parentPresentationId: String?,
+    val communicationMethod: String?,
 )

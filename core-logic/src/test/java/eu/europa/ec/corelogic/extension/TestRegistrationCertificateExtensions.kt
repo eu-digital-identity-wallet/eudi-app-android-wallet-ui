@@ -605,8 +605,8 @@ class TestRegistrationCertificateExtensions {
         // Given
         val certificate = RegistrationCertificate(
             identifiers = listOf(
-                RegistrationIdentifier(type = "LEI", value = "LEIXG-123456789"),
-                RegistrationIdentifier(type = "VAT", value = "DK-99999999"),
+                RegistrationIdentifier(value = "LEIXG-123456789"),
+                RegistrationIdentifier(value = "DK-99999999"),
             ),
         )
 
@@ -767,7 +767,7 @@ class TestRegistrationCertificateExtensions {
 
     private val mockedCertificate = RegistrationCertificate(
         identifiers = listOf(
-            RegistrationIdentifier(type = "LEI", value = "LEIXG-123456789"),
+            RegistrationIdentifier(value = "LEIXG-123456789"),
         ),
         name = "NordicBank A/S",
         privacyPolicyUri = "https://nordicbank.example/privacy",

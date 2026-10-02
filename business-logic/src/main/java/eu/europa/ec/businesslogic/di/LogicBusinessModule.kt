@@ -17,6 +17,8 @@
 package eu.europa.ec.businesslogic.di
 
 import android.content.Context
+import eu.europa.ec.businesslogic.BuildConfig
+import eu.europa.ec.businesslogic.config.AppBuildType
 import eu.europa.ec.businesslogic.config.ConfigLogic
 import eu.europa.ec.businesslogic.config.ConfigLogicImpl
 import eu.europa.ec.businesslogic.controller.crypto.CryptoController
@@ -35,6 +37,7 @@ import eu.europa.ec.businesslogic.validator.FilterValidator
 import eu.europa.ec.businesslogic.validator.FilterValidatorImpl
 import eu.europa.ec.businesslogic.validator.FormValidator
 import eu.europa.ec.businesslogic.validator.FormValidatorImpl
+import eu.europa.ec.eudi.rqes.core.RqesSigningLogger
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import org.koin.core.annotation.ComponentScan
 import org.koin.core.annotation.Configuration
@@ -48,11 +51,20 @@ import org.koin.core.annotation.Single
 class LogicBusinessModule
 
 @Single
-fun provideConfigLogic(context: Context): ConfigLogic = ConfigLogicImpl(context)
+fun provideConfigLogic(
+    context: Context,
+    signingLogger: RqesSigningLogger,
+): ConfigLogic = ConfigLogicImpl(
+    context = context,
+    signingLogger = signingLogger,
+)
 
 @Single
-fun provideLogController(context: Context, configLogic: ConfigLogic): LogController =
-    LogControllerImpl(context, configLogic)
+fun provideLogController(context: Context): LogController =
+    LogControllerImpl(
+        context = context,
+        tag = "EUDI Wallet ${BuildConfig.FLAVOR.uppercase()}-${AppBuildType.getType()}",
+    )
 
 @Single
 fun providePrefsController(resourceProvider: ResourceProvider): PrefsController =

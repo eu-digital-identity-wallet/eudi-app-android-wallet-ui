@@ -56,7 +56,8 @@ The app consumes the SDK called EUDIW Wallet core [Wallet core](https://github.c
 - ETSI TS 119 602 trusted lists (LoTE) for trust management — issuer trust, status-list signer
   trust, reader/verifier authentication, and the registration certificates that establish what an
   issuer or verifier is registered to do. Registration-certificate checking is a runtime setting and
-  ships **off**; access-certificate trust is always enforced (see
+  ships **off**. Credential issuer trust uses `ENFORCE` for the configured PID types and `INFORM`
+  for other attestations in both reference flavors (see
   [wiki/CONFIGURATION.md](wiki/CONFIGURATION.md))
  
 - Issuer functionality, to support development and testing, one can access an OID4VCI test/demo service for issuing at: 
@@ -177,6 +178,19 @@ To delete a document, navigate to the 'Documents' tab within the 'Dashboard' scr
 10. Upon successful submission, tap "Close".
 11. A browser will open, confirming that the Verifier has accepted your request.
 12. Return to the app. The flow is now complete.
+
+If the relying party rejects the response, the Wallet displays "The Relying Party rejected the
+response." Select **Close** or use Android Back to leave the presentation. The Wallet returns to
+the screen that initiated it and opens the relying party's redirect, if supplied.
+
+When a presentation request includes transaction data for signing, each applicable option shows a
+**Data to be signed** section below its requested data. Expand the initially collapsed
+**Signature details** row to view the supplied document and signature information. These details
+are informational; sharing still uses the existing **Share** flow. Where available, **Open document**
+opens the supplied document link.
+
+Recorded signing-request information is also available under **SIGNING REQUEST → Signature details**
+in the presentation's transaction details. This section is read-only.
 
 ### Proximity flow
 

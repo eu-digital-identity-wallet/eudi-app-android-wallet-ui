@@ -19,6 +19,8 @@ package eu.europa.ec.testfeature.util
 import androidx.annotation.VisibleForTesting
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
+import org.mockito.kotlin.any
+import org.mockito.kotlin.eq
 import org.mockito.kotlin.whenever
 
 @VisibleForTesting(otherwise = VisibleForTesting.Companion.NONE)
@@ -99,6 +101,60 @@ object StringResourceProviderMocker {
 
         whenever(resourceProvider.getLocale())
             .thenReturn(mockedDefaultLocale)
+    }
+
+    fun mockTransactionDataStrings(resourceProvider: ResourceProvider) {
+        mockResourceProviderStrings(
+            resourceProvider = resourceProvider,
+            pairs = listOf(
+                R.string.request_transaction_section_title to "Data to be signed",
+                R.string.request_transaction_details_title to "Signature details",
+                R.string.request_transaction_trust_framework to "Trust framework",
+                R.string.request_transaction_trust_framework_value to "eIDAS",
+                R.string.request_transaction_type to "Transaction type",
+                R.string.request_transaction_signature_type to "Signature type",
+                R.string.request_transaction_requested_credentials to "Requested credentials",
+                R.string.request_transaction_signing_credential_id to "Signing credential ID",
+                R.string.request_transaction_signature_count to "Number of signatures",
+                R.string.request_transaction_document to "Document",
+                R.string.request_transaction_document_location to "Document location",
+                R.string.request_transaction_open_document to "Open document",
+                R.string.request_transaction_expected_checksum to "Expected document checksum",
+                R.string.request_transaction_checksum_algorithm to "Checksum algorithm",
+                R.string.request_transaction_hash_representation to "Hash representation",
+                R.string.request_transaction_dtbsr_hash to "DTBSR hash",
+                R.string.request_transaction_dtbsr_algorithm to "DTBSR hash algorithm",
+                R.string.request_transaction_sdr_hash to "SDR hash",
+                R.string.request_transaction_sdr_algorithm to "SDR hash algorithm",
+                R.string.request_transaction_sodr_hash to "SODR hash",
+                R.string.request_transaction_sodr_algorithm to "SODR hash algorithm",
+                R.string.request_transaction_document_hash to "Document hash",
+                R.string.request_transaction_document_hash_algorithm to "Document hash algorithm",
+                R.string.request_transaction_signature_format to "Signature format",
+                R.string.request_transaction_conformance_level to "Conformance level",
+                R.string.request_transaction_signed_attributes to "Signed attributes",
+                R.string.request_transaction_otp to "One-time password (OTP)",
+                R.string.request_transaction_response_uri to "Response URI",
+                R.string.request_transaction_unavailable to "Details for this transaction are unavailable.",
+                R.string.request_transaction_qes to "Qualified electronic signature (QES)",
+                R.string.request_transaction_qeseal to "Qualified electronic seal",
+                R.string.request_transaction_aes to "Advanced electronic signature",
+                R.string.request_transaction_aeseal to "Advanced electronic seal",
+                R.string.request_transaction_aesqc to "Advanced electronic signature with a qualified certificate",
+                R.string.request_transaction_aesealqc to "Advanced electronic seal with a qualified certificate",
+            ),
+        )
+        whenever(resourceProvider.getString(R.string.request_collapsed_supporting_text))
+            .thenReturn(mockedRequestCollapsedSupportingText)
+        whenever(resourceProvider.getString(eq(R.string.request_transaction_numbered), any()))
+            .thenAnswer { invocation -> "Transaction ${invocation.getArgument<Any>(1)}" }
+        whenever(
+            resourceProvider.getString(
+                eq(R.string.request_transaction_document_numbered),
+                any()
+            )
+        )
+            .thenAnswer { invocation -> "Document ${invocation.getArgument<Any>(1)}" }
     }
 
     fun mockIssuerName(

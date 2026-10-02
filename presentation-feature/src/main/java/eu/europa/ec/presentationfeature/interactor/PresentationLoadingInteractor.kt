@@ -29,7 +29,7 @@ import eu.europa.ec.corelogic.controller.WalletCorePartialState
 import eu.europa.ec.corelogic.controller.WalletCorePresentationController
 import eu.europa.ec.corelogic.model.AuthenticationData
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.mapNotNull
+import kotlinx.coroutines.flow.map
 import java.net.URI
 
 sealed class PresentationLoadingObserveResponsePartialState {
@@ -40,6 +40,7 @@ sealed class PresentationLoadingObserveResponsePartialState {
     data class Failure(val error: String) : PresentationLoadingObserveResponsePartialState()
     data object Success : PresentationLoadingObserveResponsePartialState()
     data class Redirect(val uri: URI) : PresentationLoadingObserveResponsePartialState()
+    data class Rejected(val redirectUri: URI?) : PresentationLoadingObserveResponsePartialState()
     data object RequestReadyToBeSent : PresentationLoadingObserveResponsePartialState()
     data class IntentToSend(val intent: Intent) : PresentationLoadingObserveResponsePartialState()
 }
@@ -50,6 +51,7 @@ sealed class PresentationLoadingSendRequestedDocumentPartialState {
 }
 
 interface PresentationLoadingInteractor : ScopedPresentationInteractor {
+    val initiatorRoute: String
     fun observeResponse(): Flow<PresentationLoadingObserveResponsePartialState>
     suspend fun sendRequestedDocuments(): PresentationLoadingSendRequestedDocumentPartialState
     fun handleUserAuthentication(
@@ -66,8 +68,11 @@ class PresentationLoadingInteractorImpl(
 ) : PresentationLoadingInteractor,
     ScopedPresentationInteractorDelegate(walletCorePresentationController) {
 
+    override val initiatorRoute: String
+        get() = walletCorePresentationController.initiatorRoute
+
     override fun observeResponse(): Flow<PresentationLoadingObserveResponsePartialState> =
-        walletCorePresentationController.observeSentDocumentsRequest().mapNotNull { response ->
+        walletCorePresentationController.observeSentDocumentsRequest().map { response ->
             when (response) {
                 is WalletCorePartialState.Failure -> PresentationLoadingObserveResponsePartialState.Failure(
                     error = response.error
@@ -76,6 +81,12 @@ class PresentationLoadingInteractorImpl(
                 is WalletCorePartialState.Redirect -> PresentationLoadingObserveResponsePartialState.Redirect(
                     uri = response.uri
                 )
+
+                is WalletCorePartialState.Rejected -> {
+                    PresentationLoadingObserveResponsePartialState.Rejected(
+                        redirectUri = response.redirectUri
+                    )
+                }
 
                 is WalletCorePartialState.Success -> {
                     PresentationLoadingObserveResponsePartialState.Success

@@ -31,11 +31,18 @@ import eu.europa.ec.corelogic.controller.WalletCorePresentationController
 import eu.europa.ec.corelogic.controller.WalletCorePresentationControllerImpl
 import eu.europa.ec.corelogic.controller.WalletCoreTransactionLogController
 import eu.europa.ec.corelogic.controller.WalletCoreTransactionLogControllerImpl
+import eu.europa.ec.corelogic.controller.WalletCoreTransactionRecordingController
+import eu.europa.ec.corelogic.controller.WalletCoreTransactionRecordingControllerImpl
+import eu.europa.ec.corelogic.controller.WalletCoreTrustMarkController
+import eu.europa.ec.corelogic.controller.WalletCoreTrustMarkControllerImpl
 import eu.europa.ec.corelogic.provider.RegistrationCheckProvider
 import eu.europa.ec.corelogic.provider.RegistrationCheckProviderImpl
 import eu.europa.ec.corelogic.provider.WalletCoreAttestationProvider
 import eu.europa.ec.corelogic.provider.WalletCoreAttestationProviderImpl
+import eu.europa.ec.eudi.rqes.core.RqesSigningLogger
 import eu.europa.ec.eudi.wallet.EudiWallet
+import eu.europa.ec.eudi.wallet.transactionLogging.DefaultTransactionLogManager
+import eu.europa.ec.eudi.wallet.transactionLogging.TransactionLogManager
 import eu.europa.ec.networklogic.repository.WalletAttestationRepository
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.storagelogic.dao.BookmarkDao
@@ -69,12 +76,22 @@ fun provideEudiWallet(
 ): EudiWallet = EudiWallet(
     context = context,
     config = walletCoreConfig.config,
-    walletProvider = walletCoreAttestationProvider
+    walletProvider = walletCoreAttestationProvider,
+    trustMarkSource = walletCoreConfig.trustMarkSource,
 ) {
     withLogger(walletCoreLogController)
     withTransactionLogger(walletCoreTransactionLogController)
     withKtorHttpClientFactory { httpClient }
 }
+
+@Factory
+fun provideWalletCoreTrustMarkController(
+    prefKeys: PrefKeys,
+    resourceProvider: ResourceProvider,
+): WalletCoreTrustMarkController = WalletCoreTrustMarkControllerImpl(
+    prefKeys = prefKeys,
+    resourceProvider = resourceProvider,
+)
 
 @Single
 fun provideWalletCoreConfig(
@@ -87,13 +104,37 @@ fun provideWalletCoreConfig(
 fun provideWalletCoreLogController(logController: LogController): WalletCoreLogController =
     WalletCoreLogControllerImpl(logController)
 
-@Factory
+// Single, not a factory: the controller owns the queue that keeps transaction writes in order, so
+// a second instance would be a second queue writing the same rows.
+@Single
 fun provideWalletCoreTransactionLogController(
     transactionLogDao: TransactionLogDao,
-    uuidProvider: UuidProvider
+    resourceProvider: ResourceProvider,
+    walletCoreConfig: WalletCoreConfig,
 ): WalletCoreTransactionLogController = WalletCoreTransactionLogControllerImpl(
     transactionLogDao = transactionLogDao,
-    uuidProvider = uuidProvider
+    resourceProvider = resourceProvider,
+    transactionDataTypes = walletCoreConfig.config.openId4VpConfig?.transactionDataTypes.orEmpty(),
+)
+
+@Single
+fun provideWalletCoreTransactionLogManager(
+    walletCoreTransactionLogController: WalletCoreTransactionLogController,
+): TransactionLogManager = DefaultTransactionLogManager(
+    storage = walletCoreTransactionLogController,
+)
+
+@Single(binds = [RqesSigningLogger::class])
+fun provideWalletCoreTransactionRecordingController(
+    uuidProvider: UuidProvider,
+    transactionLogManager: TransactionLogManager,
+    walletCoreTransactionLogController: WalletCoreTransactionLogController,
+    resourceProvider: ResourceProvider,
+): WalletCoreTransactionRecordingController = WalletCoreTransactionRecordingControllerImpl(
+    uuidProvider = uuidProvider,
+    transactionLogManager = transactionLogManager,
+    walletCoreTransactionLogController = walletCoreTransactionLogController,
+    resourceProvider = resourceProvider,
 )
 
 @Factory
@@ -118,7 +159,6 @@ fun provideWalletCoreDocumentsController(
     resourceProvider: ResourceProvider,
     walletCoreConfig: WalletCoreConfig,
     bookmarkDao: BookmarkDao,
-    transactionLogDao: TransactionLogDao,
     revokedDocumentDao: RevokedDocumentDao,
     failedReIssuedDocumentDao: FailedReIssuedDocumentDao,
     prefKeys: PrefKeys
@@ -127,7 +167,6 @@ fun provideWalletCoreDocumentsController(
         resourceProvider,
         walletCoreConfig,
         bookmarkDao,
-        transactionLogDao,
         revokedDocumentDao,
         failedReIssuedDocumentDao,
         prefKeys

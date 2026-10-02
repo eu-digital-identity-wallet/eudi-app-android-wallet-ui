@@ -16,7 +16,10 @@
 
 package eu.europa.ec.dashboardfeature.ui.transactions.list.model
 
+import eu.europa.ec.businesslogic.util.localDateToUtcMillis
 import eu.europa.ec.businesslogic.util.toDisplayedDate
+import eu.europa.ec.uilogic.component.DatePickerDialogConfig
+import eu.europa.ec.uilogic.component.DatePickerDialogType
 import java.time.LocalDate
 
 data class FilterDateRangeSelectionUi(
@@ -28,6 +31,34 @@ data class FilterDateRangeSelectionUi(
 
     val displayedEndDate: String
         get() = endDate.toDisplayedDate()
+
+    fun toDatePickerConfig(
+        type: DatePickerDialogType,
+        availableDates: FilterDateRangeSelectionUi,
+    ): DatePickerDialogConfig {
+        // Keep a saved selection editable after its boundary transaction has been deleted.
+        val lowerLimit = availableDates.startDate?.let { availableStartDate ->
+            listOfNotNull(availableStartDate, startDate, endDate).min()
+        }
+        val upperLimit = availableDates.endDate?.let { availableEndDate ->
+            listOfNotNull(availableEndDate, startDate, endDate).max()
+        }
+        return when (type) {
+            DatePickerDialogType.SelectStartDate -> DatePickerDialogConfig(
+                type = type,
+                lowerLimit = lowerLimit,
+                upperLimit = endDate ?: upperLimit,
+                selectedUtcDateMillis = (startDate ?: lowerLimit)?.let(::localDateToUtcMillis),
+            )
+
+            DatePickerDialogType.SelectEndDate -> DatePickerDialogConfig(
+                type = type,
+                lowerLimit = startDate ?: lowerLimit,
+                upperLimit = upperLimit,
+                selectedUtcDateMillis = (endDate ?: upperLimit)?.let(::localDateToUtcMillis),
+            )
+        }
+    }
 
     val isEmpty: Boolean
         get() = startDate == null && endDate == null

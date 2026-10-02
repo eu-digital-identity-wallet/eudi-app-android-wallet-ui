@@ -27,11 +27,13 @@ import eu.europa.ec.commonfeature.BuildConfig
 import eu.europa.ec.commonfeature.config.BiometricUiConfig
 import eu.europa.ec.commonfeature.config.QrScanUiConfig
 import eu.europa.ec.commonfeature.config.SuccessUIConfig
+import eu.europa.ec.commonfeature.config.TrustMarkUiConfig
 import eu.europa.ec.commonfeature.model.PinFlow
 import eu.europa.ec.commonfeature.ui.biometric.BiometricScreen
 import eu.europa.ec.commonfeature.ui.pin.PinScreen
 import eu.europa.ec.commonfeature.ui.qr_scan.QrScanScreen
 import eu.europa.ec.commonfeature.ui.success.SuccessScreen
+import eu.europa.ec.commonfeature.ui.trustmark.TrustMarkScreen
 import eu.europa.ec.uilogic.navigation.CommonScreens
 import eu.europa.ec.uilogic.navigation.ModuleRoute
 import org.koin.androidx.compose.koinViewModel
@@ -42,6 +44,28 @@ fun NavGraphBuilder.featureCommonGraph(navController: NavController) {
         startDestination = CommonScreens.Biometric.screenRoute,
         route = ModuleRoute.CommonModule.route
     ) {
+        composable(
+            route = CommonScreens.TrustMark.screenRoute,
+            arguments = listOf(
+                navArgument(TrustMarkUiConfig.serializedKeyName) {
+                    type = NavType.StringType
+                    nullable = true
+                }
+            ),
+        ) { backStackEntry ->
+            TrustMarkScreen(
+                navController = navController,
+                viewModel = koinViewModel(
+                    parameters = {
+                        parametersOf(
+                            backStackEntry.arguments
+                                ?.getString(TrustMarkUiConfig.serializedKeyName).orEmpty()
+                        )
+                    }
+                ),
+            )
+        }
+
         composable(
             route = CommonScreens.Biometric.screenRoute,
             deepLinks = listOf(

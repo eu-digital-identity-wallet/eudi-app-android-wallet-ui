@@ -28,6 +28,11 @@ sealed class StartupScreens {
 }
 
 sealed class CommonScreens {
+    data object TrustMark : Screen(
+        name = "TRUST_MARK",
+        parameters = "?trustMarkConfig={trustMarkConfig}"
+    )
+
     data object Success : Screen(name = "SUCCESS", parameters = "?successConfig={successConfig}")
     data object Biometric : Screen(
         name = "BIOMETRIC",
@@ -53,6 +58,21 @@ sealed class DashboardScreens {
     data object DocumentDetails : Screen(
         name = "DOCUMENT_DETAILS",
         parameters = "?documentId={documentId}"
+    )
+
+    data object DataDeletionRequest : Screen(
+        name = "DATA_DELETION_REQUEST",
+        parameters = "?transactionId={transactionId}"
+    )
+
+    data object DpaReport : Screen(
+        name = "DPA_REPORT",
+        parameters = "?transactionId={transactionId}"
+    )
+
+    data object TransactionHistory : Screen(
+        name = "TRANSACTION_HISTORY",
+        parameters = "?transactionId={transactionId}&actionType={actionType}"
     )
 
     data object TransactionDetails : Screen(

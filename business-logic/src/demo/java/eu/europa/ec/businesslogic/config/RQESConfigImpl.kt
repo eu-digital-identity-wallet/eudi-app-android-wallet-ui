@@ -19,6 +19,7 @@ package eu.europa.ec.businesslogic.config
 import android.content.Context
 import eu.europa.ec.businesslogic.BuildConfig
 import eu.europa.ec.eudi.rqes.HashAlgorithmOID
+import eu.europa.ec.eudi.rqes.core.RqesSigningLogger
 import eu.europa.ec.eudi.rqesui.domain.extension.toUriOrEmpty
 import eu.europa.ec.eudi.rqesui.infrastructure.config.DocumentRetrievalConfig
 import eu.europa.ec.eudi.rqesui.infrastructure.config.EudiRQESUiConfig
@@ -26,7 +27,10 @@ import eu.europa.ec.eudi.rqesui.infrastructure.config.data.QtspData
 import eu.europa.ec.resourceslogic.R
 import java.net.URI
 
-class RQESConfigImpl(val context: Context) : EudiRQESUiConfig {
+class RQESConfigImpl(
+    val context: Context,
+    override val signingLogger: RqesSigningLogger,
+) : EudiRQESUiConfig {
 
     override val qtsps: List<QtspData>
         get() = listOf(

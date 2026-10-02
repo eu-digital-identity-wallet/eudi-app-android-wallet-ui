@@ -17,33 +17,60 @@
 package eu.europa.ec.storagelogic.dao
 
 import androidx.room.Dao
-import androidx.room.Insert
-import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.Transaction
 import androidx.room.Update
+import androidx.room.Upsert
 import eu.europa.ec.storagelogic.dao.type.StorageDao
 import eu.europa.ec.storagelogic.model.TransactionLog
+import kotlinx.coroutines.flow.Flow
 
+/** Payload updates preserve the original parent and communication method. */
 @Dao
-interface TransactionLogDao : StorageDao<TransactionLog> {
-    @Insert(onConflict = OnConflictStrategy.ABORT)
-    override suspend fun store(value: TransactionLog)
+abstract class TransactionLogDao : StorageDao<TransactionLog> {
+    @Transaction
+    override suspend fun store(value: TransactionLog) {
+        upsert(value.withStoredMetadata())
+    }
 
-    @Insert(onConflict = OnConflictStrategy.ABORT)
-    override suspend fun storeAll(values: List<TransactionLog>)
+    @Transaction
+    override suspend fun storeAll(values: List<TransactionLog>) {
+        values.forEach { transaction -> store(transaction) }
+    }
 
     @Query("SELECT * FROM transactionLogs WHERE identifier = :identifier")
-    override suspend fun retrieve(identifier: String): TransactionLog?
+    abstract override suspend fun retrieve(identifier: String): TransactionLog?
 
     @Query("SELECT * FROM transactionLogs")
-    override suspend fun retrieveAll(): List<TransactionLog>
+    abstract override suspend fun retrieveAll(): List<TransactionLog>
 
-    @Update
-    override suspend fun update(value: TransactionLog)
+    @Query("SELECT * FROM transactionLogs WHERE parentPresentationId = :parentPresentationId")
+    abstract fun observeByParentPresentationId(parentPresentationId: String): Flow<List<TransactionLog>>
+
+    @Transaction
+    override suspend fun update(value: TransactionLog) {
+        updateStored(value.withStoredMetadata())
+    }
 
     @Query("DELETE FROM transactionLogs WHERE identifier = :identifier")
-    override suspend fun delete(identifier: String)
+    abstract override suspend fun delete(identifier: String)
 
     @Query("DELETE FROM transactionLogs")
-    override suspend fun deleteAll()
+    abstract override suspend fun deleteAll()
+
+    // Upsert because @Insert(onConflict = OnConflictStrategy.REPLACE) deletes
+    // the existing row and cascades to its linked DDR/DPAR records.
+    @Upsert
+    protected abstract suspend fun upsert(value: TransactionLog)
+
+    @Update
+    protected abstract suspend fun updateStored(value: TransactionLog)
+
+    private suspend fun TransactionLog.withStoredMetadata(): TransactionLog {
+        val stored = retrieve(identifier) ?: return this
+        return copy(
+            parentPresentationId = stored.parentPresentationId,
+            communicationMethod = stored.communicationMethod,
+        )
+    }
 }

@@ -26,4 +26,5 @@ data class SideMenuItemUi(
 enum class SideMenuTypeUi(val itemId: String) {
     CHANGE_PIN("changePinId"),
     SETTINGS("settingsId"),
+    ABOUT("aboutId"),
 }

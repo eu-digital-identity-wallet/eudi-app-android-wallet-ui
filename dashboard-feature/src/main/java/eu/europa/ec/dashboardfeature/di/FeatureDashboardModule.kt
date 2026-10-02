@@ -25,6 +25,8 @@ import eu.europa.ec.commonfeature.interactor.BiometricInteractor
 import eu.europa.ec.commonfeature.interactor.DeviceAuthenticationInteractor
 import eu.europa.ec.corelogic.config.WalletCoreConfig
 import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
+import eu.europa.ec.corelogic.controller.WalletCoreTransactionLogController
+import eu.europa.ec.corelogic.controller.WalletCoreTransactionRecordingController
 import eu.europa.ec.dashboardfeature.interactor.DashboardInteractor
 import eu.europa.ec.dashboardfeature.interactor.DashboardInteractorImpl
 import eu.europa.ec.dashboardfeature.interactor.DocumentDetailsInteractor
@@ -39,6 +41,8 @@ import eu.europa.ec.dashboardfeature.interactor.SettingsInteractor
 import eu.europa.ec.dashboardfeature.interactor.SettingsInteractorImpl
 import eu.europa.ec.dashboardfeature.interactor.TransactionDetailsInteractor
 import eu.europa.ec.dashboardfeature.interactor.TransactionDetailsInteractorImpl
+import eu.europa.ec.dashboardfeature.interactor.TransactionHistoryInteractor
+import eu.europa.ec.dashboardfeature.interactor.TransactionHistoryInteractorImpl
 import eu.europa.ec.dashboardfeature.interactor.TransactionsInteractor
 import eu.europa.ec.dashboardfeature.interactor.TransactionsInteractorImpl
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
@@ -105,11 +109,11 @@ fun provideDocumentsInteractor(
 fun provideTransactionInteractor(
     resourceProvider: ResourceProvider,
     filterValidator: FilterValidator,
-    walletCoreDocumentsController: WalletCoreDocumentsController,
+    walletCoreTransactionLogController: WalletCoreTransactionLogController,
 ): TransactionsInteractor = TransactionsInteractorImpl(
     resourceProvider,
     filterValidator,
-    walletCoreDocumentsController
+    walletCoreTransactionLogController
 )
 
 @Factory
@@ -138,13 +142,24 @@ fun provideDocumentDetailsInteractor(
     )
 
 @Factory
-fun provideTransactionDetailsInteractor(
-    walletCoreDocumentsController: WalletCoreDocumentsController,
+fun provideTransactionHistoryInteractor(
+    walletCoreTransactionLogController: WalletCoreTransactionLogController,
     resourceProvider: ResourceProvider,
-    uuidProvider: UuidProvider
+): TransactionHistoryInteractor = TransactionHistoryInteractorImpl(
+    walletCoreTransactionLogController,
+    resourceProvider,
+)
+
+@Factory
+fun provideTransactionDetailsInteractor(
+    walletCoreTransactionLogController: WalletCoreTransactionLogController,
+    walletCoreTransactionRecordingController: WalletCoreTransactionRecordingController,
+    resourceProvider: ResourceProvider,
+    uuidProvider: UuidProvider,
 ): TransactionDetailsInteractor =
     TransactionDetailsInteractorImpl(
-        walletCoreDocumentsController,
+        walletCoreTransactionLogController,
+        walletCoreTransactionRecordingController,
         resourceProvider,
-        uuidProvider
+        uuidProvider,
     )

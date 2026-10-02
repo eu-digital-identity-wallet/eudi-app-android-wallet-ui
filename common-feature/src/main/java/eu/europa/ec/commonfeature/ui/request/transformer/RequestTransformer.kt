@@ -61,19 +61,36 @@ object RequestTransformer {
         overaskedClaims: List<OveraskedClaimDomain>,
     ): Result<List<RequestCombinationUi>> {
         return runCatching {
-            combinationsDomain.map { combinationDomain ->
-                val documentsDomain = transformToDomainItems(
-                    storageDocuments = storageDocuments,
-                    resourceProvider = resourceProvider,
-                    uuidProvider = uuidProvider,
-                    requestMatchesDomain = combinationDomain.matches,
-                ).getOrThrow()
+            combinationsDomain.mapIndexed { combinationIndex, combinationDomain ->
+                // Equal match identities can still have different claim coverage.
+                val representedMatches = combinationDomain.matches.mapNotNull { match ->
+                    transformMatchToDomainItem(
+                        storageDocuments = storageDocuments,
+                        resourceProvider = resourceProvider,
+                        uuidProvider = uuidProvider,
+                        presentationMatchDomain = match,
+                    )?.let { documentDomain -> match to documentDomain }
+                }
+                val documentsDomain =
+                    representedMatches.map { (_, documentDomain) -> documentDomain }
 
                 val documentsUi = transformToUiItems(
                     documentsDomain = documentsDomain,
                     resourceProvider = resourceProvider,
                     claimsAreSelectable = claimsAreSelectable,
                 )
+                val representedDomainMatches = representedMatches.map { (match, _) -> match }
+                val hasTransactionData = representedDomainMatches.any { match ->
+                    match.transactionData.isNotEmpty()
+                }
+                val transactionData = if (hasTransactionData) {
+                    TransactionDataTransformer(resourceProvider = resourceProvider).transformToUi(
+                        matches = representedDomainMatches,
+                        sectionId = "transaction-data:${uuidProvider.provideUuid()}:$combinationIndex",
+                    )
+                } else {
+                    null
+                }
 
                 RequestCombinationUi(
                     documents = markOveraskedClaims(
@@ -83,6 +100,7 @@ object RequestTransformer {
                         resourceProvider = resourceProvider,
                     ),
                     matches = combinationDomain.matches,
+                    transactionData = transactionData,
                 )
             }
         }
@@ -99,49 +117,47 @@ object RequestTransformer {
         uuidProvider: UuidProvider,
         requestMatchesDomain: List<PresentationMatchDomain>,
     ): Result<List<DocumentPayloadDomain>> = runCatching {
-        val resultList = mutableListOf<DocumentPayloadDomain>()
-
-        requestMatchesDomain.forEach { presentationMatchDomain ->
-
-            val storageDocument = storageDocuments.firstOrNull {
-                it.id == presentationMatchDomain.documentId
-            } ?: return@forEach
-
-            val claimsPaths = storageDocument.data.claims.flatMap { claim ->
-                claim.toClaimPaths()
-            }
-
-            val requestedItemsPaths = presentationMatchDomain.requestedClaims
-
-            val filteredPaths = claimsPaths.filter { available ->
-                requestedItemsPaths.any { requested ->
-                    requested.matches(available)
-                }
-            }
-
-            val domainClaims = transformPathsToDomainClaims(
-                paths = filteredPaths,
-                claims = storageDocument.data.claims,
+        requestMatchesDomain.mapNotNull { presentationMatchDomain ->
+            transformMatchToDomainItem(
+                storageDocuments = storageDocuments,
                 resourceProvider = resourceProvider,
-                uuidProvider = uuidProvider
+                uuidProvider = uuidProvider,
+                presentationMatchDomain = presentationMatchDomain,
             )
+        }
+    }
 
-            if (domainClaims.isNotEmpty()) {
-                resultList.add(
-                    DocumentPayloadDomain(
-                        docName = storageDocument.name,
-                        docId = storageDocument.id,
-                        docFormatDomain = DocumentFormatDomain.getFormat(
-                            format = storageDocument.format,
-                        ),
-                        docClaimsDomain = domainClaims,
-                        queryId = presentationMatchDomain.queryId,
-                    )
-                )
+    private fun transformMatchToDomainItem(
+        storageDocuments: List<IssuedDocument>,
+        resourceProvider: ResourceProvider,
+        uuidProvider: UuidProvider,
+        presentationMatchDomain: PresentationMatchDomain,
+    ): DocumentPayloadDomain? {
+        val storageDocument = storageDocuments.firstOrNull { document ->
+            document.id == presentationMatchDomain.documentId
+        } ?: return null
+
+        val claimsPaths = storageDocument.data.claims.flatMap { claim -> claim.toClaimPaths() }
+        val filteredPaths = claimsPaths.filter { available ->
+            presentationMatchDomain.requestedClaims.any { requested ->
+                requested.matches(available)
             }
         }
+        val domainClaims = transformPathsToDomainClaims(
+            paths = filteredPaths,
+            claims = storageDocument.data.claims,
+            resourceProvider = resourceProvider,
+            uuidProvider = uuidProvider,
+        )
+        if (domainClaims.isEmpty()) return null
 
-        resultList
+        return DocumentPayloadDomain(
+            docName = storageDocument.name,
+            docId = storageDocument.id,
+            docFormatDomain = DocumentFormatDomain.getFormat(format = storageDocument.format),
+            docClaimsDomain = domainClaims,
+            queryId = presentationMatchDomain.queryId,
+        )
     }
 
 
