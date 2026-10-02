@@ -140,7 +140,7 @@ fun DocumentDetailsScreen(
                             viewModel.setEvent(Event.OnDynamicPresentation(link))
                         }
 
-                    CoreActions.REVOCATION_IDS_DETAILS_EXTRA -> {
+                    CoreActions.REVOCATION_WORK_REFRESH_DETAILS_ACTION -> {
                         val ids = it
                             .getStringArrayListExtra(CoreActions.REVOCATION_IDS_DETAILS_EXTRA)
                             ?.toList()
