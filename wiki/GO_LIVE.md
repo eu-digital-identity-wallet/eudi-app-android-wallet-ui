@@ -816,10 +816,14 @@ Certificate governance:
 
 ### ETSI Trusted Lists (LoTE)
 
-Both reference flavors (`dev` and `demo`) configure trust from ETSI TS 119 602 Lists of Trusted
-Entities instead of static certificates. One trust source is built from the configured list URLs
-and shared by issuer trust, status-list signer trust, reader/verifier authentication, and
-registration-certificate trust:
+Both reference flavors (`dev` and `demo`) configure ETSI TS 119 602 trusted lists in
+`WalletCoreConfigImpl.kt`. Their credential issuer-trust policy uses `ENFORCE` for the configured
+mdoc and SD-JWT PID types and defaults to `INFORM` for other attestations. The Wallet classifies
+only those PID types. See [CONFIGURATION.md](CONFIGURATION.md) for the reference configuration
+and its expected behavior.
+
+For a production deployment that requires `ENFORCE` for every issued credential type, the example
+below uses global enforcement and requires corresponding approved trust classifications:
 
 ```kotlin
 configureEtsiTrust {
@@ -856,36 +860,26 @@ configureReaderAuthentication {
 configureWrpRegistrationPolicy(WrpRegistrationPolicy.Enabled)
 ```
 
-The behavior differs per area and protocol. For example, untrusted verifiers are handled
-differently by OpenID4VP (request rejected at resolution) and by the ISO 18013 paths (consent
-shown; disclosure then gated at send by the reader-authentication policy). Change this configuration
-carefully.
+Validate the chosen configuration with the issuance and presentation services supported by your
+deployment.
 
 Production requirements for a trusted-list deployment:
 
 * Use production LoTE URLs from the approved trust framework, over HTTPS.
-* Remove the dev relaxations. `relaxCertificateProfiles()` disables the ETSI TS 119 412-6 /
-  TS 119 411-8 end-entity certificate profile checks and `relaxPkixRevocation()` disables CRL/OCSP
-  revocation checking — both are dev-PKI workarounds and must not ship.
-* Classify every credential type you issue (`classifications`) so issuer and status-list trust
-  actually evaluate it; unclassified types are silently skipped.
-* Configure `wrprcProviders` as well; without it the registration certificates covered in the next
-  section have no trust source. Note that the registration layer also has to be switched on — see
-  the next section.
-* Decide the trust policies deliberately: `INFORM` records the verdict without blocking,
-  `ENFORCE` rejects (issuance: document deleted; status: resolution fails). If the app must show
-  or act on `INFORM` verdicts, consume `IssueEvent.DocumentIssued.issuerTrustResult`.
-* Choose the enforcement mode in `configureReaderAuthentication`. `alwaysRequire()` refuses any
-  reader without verified reader authentication (empty status-10 response); `enforceIfPresent()`
-  admits readers that send no reader authentication.
-* Verify how the trusted-list JWTs themselves are authenticated. The SDK's default verifier
-  checks each list's signature against the certificate embedded in the list itself; if your trust
-  framework requires pinning or full chain validation of the list signer, provide a custom
-  `jwtSignatureVerifier`.
-* Review the cache windows (defaults: 24-hour on-disk list cache, 20-minute in-memory anchor
-  cache) against how quickly distrust must propagate.
-* Test both directions: a verifier/issuer on the list succeeds; one not on the list is refused in
-  every protocol.
+* Remove the development-only trust relaxations (`relaxCertificateProfiles()` and
+  `relaxPkixRevocation()`) from production configuration.
+* Review which credential types require trust enforcement and configure their classifications
+  and trusted lists accordingly. Decide how those classifications will be maintained.
+* Configure the registration-certificate list (`wrprcProviders`) and enable registration checking
+  as described in the next section.
+* Review the issuer-trust and status-list-trust policies against the deployment's requirements.
+  For credential issuer trust, `ENFORCE` requires verified trust for issuance; `INFORM` makes this
+  check nonblocking, including when issuer trust is unverified or untrusted.
+* Choose the reader-authentication policy required by the deployment.
+* Review trusted-list verification and cache settings against the deployment's trust requirements.
+* Test credential issuer trust for both PID and non-PID issuance, covering trusted, untrusted and
+  unverifiable credentials. Confirm the configured policy and remaining issuance checks behave as expected.
+  Test status checks and reader/verifier authentication for each supported protocol.
 
 ### Registration Certificates: The Second Trust Layer
 
@@ -952,8 +946,8 @@ Production requirements:
   lacks the entitlement for a type it offers, an issuer offering a type outside its registered
   scope, and a verifier over-asking. Confirm a refused re-issuance leaves the existing document in
   place and usable.
-* Test both states of the setting if you keep it toggleable, and remember the change only takes
-  effect on the next app start — the SDK reads both policies when it builds its managers.
+* Test both states of the setting if you keep it toggleable, including applying changes after an
+  app restart.
 
 ## Issuer Configuration: `issuersConfig`
 
