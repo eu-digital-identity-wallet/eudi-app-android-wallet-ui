@@ -30,10 +30,15 @@ class TestThrowableExtensions {
 
     //region toUntrustedIssuerReasonOrNull
 
+    // Case 1:
+    // 1. The failure is an IssuerNotTrustedException caused by an untrusted issuer chain.
+    //
+    // Case 1 Expected Result:
+    // UntrustedIssuerReasonDomain.ACCESS_CERTIFICATE.
     @Test
-    fun `an untrusted issuer chain is an access-certificate refusal`() {
+    fun `Given an untrusted issuer chain, When toUntrustedIssuerReasonOrNull is called, Then an access-certificate refusal is returned`() {
         // Given
-        val failure = IssuerNotTrustedException(cause = RuntimeException("untrusted chain"))
+        val failure = mockedIssuerNotTrustedException
 
         // When
         val reason = failure.toUntrustedIssuerReasonOrNull()
@@ -92,14 +97,19 @@ class TestThrowableExtensions {
         assertEquals(UntrustedIssuerReasonDomain.REGISTRATION_CERTIFICATE, reason)
     }
 
+    // Case 6:
+    // 1. An IssuerNotTrustedException is wrapped in an IllegalStateException and a RuntimeException.
+    //
+    // Case 6 Expected Result:
+    // UntrustedIssuerReasonDomain.ACCESS_CERTIFICATE.
     @Test
-    fun `a refusal wrapped deep in the cause chain is still found`() {
+    fun `Given an issuer refusal wrapped in a cause chain, When toUntrustedIssuerReasonOrNull is called, Then an access-certificate refusal is returned`() {
         // Given
         val failure = RuntimeException(
             "outer",
             IllegalStateException(
                 "inner",
-                IssuerNotTrustedException(cause = RuntimeException("untrusted chain")),
+                mockedIssuerNotTrustedException,
             ),
         )
 
@@ -155,6 +165,15 @@ class TestThrowableExtensions {
         // Then
         assertNull(reason)
     }
+
+    //endregion
+
+    //region Mocked objects needed for tests.
+
+    private val mockedIssuerNotTrustedException = IssuerNotTrustedException(
+        message = "Issuer certificate chain is not trusted",
+        cause = RuntimeException("untrusted chain"),
+    )
 
     //endregion
 }

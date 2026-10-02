@@ -56,7 +56,8 @@ The app consumes the SDK called EUDIW Wallet core [Wallet core](https://github.c
 - ETSI TS 119 602 trusted lists (LoTE) for trust management — issuer trust, status-list signer
   trust, reader/verifier authentication, and the registration certificates that establish what an
   issuer or verifier is registered to do. Registration-certificate checking is a runtime setting and
-  ships **off**; access-certificate trust is always enforced (see
+  ships **off**. Credential issuer trust uses `ENFORCE` for the configured PID types and `INFORM`
+  for other attestations in both reference flavors (see
   [wiki/CONFIGURATION.md](wiki/CONFIGURATION.md))
  
 - Issuer functionality, to support development and testing, one can access an OID4VCI test/demo service for issuing at: 

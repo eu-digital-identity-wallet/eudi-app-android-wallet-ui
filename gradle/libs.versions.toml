@@ -52,7 +52,7 @@ koinPlugin = "1.1.0"
 
 # EUDI wallet SDKs
 eudiWalletCore = "0.31.0"
-rqesUiSDK = "0.4.1-SNAPSHOT"
+rqesUiSDK = "0.4.1"
 eudiLibKmpEtsi1196x2 = "0.4.0-alpha.3"
 
 # Logging
