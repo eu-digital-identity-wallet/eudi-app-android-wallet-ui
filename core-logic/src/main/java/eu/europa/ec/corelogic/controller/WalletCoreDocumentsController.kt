@@ -226,7 +226,7 @@ interface WalletCoreDocumentsController {
 
     fun issueDeferredDocument(docId: DocumentId): Flow<IssueDeferredDocumentPartialState>
 
-    fun resumeOpenId4VciWithAuthorization(uri: String)
+    fun resumeOpenId4VciWithAuthorization(uri: String): Boolean
 
     suspend fun getScopedDocuments(locale: Locale): FetchScopedDocumentsPartialState
 
@@ -263,6 +263,9 @@ class WalletCoreDocumentsControllerImpl(
 ) : WalletCoreDocumentsController {
 
     private var _eudiWallet: EudiWallet? = walletCore
+
+    @Volatile
+    private var lastAuthorizationIssuerId: String? = null
 
     private val eudiWallet: EudiWallet
         get() {
@@ -522,6 +525,10 @@ class WalletCoreDocumentsControllerImpl(
         if (preflightRefusal != null) {
             trySendBlocking(preflightRefusal)
         } else {
+            if (allowAuthorizationFallback) {
+                lastAuthorizationIssuerId = issuerId
+            }
+
             manager.reissueDocument(
                 documentId,
                 allowAuthorizationFallback,
@@ -554,6 +561,8 @@ class WalletCoreDocumentsControllerImpl(
                 useDefault = true,
                 errorMessage = documentErrorMessage
             ).getOrThrow()
+
+            lastAuthorizationIssuerId = issuerId
 
             manager.issueDocumentByOffer(
                 offer = offer,
@@ -790,14 +799,19 @@ class WalletCoreDocumentsControllerImpl(
             )
         }
 
-    override fun resumeOpenId4VciWithAuthorization(uri: String) {
-        for (manager in openId4VciManagers.values) {
-            try {
-                manager.resumeWithAuthorization(uri)
-                break
-            } catch (_: Exception) {
-            }
-        }
+    override fun resumeOpenId4VciWithAuthorization(uri: String): Boolean {
+        val issuerId = lastAuthorizationIssuerId ?: return false
+
+        return runCatching {
+            val manager = getVciManager(
+                issuerId = issuerId,
+                useDefault = true,
+                errorMessage = documentErrorMessage
+            ).getOrThrow()
+
+            manager.resumeWithAuthorization(uri)
+            true
+        }.getOrDefault(false)
     }
 
     override fun getAllDocumentCategories(): DocumentCategories {
@@ -865,6 +879,8 @@ class WalletCoreDocumentsControllerImpl(
             if (preflightRefusal != null) {
                 trySendBlocking(preflightRefusal)
             } else {
+                lastAuthorizationIssuerId = issuerId
+
                 manager.issueDocumentByConfigurationIdentifiers(
                     issuerUrl = issuerId,
                     credentialConfigurationIds = configIds,

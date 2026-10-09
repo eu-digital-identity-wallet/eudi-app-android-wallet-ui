@@ -294,10 +294,9 @@ class DocumentDetailsViewModel(
             }
 
             is Event.OnResumeIssuance -> {
-                setState {
-                    copy(isLoading = true)
+                if (documentDetailsInteractor.resumeOpenId4VciWithAuthorization(event.uri)) {
+                    setState { copy(isLoading = true) }
                 }
-                documentDetailsInteractor.resumeOpenId4VciWithAuthorization(event.uri)
             }
         }
     }

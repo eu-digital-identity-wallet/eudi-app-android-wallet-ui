@@ -99,7 +99,7 @@ interface AddDocumentInteractor {
 
     fun buildGenericSuccessRouteForDeferred(flowType: IssuanceFlowType): String
 
-    fun resumeOpenId4VciWithAuthorization(uri: String)
+    fun resumeOpenId4VciWithAuthorization(uri: String): Boolean
 }
 
 class AddDocumentInteractorImpl(
@@ -343,8 +343,8 @@ class AddDocumentInteractorImpl(
         )
     }
 
-    override fun resumeOpenId4VciWithAuthorization(uri: String) {
-        walletCoreDocumentsController.resumeOpenId4VciWithAuthorization(uri)
+    override fun resumeOpenId4VciWithAuthorization(uri: String): Boolean {
+        return walletCoreDocumentsController.resumeOpenId4VciWithAuthorization(uri)
     }
 
     private fun getSuccessScreenArgumentsForDeferred(
