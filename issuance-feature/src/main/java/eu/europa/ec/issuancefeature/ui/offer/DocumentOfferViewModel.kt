@@ -211,10 +211,9 @@ class DocumentOfferViewModel(
             }
 
             is Event.OnResumeIssuance -> {
-                setState {
-                    copy(isLoading = true)
+                if (documentOfferInteractor.resumeOpenId4VciWithAuthorization(event.uri)) {
+                    setState { copy(isLoading = true) }
                 }
-                documentOfferInteractor.resumeOpenId4VciWithAuthorization(event.uri)
             }
 
             is Event.OnDynamicPresentation -> {
