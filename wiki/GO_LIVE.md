@@ -2064,11 +2064,11 @@ as after a first install. The app does not close. Once started, the reset runs t
 closed, and its screen is a protected-flow screen (`protectedFlowScreens`), so the background lock
 waits `protectedFlowLockTimeout` while it runs. A link or Digital Credential API request that
 arrives while it runs is dropped, and a link the app kept for after login is forgotten. If a
-document cannot be deleted or a step fails, the user can retry, or close the screen, which also
-starts the wallet again at the splash screen. A reset screen restored after the process ended finds
-the wallet locked and does not start; the lock routes to the login screen. When the database key
-is missing at start-up, any existing database file is deleted, since it could not be opened, and a
-new database is created.
+document, log file or cached file cannot be deleted, or a step fails, the user can retry or close the
+screen, which also starts the wallet again at the splash screen. A reset screen restored after the
+process ended finds the wallet locked and does not start; the lock routes to the login screen. When
+the database key is missing at start-up, any existing database file is deleted, since it could not be
+opened, and a new database is created.
 
 The reset keeps the following, none of which holds the user's personal data:
 

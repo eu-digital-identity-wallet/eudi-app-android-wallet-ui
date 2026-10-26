@@ -22,6 +22,8 @@ import androidx.credentials.registry.provider.RegistryManager
 import eu.europa.ec.authenticationlogic.controller.session.SessionController
 import eu.europa.ec.businesslogic.controller.log.LogController
 import eu.europa.ec.businesslogic.controller.storage.PrefKeys
+import eu.europa.ec.businesslogic.di.LogicBusinessModule
+import eu.europa.ec.businesslogic.extension.deleteContents
 import eu.europa.ec.businesslogic.provider.UuidProvider
 import eu.europa.ec.corelogic.config.WalletCoreConfig
 import eu.europa.ec.corelogic.config.WalletCoreConfigImpl
@@ -274,7 +276,7 @@ fun provideWalletCoreResetController(
     clearTransactionLogs = { walletCoreTransactionLogController.deleteAllTransactionLogs() },
     clearDatabase = { databaseEraser.clearAllTables() },
     deleteLogFiles = { logController.deleteLogFiles() },
-    deleteCacheFiles = { context.cacheDir.listFiles()?.forEach { it.deleteRecursively() } },
+    deleteCacheFiles = { context.cacheDir.deleteContents(recursively = true) },
 )
 
 fun provideWalletResetStatus(): WalletResetStatus = WalletResetStatus()

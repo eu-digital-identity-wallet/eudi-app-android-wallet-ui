@@ -17,6 +17,7 @@
 package eu.europa.ec.businesslogic.controller.log
 
 import android.content.Context
+import eu.europa.ec.businesslogic.util.FileLoggerTree
 import org.junit.After
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -27,6 +28,7 @@ import org.robolectric.RobolectricTestRunner
 import org.robolectric.RuntimeEnvironment
 import timber.log.Timber
 import java.io.File
+import java.io.IOException
 
 @RunWith(RobolectricTestRunner::class)
 class TestLogController {
@@ -49,6 +51,7 @@ class TestLogController {
 
     @After
     fun after() {
+        Timber.forest().filterIsInstance<FileLoggerTree>().forEach { tree -> tree.close() }
         Timber.uprootAll()
     }
 
@@ -76,6 +79,43 @@ class TestLogController {
         assertFalse(loggedText.contains("first"))
         assertTrue(loggedText.contains("second"))
     }
+
+    //region deleteLogFiles
+    // Case 1:
+    // 1. A nonempty subdirectory cannot be removed as a log file.
+    //
+    // Case 1 Expected Result:
+    // Cleanup reports failure, logging continues, and cleanup can be retried.
+    @Test
+    fun `Given a log entry cannot be deleted, When cleanup fails and is retried, Then logging continues`() {
+        // Given
+        val controller = LogControllerImpl(
+            context = context,
+            tag = "TAG",
+            shouldWriteLogFile = true,
+        )
+        val remainingDirectory = File(logsDir, "remaining").apply { mkdirs() }
+        File(remainingDirectory, "entry.txt").writeText("remaining contents")
+        val mockedMessageAfterFailure = "after failed cleanup"
+        val mockedMessageAfterRetry = "after cleanup retry"
+
+        // When
+        val result = runCatching { controller.deleteLogFiles() }
+        controller.i { mockedMessageAfterFailure }
+
+        // Then
+        assertTrue(result.exceptionOrNull() is IOException)
+        assertTrue(remainingDirectory.exists())
+        assertTrue(loggedText.contains(mockedMessageAfterFailure))
+
+        assertTrue(remainingDirectory.deleteRecursively())
+        controller.deleteLogFiles()
+        controller.i { mockedMessageAfterRetry }
+
+        assertFalse(loggedText.contains(mockedMessageAfterFailure))
+        assertTrue(loggedText.contains(mockedMessageAfterRetry))
+    }
+    //endregion
 
     @Test
     fun `Given a build that writes no log file, When messages are logged, Then no file is written or offered and old files are deleted`() {
