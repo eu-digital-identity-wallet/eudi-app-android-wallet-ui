@@ -1358,8 +1358,9 @@ What the user sees:
   documents too, and `WalletCoreDocumentsController.reIssueDocument` checks again just before it asks
   the issuer, for a document blocked after the background run chose it. If the original is blocked
   while a re-issue is already under way (the issuer's sign-in, or a deferred credential), the
-  re-issue still completes, as the issuer chose to issue; a revocation check is then scheduled, so
-  the new copy's own status is read without waiting for the periodic interval.
+  re-issue still completes, as the issuer chose to issue. While background scheduling is enabled,
+  the app requests another revocation check to read the new copy's own status without waiting for
+  the periodic interval.
 
 ## Document Categories
 
@@ -1417,11 +1418,13 @@ The app enqueues `RevocationWorkManager`, which:
   work.
 * Once scheduled, the periodic checks stay scheduled with WorkManager and run on their interval
   whether or not the wallet is unlocked: while the app is closed, and, as overdue work, when the
-  process starts before login. A factory reset that fails schedules them again, but not the
-  start-up check; after a successful reset they start with the dashboard, after the next login. A
-  periodic run that starts as the process starts, or one already running when the user opens the
-  wallet, reads the previous run's session id and opens a second Wallet Core instance on the same
-  storage, as in earlier releases. Removing that needs one
+  process starts before login, unless stopped for a factory reset. A reset that fails requests
+  the periodic checks again, but not the start-up check; after a successful reset they
+  start with the dashboard, after the next login. See
+  [Data Deletion And Factory Reset](#data-deletion-and-factory-reset) for scheduling and recovery
+  details. A periodic run that starts as the process starts, or one already running when the user
+  opens the wallet, reads the previous run's session id and opens a second Wallet Core instance on the
+  same storage, as in earlier releases. Removing that needs one
   session id shared by the process's workers and screens. To run no check before login, make the
   workers skip while the session is locked; they then run only while the wallet is in use.
 * Treats a document whose status reference Wallet Core cannot extract (no `status` claim, or a
@@ -2030,10 +2033,10 @@ records of every document Wallet Core no longer holds.
 deleted, and requires the PIN or a biometric. `WalletCoreResetController` then, while the app keeps
 running:
 
-1. stops the revocation and re-issuance workers and waits, for `WalletCoreConfig.workerStopTimeout`
-   at most (30 seconds by default), until neither is still working (`WalletWorkScheduler`). Wallet
-   Core finishes a re-issuance it has started even when its worker is cancelled, so the worker
-   follows it to its outcome first. If a worker is still
+1. blocks new checks before cancelling the scheduled revocation and re-issuance work
+   (`WalletWorkScheduler.stop`), then waits up to `WalletCoreConfig.workerStopTimeout` (30 seconds
+   by default) for running work to finish. Wallet Core finishes a re-issuance it has started even
+   when its worker is cancelled, so the worker follows it to its outcome first. If a worker is still
    working when the wait ends, the reset fails before anything is deleted;
 2. deletes every document Wallet Core stores, the main PID last, so that their keys are removed as
    Wallet Core intends. Meanwhile it holds the Digital Credential API registration, and then clears
@@ -2046,12 +2049,18 @@ running:
    the logos of issuers and relying parties;
 6. locks the session.
 
-If a step fails, the reset schedules the periodic revocation and re-issuance checks again
-(`WalletWorkScheduler.schedule`). After a successful reset they start with the dashboard, after the
-next login, as after a first install.
+While scheduling is stopped, start-up checks and additional revocation requests, including a request
+from a finishing re-issuance, are discarded. They are not saved for later. The stop guard and enqueue
+calls share a lock, and dashboard resumes cannot reopen scheduling while the reset is running.
 
-The wallet then starts again at the splash screen, which leads to onboarding, as after a first
-install. The app does not close. Once started, the reset runs to the end even if its screen is
+If a step fails, the reset clears `WalletResetStatus.isResetting` before calling
+`WalletWorkScheduler.schedule`. That call reopens scheduling and submits the periodic revocation
+and re-issuance checks to WorkManager. The revocation worker reads the issued documents still in
+the wallet when it runs. After a successful reset scheduling stays stopped until the dashboard opens
+after the next login, as after a first install.
+
+After a successful reset, the wallet starts again at the splash screen, which leads to onboarding,
+as after a first install. The app does not close. Once started, the reset runs to the end even if its screen is
 closed, and its screen is a protected-flow screen (`protectedFlowScreens`), so the background lock
 waits `protectedFlowLockTimeout` while it runs. A link or Digital Credential API request that
 arrives while it runs is dropped, and a link the app kept for after login is forgotten. If a
@@ -2933,6 +2942,11 @@ Before release candidate approval, test:
 * Revocation.
 * Background checks on a new install: no status list is fetched before the first login, and the
   check after login runs once per process.
+* Factory reset while re-issuance is completing: its additional revocation request is discarded
+  while scheduling is stopped, and dashboard resumes cannot restart checks during deletion.
+* Reset timeout or a later reset-step failure: confirm the reset requests periodic revocation and
+  re-issuance checks again.
+* Successful factory reset: background checks stay stopped until the next login and dashboard visit.
 * Re-issue refused for a revoked or suspended document.
 * Same-device OpenID4VP presentation.
 * Cross-device presentation.

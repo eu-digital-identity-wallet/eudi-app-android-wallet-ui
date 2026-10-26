@@ -282,9 +282,11 @@ fun provideWalletResetStatus(): WalletResetStatus = WalletResetStatus()
 fun provideWalletWorkScheduler(
     context: Context,
     walletCoreConfig: WalletCoreConfig,
+    resetStatus: WalletResetStatus,
 ): WalletWorkScheduler = WalletWorkSchedulerImpl(
     context = context,
     walletCoreConfig = walletCoreConfig,
+    resetStatus = resetStatus,
 )
 
 fun provideWalletCorePresentationController(
