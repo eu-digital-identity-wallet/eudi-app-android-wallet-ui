@@ -77,20 +77,31 @@ class ResetWalletViewModel(
 
     private fun resetWallet() {
         if (resetJob?.isActive == true) return
-        setState { copy(isLoading = true, error = null) }
+
+        setState {
+            copy(
+                isLoading = true,
+                error = null
+            )
+        }
+
         resetJob = viewModelScope.launch {
             when (val state = resetWalletInteractor.resetWallet()) {
-                is ResetWalletInteractorPartialState.Success -> setEffect { Effect.Navigation.StartAgain }
+                is ResetWalletInteractorPartialState.Success -> {
+                    setEffect { Effect.Navigation.StartAgain }
+                }
 
-                is ResetWalletInteractorPartialState.Failure -> setState {
-                    copy(
-                        isLoading = false,
-                        error = ContentErrorConfig(
-                            errorSubTitle = state.errorMessage,
-                            onRetry = { setEvent(Event.Retry) },
-                            onCancel = { setEvent(Event.Close) },
+                is ResetWalletInteractorPartialState.Failure -> {
+                    setState {
+                        copy(
+                            isLoading = false,
+                            error = ContentErrorConfig(
+                                errorSubTitle = state.errorMessage,
+                                onRetry = { setEvent(Event.Retry) },
+                                onCancel = { setEvent(Event.Close) },
+                            )
                         )
-                    )
+                    }
                 }
             }
         }
