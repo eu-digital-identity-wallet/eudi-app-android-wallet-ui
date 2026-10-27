@@ -24,7 +24,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -39,6 +38,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import eu.europa.ec.dashboardfeature.ui.transactions.component.PrivacyActionExplanation
 import eu.europa.ec.dashboardfeature.ui.transactions.component.PrivacyActionInfoCard
+import eu.europa.ec.dashboardfeature.ui.transactions.component.WarningText
 import eu.europa.ec.dashboardfeature.ui.transactions.dpa_report.model.DpaReportContactUi
 import eu.europa.ec.dashboardfeature.ui.transactions.dpa_report.model.DpaReportUi
 import eu.europa.ec.dashboardfeature.ui.transactions.openTransactionAction
@@ -57,7 +57,6 @@ import eu.europa.ec.uilogic.component.content.ScreenNavigateAction
 import eu.europa.ec.uilogic.component.preview.LargeTextPreviews
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
-import eu.europa.ec.uilogic.component.toColor
 import eu.europa.ec.uilogic.component.utils.OncePerViewModelEffect
 import eu.europa.ec.uilogic.component.utils.SPACING_LARGE
 import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
@@ -131,11 +130,9 @@ private fun Content(
                 }
 
                 report.registrationWarning?.let { warning ->
-                    Text(
+                    WarningText(
                         modifier = Modifier.fillMaxWidth(),
                         text = warning,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = ThemeColorKey.Warning.toColor(),
                     )
                 }
 

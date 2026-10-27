@@ -82,7 +82,6 @@ import eu.europa.ec.storagelogic.model.RevocationStatus
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineStart
-import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.NonCancellable
@@ -400,14 +399,12 @@ class WalletCoreDocumentsControllerImpl(
         }
     }
 
-    /**
-     * Every issuer is resolved on its own: one unreachable, malformed or untrusted issuer must not
-     * hide the documents offered by the others.
-     */
     override suspend fun getScopedDocuments(locale: Locale): FetchScopedDocumentsPartialState {
         return withContext(dispatcher) {
             runCatching {
 
+                // every issuer is resolved on its own: one unreachable, malformed or untrusted
+                // issuer must not hide the documents offered by the others
                 val metadataPerIssuer: Map<VciConfig, GetIssuerMetadataPartialState> =
                     openId4VciManagers.mapValues { (vciConfig, manager) ->
                         getIssuerMetadata(
@@ -610,11 +607,6 @@ class WalletCoreDocumentsControllerImpl(
         IssueDocumentsPartialState.Failure(errorMessage = documentErrorMessage)
     }
 
-    /**
-     * A successful re-issue makes Wallet Core delete the original document, so the registration
-     * outcome is checked before anything starts. In that way, a refusal leaves the original
-     * document intact.
-     */
     override fun reIssueDocument(
         documentId: DocumentId,
         issuerId: String,
@@ -627,6 +619,9 @@ class WalletCoreDocumentsControllerImpl(
             errorMessage = documentErrorMessage
         ).getOrThrow()
 
+        // a successful re-issue makes Wallet Core delete the original document, so the
+        // registration outcome is checked before anything starts
+        // in that way, a refusal here leaves the original document intact
         val preflightRefusal = reIssueBlockedRefusalOrNull(documentId)
             ?: preflightRegistrationRefusalOrNull(
                 resolveRegistration = {
@@ -778,10 +773,6 @@ class WalletCoreDocumentsControllerImpl(
             )
         }
 
-    /**
-     * With the registration check off, Core evaluates nothing, so the check's outcome is consulted
-     * only while it is on; otherwise every offer would be refused for lack of an outcome.
-     */
     override fun resolveDocumentOffer(offerUri: String): Flow<ResolveDocumentOfferPartialState> =
         callbackFlow {
 
@@ -830,7 +821,8 @@ class WalletCoreDocumentsControllerImpl(
                     is OfferResult.Success -> {
                         val issuerRegistration = result.offer.issuerRegistration
                             .toIssuerRegistrationDomain(locale = resourceProvider.getLocale())
-
+                        // with the registration check off, Core evaluates nothing, so the check's outcome is consulted
+                        // only while it is on; otherwise every offer would be refused for lack of an outcome.
                         val registrationRefused = walletCoreConfig.isRegistrationCheckEnabled &&
                                 issuerRegistration.isBlockedForIssuance
 
@@ -861,7 +853,6 @@ class WalletCoreDocumentsControllerImpl(
      * starts atomically ([CoroutineStart.ATOMIC]), so a cancellation right after the event cannot
      * skip it.
      */
-    @OptIn(DelicateCoroutinesApi::class)
     override fun issueDeferredDocument(docId: DocumentId): Flow<IssueDeferredDocumentPartialState> =
         callbackFlow {
             (getDocumentById(docId) as? DeferredDocument)?.let { deferredDoc ->
@@ -878,17 +869,14 @@ class WalletCoreDocumentsControllerImpl(
                         when (deferredIssuanceResult) {
                             is DeferredIssueResult.DocumentFailed -> {
                                 trySendBlocking(
-                                    if (deferredIssuanceResult.cause
-                                            .toUntrustedIssuerReasonOrNull() != null
-                                    ) {
+                                    if (deferredIssuanceResult.cause.toUntrustedIssuerReasonOrNull() != null) {
                                         IssueDeferredDocumentPartialState.IssuerNotTrusted(
                                             documentId = deferredIssuanceResult.documentId
                                         )
                                     } else {
                                         IssueDeferredDocumentPartialState.Failed(
                                             documentId = deferredIssuanceResult.documentId,
-                                            errorMessage = deferredIssuanceResult.cause
-                                                .localizedMessage
+                                            errorMessage = deferredIssuanceResult.cause.localizedMessage
                                                 ?: documentErrorMessage
                                         )
                                     }
@@ -902,7 +890,11 @@ class WalletCoreDocumentsControllerImpl(
                                         verdict = deferredIssuanceResult.issuerTrustResult
                                             .toIssuerTrustVerdict(),
                                     )
-                                    cleanUpRecords { deleteRecordsOfMissingDocuments() }
+
+                                    cleanUpRecords {
+                                        deleteRecordsOfMissingDocuments()
+                                    }
+
                                     trySendBlocking(
                                         IssueDeferredDocumentPartialState.Issued(
                                             DeferredDocumentDataDomain(
@@ -1138,10 +1130,6 @@ class WalletCoreDocumentsControllerImpl(
     override suspend fun hasReIssuanceFailed(documentId: DocumentId): Boolean =
         failedReIssuedDocumentDao.retrieve(documentId) != null
 
-    /**
-     * Wallet-initiated issuance has no approval screen, so the registration outcome is checked
-     * before the flow starts: a refusal opens no browser and stores nothing.
-     */
     private fun issueDocumentsWithOpenId4VCI(
         configIds: List<String>,
         issuerId: String,
@@ -1154,6 +1142,9 @@ class WalletCoreDocumentsControllerImpl(
                 errorMessage = documentErrorMessage
             ).getOrThrow()
 
+            // wallet-initiated issuance has no approval screen, so the registration outcome
+            // is checked before the flow starts — a refusal here opens no browser and stores
+            // nothing
             val preflightRefusal = preflightRegistrationRefusalOrNull(
                 resolveRegistration = {
                     manager.resolveIssuerRegistration(
@@ -1189,15 +1180,7 @@ class WalletCoreDocumentsControllerImpl(
      * after those writes finish, because the success screen reads the stored verdicts. The writes
      * start atomically ([CoroutineStart.ATOMIC]), so a cancellation right after an event cannot
      * skip them.
-     *
-     * `event.issuedDocuments` folds in deferred ids too — the Core emits
-     * Finished(issuedDocumentIds + deferredDocumentIds) — so the untrusted outcome is decided on
-     * the locally tracked *actually issued* documents. Otherwise a batch of "one
-     * untrusted + one deferred from the same issuer" would be treated as a partial success and
-     * navigate the user on the success screen with a deferred (un-issued) id instead of the
-     * "Issuance blocked" sheet.
      */
-    @OptIn(DelicateCoroutinesApi::class)
     private fun ProducerScope<IssueDocumentsPartialState>.issuanceCallback(
         prioritizeDeferred: Boolean = true
     ): OpenId4VciManager.OnIssueEvent {
@@ -1222,8 +1205,7 @@ class WalletCoreDocumentsControllerImpl(
                 is IssueEvent.DocumentRequiresCreateSettings -> {
                     when (event) {
                         is IssueEvent.DocumentRequiresCreateSettings.MandatoryReusePolicy -> {
-                            val (secureAreaId, createKeySettings) = eudiWallet
-                                .getDefaultCreateKeySettings()
+                            val (secureAreaId, createKeySettings) = eudiWallet.getDefaultCreateKeySettings()
                             event.resume(secureAreaId, createKeySettings)
                         }
 
@@ -1310,6 +1292,12 @@ class WalletCoreDocumentsControllerImpl(
                     launch {
                         issuerTrustWrites.joinAll()
 
+                        // event.issuedDocuments folds in deferred ids too — the Core emits
+                        // Finished(issuedDocumentIds + deferredDocumentIds) — so the untrusted
+                        // outcome is decided on the locally tracked *actually issued* documents.
+                        // Otherwise a batch of "one untrusted + one deferred from the same issuer"
+                        // would be treated as a partial success and navigate the user on the success screen with a deferred
+                        // (un-issued) id instead of the "Issuance blocked" sheet.
                         if (untrustedDocuments.isNotEmpty() && issuedDocuments.isEmpty()) {
                             trySendBlocking(
                                 IssueDocumentsPartialState.IssuerNotTrusted(
@@ -1394,8 +1382,7 @@ class WalletCoreDocumentsControllerImpl(
     /**
      * Registration check for a flow with no approval screen, run before it starts. Returns the
      * terminal state refusing or failing the flow, or null to proceed — always null while the
-     * check is off, which also skips the resolve itself. An issuer that publishes no registration
-     * certificate is refused like any unverified outcome.
+     * check is off, which also skips the resolve itself.
      */
     private suspend fun preflightRegistrationRefusalOrNull(
         resolveRegistration: suspend () -> Result<RegistrationCertificateResult>,
@@ -1425,6 +1412,7 @@ class WalletCoreDocumentsControllerImpl(
                         reason = untrustedReason
                     )
 
+                    // no registration certificate published; refuse like any unverified outcome
                     cause is IllegalStateException -> IssueDocumentsPartialState.IssuerNotTrusted(
                         reason = UntrustedIssuerReasonDomain.REGISTRATION_CERTIFICATE
                     )
