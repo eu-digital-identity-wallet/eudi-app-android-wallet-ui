@@ -184,7 +184,7 @@ private fun RejectionAction(
 
 @ThemeModePreviews
 @Composable
-private fun RejectionPreview() {
+private fun LoadingScreenRejectionPreview() {
     PreviewTheme {
         ContentScreen(
             navigatableAction = ScreenNavigateAction.NONE,

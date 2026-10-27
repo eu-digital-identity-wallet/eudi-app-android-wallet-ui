@@ -59,18 +59,18 @@ fun CheckboxWithContent(
 @ThemeModePreviews
 @Composable
 private fun CheckboxWithContentPreview() {
-    var isChecked by remember {
-        mutableStateOf(true)
-    }
-    val checkBoxData = CheckboxDataUi(
-        isChecked = isChecked,
-        onCheckedChange = {
-            isChecked = it
-        },
-        enabled = true
-    )
-
     PreviewTheme {
+        var isChecked by remember {
+            mutableStateOf(true)
+        }
+        val checkBoxData = CheckboxDataUi(
+            isChecked = isChecked,
+            onCheckedChange = {
+                isChecked = it
+            },
+            enabled = true
+        )
+
         CheckboxWithContent(
             checkboxData = checkBoxData,
             content = {

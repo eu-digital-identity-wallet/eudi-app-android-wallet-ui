@@ -203,8 +203,9 @@ private fun ContactRow(
 private fun DpaReportPreview(
     @PreviewParameter(DpaReportPreviewProvider::class) state: State,
 ) {
-    val scrollState = rememberScrollState()
     PreviewTheme {
+        val scrollState = rememberScrollState()
+
         ContentScreen(
             isLoading = state.isLoading,
             contentErrorConfig = state.error,
@@ -223,8 +224,9 @@ private fun DpaReportPreview(
 }
 
 @LargeTextPreviews
+@ThemeModePreviews
 @Composable
-private fun WebsiteContactLargeTextPreview() {
+private fun ContactRowWebsiteLargeTextPreview() {
     PreviewTheme {
         ContactRow(
             modifier = Modifier

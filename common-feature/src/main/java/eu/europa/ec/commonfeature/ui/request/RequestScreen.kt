@@ -402,14 +402,6 @@ private fun UserImageNotice(
     }
 }
 
-@ThemeModePreviews
-@Composable
-private fun UserImageNoticePreview() {
-    PreviewTheme {
-        UserImageNotice(modifier = Modifier.fillMaxWidth())
-    }
-}
-
 @Composable
 private fun DisplayRequestContent(
     modifier: Modifier,
@@ -699,6 +691,14 @@ private fun SheetContent(
     }
 }
 
+@ThemeModePreviews
+@Composable
+private fun UserImageNoticePreview() {
+    PreviewTheme {
+        UserImageNotice(modifier = Modifier.fillMaxWidth())
+    }
+}
+
 @Composable
 private fun previewRelyingPartyHeader(): RelyingPartyHeaderUi {
     return RelyingPartyHeaderUi(
@@ -885,23 +885,23 @@ private fun SheetContentVerifierNotTrustedPreview() {
 
 @ThemeModePreviews
 @Composable
-private fun TransactionDataCollapsedRequestPreview() {
+private fun RequestScreenTransactionDataCollapsedPreview() {
     PreviewTheme {
-        TransactionRequestContentPreview(isExpanded = false)
+        TransactionRequestPreviewContent(isExpanded = false)
     }
 }
 
 @ThemeModePreviews
 @Composable
-private fun TransactionDataExpandedRequestPreview() {
+private fun RequestScreenTransactionDataExpandedPreview() {
     PreviewTheme {
-        TransactionRequestContentPreview(isExpanded = true)
+        TransactionRequestPreviewContent(isExpanded = true)
     }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun TransactionRequestContentPreview(isExpanded: Boolean) {
+private fun TransactionRequestPreviewContent(isExpanded: Boolean) {
     Content(
         state = State(
             isLoading = false,
@@ -930,7 +930,7 @@ private fun TransactionRequestContentPreview(isExpanded: Boolean) {
 
 @ThemeModePreviews
 @Composable
-private fun TransactionDataMixedCombinationsPreview() {
+private fun RequestScreenTransactionDataMixedCombinationsPreview() {
     PreviewTheme {
         val documents = listOf(previewRequestDocumentItem(isExpanded = false))
         DisplayRequestContent(
@@ -978,7 +978,7 @@ private fun TransactionDataMixedCombinationsPreview() {
 
 @ThemeModePreviews
 @Composable
-private fun TransactionDataExpandedCombinationPreview() {
+private fun CombinationContentWithExpandedTransactionDataPreview() {
     PreviewTheme {
         Column(
             modifier = Modifier
@@ -1039,8 +1039,9 @@ private fun TransactionDataSectionPreview(
 }
 
 @LargeTextPreviews
+@ThemeModePreviews
 @Composable
-private fun TransactionDataLongDocumentActionPreview() {
+private fun TransactionDataSectionLongDocumentActionPreview() {
     PreviewTheme {
         val actionId = "preview-long-document/open"
         val section = previewTransactionSection(

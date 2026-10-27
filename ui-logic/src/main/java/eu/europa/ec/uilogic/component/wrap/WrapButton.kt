@@ -161,7 +161,7 @@ private fun WrapSecondaryButton(
 
 @ThemeModePreviews
 @Composable
-private fun WrapPrimaryButtonEnabledPreview() {
+private fun WrapButtonPrimaryEnabledPreview() {
     PreviewTheme {
         WrapButton(
             buttonConfig = ButtonConfig(
@@ -177,7 +177,7 @@ private fun WrapPrimaryButtonEnabledPreview() {
 
 @ThemeModePreviews
 @Composable
-private fun WrapPrimaryButtonDisabledPreview() {
+private fun WrapButtonPrimaryDisabledPreview() {
     PreviewTheme {
         WrapButton(
             buttonConfig = ButtonConfig(
@@ -193,7 +193,7 @@ private fun WrapPrimaryButtonDisabledPreview() {
 
 @ThemeModePreviews
 @Composable
-private fun WrapPrimaryButtonEnabledWarningPreview() {
+private fun WrapButtonPrimaryEnabledWarningPreview() {
     PreviewTheme {
         WrapButton(
             buttonConfig = ButtonConfig(
@@ -210,7 +210,7 @@ private fun WrapPrimaryButtonEnabledWarningPreview() {
 
 @ThemeModePreviews
 @Composable
-private fun WrapPrimaryButtonDisabledWarningPreview() {
+private fun WrapButtonPrimaryDisabledWarningPreview() {
     PreviewTheme {
         WrapButton(
             buttonConfig = ButtonConfig(
@@ -227,7 +227,7 @@ private fun WrapPrimaryButtonDisabledWarningPreview() {
 
 @ThemeModePreviews
 @Composable
-private fun WrapSecondaryButtonEnabledPreview() {
+private fun WrapButtonSecondaryEnabledPreview() {
     PreviewTheme {
         WrapButton(
             buttonConfig = ButtonConfig(
@@ -243,7 +243,7 @@ private fun WrapSecondaryButtonEnabledPreview() {
 
 @ThemeModePreviews
 @Composable
-private fun WrapSecondaryButtonDisabledPreview() {
+private fun WrapButtonSecondaryDisabledPreview() {
     PreviewTheme {
         WrapButton(
             buttonConfig = ButtonConfig(
@@ -259,7 +259,7 @@ private fun WrapSecondaryButtonDisabledPreview() {
 
 @ThemeModePreviews
 @Composable
-private fun WrapSecondaryButtonEnabledWarningPreview() {
+private fun WrapButtonSecondaryEnabledWarningPreview() {
     PreviewTheme {
         WrapButton(
             buttonConfig = ButtonConfig(
@@ -276,7 +276,7 @@ private fun WrapSecondaryButtonEnabledWarningPreview() {
 
 @ThemeModePreviews
 @Composable
-private fun WrapSecondaryButtonDisabledWarningPreview() {
+private fun WrapButtonSecondaryDisabledWarningPreview() {
     PreviewTheme {
         WrapButton(
             buttonConfig = ButtonConfig(

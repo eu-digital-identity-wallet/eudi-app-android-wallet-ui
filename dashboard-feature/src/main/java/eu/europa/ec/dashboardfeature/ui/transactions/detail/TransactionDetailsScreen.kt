@@ -773,7 +773,7 @@ private fun PresentationActionSection(
 
 @ThemeModePreviews
 @Composable
-private fun DeleteTransactionConfirmationPreview() {
+private fun SheetContentDeleteTransactionConfirmationPreview() {
     PreviewTheme {
         SheetContent(
             sheetContent = TransactionDetailsBottomSheetContent.DeleteTransactionConfirmation,
@@ -800,6 +800,7 @@ private fun TransactionDetailsPreview(
 }
 
 @LargeTextPreviews
+@ThemeModePreviews
 @Composable
 private fun TransactionDetailsCardLargeTextPreview() {
     PreviewTheme {
@@ -1136,7 +1137,7 @@ private class TransactionDetailsPreviewProvider : PreviewParameterProvider<State
 
 @ThemeModePreviews
 @Composable
-private fun RecordedSigningRequestPreview(
+private fun DetailsSectionRecordedSigningRequestPreview(
     @PreviewParameter(RecordedSigningRequestPreviewProvider::class) preview: RecordedSigningRequestPreviewData,
 ) {
     PreviewTheme {

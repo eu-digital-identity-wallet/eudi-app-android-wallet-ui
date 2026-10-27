@@ -179,8 +179,9 @@ private fun ContinueButton(
 private fun DataDeletionRequestPreview(
     @PreviewParameter(DataDeletionPreviewProvider::class) state: State,
 ) {
-    val scrollState = rememberScrollState()
     PreviewTheme {
+        val scrollState = rememberScrollState()
+
         ContentScreen(
             isLoading = state.isLoading,
             contentErrorConfig = state.error,
@@ -210,6 +211,7 @@ private fun DataDeletionRequestPreview(
 }
 
 @LargeTextPreviews
+@ThemeModePreviews
 @Composable
 private fun ContinueButtonLargeTextPreview() {
     PreviewTheme {
