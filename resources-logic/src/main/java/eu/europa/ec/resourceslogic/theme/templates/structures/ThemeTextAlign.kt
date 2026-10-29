@@ -28,12 +28,12 @@ sealed class ThemeTextAlign {
 
     companion object {
         fun ThemeTextAlign.toTextAlign(): TextAlign = when (this) {
-            Left -> TextAlign.Left
-            Right -> TextAlign.Right
-            Center -> TextAlign.Center
-            Justify -> TextAlign.Justify
-            Start -> TextAlign.Start
-            End -> TextAlign.End
+            is Left -> TextAlign.Left
+            is Right -> TextAlign.Right
+            is Center -> TextAlign.Center
+            is Justify -> TextAlign.Justify
+            is Start -> TextAlign.Start
+            is End -> TextAlign.End
         }
     }
 }

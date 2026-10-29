@@ -24,8 +24,8 @@ sealed class ThemeFontStyle {
 
     companion object {
         fun ThemeFontStyle.toFontStyle(): FontStyle = when (this) {
-            Normal -> FontStyle.Normal
-            Italic -> FontStyle.Italic
+            is Normal -> FontStyle.Normal
+            is Italic -> FontStyle.Italic
         }
     }
 }

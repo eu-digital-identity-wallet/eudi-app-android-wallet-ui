@@ -137,9 +137,9 @@ class RevocationWorkManager(
 
                             val storedStatus = storedStatuses[document.id]
                             when (val update = revocationUpdateFor(storedStatus, status)) {
-                                RevocationUpdate.Keep -> Unit
+                                is RevocationUpdate.Keep -> Unit
 
-                                RevocationUpdate.Clear -> {
+                                is RevocationUpdate.Clear -> {
                                     revokedDocumentDao.delete(document.id)
                                     changedDocumentIds.add(document.id)
                                 }
