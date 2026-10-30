@@ -2308,8 +2308,9 @@ Session lock:
   came back while locked (`SessionController.onForeground()`). As on iOS.
 * Touches and screen-reader actions count as interaction for the idle lock, both in the activity's
   window and in bottom sheets built with `WrapModalBottomSheet`, which draw in a window of their own
-  (`reportAccessibilityInteraction`, `reportingUserInteractionTo`). A dialog or popup you add in its
-  own window must report interaction the same way.
+  (`reportAccessibilityInteraction`, `Window.reportTouchInteraction`). Touch reporting delegates to
+  the original window callback, preserving sheet gestures and outside-tap dismissal. A dialog or
+  popup you add in its own window must also report interaction.
 * A link that arrives while the wallet is locked is kept and opened after login. Screens restored before
   login, such as the dashboard after the activity is recreated, do not receive it. The issuance redirect
   is the exception: it belongs to the issuance that was in progress, so a lock during that issuance means
