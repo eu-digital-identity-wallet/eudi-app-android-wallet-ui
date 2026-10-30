@@ -31,12 +31,14 @@ import eu.europa.ec.corelogic.extension.getLocalizedDisplayName
 import eu.europa.ec.corelogic.extension.localizedIssuerMetadata
 import eu.europa.ec.corelogic.extension.toIssuerRegistrationDomain
 import eu.europa.ec.corelogic.extension.toIssuerTrustVerdict
+import eu.europa.ec.corelogic.extension.toIssuerTrustVerdictDomain
 import eu.europa.ec.corelogic.extension.toUntrustedIssuerReasonOrNull
 import eu.europa.ec.corelogic.model.DeferredDocumentDataDomain
 import eu.europa.ec.corelogic.model.DocumentCategories
 import eu.europa.ec.corelogic.model.DocumentIdentifier
 import eu.europa.ec.corelogic.model.FormatType
 import eu.europa.ec.corelogic.model.IssuerRegistrationDomain
+import eu.europa.ec.corelogic.model.IssuerTrustVerdictDomain
 import eu.europa.ec.corelogic.model.ScopedDocumentDomain
 import eu.europa.ec.corelogic.model.UntrustedIssuerReasonDomain
 import eu.europa.ec.corelogic.model.isBlockedForIssuance
@@ -277,11 +279,10 @@ interface WalletCoreDocumentsController {
     suspend fun isDocumentSuspended(id: String): Boolean
 
     /**
-     * Whether Wallet Core found the issuer of [documentId] trusted when the document was issued.
-     * False when the chain was not trusted, when nothing was evaluated, and when no verdict was
-     * recorded (documents issued before the verdict was kept).
+     * The issuer-trust outcome recorded when [documentId] was issued. Null means no verdict was
+     * recorded, which is distinct from a recorded outcome that says no evaluation took place.
      */
-    suspend fun isIssuerTrusted(documentId: DocumentId): Boolean
+    suspend fun getIssuerTrustVerdict(documentId: DocumentId): IssuerTrustVerdictDomain?
 
     suspend fun resolveDocumentStatus(document: IssuedDocument): Result<Status>
 
@@ -1098,8 +1099,8 @@ class WalletCoreDocumentsControllerImpl(
     override suspend fun isDocumentSuspended(id: String): Boolean =
         revokedDocumentDao.retrieve(id)?.status == RevocationStatus.SUSPENDED
 
-    override suspend fun isIssuerTrusted(documentId: DocumentId): Boolean =
-        issuerTrustDao.retrieve(documentId)?.verdict == IssuerTrustVerdict.TRUSTED
+    override suspend fun getIssuerTrustVerdict(documentId: DocumentId): IssuerTrustVerdictDomain? =
+        issuerTrustDao.retrieve(documentId)?.verdict?.toIssuerTrustVerdictDomain()
 
     /**
      * Keeps the issuer-trust verdict for [documentId]. Wallet Core has already stored the document,

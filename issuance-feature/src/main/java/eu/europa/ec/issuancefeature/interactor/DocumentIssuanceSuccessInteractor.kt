@@ -23,6 +23,8 @@ import eu.europa.ec.commonfeature.util.transformPathsToDomainClaims
 import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
 import eu.europa.ec.corelogic.extension.localizedIssuerMetadata
 import eu.europa.ec.corelogic.extension.toClaimPaths
+import eu.europa.ec.corelogic.extension.toIssuerVerificationTextResId
+import eu.europa.ec.corelogic.model.IssuerTrustVerdictDomain
 import eu.europa.ec.eudi.wallet.document.DocumentId
 import eu.europa.ec.eudi.wallet.document.IssuedDocument
 import eu.europa.ec.resourceslogic.R
@@ -96,7 +98,9 @@ class DocumentIssuanceSuccessInteractorImpl(
                     val document =
                         walletCoreDocumentsController.getDocumentById(documentId = documentId) as IssuedDocument
 
-                    val documentIssuerIsTrusted = isIssuerTrusted(documentId)
+                    val issuerTrustVerdict = getIssuerTrustVerdict(documentId)
+                    val documentIssuerIsTrusted =
+                        issuerTrustVerdict == IssuerTrustVerdictDomain.TRUSTED
 
                     val localizedIssuerMetadata = document.localizedIssuerMetadata(userLocale)
 
@@ -138,7 +142,9 @@ class DocumentIssuanceSuccessInteractorImpl(
                                 )
                             } else {
                                 ListItemSupportingContentDataUi.Text(
-                                    text = resourceProvider.getString(R.string.issuance_success_document_issuer_not_verified_text),
+                                    text = resourceProvider.getString(
+                                        issuerTrustVerdict.toIssuerVerificationTextResId()
+                                    ),
                                     textColorKey = ThemeColorKey.Warning,
                                 )
                             },
@@ -195,15 +201,15 @@ class DocumentIssuanceSuccessInteractorImpl(
     }
 
     /**
-     * The stored issuer-trust verdict for [documentId]. A lookup that fails reads as not trusted, so
-     * the document is still listed, marked as from an unverified issuer.
+     * The stored issuer-trust verdict for [documentId]. If the lookup fails, keep the document
+     * visible with verification unavailable and without a verified badge.
      */
-    private suspend fun isIssuerTrusted(documentId: DocumentId): Boolean =
+    private suspend fun getIssuerTrustVerdict(documentId: DocumentId): IssuerTrustVerdictDomain? =
         try {
-            walletCoreDocumentsController.isIssuerTrusted(documentId = documentId)
+            walletCoreDocumentsController.getIssuerTrustVerdict(documentId = documentId)
         } catch (e: CancellationException) {
             throw e
         } catch (_: Exception) {
-            false
+            null
         }
 }

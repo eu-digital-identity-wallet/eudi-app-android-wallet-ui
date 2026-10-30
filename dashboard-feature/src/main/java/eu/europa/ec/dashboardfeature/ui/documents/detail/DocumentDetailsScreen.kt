@@ -47,6 +47,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import eu.europa.ec.commonfeature.ui.issuance.IssuerNotTrustedSheetContent
 import eu.europa.ec.corelogic.model.DocumentIdentifier
+import eu.europa.ec.corelogic.model.IssuerTrustVerdictDomain
 import eu.europa.ec.corelogic.util.CoreActions
 import eu.europa.ec.dashboardfeature.ui.documents.detail.model.DocumentDetailsUi
 import eu.europa.ec.dashboardfeature.ui.documents.model.DocumentCredentialsInfoUi
@@ -549,7 +550,7 @@ private fun DocumentDetailsScreenPreview() {
                     expirationDate = "22 March 2030"
                 ),
                 isExpanded = true,
-                isIssuerVerified = true,
+                issuerTrustVerdict = IssuerTrustVerdictDomain.TRUSTED,
                 hasStatusRefreshFailed = false,
                 hasReIssuanceFailed = false,
             ),

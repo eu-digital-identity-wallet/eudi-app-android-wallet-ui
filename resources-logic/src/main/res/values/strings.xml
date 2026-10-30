@@ -49,7 +49,9 @@
     <string name="generic_search">Search</string>
     <string name="generic_unknown_issuer">Unknown</string>
     <string name="generic_issuer_verified">Issuer verified</string>
-    <string name="generic_issuer_not_verified">Issuer not verified</string>
+    <string name="generic_issuer_trust_not_confirmed">Issuer trust not confirmed</string>
+    <string name="generic_issuer_verification_not_performed">Issuer verification not performed</string>
+    <string name="generic_issuer_verification_unavailable">Issuer verification unavailable</string>
     <!--endregion-->
 
     <!-- region Trust Mark -->
@@ -474,8 +476,6 @@
     <string name="document_details_main_section_text">DOCUMENT DATA</string>
     <string name="document_details_issuer_section_text">ISSUER DETAILS</string>
     <string name="document_details_issuer_card_unknown_issuer">@string/generic_unknown_issuer</string>
-    <string name="document_details_issuer_card_issuer_verified_text">@string/generic_issuer_verified</string>
-    <string name="document_details_issuer_card_issuer_not_verified_text">@string/generic_issuer_not_verified</string>
     <string name="document_details_issuer_card_reissuance_failed_text">The wallet could not renew this document automatically. Use Reissue document to try again.</string>
     <string name="document_details_issuer_card_status_refresh_failed_text">The document\'s status could not be refreshed. The state shown is from the last successful check.</string>
     <string name="document_details_issuer_card_expires_on_text">Expires on:\ %1$s</string>
@@ -590,7 +590,6 @@
     <string name="issuance_success_not_issued_text">These documents were not added to your wallet: %1$s.</string>
     <string name="issuance_success_header_description_when_error">You have successfully added the document(s) to your wallet</string>
     <string name="issuance_success_header_issuer_default_name">@string/generic_default_issuer_name</string>
-    <string name="issuance_success_document_issuer_not_verified_text">@string/generic_issuer_not_verified</string>
     <!--endregion-->
 
     <!-- region Issuance Qr Scan -->
