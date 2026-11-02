@@ -109,6 +109,8 @@ object StringResourceProviderMocker {
             pairs = listOf(
                 R.string.request_transaction_section_title to "Data to be signed",
                 R.string.request_transaction_details_title to "Signature details",
+                R.string.request_transaction_trust_framework to "Trust framework",
+                R.string.request_transaction_trust_framework_value to "eIDAS",
                 R.string.request_transaction_type to "Transaction type",
                 R.string.request_transaction_signature_type to "Signature type",
                 R.string.request_transaction_requested_credentials to "Requested credentials",

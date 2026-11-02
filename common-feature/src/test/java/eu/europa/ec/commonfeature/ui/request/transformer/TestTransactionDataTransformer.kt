@@ -101,6 +101,7 @@ class TestTransactionDataTransformer {
         )
         assertEquals(
             listOf(
+                "Trust framework" to "eIDAS",
                 "Transaction type" to mockedTransactionDataApproval.displayName,
                 "Requested credentials" to mockedTransactionQueryId,
                 "Signing credential ID" to "signing-credential-id",
@@ -558,6 +559,7 @@ class TestTransactionDataTransformer {
                 "Signing credential ID"
             )
         })
+        assertEquals(listOf("eIDAS"), section.values("Trust framework"))
     }
 
     @Test

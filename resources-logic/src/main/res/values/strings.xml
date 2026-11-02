@@ -213,6 +213,8 @@
     <string name="request_collapsed_supporting_text">@string/generic_view_details</string>
     <string name="request_transaction_section_title">Data to be signed</string>
     <string name="request_transaction_details_title">Signature details</string>
+    <string name="request_transaction_trust_framework">Trust framework</string>
+    <string name="request_transaction_trust_framework_value">eIDAS</string>
     <string name="request_transaction_numbered">Transaction %1$d</string>
     <string name="request_transaction_type">Transaction type</string>
     <string name="request_transaction_signature_type">Signature type</string>

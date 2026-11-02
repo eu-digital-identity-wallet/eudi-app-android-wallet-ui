@@ -682,6 +682,10 @@ which the relying party chooses freely, are marked "Chosen by the relying party;
 the wallet". A document the request carries inline is shown as included, with its type and size;
 its content is not displayed. A document given by reference can be opened in the browser.
 
+The section also shows **Trust framework: eIDAS** once, in both live requests and transaction
+history. This is a static product label; it does not come from the transaction payload or establish
+that the issuer, relying party, document or signature has been verified.
+
 The wallet declines a request whose transaction data it cannot show in full, rather than show it
 in part (`PresentationRequestInteractorImpl.canShowTransactionData`). That covers an entry of a
 configured type the app cannot display, which Wallet Core passes through unparsed, and an entry
