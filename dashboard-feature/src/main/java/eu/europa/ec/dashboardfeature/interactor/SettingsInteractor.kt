@@ -158,7 +158,7 @@ class SettingsInteractorImpl(
                                 )
                             ),
                             leadingContentData = ListItemLeadingContentDataUi.Icon(
-                                iconData = AppIcons.PresentDocumentOnline
+                                iconData = AppIcons.Id
                             ),
                             trailingContentData = ListItemTrailingContentDataUi.Switch(
                                 switchData = SwitchDataUi(

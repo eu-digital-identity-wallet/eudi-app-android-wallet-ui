@@ -817,7 +817,7 @@ Production guidance:
 * Enable only the protocols approved by your ecosystem profile. Do not enable
   `OPENID4VP_V1_UNSIGNED` unless unsigned (unauthenticated) OpenID4VP requests over the DC API are
   explicitly acceptable.
-* Users can turn the API off in Settings ("Offer documents to apps and websites"). It is on by
+* Users can turn the API off in Settings ("Allow document requests from apps and websites (DC API)"). It is on by
   default. While it is off, the wallet removes its documents from the Android credential registry
   and declines any request that still arrives through the API; turning it back on registers the
   documents again. If the system registry cannot be cleared, for example on a device without

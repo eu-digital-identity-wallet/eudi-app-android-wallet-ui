@@ -339,7 +339,7 @@
     <string name="settings_screen_option_retrieve_logs">Retrieve logs</string>
     <string name="settings_screen_option_changelog">Changelog</string>
     <string name="settings_screen_option_registration_check">Check Registration Certificates</string>
-    <string name="settings_screen_option_dc_api">Offer documents to apps and websites</string>
+    <string name="settings_screen_option_dc_api">Allow document requests from apps and websites (DC API)</string>
     <string name="settings_screen_option_registration_check_restart">Restart the app to apply this change</string>
     <string name="settings_intent_chooser_logs_share_title">Share logs</string>
     <string name="settings_screen_option_reset_wallet">Reset wallet</string>

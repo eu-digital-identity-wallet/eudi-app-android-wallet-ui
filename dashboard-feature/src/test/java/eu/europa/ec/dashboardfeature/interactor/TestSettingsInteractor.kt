@@ -678,7 +678,7 @@ class TestSettingsInteractor {
     private val biometricsFailureText = "Biometrics unavailable"
     private val registrationCheckText = "Check Registration Certificates"
     private val resetWalletText = "Reset wallet"
-    private val dcApiText = "Offer documents to apps and websites"
+    private val dcApiText = "Allow document requests from apps and websites (DC API)"
 
     /**
      * the standing value for the cases that are about other rows
