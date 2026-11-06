@@ -33,6 +33,10 @@ platform :android do
   desc "Build & Deploy Wallet"
   lane :deploy do
 
+    unless sh("git", "status", "--porcelain", "--untracked-files=no", log: false).strip.empty?
+      UI.user_error!("Commit or stash the changes to tracked files first: deploy builds and tags HEAD.")
+    end
+
     git_pull
 
     firebase_release = latest_firebase_release(

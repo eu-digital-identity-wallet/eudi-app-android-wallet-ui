@@ -25,7 +25,7 @@ The Android build still uses the Gradle wrapper and project configuration descri
 | Lane | Purpose |
 | --- | --- |
 | `android tests` | Cleans the project and runs the Kover HTML report task for the selected app build type's debug variant. |
-| `android deploy` | Pulls the latest Git state, calculates a build number from Firebase App Distribution, sets version values, builds a release APK, uploads it to Firebase, tags the release, and optionally creates a GitHub release. |
+| `android deploy` | Stops unless every tracked file is committed, then pulls the latest Git state, calculates a build number from Firebase App Distribution, sets version values, builds a release APK, uploads it to Firebase, tags the release, and optionally creates a GitHub release. |
 | `android prepare_binary` | Renames the generated release APK to the computed version name. |
 | `android upload_firebase` | Uploads the APK to Firebase App Distribution. |
 | `android github_release` | Creates a GitHub release and uploads the APK and optional extra attachments. |
@@ -96,9 +96,9 @@ bundle exec fastlane android deploy
 
 ## Release cautions
 
-The current `deploy` lane mutates `version.properties`, temporarily changes `versionCode`, creates a
-Git tag, and may push tags to configured remotes. Run it only from a clean working tree and a
-controlled CI environment.
+The current `deploy` lane stops when a tracked file has uncommitted changes, so the build and its
+tag match `HEAD`. It then mutates `version.properties`, temporarily changes `versionCode`, creates a
+Git tag, and may push tags to configured remotes. Run it from a controlled CI environment.
 
 Before using Fastlane for production:
 
