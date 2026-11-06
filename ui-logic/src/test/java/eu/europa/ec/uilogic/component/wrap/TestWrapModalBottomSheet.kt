@@ -87,7 +87,9 @@ class TestWrapModalBottomSheet {
                         },
                         sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
                     ) {
-                        Box(Modifier.fillMaxWidth().height(sheetHeight))
+                        Box(Modifier
+                            .fillMaxWidth()
+                            .height(sheetHeight))
                     }
                 }
             }
