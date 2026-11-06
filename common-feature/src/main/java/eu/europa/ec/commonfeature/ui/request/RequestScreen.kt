@@ -20,6 +20,8 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.calculateEndPadding
+import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -38,6 +40,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
@@ -235,9 +238,12 @@ private fun Content(
     val rendersDocuments = state.requestDataUi is RequestDataUi.Single ||
             state.requestDataUi is RequestDataUi.Multiple
 
+    val layoutDirection = LocalLayoutDirection.current
+
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .padding(top = paddingValues.calculateTopPadding())
             .then(
                 other = if (rendersDocuments) {
                     Modifier.verticalScroll(rememberScrollState())
@@ -245,7 +251,11 @@ private fun Content(
                     Modifier
                 }
             )
-            .padding(paddingValues),
+            .padding(
+                start = paddingValues.calculateStartPadding(layoutDirection),
+                end = paddingValues.calculateEndPadding(layoutDirection),
+                bottom = paddingValues.calculateBottomPadding(),
+            ),
         verticalArrangement = Arrangement.Top
     ) {
         // Screen Header.
@@ -598,6 +608,7 @@ private fun DisplayRequestItems(
                 colors = CardDefaults.cardColors(
                     containerColor = MaterialTheme.colorScheme.surfaceDim,
                 ),
+                shouldBringOpenedIntoView = true,
             )
         }
     }

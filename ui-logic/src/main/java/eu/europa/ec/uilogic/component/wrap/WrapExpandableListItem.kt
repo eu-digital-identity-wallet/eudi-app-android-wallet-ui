@@ -18,10 +18,14 @@ package eu.europa.ec.uilogic.component.wrap
 
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.relocation.BringIntoViewRequester
+import androidx.compose.foundation.relocation.bringIntoViewRequester
 import androidx.compose.material3.CardColors
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.Shape
@@ -39,6 +43,7 @@ import eu.europa.ec.uilogic.component.ListItemTrailingContentDataUi
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
 import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
+import kotlinx.coroutines.launch
 
 sealed class ExpandableListItemUi {
     abstract val header: ListItemDataUi
@@ -54,6 +59,13 @@ sealed class ExpandableListItemUi {
     ) : ExpandableListItemUi()
 }
 
+/**
+ * An expandable card that lists [data], with nested groups that expand in turn.
+ *
+ * @param shouldBringOpenedIntoView when true, a card or nested group that the user opens is brought into view in the
+ * enclosing scrollable container once it has opened: scrolled the least that shows it whole when it fits, its top
+ * aligned with the container's top when it is taller. The container must not extend under a bar that covers it.
+ */
 @Composable
 fun WrapExpandableListItem(
     modifier: Modifier = Modifier,
@@ -71,15 +83,28 @@ fun WrapExpandableListItem(
     expandedClickableAreas: List<ClickableArea>? = null,
     addDivider: Boolean = true,
     shape: Shape? = null,
-    colors: CardColors? = null
+    colors: CardColors? = null,
+    shouldBringOpenedIntoView: Boolean = false,
 ) {
+    val bringIntoViewRequester = remember { BringIntoViewRequester() }
+    val coroutineScope = rememberCoroutineScope()
+
     WrapExpandableCard(
-        modifier = modifier,
+        modifier = if (shouldBringOpenedIntoView) {
+            modifier.bringIntoViewRequester(bringIntoViewRequester)
+        } else {
+            modifier
+        },
         isExpanded = isExpanded,
         throttleClicks = throttleClicks,
         shape = shape,
         colors = colors,
         onExpandedChange = null,
+        onExpandFinished = if (shouldBringOpenedIntoView) {
+            { coroutineScope.launch { bringIntoViewRequester.bringIntoView() } }
+        } else {
+            null
+        },
         cardCollapsedContent = {
             ExpandableListItemHeader(
                 modifier = Modifier.fillMaxWidth(),
@@ -124,7 +149,8 @@ fun WrapExpandableListItem(
                             expandedMainContentVerticalPadding = expandedMainContentVerticalPadding,
                             expandedClickableAreas = expandedClickableAreas,
                             shape = RectangleShape,
-                            colors = colors
+                            colors = colors,
+                            shouldBringOpenedIntoView = shouldBringOpenedIntoView,
                         )
                     }
                 }
