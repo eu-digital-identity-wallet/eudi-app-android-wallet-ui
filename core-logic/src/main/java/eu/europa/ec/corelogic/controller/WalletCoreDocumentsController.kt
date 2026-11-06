@@ -84,6 +84,7 @@ import eu.europa.ec.storagelogic.model.RevocationStatus
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineStart
+import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.NonCancellable
@@ -854,6 +855,7 @@ class WalletCoreDocumentsControllerImpl(
      * starts atomically ([CoroutineStart.ATOMIC]), so a cancellation right after the event cannot
      * skip it.
      */
+    @OptIn(DelicateCoroutinesApi::class)
     override fun issueDeferredDocument(docId: DocumentId): Flow<IssueDeferredDocumentPartialState> =
         callbackFlow {
             (getDocumentById(docId) as? DeferredDocument)?.let { deferredDoc ->
@@ -1182,6 +1184,7 @@ class WalletCoreDocumentsControllerImpl(
      * start atomically ([CoroutineStart.ATOMIC]), so a cancellation right after an event cannot
      * skip them.
      */
+    @OptIn(DelicateCoroutinesApi::class)
     private fun ProducerScope<IssueDocumentsPartialState>.issuanceCallback(
         prioritizeDeferred: Boolean = true
     ): OpenId4VciManager.OnIssueEvent {
