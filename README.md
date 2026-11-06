@@ -173,9 +173,10 @@ issuer.
 
 Both flows end on a success screen that shows whether the issuer was verified: the issuer carries a
 verified badge only when every document added came from a trusted issuer, and each document whose
-issuer was not verified is marked "Issuer not verified". In the reference configuration only PID
-documents are checked against the trusted list, so every other document is marked, even one from
-the PID's issuer. The document's details show the same.
+issuer was not verified says so: "Issuer trust not confirmed", "Issuer verification not performed"
+or "Issuer verification unavailable". In the reference configuration only PID documents are checked
+against the trusted list, so every other document shows "Issuer verification not performed", even
+one from the PID's issuer. The document's details show the same.
 
 If the issuer adds only some of the requested documents, the success screen lists the ones that were
 not added. If the Wallet cannot renew a document in the background, the document's details say so,
@@ -251,9 +252,9 @@ Wallet does not offer a deletion request.
 ### Offering documents to apps and websites
 
 Through the Android Digital Credential API, apps and websites can ask the Wallet for a document
-with the system's own picker. The Wallet offers its documents there while **Offer documents to apps
-and websites** is on in Settings, which is the default. Turn it off and the Wallet removes its
-documents from the picker and declines such requests.
+with the system's own picker. The Wallet offers its documents there while **Allow document requests
+from apps and websites (DC API)** is on in Settings, which is the default. Turn it off and the
+Wallet removes its documents from the picker and declines such requests.
 
 ### Proximity flow
 

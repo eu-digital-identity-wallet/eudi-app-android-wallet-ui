@@ -571,8 +571,9 @@ val eudiWallet = EudiWallet(
 eudiWallet.addTransferEventListener(walletCoreTransactionLogController)
 ```
 
-If production requires an alternative key or storage provider, customize the `EudiWallet.Builder`
-block using the appropriate public integration API:
+If production requires document key storage other than the default Android Keystore secure area,
+or another key or storage provider, customize the `EudiWallet.Builder` block using the
+appropriate public integration API:
 
 | Extension point | Purpose | When to use |
 | --- | --- | --- |
@@ -814,14 +815,14 @@ Production guidance:
 * Enable only the protocols approved by your ecosystem profile. Do not enable
   `OPENID4VP_V1_UNSIGNED` unless unsigned (unauthenticated) OpenID4VP requests over the DC API are
   explicitly acceptable.
-* Users can turn the API off in Settings ("Allow document requests from apps and websites (DC API)"). It is on by
-  default. While it is off, the wallet removes its documents from the Android credential registry
-  and declines any request that still arrives through the API; turning it back on registers the
-  documents again. If the system registry cannot be cleared, for example on a device without
-  Google Play services, the entries may remain until a later update succeeds, but requests are
-  still declined. The switch is shown only when the build enables the API. HLR.48 and IA.30 ask
-  for this control in the user's hands, so keep it in production builds; the build setting alone
-  does not meet them.
+* Users can turn the API off in Settings ("Allow document requests from apps and websites
+  (DC API)"). It is on by default. While it is off, the wallet removes its documents from the
+  Android credential registry and declines any request that still arrives through the API; turning
+  it back on registers the documents again. If the system registry cannot be cleared, for example
+  on a device without Google Play services, the entries may remain until a later update succeeds,
+  but requests are still declined. The switch is shown only when the build enables the API. HLR.48
+  and IA.30 ask for this control in the user's hands, so keep it in production builds; the build
+  setting alone does not meet them.
 * A document the revocation check has blocked (revoked, suspended or unrecognised) is left out of
   the registry, so it is not offered to other apps. At the end of each run the revocation check
   updates the registry when the blocked documents differ from those it last left out
@@ -850,7 +851,9 @@ reader authentication.
 Configure trust for registration certificates separately from reader authentication. Use the
 registration-certificate list in `configureEtsiTrust`, or supply explicit trust through
 `configureWrpRegistrationTrust(...)` and `configureIssuerRegistrationTrust(...)`. Configure these
-trust sources before enabling registration checking.
+trust sources before enabling registration checking: with the check on and nothing vouching for
+registration certificates (for issuers, when signed metadata is required), Wallet Core 0.31.1
+refuses to build `EudiWallet` (`IllegalArgumentException`).
 
 The repository still ships development/demo trust-anchor resources, although the reference
 flavors no longer load them for reader trust. If your deployment uses the static model, in
@@ -931,11 +934,19 @@ configureWrpRegistrationPolicy(WrpRegistrationPolicy.Enabled)
 Validate the chosen configuration with the issuance and presentation services supported by your
 deployment, covering every credential type whose issuance or status is checked. The reference
 classification covers only the PID; extend it with approved classifications when enforcing trust
-for other credential types.
+for other credential types. With the reference classification, a global `ENFORCE` makes the status
+check of every other document fail.
 
 Both reference flavors configure `requireSignedMetadata()`. Keep signed issuer metadata and the
-required access-certificate trust material available independently of the registration-check setting.
-Registration checking adds a separate requirement for a verified, in-scope issuer registration.
+required access-certificate trust material available independently of the registration-check
+setting. The wallet refuses an issuer that does not serve signed metadata, or whose metadata
+signing certificate does not validate against the access-certificate list (`wrpacProviders`).
+Wallet Core checks this when an offer is resolved, when wallet-initiated issuance or re-issuance
+starts, and when the app reads an issuer's metadata. Registration checking adds a separate
+requirement for a verified, in-scope issuer registration. With registration checking off,
+wallet-initiated issuance and re-issuance check the signed metadata and then issue from the
+unsigned metadata the issuer also serves; an offer always issues from the signed metadata it was
+resolved with.
 
 Production requirements for a trusted-list deployment:
 
@@ -943,25 +954,63 @@ Production requirements for a trusted-list deployment:
 * Remove the development relaxations `relaxCertificateProfiles()` and
   `pkixRevocationPolicy(PkixRevocationPolicy.Disabled)`. Select an explicit production revocation
   policy; do not use `SoftFail`. Verify certificate-profile and revocation failures with your PKI.
+  The first relaxation removes the end-entity certificate profile checks (ETSI TS 119 412-6 for PID
+  and wallet-provider signing certificates, TS 119 411-8 for access certificates) from every list;
+  the second turns off CRL and OCSP checking during chain validation. A certificate a list names
+  directly is not checked for revocation in either case. Without the call, Wallet Core 0.31.1 uses
+  `PkixRevocationPolicy.CRLPriority`: the CRL first, OCSP only when the CRL cannot be fetched, and
+  the chain fails when neither answers. `SoftFail` checks the CRL only and accepts a chain whose CRL
+  cannot be fetched.
 * Provide HTTPS endpoints for the revocation information required by your certificates, in line
-  with the app's network-security policy. See
+  with the app's network-security policy. CRL and OCSP downloads over `http://` are refused like any
+  other cleartext request, so every certificate below a list entry, in every chain the wallet
+  validates against the trusted lists, must give its CRL distribution points and OCSP address as
+  `https://` URLs; a certificate that gives only `http://` addresses, which is common, always
+  fails. This is a requirement on the trust framework's certificate authorities. See
   [Production Backend Requirements](#production-backend-requirements).
 * Maintain the approved credential classifications alongside issuer and status-list trust policies.
   The reference flavors classify only the PID, enforce credential issuer trust for PID issuance,
-  and use `INFORM` for other credential types.
+  and use `INFORM` for other credential types. Classification decides what is evaluated: under
+  `ENFORCE`, issuance of an unclassified type is refused and its status checks fail; under
+  `INFORM`, an unclassified type is not evaluated, and the app shows "Issuer verification not
+  performed".
+* Issuer trust: `ENFORCE` refuses a credential whose issuer is not trusted or cannot be evaluated;
+  Wallet Core does not store it and reports `DocumentFailed`. `INFORM` stores the credential and
+  reports the verdict with it (`issuerTrustResult`).
 * Configure the registration-certificate list (`wrprcProviders`) and enable registration checking
   as described in the next section.
-* Use `ENFORCE` for status-list trust in production, with classifications covering every supported
-  type. A failed status refresh leaves the document's last known state in place and is shown in
-  document details. Verify trusted, untrusted and unavailable status-list cases.
-* Choose the reader-authentication policy explicitly. The reference flavors use
+* Status-list trust: Wallet Core checks a status list's signature against the certificate in the
+  list's own header, so only the trust evaluation ties the list to its issuer. `ENFORCE` rejects a
+  list whose signer is not trusted; `INFORM` accepts the list whatever its signer and only logs the
+  verdict, so whoever can serve the list can report a document as Valid (a recorded `INVALID` stays
+  blocked, but a suspension can be lifted). Use `ENFORCE` for status-list trust in production, with
+  classifications covering every supported type; a rule for one type uses the status context, for
+  example `forContext(VerificationContext.PIDStatus, TrustPolicy.Action.ENFORCE)`. This choice
+  answers IA.19 on the authenticity of revocation information, as the audit maps it. A failed
+  status refresh leaves the document's last known state in place and is shown in document details.
+  Verify trusted, untrusted and unavailable status-list cases.
+* Reader authentication: choose the policy explicitly. The reference flavors use
   `enforceIfPresent()`; use `alwaysRequire()` when reader authentication must be mandatory for mdoc
   presentation. Verify missing and failed authentication for proximity, Digital Credential API and
-  remote OpenID4VP flows. A consent warning is not an authentication result.
-* Define the trusted-list signature-verification requirements for your ecosystem. Configure
-  `jwtSignatureVerifier(...)` when custom verification is required, and verify rejection of invalid
-  signatures and unapproved signers.
-* Set `cacheTtl` and `fileCacheExpiration` according to the permitted delay for trust-list changes.
+  remote OpenID4VP flows. A consent warning is not an authentication result. With
+  `enforceIfPresent()`, a proximity or Digital Credential API mdoc reader that sends no reader
+  authentication receives the data once the user accepts the warning on the consent screen; a
+  reader whose authentication fails verification receives an empty response with status 10, even if
+  the user shares. `alwaysRequire()` gives that empty response to both. Remote OpenID4VP behaves
+  the same under either setting: with the `X509SanDns` and `X509Hash` client-ID schemes a request
+  must be signed, and an untrusted one is rejected when it is resolved. This choice answers HLR.32
+  and IA.22, which require the relying party to be authenticated before attributes are released;
+  record the decision if unauthenticated readers are accepted.
+* Trusted-list signatures: the default verifier checks each list's JWS signature with the key of
+  the first certificate in its `x5c` header, without validating that certificate's chain, revocation
+  or profile. Define the trusted-list signature-verification requirements for your ecosystem.
+  Configure `jwtSignatureVerifier(...)` when custom verification is required, and verify rejection
+  of invalid signatures and unapproved signers.
+* Caches: a downloaded list is reused from disk until its own `nextUpdate`; `fileCacheExpiration`
+  (24 hours) applies only when the list gives no future `nextUpdate`. Trust anchors are kept in
+  memory for 20 minutes (`cacheTtl`), and refreshing them rereads the disk cache, so a removal from
+  a list takes effect only when the disk entry expires. The reference flavors keep both defaults.
+  Set `cacheTtl` and `fileCacheExpiration` according to the permitted delay for trust-list changes.
   Verify that removals and updates take effect within that delay.
 * The app stores each document's issuer-trust verdict in `issuerTrustRecords`. Issuer screens
   distinguish "Issuer verified", "Issuer trust not confirmed", "Issuer verification not performed"
@@ -980,7 +1029,7 @@ Trust is evaluated on two independent layers, and passing one says nothing about
 |---|---|---|
 | Answers | *who is this party* | *what is it registered to do* |
 | Establishes | authentication of the issuer or verifier | the registered identity, declared purpose, privacy policy, the provider role the party is entitled to, and the attestation types and claims it may issue or request |
-| Trust source | the configured access-certificate trust source | the registration-certificate list in LoTE, or explicit anchors configured with `configureWrpRegistrationTrust` / `configureIssuerRegistrationTrust` |
+| Trust source | the configured access-certificate trust source | the registration-certificate list in LoTE, or explicit anchors configured with `configureWrpRegistrationTrust` / `configureIssuerRegistrationTrust`, which take precedence |
 
 Configure each layer for its own purpose. Registration checking does not replace credential
 issuer-trust policy or reader authentication.
@@ -988,7 +1037,7 @@ issuer-trust policy or reader authentication.
 **This layer is off by default and must be switched on.** A relying party's access-certificate
 trust is enforced where the protocol and trust policy allow it (where it does not, the user is
 warned before sharing; see below), and an issuer is shown as verified only when Wallet Core
-reports it trusted, so one accepted under `INFORM` without that verdict is shown as not verified,
+reports it trusted, so one accepted under `INFORM` without that verdict is not shown as verified,
 but registration-certificate checking is governed by the *Check Registration Certificates*
 setting, which the reference build ships **off**. One setting drives both the issuer policy
 (`configureIssuerRegistrationPolicy`) and the verifier policy (`configureWrpRegistrationPolicy`).
@@ -1098,12 +1147,15 @@ override val issuersConfig: List<VciConfig>
 The wallet uses an issuer only through its own `VciConfig`; there is no fallback to another issuer's
 settings, which would send that issuer's client identifier and attestation to a different host:
 
-* A credential offer is accepted only from a configured issuer (`offerIssuerOf`). A link that gives
-  the offer more than once is refused. An offer passed by value must name a configured `issuerUrl`
-  as its `credential_issuer`; this is checked before resolution. An offer passed by reference must
-  use the `https` origin of a configured issuer. The app checks the resolved issuer again before
-  issuance. That later check is not a network allowlist for requests made during offer resolution;
-  validate redirects and metadata retrieval against your deployment's network policy.
+* A credential offer is accepted only from a configured issuer (`offerIssuerOf`). The link is read
+  with the OpenID4VCI library's own parser, which Wallet Core uses next, and a link that gives the
+  offer more than once, in any spelling, is refused. An offer passed by value must name a
+  configured `issuerUrl` as its `credential_issuer`; this is checked before resolution. An offer
+  passed by reference must use the `https` origin of a configured issuer. Wallet Core then fetches
+  it, following redirects, and reads the metadata of the issuer it names; the app checks that this
+  issuer is configured too when the offer is resolved, before it is shown. That later check is not a
+  network allowlist for requests made during offer resolution; validate redirects and metadata
+  retrieval against your deployment's network policy.
   A refused offer fails with "This offer comes from an issuer that this wallet is not set up to use",
   and an unusable offer link with "Unable to fetch and process the credential offer".
 * An offer whose transaction code has no length, a length outside 4 to 6 digits, or text input is
@@ -1210,7 +1262,8 @@ Set `WalletCoreConfig.trustMarkSource` to the Trust Mark configuration for your 
 The default uses a sample Gist resource and a certification-page URL containing
 `WALLET_SOLUTION_ID`. Replace the sample values in your production flavor with the correct
 resource and certification URLs. See
-[Trust Mark configuration](CONFIGURATION.md#trust-mark-configuration) for instructions. Host the
+[Trust Mark configuration](CONFIGURATION.md#trust-mark-configuration) for instructions. The SDK
+fetches the resource with a plain GET, and neither the resource nor its image is signed. Host the
 resource and image on infrastructure controlled by your organisation or the certification authority,
 never on an individual's account.
 
@@ -1304,8 +1357,10 @@ What the user sees:
 
 * When an issuer issues only part of a request, the success screen lists the documents that were
   not added, including those refused because their issuer is not trusted. A request that also
-  leaves documents deferred ends on the deferred screen, which does not list them. Keep issuance
-  errors in user-facing language; see [User-Facing Production Behavior](#user-facing-production-behavior).
+  leaves documents deferred ends on the deferred screen, which does not list them. Wallet Core
+  reports each failure as an exception, which is not shown to the user; map the causes you want to
+  explain to messages of your own, and keep issuance errors in user-facing language; see
+  [User-Facing Production Behavior](#user-facing-production-behavior).
 * When a background re-issuance fails, the document's details open the issuer card and say that
   the document could not be renewed automatically. The next background check clears the notice
   unless the renewal fails again, and so does a successful **Reissue document** from the card.
@@ -1390,9 +1445,9 @@ The app enqueues `RevocationWorkManager`, which:
   workers skip while the session is locked; they then run only while the wallet is in use.
 * Records no refresh failure when the status-resolution result indicates that the document has
   no supported status reference.
-* The reference status-list trust configuration uses `INFORM`. Use `ENFORCE` for production and
-  maintain classifications for every credential type whose status is checked. Verify failed
-  trust checks and the app's last-known-state behaviour; see
+* The reference status-list trust configuration uses `INFORM`, which accepts a list from any
+  signer. Use `ENFORCE` for production and maintain classifications for every credential type
+  whose status is checked. Verify failed trust checks and the app's last-known-state behaviour; see
   [ETSI Trusted Lists (LoTE)](#etsi-trusted-lists-lote).
 * Broadcasts changes to refresh UI.
 
@@ -1898,7 +1953,8 @@ The database stores:
 **Transaction log contents.** Wallet Core produces each history entry in the TS10 model, and the
 app stores it as JSON in the `transactionLogs` table. The log records the relying party, the
 attestation types and the identifiers of the attributes requested and presented, never their
-values; this is the rule the ARF and the Implementing Acts set for it.
+values; this is the rule the ARF and the Implementing Acts set for it. With the integrated Wallet
+Core version:
 
 * a presentation entry records the requested and presented claims as attestation type (mdoc
   `docType` or SD-JWT VC `vct`) and claim paths, without values;
@@ -1926,8 +1982,9 @@ decoded, for example after a Wallet Core update changed its format, when the dat
 missing at start-up and the database file is deleted, and when an app update raises the database
 version. In the last case the destructive fallback below recreates every table, so the transaction
 history, bookmarks, data-deletion and DPA-report attempts, failed re-issuance records, issuer-trust
-records, revocation records and failed status refreshes are lost. Documents then show "Issuer verification unavailable" until issued again, and the next
-status check rebuilds the revocation records. State this in the release notes of an update that
+records, revocation records and failed status refreshes are lost. Documents then show "Issuer
+verification unavailable" until issued again, and the next status check rebuilds the revocation
+records. State this in the release notes of an update that
 changes the schema.
 
 Current risk:
@@ -2086,10 +2143,16 @@ not represent a document-integrity verification result. One-time passwords for d
 are not shown again in history, although the log keeps them. What each entry stores is described
 under [SQLCipher Room Database](#sqlcipher-room-database).
 
-The app records the relying party's registration outcome beside the matching presentation entry
-(`registrationCheck` in `transactionLogs`). It checks the relying-party identity before associating
-the outcome and leaves ambiguous or unmatched entries without a result. An entry with no recorded
-result counts as not verified.
+Wallet Core records a relying party's registration details in the entry even when the
+registration certificate failed its binding, validity or revocation checks, and does not record
+the outcome. The app records the outcome beside the matching presentation entry
+(`registrationCheck` in `transactionLogs`) when the request arrives, matching the request to the
+pending entry Wallet Core has just written: Wallet Core's transaction listener is registered first
+and writes that entry before the app's listener sees the request. The app checks the relying-party
+identity before associating the outcome and leaves ambiguous or unmatched entries without a result:
+if a second entry is written before the first request reaches the app's listener, as can happen
+when two requests are dispatched from different threads, neither outcome is recorded. An entry with
+no recorded result counts as not verified.
 
 `TestWalletCoreTransactionLogController` runs Wallet Core's own `PresentationLogger` to check
 that it writes the entry while it handles the request. It does not check the registration order
