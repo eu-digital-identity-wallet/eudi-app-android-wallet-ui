@@ -82,6 +82,7 @@ import eu.europa.ec.uilogic.component.ListItemMainContentDataUi
 import eu.europa.ec.uilogic.component.SectionTitle
 import eu.europa.ec.uilogic.component.content.ContentScreen
 import eu.europa.ec.uilogic.component.content.ScreenNavigateAction
+import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
 import eu.europa.ec.uilogic.component.utils.HSpacer
 import eu.europa.ec.uilogic.component.utils.LifecycleEffect
@@ -630,14 +631,16 @@ private const val TRANSACTIONS_NO_RESULTS_ITEM_ID = "noTransactionsId"
 @ThemeModePreviews
 @Composable
 private fun TransactionsScreenPreview() {
-    ContentScreen(
-        isLoading = false,
-        navigatableAction = ScreenNavigateAction.NONE,
-        onBack = { },
-        topBar = {
-            TopBar(
-                onDashboardEventSent = {}
-            )
-        },
-    ) {}
+    PreviewTheme {
+        ContentScreen(
+            isLoading = false,
+            navigatableAction = ScreenNavigateAction.NONE,
+            onBack = { },
+            topBar = {
+                TopBar(
+                    onDashboardEventSent = {}
+                )
+            },
+        ) {}
+    }
 }

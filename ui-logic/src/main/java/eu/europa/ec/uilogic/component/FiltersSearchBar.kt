@@ -119,8 +119,8 @@ fun FiltersSearchBar(
     }
 }
 
-@Composable
 @ThemeModePreviews
+@Composable
 private fun FiltersSearchBarPreview() {
     PreviewTheme {
         FiltersSearchBar(

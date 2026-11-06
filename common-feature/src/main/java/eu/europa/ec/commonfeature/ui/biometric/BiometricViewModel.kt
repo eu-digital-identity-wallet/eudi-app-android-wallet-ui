@@ -142,7 +142,7 @@ class BiometricViewModel(
                     }
                     when (val lockoutState = biometricInteractor.getPinLockoutState()) {
                         is PinLockoutState.Active -> startLockoutTick(lockoutState.remaining.inWholeMilliseconds)
-                        PinLockoutState.Idle -> Unit
+                        is PinLockoutState.Idle -> Unit
                     }
                     if (
                         biometricUiConfig.shouldInitializeBiometricAuthOnCreate
@@ -281,7 +281,7 @@ class BiometricViewModel(
                                     startLockoutTick(lockoutState.remaining.inWholeMilliseconds)
                                 }
 
-                                PinLockoutState.Idle -> {
+                                is PinLockoutState.Idle -> {
                                     setState {
                                         copy(
                                             quickPinError = it.errorMessage,
@@ -336,7 +336,7 @@ class BiometricViewModel(
                     }
                 }
 
-                BiometricsAuthenticate.Cancelled -> {
+                is BiometricsAuthenticate.Cancelled -> {
                     isAuthenticating = false
                 }
             }
@@ -386,7 +386,7 @@ class BiometricViewModel(
                 is PinLockoutState.Active ->
                     startLockoutTick(lockoutState.remaining.inWholeMilliseconds)
 
-                PinLockoutState.Idle -> stopLockoutTick()
+                is PinLockoutState.Idle -> stopLockoutTick()
             }
         }
     }

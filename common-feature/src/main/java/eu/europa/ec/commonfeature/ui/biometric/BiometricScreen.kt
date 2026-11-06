@@ -402,7 +402,7 @@ private fun PinFieldLayout(
  */
 @ThemeModePreviews
 @Composable
-private fun PreviewBiometricScreen() {
+private fun BiometricScreenPreview() {
     PreviewTheme {
         Body(
             state = State(

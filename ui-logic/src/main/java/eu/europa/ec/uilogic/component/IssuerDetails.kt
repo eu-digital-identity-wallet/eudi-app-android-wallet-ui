@@ -39,6 +39,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import eu.europa.ec.corelogic.extension.toIssuerVerificationTextResId
+import eu.europa.ec.corelogic.model.IssuerTrustVerdictDomain
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
@@ -62,8 +64,7 @@ import java.net.URI
  * @property documentState The current state of the document (e.g., Issued or Revoked),
  * containing relevant dates.
  * @property isExpanded Boolean flag indicating whether the card is currently in its expanded state.
- * @property isIssuerVerified True only when Wallet Core found the issuer trusted when the document
- * was issued.
+ * @property issuerTrustVerdict The issuer-trust outcome recorded at issuance, or null when unavailable.
  * @property hasStatusRefreshFailed True when the last attempt to refresh the document's status failed,
  * so the state shown is the one from the last successful check.
  * @property hasReIssuanceFailed True when the wallet's last automatic re-issuance of the document
@@ -74,7 +75,7 @@ data class IssuerDetailsCardDataUi(
     val issuerLogo: URI?,
     val documentState: DocumentState,
     val isExpanded: Boolean,
-    val isIssuerVerified: Boolean,
+    val issuerTrustVerdict: IssuerTrustVerdictDomain?,
     val hasStatusRefreshFailed: Boolean,
     val hasReIssuanceFailed: Boolean,
 ) {
@@ -95,20 +96,14 @@ data class IssuerDetailsCardDataUi(
         data object Suspended : DocumentState()
     }
 
-    /**
-     * The string resource ID for the line saying whether the issuer was verified.
-     */
+    val isIssuerVerified: Boolean
+        get() = issuerTrustVerdict == IssuerTrustVerdictDomain.TRUSTED
+
     val issuerVerificationTextResId: Int
         @StringRes
-        get() = if (isIssuerVerified) {
-            R.string.document_details_issuer_card_issuer_verified_text
-        } else {
-            R.string.document_details_issuer_card_issuer_not_verified_text
-        }
+        get() = issuerTrustVerdict.toIssuerVerificationTextResId()
 
-    /**
-     * The colour of the line saying whether the issuer was verified.
-     */
+    /** The colour of the line saying whether the issuer was verified. */
     val issuerVerificationTextColorKey: ThemeColorKey
         get() = if (isIssuerVerified) ThemeColorKey.Success else ThemeColorKey.Warning
 
@@ -458,7 +453,7 @@ private fun IssuerDetailsCardPreview() {
                 issuerLogo = null,
                 documentState = issuedState,
                 isExpanded = false,
-                isIssuerVerified = true,
+                issuerTrustVerdict = IssuerTrustVerdictDomain.TRUSTED,
                 hasStatusRefreshFailed = false,
                 hasReIssuanceFailed = false,
             ),
@@ -467,7 +462,7 @@ private fun IssuerDetailsCardPreview() {
                 issuerLogo = null,
                 documentState = issuedState,
                 isExpanded = true,
-                isIssuerVerified = true,
+                issuerTrustVerdict = IssuerTrustVerdictDomain.TRUSTED,
                 hasStatusRefreshFailed = true,
                 hasReIssuanceFailed = false,
             ),
@@ -476,7 +471,7 @@ private fun IssuerDetailsCardPreview() {
                 issuerLogo = null,
                 documentState = revokedState,
                 isExpanded = false,
-                isIssuerVerified = false,
+                issuerTrustVerdict = IssuerTrustVerdictDomain.NOT_TRUSTED,
                 hasStatusRefreshFailed = false,
                 hasReIssuanceFailed = false,
             ),
@@ -485,7 +480,7 @@ private fun IssuerDetailsCardPreview() {
                 issuerLogo = null,
                 documentState = revokedState,
                 isExpanded = true,
-                isIssuerVerified = false,
+                issuerTrustVerdict = IssuerTrustVerdictDomain.NOT_TRUSTED,
                 hasStatusRefreshFailed = false,
                 hasReIssuanceFailed = false,
             ),
@@ -494,7 +489,7 @@ private fun IssuerDetailsCardPreview() {
                 issuerLogo = null,
                 documentState = expiredState,
                 isExpanded = false,
-                isIssuerVerified = true,
+                issuerTrustVerdict = IssuerTrustVerdictDomain.TRUSTED,
                 hasStatusRefreshFailed = false,
                 hasReIssuanceFailed = false,
             ),
@@ -503,7 +498,7 @@ private fun IssuerDetailsCardPreview() {
                 issuerLogo = null,
                 documentState = expiredState,
                 isExpanded = true,
-                isIssuerVerified = true,
+                issuerTrustVerdict = IssuerTrustVerdictDomain.TRUSTED,
                 hasStatusRefreshFailed = false,
                 hasReIssuanceFailed = false,
             ),
@@ -512,7 +507,7 @@ private fun IssuerDetailsCardPreview() {
                 issuerLogo = null,
                 documentState = issuedNoNameNoExpiryState,
                 isExpanded = false,
-                isIssuerVerified = false,
+                issuerTrustVerdict = IssuerTrustVerdictDomain.NOT_TRUSTED,
                 hasStatusRefreshFailed = false,
                 hasReIssuanceFailed = false,
             )

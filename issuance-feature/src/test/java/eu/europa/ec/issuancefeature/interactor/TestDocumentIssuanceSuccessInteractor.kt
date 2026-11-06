@@ -18,6 +18,7 @@ package eu.europa.ec.issuancefeature.interactor
 
 import eu.europa.ec.businesslogic.provider.UuidProvider
 import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
+import eu.europa.ec.corelogic.model.IssuerTrustVerdictDomain
 import eu.europa.ec.eudi.wallet.document.IssuedDocument
 import eu.europa.ec.issuancefeature.util.mockedErrorDescription
 import eu.europa.ec.issuancefeature.util.mockedMdocPidClaims
@@ -108,7 +109,7 @@ class TestDocumentIssuanceSuccessInteractor {
         mockTransformToUiItemsStrings(
             resourceProvider = resourceProvider,
         )
-        runBlocking { mockIsIssuerTrustedCall(isTrusted = true) }
+        runBlocking { mockGetIssuerTrustVerdictCall(response = IssuerTrustVerdictDomain.TRUSTED) }
     }
 
     @After
@@ -606,11 +607,11 @@ class TestDocumentIssuanceSuccessInteractor {
         coroutineRule.runTest {
             mockHeaderConfigDescription(isErrorCase = false)
             mockTransformToDocumentDetailsDomainStrings(resourceProvider)
-            mockIssuerNotVerifiedString()
+            mockIssuerTrustNotConfirmedString()
 
             val mockedPidWithBasicFields = getMockedPidWithBasicFields()
             mockGetDocumentByIdCall(response = mockedPidWithBasicFields)
-            mockIsIssuerTrustedCall(isTrusted = false)
+            mockGetIssuerTrustVerdictCall(response = IssuerTrustVerdictDomain.NOT_TRUSTED)
 
             interactor.getUiItems(
                 documentIds = listOf(mockedPidId)
@@ -622,7 +623,7 @@ class TestDocumentIssuanceSuccessInteractor {
                                 header = ListItemDataUi(
                                     itemId = mockedPidId,
                                     mainContentData = ListItemMainContentDataUi.Text(text = mockedPidWithBasicFields.name),
-                                    supportingContentData = mockedIssuerNotVerifiedSupportingContent,
+                                    supportingContentData = mockedIssuerTrustNotConfirmedSupportingContent,
                                     trailingContentData = ListItemTrailingContentDataUi.Icon(
                                         iconData = AppIcons.KeyboardArrowDown
                                     )
@@ -658,7 +659,7 @@ class TestDocumentIssuanceSuccessInteractor {
                 resourceProvider = resourceProvider,
                 supportingText = mockedDocumentSuccessCollapsedSupportingText,
             )
-            mockIssuerNotVerifiedString()
+            mockIssuerTrustNotConfirmedString()
 
             val mockedPidWithBasicFields = getMockedPidWithBasicFields()
             mockGetDocumentByIdCall(response = mockedPidWithBasicFields)
@@ -668,7 +669,10 @@ class TestDocumentIssuanceSuccessInteractor {
                 docId = mockedSdJwtPidId,
                 response = mockedSdJwtPidWithBasicFields
             )
-            mockIsIssuerTrustedCall(documentId = mockedSdJwtPidId, isTrusted = false)
+            mockGetIssuerTrustVerdictCall(
+                documentId = mockedSdJwtPidId,
+                response = IssuerTrustVerdictDomain.NOT_TRUSTED,
+            )
 
             interactor.getUiItems(
                 documentIds = listOf(mockedPidId, mockedSdJwtPidId)
@@ -679,7 +683,7 @@ class TestDocumentIssuanceSuccessInteractor {
                 assertEquals(
                     listOf(
                         mockedDocumentSuccessCollapsedSupportingContent,
-                        mockedIssuerNotVerifiedSupportingContent,
+                        mockedIssuerTrustNotConfirmedSupportingContent,
                     ),
                     success.documentsUi.map { it.header.supportingContentData }
                 )
@@ -771,19 +775,22 @@ class TestDocumentIssuanceSuccessInteractor {
             .thenReturn(response)
     }
 
-    private suspend fun mockIsIssuerTrustedCall(isTrusted: Boolean) {
-        whenever(walletCoreDocumentsController.isIssuerTrusted(anyString()))
-            .thenReturn(isTrusted)
+    private suspend fun mockGetIssuerTrustVerdictCall(response: IssuerTrustVerdictDomain?) {
+        whenever(walletCoreDocumentsController.getIssuerTrustVerdict(anyString()))
+            .thenReturn(response)
     }
 
-    private suspend fun mockIsIssuerTrustedCall(documentId: String, isTrusted: Boolean) {
-        whenever(walletCoreDocumentsController.isIssuerTrusted(documentId))
-            .thenReturn(isTrusted)
+    private suspend fun mockGetIssuerTrustVerdictCall(
+        documentId: String,
+        response: IssuerTrustVerdictDomain?,
+    ) {
+        whenever(walletCoreDocumentsController.getIssuerTrustVerdict(documentId))
+            .thenReturn(response)
     }
 
-    private fun mockIssuerNotVerifiedString() {
-        whenever(resourceProvider.getString(R.string.issuance_success_document_issuer_not_verified_text))
-            .thenReturn(mockedIssuerNotVerifiedText)
+    private fun mockIssuerTrustNotConfirmedString() {
+        whenever(resourceProvider.getString(R.string.generic_issuer_trust_not_confirmed))
+            .thenReturn(mockedIssuerTrustNotConfirmedText)
     }
 
     //endregion
@@ -794,14 +801,14 @@ class TestDocumentIssuanceSuccessInteractor {
             text = mockedDocumentSuccessCollapsedSupportingText,
         )
 
-    private val mockedIssuerNotVerifiedText = "Issuer not verified"
+    private val mockedIssuerTrustNotConfirmedText = "Issuer trust not confirmed"
 
     private val mockedNotIssuedWarning =
         "These documents were not added to your wallet: Photo ID, mDL."
 
-    private val mockedIssuerNotVerifiedSupportingContent =
+    private val mockedIssuerTrustNotConfirmedSupportingContent =
         ListItemSupportingContentDataUi.Text(
-            text = mockedIssuerNotVerifiedText,
+            text = mockedIssuerTrustNotConfirmedText,
             textColorKey = ThemeColorKey.Warning,
         )
     //endregion

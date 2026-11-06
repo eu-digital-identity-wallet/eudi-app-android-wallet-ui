@@ -411,7 +411,7 @@ class SettingsViewModel(
                     }
                 }
 
-                BiometricsAuthenticate.Cancelled -> {
+                is BiometricsAuthenticate.Cancelled -> {
                     isBiometricAuthenticating = false
                 }
             }

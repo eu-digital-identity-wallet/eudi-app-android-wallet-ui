@@ -112,7 +112,7 @@ class SuccessViewModel(
                 nav.routeToPop
             )
 
-            is NavigationType.Pop, NavigationType.Finish -> Effect.Navigation.Pop
+            is NavigationType.Pop, is NavigationType.Finish -> Effect.Navigation.Pop
 
             is NavigationType.PushRoute -> Effect.Navigation.SwitchScreen(
                 nav.route,

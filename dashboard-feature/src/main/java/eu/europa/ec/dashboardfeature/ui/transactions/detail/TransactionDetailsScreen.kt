@@ -49,6 +49,7 @@ import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
+import eu.europa.ec.dashboardfeature.ui.transactions.component.WarningText
 import eu.europa.ec.dashboardfeature.ui.transactions.detail.model.PresentationActionCountsUiState
 import eu.europa.ec.dashboardfeature.ui.transactions.detail.model.TransactionContactUi
 import eu.europa.ec.dashboardfeature.ui.transactions.detail.model.TransactionDataProtectionAction
@@ -68,7 +69,6 @@ import eu.europa.ec.uilogic.component.ListItemMainContentDataUi
 import eu.europa.ec.uilogic.component.ListItemSupportingContentDataUi
 import eu.europa.ec.uilogic.component.ListItemTrailingContentDataUi
 import eu.europa.ec.uilogic.component.SectionTitle
-import eu.europa.ec.uilogic.component.ThemeColorKey
 import eu.europa.ec.uilogic.component.content.ContentScreen
 import eu.europa.ec.uilogic.component.content.ContentTitle
 import eu.europa.ec.uilogic.component.content.ScreenNavigateAction
@@ -77,7 +77,6 @@ import eu.europa.ec.uilogic.component.content.ToolbarConfig
 import eu.europa.ec.uilogic.component.preview.LargeTextPreviews
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
-import eu.europa.ec.uilogic.component.toColor
 import eu.europa.ec.uilogic.component.utils.OncePerViewModelEffect
 import eu.europa.ec.uilogic.component.utils.SIZE_SMALL
 import eu.europa.ec.uilogic.component.utils.SPACING_EXTRA_LARGE
@@ -352,11 +351,9 @@ private fun TransactionDetailsCard(
                     )
                 }
                 item.registrationWarning?.let { warning ->
-                    Text(
+                    WarningText(
                         modifier = Modifier.fillMaxWidth(),
                         text = warning,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = ThemeColorKey.Warning.toColor(),
                     )
                 }
                 if (item.metadata.isNotEmpty()) {
@@ -776,7 +773,7 @@ private fun PresentationActionSection(
 
 @ThemeModePreviews
 @Composable
-private fun DeleteTransactionConfirmationPreview() {
+private fun SheetContentDeleteTransactionConfirmationPreview() {
     PreviewTheme {
         SheetContent(
             sheetContent = TransactionDetailsBottomSheetContent.DeleteTransactionConfirmation,
@@ -803,6 +800,7 @@ private fun TransactionDetailsPreview(
 }
 
 @LargeTextPreviews
+@ThemeModePreviews
 @Composable
 private fun TransactionDetailsCardLargeTextPreview() {
     PreviewTheme {
@@ -1139,7 +1137,7 @@ private class TransactionDetailsPreviewProvider : PreviewParameterProvider<State
 
 @ThemeModePreviews
 @Composable
-private fun RecordedSigningRequestPreview(
+private fun DetailsSectionRecordedSigningRequestPreview(
     @PreviewParameter(RecordedSigningRequestPreviewProvider::class) preview: RecordedSigningRequestPreviewData,
 ) {
     PreviewTheme {

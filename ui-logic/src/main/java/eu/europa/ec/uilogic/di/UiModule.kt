@@ -46,4 +46,3 @@ fun provideRouterHost(
 fun provideUiSerializer(): UiSerializer = UiSerializerImpl()
 
 fun provideConfigUILogic(): ConfigUILogic = ConfigUILogicImpl()
-

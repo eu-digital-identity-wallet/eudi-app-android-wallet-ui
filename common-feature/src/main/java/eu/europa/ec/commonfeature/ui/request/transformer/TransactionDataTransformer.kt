@@ -92,6 +92,7 @@ class TransactionDataTransformer(
 
     /**
      * One row for every field of [transactions], since every field is bound into the response.
+     * The trust-framework row is a static product label and carries no verification result.
      * The signed attributes, which the relying party chooses freely, are marked as not checked.
      */
     private fun transactionRows(
@@ -101,6 +102,11 @@ class TransactionDataTransformer(
         showOneTimePasswords: Boolean,
     ): List<ExpandableListItemUi> {
         return buildList {
+            addField(
+                itemId = "$sectionId/framework",
+                labelRes = R.string.request_transaction_trust_framework,
+                value = resourceProvider.getString(R.string.request_transaction_trust_framework_value),
+            )
             transactions.forEachIndexed { index, transaction ->
                 val transactionId = "$sectionId/transaction-$index"
                 if (transactions.size > 1) {

@@ -474,7 +474,7 @@ class TestSettingsInteractor {
             val mainContent = dcApiItem.data.mainContentData as ListItemMainContentDataUi.Text
             assertEquals(dcApiText, mainContent.text)
             val leadingIcon = dcApiItem.data.leadingContentData as ListItemLeadingContentDataUi.Icon
-            assertEquals(AppIcons.PresentDocumentOnline, leadingIcon.iconData)
+            assertEquals(AppIcons.Id, leadingIcon.iconData)
             val trailingSwitch =
                 dcApiItem.data.trailingContentData as ListItemTrailingContentDataUi.Switch
             assertEquals(false, trailingSwitch.switchData.isChecked)
@@ -678,7 +678,7 @@ class TestSettingsInteractor {
     private val biometricsFailureText = "Biometrics unavailable"
     private val registrationCheckText = "Check Registration Certificates"
     private val resetWalletText = "Reset wallet"
-    private val dcApiText = "Offer documents to apps and websites"
+    private val dcApiText = "Allow document requests from apps and websites (DC API)"
 
     /**
      * the standing value for the cases that are about other rows

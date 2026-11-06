@@ -177,7 +177,7 @@ class PinViewModel(
                 viewModelScope.launch {
                     when (val lockoutState = interactor.getPinLockoutState()) {
                         is PinLockoutState.Active -> startLockoutTick(lockoutState.remaining.inWholeMilliseconds)
-                        PinLockoutState.Idle -> Unit
+                        is PinLockoutState.Idle -> Unit
                     }
                 }
             }
@@ -280,7 +280,7 @@ class PinViewModel(
                                 startLockoutTick(lockoutState.remaining.inWholeMilliseconds)
                             }
 
-                            PinLockoutState.Idle -> {
+                            is PinLockoutState.Idle -> {
                                 setState {
                                     copy(
                                         quickPinError = it.errorMessage,
@@ -291,7 +291,7 @@ class PinViewModel(
                         }
                     }
 
-                    QuickPinInteractorPinValidPartialState.Success -> {
+                    is QuickPinInteractorPinValidPartialState.Success -> {
                         interactor.resetPinThrottle()
                         stopLockoutTick()
                         setupEnterPhase()
@@ -445,7 +445,7 @@ class PinViewModel(
                 is PinLockoutState.Active ->
                     startLockoutTick(lockoutState.remaining.inWholeMilliseconds)
 
-                PinLockoutState.Idle -> stopLockoutTick()
+                is PinLockoutState.Idle -> stopLockoutTick()
             }
         }
     }

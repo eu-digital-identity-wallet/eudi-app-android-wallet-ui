@@ -40,7 +40,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.compose.LifecycleEventEffect
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import eu.europa.ec.authenticationlogic.secure.SecurePin
@@ -55,6 +55,7 @@ import eu.europa.ec.uilogic.component.content.ImePaddingConfig
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
 import eu.europa.ec.uilogic.component.toColor
+import eu.europa.ec.uilogic.component.utils.LifecycleEffect
 import eu.europa.ec.uilogic.component.utils.OncePerViewModelEffect
 import eu.europa.ec.uilogic.component.utils.SPACING_LARGE
 import eu.europa.ec.uilogic.component.utils.SPACING_SMALL
@@ -136,7 +137,10 @@ fun PinScreen(
         viewModel.setEvent(Event.Init)
     }
 
-    LifecycleEventEffect(Lifecycle.Event.ON_RESUME) {
+    LifecycleEffect(
+        lifecycleOwner = LocalLifecycleOwner.current,
+        lifecycleEvent = Lifecycle.Event.ON_RESUME
+    ) {
         viewModel.setEvent(Event.OnResume)
     }
 }

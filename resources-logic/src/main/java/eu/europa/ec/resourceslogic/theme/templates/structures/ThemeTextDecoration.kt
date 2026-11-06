@@ -25,9 +25,9 @@ sealed class ThemeTextDecoration {
 
     companion object {
         fun ThemeTextDecoration.toTextDecoration(): TextDecoration = when (this) {
-            None -> TextDecoration.None
-            Underline -> TextDecoration.Underline
-            LineThrough -> TextDecoration.LineThrough
+            is None -> TextDecoration.None
+            is Underline -> TextDecoration.Underline
+            is LineThrough -> TextDecoration.LineThrough
         }
     }
 }

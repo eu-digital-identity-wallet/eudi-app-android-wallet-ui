@@ -198,6 +198,8 @@ class DocumentDetailsInteractorImpl(
                     walletCoreDocumentsController.hasStatusRefreshFailed(documentId)
                 val hasReIssuanceFailed =
                     walletCoreDocumentsController.hasReIssuanceFailed(documentId)
+                val issuerTrustVerdict =
+                    walletCoreDocumentsController.getIssuerTrustVerdict(documentId)
                 val issuerDetails = IssuerDetailsCardDataUi(
                     issuerName = issuerName,
                     issuerLogo = issuerLogo,
@@ -219,7 +221,7 @@ class DocumentDetailsInteractorImpl(
                     },
                     isExpanded = wasIssuerDetailsExpanded == true || hasStatusRefreshFailed ||
                             hasReIssuanceFailed,
-                    isIssuerVerified = walletCoreDocumentsController.isIssuerTrusted(documentId),
+                    issuerTrustVerdict = issuerTrustVerdict,
                     hasStatusRefreshFailed = hasStatusRefreshFailed,
                     hasReIssuanceFailed = hasReIssuanceFailed,
                 )

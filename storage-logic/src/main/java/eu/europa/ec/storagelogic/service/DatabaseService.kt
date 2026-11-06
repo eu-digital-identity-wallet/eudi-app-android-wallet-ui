@@ -35,12 +35,15 @@ import eu.europa.ec.storagelogic.model.TransactionLog
  * The app's Room database. Schema changes bump the version and rely on the destructive fallback in
  * `provideAppDatabase`, which recreates the tables; no migrations are kept. Recreating the tables
  * drops the transaction history, bookmarks, data-deletion and DPA-report attempts, failed
- * re-issuance records and issuer-trust records with them; every document then shows its issuer as
- * not verified until it is issued again. The revocation and status-refresh-failure records are
- * rebuilt by the revocation check run when the wallet opens.
+ * re-issuance records and issuer-trust records with them; every document then shows its issuer
+ * verification as unavailable until it is issued again. The revocation and status-refresh-failure
+ * records are rebuilt by the revocation check run when the wallet opens.
  *
- * Version 2 was used from March to September 2026 with a different schema and is skipped: a
- * database still at that version would otherwise be opened as current and fail Room's schema check.
+ * The version only goes up. With the same version and a different schema, Room's identity check
+ * fails on every open and the fallback never runs; a lower version is a downgrade, which recreates
+ * the tables as well. Version 2 was used from March to September 2026 with a different schema and
+ * is skipped: a database still at that version would otherwise be opened as current and fail
+ * Room's schema check.
  */
 @Database(
     entities = [

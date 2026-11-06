@@ -36,4 +36,3 @@ enum class IntentType(val associatedActions: List<String>) {
         )
     ),
 }
-

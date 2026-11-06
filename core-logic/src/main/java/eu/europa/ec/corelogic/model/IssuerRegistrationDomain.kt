@@ -42,11 +42,7 @@ sealed interface IssuerRegistrationDomain {
         val details: RegistrationDetailsDomain?,
     ) : IssuerRegistrationDomain
 
-    /**
-     * The registration was not evaluated at all: policy disabled or unsigned metadata. An issuer
-     * that publishes no registration certificate is [NotVerified] with `CERTIFICATE_ABSENT`
-     * (Wallet Core 0.31.1).
-     */
+    /** No issuer-registration evaluation result is available. */
     data object NotEvaluated : IssuerRegistrationDomain
 
     /**

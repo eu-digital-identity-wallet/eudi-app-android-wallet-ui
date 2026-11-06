@@ -17,7 +17,6 @@
 package eu.europa.ec.uilogic.extension
 
 import android.annotation.SuppressLint
-import android.app.Activity
 import androidx.compose.foundation.Indication
 import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.clickable
@@ -44,8 +43,6 @@ import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawOutline
 import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.input.pointer.PointerEventPass
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.debugInspectorInfo
@@ -228,22 +225,3 @@ fun Modifier.applyTestTag(testTag: String): Modifier = composed {
 private fun createTestTag(applicationId: String, testTag: String): String {
     return "$applicationId:id/$testTag"
 }
-
-/**
- * Reports every touch inside a bottom sheet to [activity] as user interaction. A sheet is drawn in
- * a window of its own, whose touches do not reach [Activity.onUserInteraction], so without this
- * the wallet's idle lock would count reading or scrolling a sheet as inactivity.
- */
-internal fun Modifier.reportingUserInteractionTo(activity: Activity?): Modifier =
-    if (activity == null) {
-        this
-    } else {
-        pointerInput(activity) {
-            awaitPointerEventScope {
-                while (true) {
-                    awaitPointerEvent(PointerEventPass.Initial)
-                    activity.onUserInteraction()
-                }
-            }
-        }
-    }

@@ -1097,6 +1097,7 @@ class TestRequestTransformer {
 
             // Then
             val section = combination.transactionData!!
+            assertEquals(listOf("eIDAS"), combination.transactionValues("Trust framework"))
             assertEquals(listOf("1", "1"), combination.transactionValues("Number of signatures"))
             assertTrue(section.details.nestedItems.all { item ->
                 item.header.supportingContentData == null && item.header.trailingContentData == null

@@ -52,6 +52,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.DialogWindowProvider
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.theme.values.divider
 import eu.europa.ec.resourceslogic.theme.values.warning
@@ -74,7 +75,7 @@ import eu.europa.ec.uilogic.extension.exposeTestTagsAsResourceId
 import eu.europa.ec.uilogic.extension.findActivityOrNull
 import eu.europa.ec.uilogic.extension.optionalTestTag
 import eu.europa.ec.uilogic.extension.reportAccessibilityInteraction
-import eu.europa.ec.uilogic.extension.reportingUserInteractionTo
+import eu.europa.ec.uilogic.extension.reportTouchInteraction
 import eu.europa.ec.uilogic.extension.throttledClickable
 import eu.europa.ec.uilogic.mvi.ViewEvent
 import eu.europa.ec.uilogic.util.TestTag
@@ -137,28 +138,37 @@ fun WrapModalBottomSheet(
         modifier = Modifier
             .exposeTestTagsAsResourceId()
             .statusBarsPadding()
-            .reportingUserInteractionTo(activity)
             .then(modifier),
         sheetState = sheetState,
         shape = shape,
         dragHandle = dragHandle,
         content = {
-            ReportAccessibilityInteraction(activity)
+            ReportUserInteraction(activity)
             sheetContent()
         },
     )
 }
 
 /**
- * Reports screen-reader actions inside a bottom sheet to [activity] as user interaction. The sheet
- * has a window of its own, which the activity's reporting does not see.
+ * The sheet has its own window. Observe it without adding a touch target ahead of Material's
+ * sheet-positioning modifier, which would block taps on the scrim.
  */
 @Composable
-private fun ReportAccessibilityInteraction(activity: Activity?) {
-    val root = LocalView.current.rootView
-    DisposableEffect(root, activity) {
-        val remove = activity?.let { root.reportAccessibilityInteraction(it::onUserInteraction) }
-        onDispose { remove?.invoke() }
+private fun ReportUserInteraction(activity: Activity?) {
+    val view = LocalView.current
+    val root = view.rootView
+    val window = (view.parent as? DialogWindowProvider)?.window
+    DisposableEffect(root, window, activity) {
+        val removeTouchReporting = activity?.let { safeActivity ->
+            window?.reportTouchInteraction(safeActivity::onUserInteraction)
+        }
+        val removeAccessibilityReporting = activity?.let { safeActivity ->
+            root.reportAccessibilityInteraction(safeActivity::onUserInteraction)
+        }
+        onDispose {
+            removeTouchReporting?.invoke()
+            removeAccessibilityReporting?.invoke()
+        }
     }
 }
 

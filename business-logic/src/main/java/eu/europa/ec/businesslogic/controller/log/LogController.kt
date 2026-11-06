@@ -20,6 +20,7 @@ import android.content.Context
 import android.net.Uri
 import android.util.Log
 import androidx.core.content.FileProvider
+import eu.europa.ec.businesslogic.extension.deleteContents
 import eu.europa.ec.businesslogic.util.FileLoggerTree
 import timber.log.Timber
 import java.io.File
@@ -44,7 +45,7 @@ interface LogController {
 
     fun retrieveLogFileUris(): List<Uri>
 
-    /** Deletes the log files, for the factory reset. Logging goes on into new files. */
+    /** Deletes the log files for reset, reporting cleanup errors. File logging is reopened when enabled. */
     fun deleteLogFiles()
 }
 
@@ -133,9 +134,12 @@ class LogControllerImpl(
             Timber.uproot(previousTree)
             previousTree.close()
         }
-        logsDir.listFiles()?.forEach { it.delete() }
-        if (shouldWriteLogFile) {
-            fileLoggerTree = buildFileLoggerTree().also { Timber.plant(it) }
+        try {
+            logsDir.deleteContents(recursively = false)
+        } finally {
+            if (shouldWriteLogFile) {
+                fileLoggerTree = buildFileLoggerTree().also { newTree -> Timber.plant(newTree) }
+            }
         }
     }
 

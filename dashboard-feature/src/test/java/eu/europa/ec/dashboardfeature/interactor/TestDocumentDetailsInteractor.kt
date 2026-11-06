@@ -33,6 +33,7 @@ import eu.europa.ec.corelogic.model.ClaimDomain
 import eu.europa.ec.corelogic.model.ClaimPathDomain
 import eu.europa.ec.corelogic.model.ClaimType
 import eu.europa.ec.corelogic.model.DocumentIdentifier
+import eu.europa.ec.corelogic.model.IssuerTrustVerdictDomain
 import eu.europa.ec.corelogic.model.UntrustedIssuerReasonDomain
 import eu.europa.ec.dashboardfeature.ui.documents.detail.model.DocumentDetailsDomain
 import eu.europa.ec.dashboardfeature.ui.documents.model.DocumentCredentialsInfoUi
@@ -146,7 +147,7 @@ class TestDocumentDetailsInteractor {
         whenever(configLogic.forcePidActivation).thenReturn(true)
         runBlocking {
             mockIsDocumentRevoked(isRevoked = false)
-            mockIsIssuerTrusted(isTrusted = false)
+            mockGetIssuerTrustVerdictCall(response = IssuerTrustVerdictDomain.NOT_TRUSTED)
             mockHasStatusRefreshFailed(hasFailed = false)
             mockHasReIssuanceFailed(hasFailed = false)
         }
@@ -185,7 +186,9 @@ class TestDocumentDetailsInteractor {
                 resourceProvider = resourceProvider,
             )
 
-            val issuerDetails = getMockedIssuerDetailsCardDataUi()
+            val issuerDetails = getMockedIssuerDetailsCardDataUi(
+                issuerTrustVerdict = IssuerTrustVerdictDomain.NOT_TRUSTED,
+            )
 
             mockRetrieveBookmarkCall(response = false)
             mockIsDocumentRevoked(isRevoked = false)
@@ -230,6 +233,7 @@ class TestDocumentDetailsInteractor {
 
                 assertEquals(
                     getMockedIssuerDetailsCardDataUi(
+                        issuerTrustVerdict = IssuerTrustVerdictDomain.NOT_TRUSTED,
                         isExpanded = true,
                         hasStatusRefreshFailed = true
                     ),
@@ -262,7 +266,11 @@ class TestDocumentDetailsInteractor {
                 val success = awaitItem() as DocumentDetailsInteractorPartialState.Success
 
                 assertEquals(
-                    getMockedIssuerDetailsCardDataUi(isExpanded = true, hasReIssuanceFailed = true),
+                    getMockedIssuerDetailsCardDataUi(
+                        issuerTrustVerdict = IssuerTrustVerdictDomain.NOT_TRUSTED,
+                        isExpanded = true,
+                        hasReIssuanceFailed = true,
+                    ),
                     success.issuerDetails
                 )
             }
@@ -308,7 +316,7 @@ class TestDocumentDetailsInteractor {
             mockIsDocumentLowOnCredentialsCall(response = false)
             mockRetrieveBookmarkCall(response = false)
             mockIsDocumentRevoked(isRevoked = false)
-            mockIsIssuerTrusted(isTrusted = true)
+            mockGetIssuerTrustVerdictCall(response = IssuerTrustVerdictDomain.TRUSTED)
 
             interactor.getDocumentDetails(
                 documentId = mockedPidId,
@@ -316,7 +324,9 @@ class TestDocumentDetailsInteractor {
             ).runFlowTest {
                 assertEquals(
                     DocumentDetailsInteractorPartialState.Success(
-                        issuerDetails = getMockedIssuerDetailsCardDataUi(isIssuerVerified = true),
+                        issuerDetails = getMockedIssuerDetailsCardDataUi(
+                            issuerTrustVerdict = IssuerTrustVerdictDomain.TRUSTED,
+                        ),
                         documentDetailsDomain = mockedBasicPidDomain,
                         documentIsBookmarked = false,
                         documentCredentialsInfoUi = getMockedDocumentCredentialsInfoUi(
@@ -357,7 +367,9 @@ class TestDocumentDetailsInteractor {
                 resourceProvider = resourceProvider,
             )
 
-            val issuerDetails = getMockedIssuerDetailsCardDataUi()
+            val issuerDetails = getMockedIssuerDetailsCardDataUi(
+                issuerTrustVerdict = IssuerTrustVerdictDomain.NOT_TRUSTED,
+            )
 
             mockRetrieveBookmarkCall(response = false)
             mockIsDocumentRevoked(isRevoked = false)
@@ -407,7 +419,9 @@ class TestDocumentDetailsInteractor {
                 resourceProvider = resourceProvider,
             )
 
-            val issuerDetails = getMockedIssuerDetailsCardDataUi()
+            val issuerDetails = getMockedIssuerDetailsCardDataUi(
+                issuerTrustVerdict = IssuerTrustVerdictDomain.NOT_TRUSTED,
+            )
 
             mockRetrieveBookmarkCall(response = true)
             mockIsDocumentRevoked(isRevoked = false)
@@ -457,7 +471,9 @@ class TestDocumentDetailsInteractor {
                 resourceProvider = resourceProvider,
             )
 
-            val issuerDetails = getMockedIssuerDetailsCardDataUi()
+            val issuerDetails = getMockedIssuerDetailsCardDataUi(
+                issuerTrustVerdict = IssuerTrustVerdictDomain.NOT_TRUSTED,
+            )
 
             mockRetrieveBookmarkCall(response = false)
             mockIsDocumentRevoked(isRevoked = false)
@@ -550,7 +566,9 @@ class TestDocumentDetailsInteractor {
                 resourceProvider = resourceProvider,
             )
 
-            val issuerDetails = getMockedIssuerDetailsCardDataUi()
+            val issuerDetails = getMockedIssuerDetailsCardDataUi(
+                issuerTrustVerdict = IssuerTrustVerdictDomain.NOT_TRUSTED,
+            )
 
             mockRetrieveBookmarkCall(response = false)
             mockIsDocumentRevoked(isRevoked = false)
@@ -1822,8 +1840,8 @@ class TestDocumentDetailsInteractor {
         whenever(walletCoreDocumentsController.isDocumentSuspended(any())).thenReturn(isSuspended)
     }
 
-    private suspend fun mockIsIssuerTrusted(isTrusted: Boolean) {
-        whenever(walletCoreDocumentsController.isIssuerTrusted(any())).thenReturn(isTrusted)
+    private suspend fun mockGetIssuerTrustVerdictCall(response: IssuerTrustVerdictDomain?) {
+        whenever(walletCoreDocumentsController.getIssuerTrustVerdict(any())).thenReturn(response)
     }
 
     private suspend fun mockHasStatusRefreshFailed(hasFailed: Boolean) {
@@ -1860,6 +1878,7 @@ class TestDocumentDetailsInteractor {
     }
 
     private fun getMockedIssuerDetailsCardDataUi(
+        issuerTrustVerdict: IssuerTrustVerdictDomain?,
         issuerName: String? = null,
         issuerLogo: URI? = null,
         documentState: IssuerDetailsCardDataUi.DocumentState = IssuerDetailsCardDataUi.DocumentState.Issued(
@@ -1867,7 +1886,6 @@ class TestDocumentDetailsInteractor {
             expirationDate = mockedFormattedExpirationDate
         ),
         isExpanded: Boolean = false,
-        isIssuerVerified: Boolean = false,
         hasStatusRefreshFailed: Boolean = false,
         hasReIssuanceFailed: Boolean = false,
     ): IssuerDetailsCardDataUi {
@@ -1876,7 +1894,7 @@ class TestDocumentDetailsInteractor {
             issuerLogo = issuerLogo,
             documentState = documentState,
             isExpanded = isExpanded,
-            isIssuerVerified = isIssuerVerified,
+            issuerTrustVerdict = issuerTrustVerdict,
             hasStatusRefreshFailed = hasStatusRefreshFailed,
             hasReIssuanceFailed = hasReIssuanceFailed,
         )
