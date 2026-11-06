@@ -17,11 +17,13 @@
 package eu.europa.ec.uilogic.component.wrap
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.EnterExitState
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.material3.CardColors
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -31,6 +33,13 @@ import androidx.compose.ui.graphics.Shape
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
 
+/**
+ * A card whose expanded content shows while [isExpanded] is true.
+ *
+ * @param onExpandFinished runs each time the card opens after it first appeared, once the opening animation has
+ * finished and the expanded content is laid out (at once when the card reopens before its closing animation ended), so
+ * a screen can bring the opened content into view. It does not run for a card that is open when it first appears.
+ */
 @Composable
 fun WrapExpandableCard(
     modifier: Modifier = Modifier,
@@ -41,7 +50,15 @@ fun WrapExpandableCard(
     shape: Shape? = null,
     colors: CardColors? = null,
     throttleClicks: Boolean = true,
+    onExpandFinished: (() -> Unit)? = null,
 ) {
+    var isOpening by remember { mutableStateOf(false) }
+    var isPreviouslyExpanded by remember { mutableStateOf(isExpanded) }
+    LaunchedEffect(isExpanded) {
+        isOpening = isExpanded && !isPreviouslyExpanded
+        isPreviouslyExpanded = isExpanded
+    }
+
     WrapCard(
         modifier = modifier,
         shape = shape,
@@ -55,6 +72,14 @@ fun WrapExpandableCard(
 
             // Content Section (Animated Visibility)
             AnimatedVisibility(visible = isExpanded) {
+                if (onExpandFinished != null) {
+                    LaunchedEffect(transition.currentState, isOpening) {
+                        if (isOpening && transition.currentState == EnterExitState.Visible) {
+                            isOpening = false
+                            onExpandFinished()
+                        }
+                    }
+                }
                 Column {
                     cardExpandedContent()
                 }
