@@ -38,8 +38,6 @@ import eu.europa.ec.uilogic.navigation.helper.generateComposableArguments
 import eu.europa.ec.uilogic.navigation.helper.generateComposableNavigationLink
 import eu.europa.ec.uilogic.serializer.UiSerializer
 import kotlinx.coroutines.launch
-import org.koin.core.annotation.InjectedParam
-import org.koin.core.annotation.KoinViewModel
 
 data class State(
     val offerCodeUiConfig: OfferCodeUiConfig,
@@ -86,14 +84,14 @@ sealed class DocumentOfferCodeBottomSheetContent {
 
     data class PartialSuccessWithUntrustedIssuer(
         val issuedDocumentIds: List<DocumentId>,
+        val notIssuedDocuments: List<String>,
     ) : DocumentOfferCodeBottomSheetContent()
 }
 
-@KoinViewModel
 class DocumentOfferCodeViewModel(
     private val resourceProvider: ResourceProvider,
     private val uiSerializer: UiSerializer,
-    @InjectedParam private val offerCodeSerializedConfig: String,
+    private val offerCodeSerializedConfig: String,
     documentOfferInteractor: DocumentOfferInteractor? = null
 ) : MviViewModel<Event, State, Effect>() {
 
@@ -159,6 +157,7 @@ class DocumentOfferCodeViewModel(
                         goToDocumentIssuanceSuccessScreen(
                             documentIds = content.issuedDocumentIds,
                             onSuccessNavigation = viewState.value.offerCodeUiConfig.onSuccessNavigation,
+                            notIssuedDocuments = content.notIssuedDocuments,
                         )
                     }
                 }
@@ -225,7 +224,8 @@ class DocumentOfferCodeViewModel(
                         }
                         showBottomSheet(
                             sheetContent = DocumentOfferCodeBottomSheetContent.PartialSuccessWithUntrustedIssuer(
-                                issuedDocumentIds = response.issuedDocumentIds
+                                issuedDocumentIds = response.issuedDocumentIds,
+                                notIssuedDocuments = response.notIssuedDocuments,
                             )
                         )
                     }
@@ -242,6 +242,7 @@ class DocumentOfferCodeViewModel(
                         goToDocumentIssuanceSuccessScreen(
                             documentIds = response.documentIds,
                             onSuccessNavigation = viewState.value.offerCodeUiConfig.onSuccessNavigation,
+                            notIssuedDocuments = response.notIssuedDocuments,
                         )
                     }
 
@@ -276,6 +277,7 @@ class DocumentOfferCodeViewModel(
     private fun goToDocumentIssuanceSuccessScreen(
         documentIds: List<DocumentId>,
         onSuccessNavigation: ConfigNavigation,
+        notIssuedDocuments: List<String> = emptyList(),
     ) {
         setEffect {
             Effect.Navigation.SwitchScreen(
@@ -286,6 +288,7 @@ class DocumentOfferCodeViewModel(
                             IssuanceSuccessUiConfig.serializedKeyName to uiSerializer.toBase64(
                                 model = IssuanceSuccessUiConfig(
                                     documentIds = documentIds,
+                                    notIssuedDocuments = notIssuedDocuments,
                                     onSuccessNavigation = onSuccessNavigation,
                                 ),
                                 parser = IssuanceSuccessUiConfig.Parser

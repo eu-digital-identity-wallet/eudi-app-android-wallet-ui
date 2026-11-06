@@ -22,9 +22,7 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
 import androidx.navigation.navArgument
-import androidx.navigation.navDeepLink
 import eu.europa.ec.commonfeature.config.RequestUriConfig
-import eu.europa.ec.presentationfeature.BuildConfig
 import eu.europa.ec.presentationfeature.ui.loading.PresentationLoadingScreen
 import eu.europa.ec.presentationfeature.ui.request.PresentationRequestScreen
 import eu.europa.ec.presentationfeature.ui.success.PresentationSuccessScreen
@@ -43,12 +41,6 @@ fun NavGraphBuilder.presentationGraph(navController: NavController) {
 
         composable(
             route = PresentationScreens.PresentationRequest.screenRoute,
-            deepLinks = listOf(
-                navDeepLink {
-                    uriPattern =
-                        BuildConfig.DEEPLINK + PresentationScreens.PresentationRequest.screenRoute
-                }
-            ),
             arguments = listOf(
                 navArgument(RequestUriConfig.serializedKeyName) {
                     type = NavType.StringType

@@ -52,10 +52,9 @@ import eu.europa.ec.uilogic.navigation.helper.DeepLinkType
 import eu.europa.ec.uilogic.navigation.helper.generateComposableArguments
 import eu.europa.ec.uilogic.navigation.helper.generateComposableNavigationLink
 import eu.europa.ec.uilogic.navigation.helper.hasDeepLink
+import eu.europa.ec.uilogic.navigation.helper.isOpenableExternalLink
 import eu.europa.ec.uilogic.serializer.UiSerializer
 import kotlinx.coroutines.launch
-import org.koin.core.annotation.InjectedParam
-import org.koin.core.annotation.KoinViewModel
 import java.net.URI
 
 data class State(
@@ -129,14 +128,14 @@ sealed class DocumentOfferBottomSheetContent {
 
     data class PartialSuccessWithUntrustedIssuer(
         val issuedDocumentIds: List<DocumentId>,
+        val notIssuedDocuments: List<String>,
     ) : DocumentOfferBottomSheetContent()
 }
 
-@KoinViewModel
 class DocumentOfferViewModel(
     private val resourceProvider: ResourceProvider,
     private val uiSerializer: UiSerializer,
-    @InjectedParam private val offerSerializedConfig: String,
+    private val offerSerializedConfig: String,
     documentOfferInteractor: DocumentOfferInteractor? = null
 ) : MviViewModel<Event, State, Effect>() {
 
@@ -260,6 +259,7 @@ class DocumentOfferViewModel(
                         goToDocumentIssuanceSuccessScreen(
                             documentIds = content.issuedDocumentIds,
                             onSuccessNavigation = viewState.value.offerUiConfig.onSuccessNavigation,
+                            notIssuedDocuments = content.notIssuedDocuments,
                         )
                     }
                 }
@@ -385,7 +385,7 @@ class DocumentOfferViewModel(
                 description = null,
             ),
             intendedUse = details?.intendedUse,
-            privacyPolicyUrl = details?.privacyPolicyUrl,
+            privacyPolicyUrl = details?.privacyPolicyUrl?.takeIf(::isOpenableExternalLink),
         )
     }
 
@@ -452,7 +452,8 @@ class DocumentOfferViewModel(
                         }
                         showBottomSheet(
                             sheetContent = DocumentOfferBottomSheetContent.PartialSuccessWithUntrustedIssuer(
-                                issuedDocumentIds = response.issuedDocumentIds
+                                issuedDocumentIds = response.issuedDocumentIds,
+                                notIssuedDocuments = response.notIssuedDocuments,
                             )
                         )
                     }
@@ -468,6 +469,7 @@ class DocumentOfferViewModel(
                         goToDocumentIssuanceSuccessScreen(
                             documentIds = response.documentIds,
                             onSuccessNavigation = onSuccessNavigation,
+                            notIssuedDocuments = response.notIssuedDocuments,
                         )
                     }
 
@@ -502,6 +504,7 @@ class DocumentOfferViewModel(
     private fun goToDocumentIssuanceSuccessScreen(
         documentIds: List<DocumentId>,
         onSuccessNavigation: ConfigNavigation,
+        notIssuedDocuments: List<String> = emptyList(),
     ) {
         setEffect {
             Effect.Navigation.SwitchScreen(
@@ -512,6 +515,7 @@ class DocumentOfferViewModel(
                             IssuanceSuccessUiConfig.serializedKeyName to uiSerializer.toBase64(
                                 model = IssuanceSuccessUiConfig(
                                     documentIds = documentIds,
+                                    notIssuedDocuments = notIssuedDocuments,
                                     onSuccessNavigation = onSuccessNavigation,
                                 ),
                                 parser = IssuanceSuccessUiConfig.Parser
@@ -554,7 +558,7 @@ class DocumentOfferViewModel(
                 nav.routeToPop
             )
 
-            is NavigationType.Pop, NavigationType.Finish -> Effect.Navigation.Pop
+            is NavigationType.Pop, is NavigationType.Finish -> Effect.Navigation.Pop
 
             is NavigationType.PushRoute -> Effect.Navigation.SwitchScreen(nav.route)
         }

@@ -29,6 +29,7 @@ import eu.europa.ec.corelogic.model.IssuanceDetailsDomain
 import eu.europa.ec.corelogic.model.LocalizedTextDomain
 import eu.europa.ec.corelogic.model.PresentationRegistrationDomain
 import eu.europa.ec.corelogic.model.QualifiedIdentifierDomain
+import eu.europa.ec.corelogic.model.RecordedRegistrationCheckDomain
 import eu.europa.ec.corelogic.model.TransactionLogDomain
 import eu.europa.ec.corelogic.model.TransactionResultDomain
 import eu.europa.ec.eudi.wallet.registration.QualifiedIdentifier
@@ -47,7 +48,9 @@ import java.util.Locale
  *
  * Returns null for unsupported kinds or actions with invalid parent or method metadata.
  * Parent and method come from storage. Credential identifiers and claim paths are copied from
- * the record without consulting wallet documents or their display metadata.
+ * the record without consulting wallet documents or their display metadata. [registrationCheck] is
+ * what the app recorded beside a presentation; an entry without one is treated as unverified
+ * ([RecordedRegistrationCheckDomain.Unknown]).
  */
 internal fun TransactionEntry.toTransactionLogDomain(
     id: String,
@@ -55,6 +58,7 @@ internal fun TransactionEntry.toTransactionLogDomain(
     parentPresentationId: String?,
     communicationMethod: String?,
     transactionDataTypes: List<TransactionDataType>,
+    registrationCheck: RecordedRegistrationCheckDomain = RecordedRegistrationCheckDomain.Unknown,
 ): TransactionLogDomain? {
     val method = communicationMethod.toCommunicationMethodDomainOrNull()
 
@@ -82,6 +86,7 @@ internal fun TransactionEntry.toTransactionLogDomain(
             transactionData = transactionalData
                 ?.toPresentationTransactionDataDomains(types = transactionDataTypes)
                 .orEmpty(),
+            registrationCheck = registrationCheck,
         )
 
         is TransactionEntry.CredentialIssuance -> TransactionLogDomain.CredentialIssuance(

@@ -16,12 +16,6 @@
 
 package eu.europa.ec.uilogic.navigation.helper
 
-import android.content.Context
-import android.content.Intent
-import android.net.Uri
-import eu.europa.ec.businesslogic.extension.toUri
-import eu.europa.ec.uilogic.BuildConfig
-import eu.europa.ec.uilogic.container.EudiComponentActivity
 import eu.europa.ec.uilogic.navigation.Screen
 
 fun <T> generateComposableArguments(arguments: Map<String, T>): String {
@@ -37,37 +31,21 @@ fun <T> generateComposableArguments(arguments: Map<String, T>): String {
     }.toString()
 }
 
-fun generateComposableDeepLinkUri(screen: Screen, arguments: String): Uri =
-    generateComposableDeepLinkUri(screen.screenName, arguments)
-
-fun generateComposableDeepLinkUri(screen: String, arguments: String): Uri =
-    "${BuildConfig.DEEPLINK}/${screen}$arguments".toUri()
-
 fun generateComposableNavigationLink(screen: Screen, arguments: String): String =
     generateComposableNavigationLink(screen.screenName, arguments)
 
 fun generateComposableNavigationLink(screen: String, arguments: String): String =
-    "${screen}$arguments"
+    "$screen$arguments"
 
-fun generateNewTaskDeepLink(
-    context: Context,
-    screen: Screen,
-    arguments: String = "",
-    flags: Int = 0
-): Intent =
-    generateNewTaskDeepLink(context, screen.screenName, arguments, flags)
+/**
+ * True when [route] is the route of one of [protectedFlowScreens].
+ */
+internal fun isProtectedRoute(route: String?, protectedFlowScreens: List<Screen>): Boolean =
+    route != null && protectedFlowScreens.any { it.screenRoute == route }
 
-fun generateNewTaskDeepLink(
-    context: Context,
-    screen: String,
-    arguments: String = "",
-    flags: Int = 0
-): Intent =
-    Intent(
-        Intent.ACTION_VIEW,
-        generateComposableDeepLinkUri(screen, arguments),
-        context,
-        EudiComponentActivity::class.java
-    ).apply {
-        addFlags(flags)
-    }
+/**
+ * True when any of [backStackRoutes] is not the route of one of [loginScreens], so a locked wallet
+ * showing this back stack must return to login.
+ */
+internal fun requiresLogin(backStackRoutes: List<String>, loginScreens: List<Screen>): Boolean =
+    backStackRoutes.any { route -> loginScreens.none { it.screenRoute == route } }

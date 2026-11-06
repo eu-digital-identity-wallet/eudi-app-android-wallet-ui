@@ -19,13 +19,18 @@ package eu.europa.ec.dashboardfeature.ui.transactions
 import android.content.Context
 import android.content.Intent
 import androidx.core.net.toUri
+import eu.europa.ec.uilogic.extension.tryOpenInBrowser
 
+/**
+ * Opens a deletion-request or report contact, and returns whether an app was started. A web
+ * address opens only as a browser link, never back in the wallet.
+ */
 internal fun Context.openTransactionAction(url: String): Boolean = runCatching {
     val uri = url.toUri()
     val action = when (uri.scheme?.lowercase()) {
         "mailto" -> Intent.ACTION_SENDTO
         "tel" -> Intent.ACTION_DIAL
-        "http", "https" -> Intent.ACTION_VIEW
+        "http", "https" -> return tryOpenInBrowser(uri)
         else -> return false
     }
     startActivity(Intent(action, uri))

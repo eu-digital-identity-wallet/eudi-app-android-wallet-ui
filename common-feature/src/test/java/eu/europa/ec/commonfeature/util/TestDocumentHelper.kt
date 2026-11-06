@@ -34,6 +34,7 @@ import eu.europa.ec.testfeature.util.mockedMdocClaim
 import eu.europa.ec.testfeature.util.mockedMdocMdlNameSpace
 import eu.europa.ec.testfeature.util.mockedMdocPidNameSpace
 import eu.europa.ec.testfeature.util.mockedSdJwtVcClaim
+import eu.europa.ec.testfeature.util.mockedUserImageClaimKeys
 import eu.europa.ec.testfeature.util.mockedUuid
 import junit.framework.TestCase.assertEquals
 import junit.framework.TestCase.assertFalse
@@ -129,9 +130,14 @@ class TestDocumentHelper {
     @Test
     fun `Given the user-image keys, When keyIsUserImage is called, Then only they classify as user images`() {
         // When / Then
-        assertTrue(keyIsUserImage(key = "portrait"))
-        assertTrue(keyIsUserImage(key = "picture"))
-        assertFalse(keyIsUserImage(key = "family_name"))
+        assertTrue(keyIsUserImage(key = "portrait", userImageClaimKeys = mockedUserImageClaimKeys))
+        assertTrue(keyIsUserImage(key = "picture", userImageClaimKeys = mockedUserImageClaimKeys))
+        assertFalse(
+            keyIsUserImage(
+                key = "family_name",
+                userImageClaimKeys = mockedUserImageClaimKeys
+            )
+        )
     }
 
     //endregion

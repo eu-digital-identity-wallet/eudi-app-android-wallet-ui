@@ -55,8 +55,9 @@ import org.junit.Test
 import org.mockito.Mock
 import org.mockito.MockitoAnnotations
 import org.mockito.kotlin.any
+import org.mockito.kotlin.doAnswer
 import org.mockito.kotlin.doReturn
-import org.mockito.kotlin.doThrow
+import org.mockito.kotlin.doSuspendableAnswer
 import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.verifyNoMoreInteractions
@@ -65,6 +66,8 @@ import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.util.Locale
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.TimeUnit
 
 class TestTransactionHistoryInteractor {
 
@@ -460,7 +463,11 @@ class TestTransactionHistoryInteractor {
         coroutineRule.runTest {
             listOf(mockedExceptionWithMessage, mockedExceptionWithNoMessage).forEach { exception ->
                 // Given
-                doThrow(exception).whenever(walletCoreTransactionLogController)
+                val loadingReceived = CountDownLatch(1)
+                doAnswer {
+                    loadingReceived.await(3, TimeUnit.SECONDS)
+                    throw exception
+                }.whenever(walletCoreTransactionLogController)
                     .observePresentationActions(mockedParent.id)
 
                 // When
@@ -470,6 +477,7 @@ class TestTransactionHistoryInteractor {
                 ).runFlowTest {
                     // Then
                     assertEquals(TransactionHistoryInteractorPartialState.Loading, awaitItem())
+                    loadingReceived.countDown()
                     assertEquals(
                         TransactionHistoryInteractorPartialState.Failure(
                             exception.localizedMessage ?: mockedGenericErrorMessage
@@ -492,9 +500,12 @@ class TestTransactionHistoryInteractor {
         coroutineRule.runTest {
             listOf(mockedExceptionWithMessage, mockedExceptionWithNoMessage).forEach { exception ->
                 // Given
+                val loadingReceived = CompletableDeferred<Unit>()
                 mockHistoryCall(flowOf(emptyList()), mockedParent)
-                doThrow(exception).whenever(walletCoreTransactionLogController)
-                    .getTransactionLog(mockedParent.id)
+                doSuspendableAnswer {
+                    loadingReceived.await()
+                    throw exception
+                }.whenever(walletCoreTransactionLogController).getTransactionLog(mockedParent.id)
 
                 // When
                 interactor.observeHistory(
@@ -503,6 +514,7 @@ class TestTransactionHistoryInteractor {
                 ).runFlowTest {
                     // Then
                     assertEquals(TransactionHistoryInteractorPartialState.Loading, awaitItem())
+                    loadingReceived.complete(Unit)
                     assertEquals(
                         TransactionHistoryInteractorPartialState.Failure(
                             exception.localizedMessage ?: mockedGenericErrorMessage
@@ -524,9 +536,12 @@ class TestTransactionHistoryInteractor {
     fun `Given Case 11, When observeHistory is called, Then Case 11 Expected Result is returned`() {
         coroutineRule.runTest {
             // Given
+            val loadingReceived = CountDownLatch(1)
             mockHistoryCall(flowOf(listOf(mockedDdr)), mockedParent)
-            doThrow(mockedExceptionWithMessage).whenever(resourceProvider)
-                .getString(R.string.privacy_history_method_email)
+            doAnswer {
+                loadingReceived.await(3, TimeUnit.SECONDS)
+                throw mockedExceptionWithMessage
+            }.whenever(resourceProvider).getString(R.string.privacy_history_method_email)
 
             // When
             interactor.observeHistory(
@@ -535,6 +550,7 @@ class TestTransactionHistoryInteractor {
             ).runFlowTest {
                 // Then
                 assertEquals(TransactionHistoryInteractorPartialState.Loading, awaitItem())
+                loadingReceived.countDown()
                 assertEquals(
                     TransactionHistoryInteractorPartialState.Failure(
                         mockedExceptionWithMessage.localizedMessage ?: mockedGenericErrorMessage,
@@ -555,9 +571,11 @@ class TestTransactionHistoryInteractor {
     fun `Given Case 12, When observeHistory is retried, Then Case 12 Expected Result is returned`() {
         coroutineRule.runTest {
             // Given
+            val historyReceived = CompletableDeferred<Unit>()
             mockHistoryCall(
                 attempts = flow {
                     emit(listOf(mockedDpar))
+                    historyReceived.await()
                     throw mockedExceptionWithMessage
                 },
                 parent = mockedParent,
@@ -571,6 +589,7 @@ class TestTransactionHistoryInteractor {
                 // Then
                 assertEquals(TransactionHistoryInteractorPartialState.Loading, awaitItem())
                 assertTrue(awaitItem() is TransactionHistoryInteractorPartialState.Success)
+                historyReceived.complete(Unit)
                 assertEquals(
                     TransactionHistoryInteractorPartialState.Failure(
                         mockedExceptionWithMessage.localizedMessage ?: mockedGenericErrorMessage,

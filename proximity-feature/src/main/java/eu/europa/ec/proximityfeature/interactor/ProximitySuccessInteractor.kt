@@ -38,6 +38,7 @@ import eu.europa.ec.uilogic.component.ListItemTrailingContentDataUi
 import eu.europa.ec.uilogic.component.RelyingPartyDataUi
 import eu.europa.ec.uilogic.component.content.ContentHeaderConfig
 import eu.europa.ec.uilogic.component.wrap.ExpandableListItemUi
+import eu.europa.ec.uilogic.config.ConfigUILogic
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 
@@ -62,6 +63,7 @@ class ProximitySuccessInteractorImpl(
     private val walletCoreDocumentsController: WalletCoreDocumentsController,
     private val resourceProvider: ResourceProvider,
     private val uuidProvider: UuidProvider,
+    private val configUILogic: ConfigUILogic,
     walletCorePresentationController: WalletCorePresentationController? = null
 ) : ProximitySuccessInteractor,
     ScopedPresentationInteractorDelegate(walletCorePresentationController) {
@@ -103,6 +105,7 @@ class ProximitySuccessInteractorImpl(
                         disclosedClaim.toExpandableListItems(
                             docId = documentId,
                             queryId = selection.queryId,
+                            userImageClaimKeys = configUILogic.userImageClaimKeys,
                         )
                     }
 

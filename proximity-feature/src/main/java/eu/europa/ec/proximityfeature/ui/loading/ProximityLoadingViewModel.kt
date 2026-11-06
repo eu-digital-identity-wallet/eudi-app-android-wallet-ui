@@ -22,7 +22,7 @@ import eu.europa.ec.authenticationlogic.controller.authentication.DeviceAuthenti
 import eu.europa.ec.commonfeature.ui.loading.Effect
 import eu.europa.ec.commonfeature.ui.loading.Event
 import eu.europa.ec.commonfeature.ui.loading.LoadingViewModel
-import eu.europa.ec.corelogic.model.AuthenticationData
+import eu.europa.ec.corelogic.model.AuthenticationDataDomain
 import eu.europa.ec.proximityfeature.interactor.ProximityLoadingInteractor
 import eu.europa.ec.proximityfeature.interactor.ProximityLoadingObserveResponsePartialState
 import eu.europa.ec.proximityfeature.interactor.ProximityLoadingSendRequestedDocumentPartialState
@@ -38,18 +38,15 @@ import eu.europa.ec.uilogic.navigation.helper.generateComposableNavigationLink
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import org.koin.core.annotation.InjectedParam
-import org.koin.core.annotation.KoinViewModel
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.DurationUnit
 import kotlin.time.toDuration
 
-@KoinViewModel
 class ProximityLoadingViewModel(
     private val resourceProvider: ResourceProvider,
     private val interactor: ProximityLoadingInteractor,
-    @InjectedParam private val presentationScopeId: String
+    private val presentationScopeId: String
 ) : LoadingViewModel() {
 
     private var observationJob: Job? = null
@@ -161,7 +158,7 @@ class ProximityLoadingViewModel(
     private fun openAuthenticationPrompt(
         context: Context,
         popEffect: Effect,
-        authenticationDataList: List<AuthenticationData>,
+        authenticationDataList: List<AuthenticationDataDomain>,
         sendRequestedDocumentsAction: () -> Unit,
         index: Int = 0,
     ) {

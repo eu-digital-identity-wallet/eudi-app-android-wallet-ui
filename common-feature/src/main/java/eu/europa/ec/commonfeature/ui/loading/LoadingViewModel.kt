@@ -27,6 +27,7 @@ import eu.europa.ec.uilogic.mvi.ViewEvent
 import eu.europa.ec.uilogic.mvi.ViewSideEffect
 import eu.europa.ec.uilogic.mvi.ViewState
 import eu.europa.ec.uilogic.navigation.Screen
+import eu.europa.ec.uilogic.navigation.helper.isOpenableExternalLink
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.time.Duration
@@ -133,6 +134,10 @@ abstract class LoadingViewModel : MviViewModel<Event, State, Effect>() {
         }
     }
 
+    /**
+     * Shows that the relying party rejected the response. Closing the screen opens [redirectUri] in the
+     * browser, but only when the wallet may open it; see [isOpenableExternalLink].
+     */
     protected fun showRejection(
         initiatorRoute: String,
         redirectUri: Uri?,
@@ -143,7 +148,7 @@ abstract class LoadingViewModel : MviViewModel<Event, State, Effect>() {
                 error = null,
                 rejection = RejectionState(
                     initiatorRoute = initiatorRoute,
-                    redirectUri = redirectUri,
+                    redirectUri = redirectUri?.takeIf { isOpenableExternalLink(it.toString()) },
                     isClosing = false,
                 ),
                 headerConfig = headerConfig,

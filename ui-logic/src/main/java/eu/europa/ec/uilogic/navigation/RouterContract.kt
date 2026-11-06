@@ -53,6 +53,8 @@ sealed class DashboardScreens {
 
     data object Settings : Screen(name = "SETTINGS")
 
+    data object ResetWallet : Screen(name = "RESET_WALLET")
+
     data object DocumentSign : Screen(name = "DOCUMENT_SIGN")
 
     data object DocumentDetails : Screen(

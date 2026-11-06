@@ -61,7 +61,6 @@ import eu.europa.ec.uilogic.serializer.UiSerializer
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import org.koin.core.annotation.KoinViewModel
 import kotlin.time.Duration.Companion.milliseconds
 
 data class State(
@@ -160,7 +159,6 @@ sealed class DocumentsBottomSheetContent {
     ) : DocumentsBottomSheetContent()
 }
 
-@KoinViewModel
 class DocumentsViewModel(
     private val interactor: DocumentsInteractor,
     private val resourceProvider: ResourceProvider,

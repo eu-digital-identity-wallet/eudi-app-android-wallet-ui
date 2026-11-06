@@ -16,6 +16,8 @@
 
 package eu.europa.ec.dashboardfeature.interactor
 
+import eu.europa.ec.authenticationlogic.controller.session.SessionController
+import eu.europa.ec.corelogic.worker.WalletWorkScheduler
 import eu.europa.ec.dashboardfeature.ui.dashboard.model.SideMenuTypeUi
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
@@ -32,11 +34,19 @@ import org.mockito.Mock
 import org.mockito.MockitoAnnotations
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
+import org.mockito.kotlin.verifyNoInteractions
+import org.mockito.kotlin.whenever
 
 class TestDashboardInteractor {
 
     @Mock
     private lateinit var resourceProvider: ResourceProvider
+
+    @Mock
+    private lateinit var walletWorkScheduler: WalletWorkScheduler
+
+    @Mock
+    private lateinit var sessionController: SessionController
 
     private lateinit var interactor: DashboardInteractor
 
@@ -48,6 +58,8 @@ class TestDashboardInteractor {
 
         interactor = DashboardInteractorImpl(
             resourceProvider = resourceProvider,
+            walletWorkScheduler = walletWorkScheduler,
+            sessionController = sessionController,
         )
     }
 
@@ -56,23 +68,44 @@ class TestDashboardInteractor {
         closeable.close()
     }
 
-    //region getSideMenuOptions
-    // Case 1:
-    // 1. Side-menu labels are available.
-    // Case 1 Expected Result:
-    // Change PIN and Settings retain their order, followed by About EUDI Wallet.
+    @Test
+    fun `Given an unlocked wallet, When scheduleBackgroundWork is called, Then the periodic checks and the start-up check are scheduled`() {
+        whenever(sessionController.isUnlocked).thenReturn(true)
+
+        interactor.scheduleBackgroundWork()
+
+        verify(walletWorkScheduler, times(1)).schedule()
+        verify(walletWorkScheduler, times(1)).scheduleStartupCheck()
+    }
+
+    @Test
+    fun `Given a locked wallet, When scheduleBackgroundWork is called, Then nothing is scheduled`() {
+        whenever(sessionController.isUnlocked).thenReturn(false)
+
+        interactor.scheduleBackgroundWork()
+
+        verifyNoInteractions(walletWorkScheduler)
+    }
+
+    /**
+     * Case 1:
+     * 1. Side-menu labels are available.
+     * Case 1 Expected Result:
+     * Change PIN and Settings retain their order, followed by About EUDI Wallet.
+     *
+     * Assertions:
+     * 1. First item: CHANGE_PIN
+     * 2. Second item: SETTINGS
+     * Verify that getString was called exactly once per resource ID
+     */
     @Test
     fun `Given Case 1, When getSideMenuOptions is called, Then Case 1 Expected Result is returned`() {
-        // Given
         mockStringsNeededForGetSideMenuOptions(resourceProvider)
 
-        // When
         val sideMenuItems = interactor.getSideMenuOptions()
 
-        // Then
         assertEquals(3, sideMenuItems.size)
 
-        // 1. First item: CHANGE_PIN
         val firstItem = sideMenuItems[0]
         assertEquals(SideMenuTypeUi.CHANGE_PIN, firstItem.type)
         assertEquals(SideMenuTypeUi.CHANGE_PIN.itemId, firstItem.data.itemId)
@@ -83,7 +116,6 @@ class TestDashboardInteractor {
         val trailingIcon1 = firstItem.data.trailingContentData as ListItemTrailingContentDataUi.Icon
         assertEquals(AppIcons.KeyboardArrowRight, trailingIcon1.iconData)
 
-        // 2. Second item: SETTINGS
         val secondItem = sideMenuItems[1]
         assertEquals(SideMenuTypeUi.SETTINGS, secondItem.type)
         assertEquals(SideMenuTypeUi.SETTINGS.itemId, secondItem.data.itemId)
@@ -111,16 +143,13 @@ class TestDashboardInteractor {
             (aboutItem.data.trailingContentData as ListItemTrailingContentDataUi.Icon).iconData,
         )
 
-        // Verify that getString was called exactly once per resource ID
         verify(resourceProvider, times(1))
             .getString(R.string.dashboard_side_menu_option_change_pin)
         verify(resourceProvider, times(1))
             .getString(R.string.dashboard_side_menu_option_settings)
         verify(resourceProvider, times(1)).getString(R.string.trust_mark_about_title)
     }
-    //endregion
 
-    //region Mock Calls
     private fun mockStringsNeededForGetSideMenuOptions(resourcesProvider: ResourceProvider) {
         mockResourceProviderStrings(
             resourcesProvider,
@@ -131,11 +160,8 @@ class TestDashboardInteractor {
             )
         )
     }
-    //endregion
 
-    //region Mocked objects needed for tests.
     private val changePinText = "Change PIN"
     private val settingsText = "Settings"
     private val mockedAboutText = "About EUDI Wallet"
-    //endregion
 }

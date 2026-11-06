@@ -63,7 +63,7 @@ fun WrapCheckbox(
 
 @ThemeModePreviews
 @Composable
-private fun WrapCheckBoxPreview() {
+private fun WrapCheckboxPreview() {
     PreviewTheme {
         Column(
             verticalArrangement = Arrangement.spacedBy(SPACING_EXTRA_SMALL.dp)

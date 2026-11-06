@@ -23,6 +23,7 @@ data class DpaReportUi(
     val responsibility: String,
     val followUp: String,
     val contacts: List<DpaReportContactUi>,
+    val registrationWarning: String? = null,
 )
 
 data class DpaReportContactUi(

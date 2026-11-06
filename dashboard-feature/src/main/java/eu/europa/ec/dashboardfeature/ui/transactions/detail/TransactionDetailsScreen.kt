@@ -49,6 +49,7 @@ import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
+import eu.europa.ec.dashboardfeature.ui.transactions.component.WarningText
 import eu.europa.ec.dashboardfeature.ui.transactions.detail.model.PresentationActionCountsUiState
 import eu.europa.ec.dashboardfeature.ui.transactions.detail.model.TransactionContactUi
 import eu.europa.ec.dashboardfeature.ui.transactions.detail.model.TransactionDataProtectionAction
@@ -95,7 +96,7 @@ import eu.europa.ec.uilogic.component.wrap.WrapExpandableListItem
 import eu.europa.ec.uilogic.component.wrap.WrapListItem
 import eu.europa.ec.uilogic.component.wrap.WrapModalBottomSheet
 import eu.europa.ec.uilogic.component.wrap.WrapTextButton
-import eu.europa.ec.uilogic.extension.openUrl
+import eu.europa.ec.uilogic.extension.openExternalUri
 import eu.europa.ec.uilogic.extension.paddingFrom
 import kotlinx.coroutines.launch
 
@@ -303,7 +304,7 @@ private fun handleNavigationEffect(
         }
 
         is Effect.Navigation.Pop -> navController.popBackStack()
-        is Effect.Navigation.OpenUrlExternally -> context.openUrl(navigationEffect.url.toUri())
+        is Effect.Navigation.OpenUrlExternally -> context.openExternalUri(navigationEffect.url.toUri())
     }
 }
 
@@ -347,6 +348,12 @@ private fun TransactionDetailsCard(
                         text = reason,
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+                item.registrationWarning?.let { warning ->
+                    WarningText(
+                        modifier = Modifier.fillMaxWidth(),
+                        text = warning,
                     )
                 }
                 if (item.metadata.isNotEmpty()) {
@@ -766,7 +773,7 @@ private fun PresentationActionSection(
 
 @ThemeModePreviews
 @Composable
-private fun DeleteTransactionConfirmationPreview() {
+private fun SheetContentDeleteTransactionConfirmationPreview() {
     PreviewTheme {
         SheetContent(
             sheetContent = TransactionDetailsBottomSheetContent.DeleteTransactionConfirmation,
@@ -793,6 +800,7 @@ private fun TransactionDetailsPreview(
 }
 
 @LargeTextPreviews
+@ThemeModePreviews
 @Composable
 private fun TransactionDetailsCardLargeTextPreview() {
     PreviewTheme {
@@ -1129,7 +1137,7 @@ private class TransactionDetailsPreviewProvider : PreviewParameterProvider<State
 
 @ThemeModePreviews
 @Composable
-private fun RecordedSigningRequestPreview(
+private fun DetailsSectionRecordedSigningRequestPreview(
     @PreviewParameter(RecordedSigningRequestPreviewProvider::class) preview: RecordedSigningRequestPreviewData,
 ) {
     PreviewTheme {

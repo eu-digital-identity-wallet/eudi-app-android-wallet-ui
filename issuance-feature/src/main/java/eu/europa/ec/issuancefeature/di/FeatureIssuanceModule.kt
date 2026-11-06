@@ -26,24 +26,43 @@ import eu.europa.ec.issuancefeature.interactor.DocumentIssuanceSuccessInteractor
 import eu.europa.ec.issuancefeature.interactor.DocumentIssuanceSuccessInteractorImpl
 import eu.europa.ec.issuancefeature.interactor.DocumentOfferInteractor
 import eu.europa.ec.issuancefeature.interactor.DocumentOfferInteractorImpl
+import eu.europa.ec.issuancefeature.ui.add.AddDocumentViewModel
+import eu.europa.ec.issuancefeature.ui.code.DocumentOfferCodeViewModel
+import eu.europa.ec.issuancefeature.ui.offer.DocumentOfferViewModel
+import eu.europa.ec.issuancefeature.ui.success.DocumentIssuanceSuccessViewModel
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
+import eu.europa.ec.uilogic.config.ConfigUILogic
 import eu.europa.ec.uilogic.serializer.UiSerializer
-import org.koin.core.annotation.ComponentScan
-import org.koin.core.annotation.Configuration
-import org.koin.core.annotation.Factory
-import org.koin.core.annotation.Module
-import org.koin.core.annotation.Scope
-import org.koin.core.annotation.Scoped
+import org.koin.core.module.dsl.factoryOf
+import org.koin.core.module.dsl.scopedOf
+import org.koin.core.module.dsl.viewModel
+import org.koin.dsl.module
 import org.koin.mp.KoinPlatform
 
 private const val CREDENTIAL_OFFER_ISSUANCE_SCOPE_ID = "credential_offer_scope_id"
 
-@Module
-@Configuration
-@ComponentScan("eu.europa.ec.issuancefeature")
-class FeatureIssuanceModule
+val featureIssuanceModule = module {
+    factoryOf(::provideAddDocumentInteractor)
+    factoryOf(::provideDocumentIssuanceSuccessInteractor)
 
-@Factory
+    scope<CredentialOfferIssuanceScope> {
+        scopedOf(::provideDocumentOfferInteractor)
+    }
+
+    viewModel { (issuanceConfig: String) ->
+        AddDocumentViewModel(get(), get(), get(), issuanceConfig)
+    }
+    viewModel { (offerCodeSerializedConfig: String) ->
+        DocumentOfferCodeViewModel(get(), get(), offerCodeSerializedConfig)
+    }
+    viewModel { (offerSerializedConfig: String) ->
+        DocumentOfferViewModel(get(), get(), offerSerializedConfig)
+    }
+    viewModel { (issuanceSuccessSerializedConfig: String) ->
+        DocumentIssuanceSuccessViewModel(get(), get(), issuanceSuccessSerializedConfig)
+    }
+}
+
 fun provideAddDocumentInteractor(
     walletCoreDocumentsController: WalletCoreDocumentsController,
     resourceProvider: ResourceProvider,
@@ -57,19 +76,18 @@ fun provideAddDocumentInteractor(
         uiSerializer
     )
 
-@Factory
 fun provideDocumentIssuanceSuccessInteractor(
     walletCoreDocumentsController: WalletCoreDocumentsController,
     resourceProvider: ResourceProvider,
-    uuIdProvider: UuidProvider
+    uuIdProvider: UuidProvider,
+    configUILogic: ConfigUILogic,
 ): DocumentIssuanceSuccessInteractor = DocumentIssuanceSuccessInteractorImpl(
     walletCoreDocumentsController,
     resourceProvider,
     uuIdProvider,
+    configUILogic,
 )
 
-@Scope(CredentialOfferIssuanceScope::class)
-@Scoped
 fun provideDocumentOfferInteractor(
     walletCoreDocumentsController: WalletCoreDocumentsController,
     resourceProvider: ResourceProvider,
@@ -85,7 +103,6 @@ fun provideDocumentOfferInteractor(
         configLogic
     )
 
-@Scope
 class CredentialOfferIssuanceScope
 
 fun getOrCreateCredentialOfferScope(scopeId: String = CREDENTIAL_OFFER_ISSUANCE_SCOPE_ID): org.koin.core.scope.Scope =

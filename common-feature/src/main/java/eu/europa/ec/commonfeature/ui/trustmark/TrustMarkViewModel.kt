@@ -29,8 +29,6 @@ import eu.europa.ec.uilogic.mvi.ViewSideEffect
 import eu.europa.ec.uilogic.mvi.ViewState
 import eu.europa.ec.uilogic.serializer.UiSerializer
 import kotlinx.coroutines.launch
-import org.koin.core.annotation.InjectedParam
-import org.koin.core.annotation.KoinViewModel
 
 data class State(
     val config: TrustMarkUiConfig,
@@ -60,11 +58,10 @@ sealed interface Effect : ViewSideEffect {
     data class OpenUrl(val url: String) : Effect
 }
 
-@KoinViewModel
 class TrustMarkViewModel(
     private val interactor: TrustMarkInteractor,
     private val uiSerializer: UiSerializer,
-    @InjectedParam private val trustMarkConfig: String,
+    private val trustMarkConfig: String,
 ) : MviViewModel<Event, State, Effect>() {
 
     override fun setInitialState(): State {

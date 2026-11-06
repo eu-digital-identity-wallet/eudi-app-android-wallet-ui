@@ -19,17 +19,14 @@ package eu.europa.ec.analyticslogic.di
 import eu.europa.ec.analyticslogic.config.AnalyticsConfig
 import eu.europa.ec.analyticslogic.controller.AnalyticsController
 import eu.europa.ec.analyticslogic.controller.AnalyticsControllerImpl
-import org.koin.core.annotation.ComponentScan
-import org.koin.core.annotation.Configuration
-import org.koin.core.annotation.Module
-import org.koin.core.annotation.Single
+import org.koin.core.module.dsl.singleOf
+import org.koin.dsl.module
 
-@Module
-@Configuration
-@ComponentScan("eu.europa.ec.analyticslogic")
-class LogicAnalyticsModule
+val logicAnalyticsModule = module {
+    singleOf(::provideAnalyticsConfig)
+    singleOf(::provideAnalyticsController)
+}
 
-@Single
 fun provideAnalyticsConfig(): AnalyticsConfig {
     return try {
         val impl = Class.forName("eu.europa.ec.analyticslogic.config.AnalyticsConfigImpl")
@@ -40,6 +37,5 @@ fun provideAnalyticsConfig(): AnalyticsConfig {
     }
 }
 
-@Single
 fun provideAnalyticsController(analyticsConfig: AnalyticsConfig): AnalyticsController =
     AnalyticsControllerImpl(analyticsConfig)

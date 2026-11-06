@@ -123,4 +123,25 @@ class TestSecurePin {
         pin.close()
         sameValuePin.close()
     }
+
+    @Test
+    fun `readChars gives the characters without clearing them`() {
+        val pin = SecurePinImpl("135792")
+
+        val matches = pin.readChars { it.contentEquals("135792".toCharArray()) }
+
+        assertTrue(matches)
+        assertFalse(pin.isCleared)
+        pin.close()
+    }
+
+    @Test
+    fun `readChars fails once the PIN is cleared`() {
+        val pin = SecurePinImpl("135792")
+        pin.close()
+
+        assertThrows(IllegalStateException::class.java) {
+            pin.readChars { }
+        }
+    }
 }

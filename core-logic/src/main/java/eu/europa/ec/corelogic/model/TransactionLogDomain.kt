@@ -34,6 +34,7 @@ sealed interface TransactionLogDomain {
      *
      * @property registration details from the relying party's registration certificate, or null
      * when the request contained none.
+     * @property registrationCheck whether that registration was verified when the data was shared.
      */
     data class Presentation(
         override val id: String,
@@ -46,10 +47,31 @@ sealed interface TransactionLogDomain {
         val claimsRequested: List<CredentialClaimsDomain>,
         val claimsPresented: List<CredentialClaimsDomain>,
         val transactionData: List<PresentationTransactionDataDomain>,
+        val registrationCheck: RecordedRegistrationCheckDomain,
     ) : TransactionLogDomain {
-        /** A failed presentation may still have shared data. */
+
+        /**
+         * True when the entry shows details from a registration certificate, such as contacts, an
+         * identifier or an intermediary, that the wallet did not verify when the data was shared.
+         * Wallet Core records a certificate that failed its binding, validity or revocation checks,
+         * so these details may belong to another party.
+         */
+        val hasUnverifiedRegistration: Boolean
+            get() = hasRegistrationDetails && registrationCheck != RecordedRegistrationCheckDomain.Verified
+
+        /** Whether the entry carries anything Wallet Core took from a registration certificate. */
+        private val hasRegistrationDetails: Boolean
+            get() = registration != null || party.identifier != null || party.contacts.isNotEmpty() ||
+                    intermediary != null
+
+        /**
+         * A failed presentation may still have shared data. A deletion request is not offered when
+         * the registration certificate was issued to another party than the one that asked, since its
+         * contacts are not that party's.
+         */
         val canRequestDataDeletion: Boolean
-            get() = claimsPresented.any { credentialClaims -> credentialClaims.claims.isNotEmpty() }
+            get() = claimsPresented.any { credentialClaims -> credentialClaims.claims.isNotEmpty() } &&
+                    !registrationCheck.isNotBoundToRequester
     }
 
     data class CredentialIssuance(

@@ -133,6 +133,26 @@ object StringResourceProviderMocker {
                 R.string.request_transaction_signature_format to "Signature format",
                 R.string.request_transaction_conformance_level to "Conformance level",
                 R.string.request_transaction_signed_attributes to "Signed attributes",
+                R.string.request_transaction_relying_party_attribute to "Chosen by the relying party; not checked by the wallet",
+                R.string.request_transaction_location to "Location",
+                R.string.request_transaction_data_hash_algorithm to "Transaction data hash algorithm",
+                R.string.request_transaction_circumstantial_data to "Circumstantial data",
+                R.string.request_transaction_signed_envelope_property to "Signed envelope property",
+                R.string.request_transaction_reference_uri to "Reference URI",
+                R.string.request_transaction_signature_algorithm to "Signature algorithm",
+                R.string.request_transaction_signature_algorithm_parameters to "Signature algorithm parameters",
+                R.string.request_transaction_document_access to "Document access",
+                R.string.request_transaction_document_access_public to "Public",
+                R.string.request_transaction_document_access_otp to "One-time password",
+                R.string.request_transaction_document_access_basic to "Basic authentication",
+                R.string.request_transaction_document_access_digest to "Digest authentication",
+                R.string.request_transaction_document_access_oauth to "OAuth 2.0",
+                R.string.request_transaction_document_content to "Document content",
+                R.string.request_transaction_document_content_inline to "Included in the request",
+                R.string.request_transaction_document_type to "Document type",
+                R.string.request_transaction_document_type_original to "Original document",
+                R.string.request_transaction_document_type_formatted to "Formatted document",
+                R.string.request_transaction_document_size to "Document size",
                 R.string.request_transaction_otp to "One-time password (OTP)",
                 R.string.request_transaction_response_uri to "Response URI",
                 R.string.request_transaction_unavailable to "Details for this transaction are unavailable.",
@@ -155,6 +175,14 @@ object StringResourceProviderMocker {
             )
         )
             .thenAnswer { invocation -> "Document ${invocation.getArgument<Any>(1)}" }
+        whenever(
+            resourceProvider.getQuantityString(
+                eq(R.plurals.request_transaction_document_size_value),
+                any(),
+                any()
+            )
+        )
+            .thenAnswer { invocation -> "${invocation.getArgument<Any>(2)} bytes" }
     }
 
     fun mockIssuerName(

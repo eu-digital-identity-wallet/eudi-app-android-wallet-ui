@@ -23,14 +23,12 @@ import eu.europa.ec.authenticationlogic.model.BiometricCrypto
 import eu.europa.ec.authenticationlogic.secure.SecurePin
 import eu.europa.ec.businesslogic.config.ConfigLogic
 import eu.europa.ec.businesslogic.extension.safeAsync
-import eu.europa.ec.businesslogic.util.safeLet
 import eu.europa.ec.commonfeature.config.SuccessUIConfig
 import eu.europa.ec.commonfeature.interactor.DeviceAuthenticationInteractor
 import eu.europa.ec.corelogic.controller.IssueDocumentsPartialState
 import eu.europa.ec.corelogic.controller.ResolveDocumentOfferPartialState
 import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
 import eu.europa.ec.corelogic.extension.documentIdentifier
-import eu.europa.ec.corelogic.extension.getIssuerLogo
 import eu.europa.ec.corelogic.extension.getIssuerName
 import eu.europa.ec.corelogic.extension.getName
 import eu.europa.ec.corelogic.model.DocumentIdentifier
@@ -78,12 +76,22 @@ sealed class ResolveDocumentOfferInteractorPartialState {
 }
 
 sealed class IssueDocumentsInteractorPartialState {
+    /**
+     * The documents in [documentIds] were issued. [notIssuedDocuments] names those of the offer that
+     * the issuer did not issue, when there are any.
+     */
     data class Success(
         val documentIds: List<DocumentId>,
+        val notIssuedDocuments: List<String> = emptyList(),
     ) : IssueDocumentsInteractorPartialState()
 
+    /**
+     * The documents in [issuedDocumentIds] were issued; some came from an issuer that could not be
+     * trusted and were refused. [notIssuedDocuments] names every document of the offer not added.
+     */
     data class PartialSuccessWithUntrustedIssuer(
         val issuedDocumentIds: List<DocumentId>,
+        val notIssuedDocuments: List<String>,
     ) : IssueDocumentsInteractorPartialState()
 
     data class DeferredSuccess(
@@ -163,7 +171,10 @@ class DocumentOfferInteractorImpl(
                         if (offerHasNoDocuments) {
                             ResolveDocumentOfferInteractorPartialState.NoDocument(
                                 issuerName = response.offer.getIssuerName(userLocale),
-                                issuerLogo = response.offer.getIssuerLogo(userLocale),
+                                issuerLogo = walletCoreDocumentsController.getIssuerLogo(
+                                    response.offer,
+                                    userLocale
+                                ),
                                 issuerRegistration = response.issuerRegistration,
                             )
                         } else {
@@ -171,12 +182,12 @@ class DocumentOfferInteractorImpl(
                             val codeMinLength = 4
                             val codeMaxLength = 6
 
-                            safeLet(
-                                response.offer.txCodeSpec?.inputMode,
-                                response.offer.txCodeSpec?.length
-                            ) { inputMode, length ->
-
-                                if ((length !in codeMinLength..codeMaxLength) || inputMode == TxCodeInputMode.TEXT) {
+                            response.offer.txCodeSpec?.let { txCodeSpec ->
+                                val length = txCodeSpec.length
+                                if (length == null ||
+                                    length !in codeMinLength..codeMaxLength ||
+                                    txCodeSpec.inputMode == TxCodeInputMode.TEXT
+                                ) {
                                     return@map ResolveDocumentOfferInteractorPartialState.Failure(
                                         errorMessage = resourceProvider.getString(
                                             R.string.issuance_document_offer_error_invalid_txcode_format,
@@ -205,7 +216,10 @@ class DocumentOfferInteractorImpl(
                                         )
                                     },
                                     issuerName = response.offer.getIssuerName(userLocale),
-                                    issuerLogo = response.offer.getIssuerLogo(userLocale),
+                                    issuerLogo = walletCoreDocumentsController.getIssuerLogo(
+                                        response.offer,
+                                        userLocale
+                                    ),
                                     txCodeLength = response.offer.txCodeSpec?.length,
                                     issuerRegistration = response.issuerRegistration,
                                 )
@@ -253,13 +267,16 @@ class DocumentOfferInteractorImpl(
 
                         is IssueDocumentsPartialState.PartialSuccess -> {
                             IssueDocumentsInteractorPartialState.Success(
-                                documentIds = response.documentIds
+                                documentIds = response.documentIds,
+                                notIssuedDocuments = response.nonIssuedDocuments.values.toList(),
                             )
                         }
 
                         is IssueDocumentsPartialState.PartialSuccessWithUntrustedIssuer -> {
                             IssueDocumentsInteractorPartialState.PartialSuccessWithUntrustedIssuer(
-                                issuedDocumentIds = response.issuedDocumentIds
+                                issuedDocumentIds = response.issuedDocumentIds,
+                                notIssuedDocuments = response.untrustedDocuments.values +
+                                        response.nonIssuedDocuments.values,
                             )
                         }
 

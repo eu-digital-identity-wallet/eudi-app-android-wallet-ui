@@ -39,8 +39,6 @@ import eu.europa.ec.uilogic.navigation.helper.generateComposableArguments
 import eu.europa.ec.uilogic.navigation.helper.generateComposableNavigationLink
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
-import org.koin.core.annotation.InjectedParam
-import org.koin.core.annotation.KoinViewModel
 
 data class State(
     val isLoading: Boolean = false,
@@ -97,11 +95,10 @@ sealed class TransactionDetailsBottomSheetContent {
     data object DeleteTransactionConfirmation : TransactionDetailsBottomSheetContent()
 }
 
-@KoinViewModel
 internal class TransactionDetailsViewModel(
     private val interactor: TransactionDetailsInteractor,
     private val resourceProvider: ResourceProvider,
-    @InjectedParam private val transactionId: String,
+    private val transactionId: String,
 ) : MviViewModel<Event, State, Effect>() {
     private var transactionDetailsJob: Job? = null
     private var presentationActionCountsJob: Job? = null

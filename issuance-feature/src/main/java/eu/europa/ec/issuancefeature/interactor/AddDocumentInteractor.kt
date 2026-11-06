@@ -52,8 +52,14 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 
 sealed class AddDocumentInteractorIssueDocumentsPartialState {
-    data class Success(val documentIds: List<DocumentId>) :
-        AddDocumentInteractorIssueDocumentsPartialState()
+    /**
+     * The documents in [documentIds] were issued. [notIssuedDocuments] names those of the request
+     * that the issuer did not issue, when there are any.
+     */
+    data class Success(
+        val documentIds: List<DocumentId>,
+        val notIssuedDocuments: List<String> = emptyList(),
+    ) : AddDocumentInteractorIssueDocumentsPartialState()
 
     data object DeferredSuccess : AddDocumentInteractorIssueDocumentsPartialState()
 
@@ -232,6 +238,7 @@ class AddDocumentInteractorImpl(
         ).collect { state ->
 
             val successIds: MutableList<String> = mutableListOf()
+            val notIssued: MutableList<String> = mutableListOf()
             var isDeferred = false
             var issuerNotTrustedReason: UntrustedIssuerReasonDomain? = null
             var error: String? = null
@@ -252,10 +259,13 @@ class AddDocumentInteractorImpl(
 
                 is IssueDocumentsPartialState.PartialSuccess -> {
                     successIds.addAll(state.documentIds)
+                    notIssued.addAll(state.nonIssuedDocuments.values)
                 }
 
                 is IssueDocumentsPartialState.PartialSuccessWithUntrustedIssuer -> {
                     successIds.addAll(state.issuedDocumentIds)
+                    notIssued.addAll(state.untrustedDocuments.values)
+                    notIssued.addAll(state.nonIssuedDocuments.values)
                 }
 
                 is IssueDocumentsPartialState.Success -> {
@@ -274,7 +284,10 @@ class AddDocumentInteractorImpl(
             } else if (isDeferred) {
                 AddDocumentInteractorIssueDocumentsPartialState.DeferredSuccess
             } else if (successIds.isNotEmpty()) {
-                AddDocumentInteractorIssueDocumentsPartialState.Success(successIds)
+                AddDocumentInteractorIssueDocumentsPartialState.Success(
+                    documentIds = successIds,
+                    notIssuedDocuments = notIssued,
+                )
             } else if (error != null) {
                 AddDocumentInteractorIssueDocumentsPartialState.Failure(error)
             } else if (authenticationData != null) {

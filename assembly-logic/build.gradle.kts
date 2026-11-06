@@ -29,6 +29,7 @@ import project.convention.logic.config.LibraryModule.ProximityFeature
 import project.convention.logic.config.LibraryModule.ResourcesLogic
 import project.convention.logic.config.LibraryModule.StartupFeature
 import project.convention.logic.config.LibraryModule.StorageLogic
+import project.convention.logic.config.LibraryModule.TestLogic
 import project.convention.logic.config.LibraryModule.UiLogic
 import project.convention.logic.kover.KoverExclusionRules
 import project.convention.logic.kover.excludeFromKoverReport
@@ -72,6 +73,11 @@ dependencies {
     api(project(PresentationFeature.path))
     api(project(ProximityFeature.path))
     api(project(IssuanceFeature.path))
+
+    // Koin graph tests
+    testImplementation(project(TestLogic.path))
+    testImplementation(libs.koin.test)
+    testImplementation(libs.androidx.room)
 
     // Modules Kover Report
     koverModules.forEach {

@@ -22,4 +22,5 @@ data class DataDeletionRequestUi(
     val retentionNotice: String,
     val buttonText: String,
     val contactUrl: String,
+    val registrationWarning: String? = null,
 )

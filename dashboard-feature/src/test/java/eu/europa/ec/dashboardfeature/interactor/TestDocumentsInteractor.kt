@@ -49,6 +49,7 @@ import eu.europa.ec.eudi.wallet.document.Document
 import eu.europa.ec.eudi.wallet.document.DocumentId
 import eu.europa.ec.eudi.wallet.document.IssuedDocument
 import eu.europa.ec.eudi.wallet.document.UnsignedDocument
+import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.testfeature.util.copy
 import eu.europa.ec.testfeature.util.getMockedFullDocuments
@@ -66,6 +67,7 @@ import eu.europa.ec.testlogic.rule.CoroutineTestRule
 import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.ListItemDataUi
 import eu.europa.ec.uilogic.component.ListItemMainContentDataUi
+import eu.europa.ec.uilogic.component.ListItemSupportingContentDataUi
 import eu.europa.ec.uilogic.component.ListItemTrailingContentDataUi
 import junit.framework.TestCase.assertEquals
 import junit.framework.TestCase.assertNotNull
@@ -663,6 +665,32 @@ class TestDocumentsInteractor {
                 assertTrue(state is DocumentInteractorGetDocumentsPartialState.Success)
                 assertEquals(true, state.shouldAllowUserInteraction)
                 assertEquals(mockedFullDocuments.size, state.allDocuments.items.size)
+            }
+        }
+    }
+
+    @Test
+    fun `Given a suspended document, When getDocuments is called, Then it is labelled suspended and stays blocked`() {
+        coroutineRule.runTest {
+            mockShowBatchIssuanceCounterPreference(response = true)
+            mockGetDocumentsBaseCalls(
+                documents = getMockedFullDocuments(),
+                mainPid = getMockedFullDocuments()[0],
+                documentIsRevoked = true,
+                documentIsSuspended = true,
+            )
+            mockGetDocumentsResourceStrings()
+            whenever(resourceProvider.getString(R.string.dashboard_document_suspended)).thenReturn("Suspended")
+
+            interactor.getDocuments().runFlowTest {
+                val state = awaitItem()
+                assertTrue(state is DocumentInteractorGetDocumentsPartialState.Success)
+                val payload = state.allDocuments.items.first().payload as DocumentUi
+                assertEquals(DocumentIssuanceStateUi.Revoked, payload.documentIssuanceState)
+                assertEquals(
+                    "Suspended",
+                    (payload.uiData.supportingContentData as ListItemSupportingContentDataUi.Text).text
+                )
             }
         }
     }
@@ -1413,6 +1441,7 @@ class TestDocumentsInteractor {
         mainPid: IssuedDocument?,
         documentIsRevoked: Boolean = false,
         documentLowOnCredentials: Boolean = false,
+        documentIsSuspended: Boolean = false,
     ) {
         whenever(walletCoreDocumentsController.getMainPidDocument())
             .thenReturn(mainPid)
@@ -1422,6 +1451,8 @@ class TestDocumentsInteractor {
             .thenReturn(DocumentCategories(value = emptyMap()))
         whenever(walletCoreDocumentsController.isDocumentRevoked(anyString()))
             .thenReturn(documentIsRevoked)
+        whenever(walletCoreDocumentsController.isDocumentSuspended(anyString()))
+            .thenReturn(documentIsSuspended)
         whenever(walletCoreDocumentsController.isDocumentLowOnCredentials(any()))
             .thenReturn(documentLowOnCredentials)
     }

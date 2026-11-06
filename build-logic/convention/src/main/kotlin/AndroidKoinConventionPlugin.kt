@@ -23,12 +23,8 @@ class AndroidKoinConventionPlugin : Plugin<Project> {
 
     override fun apply(target: Project) {
         with(target) {
-            with(pluginManager) {
-                apply("io.insert-koin.compiler.plugin")
-            }
             dependencies {
                 add("implementation", libs.findLibrary("koin-android").get())
-                add("implementation", libs.findLibrary("koin-annotations").get())
                 add("implementation", libs.findLibrary("koin-compose").get())
                 add("implementation", libs.findLibrary("koin-workmanager").get())
             }

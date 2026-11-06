@@ -16,10 +16,19 @@
 
 package eu.europa.ec.commonfeature.ui.request.model
 
+import eu.europa.ec.commonfeature.extension.toExpandableListItems
+import eu.europa.ec.commonfeature.extension.toSelectiveExpandableListItems
+import eu.europa.ec.commonfeature.extension.userImageItemIds
+import eu.europa.ec.corelogic.model.ClaimDomain
+import eu.europa.ec.corelogic.model.ClaimItemId
+import eu.europa.ec.corelogic.model.ClaimPathDomain
+import eu.europa.ec.corelogic.model.ClaimType
+import eu.europa.ec.testfeature.util.mockedMdocPidNameSpace
 import eu.europa.ec.testfeature.util.mockedPidDocName
 import eu.europa.ec.testfeature.util.mockedPidId
 import eu.europa.ec.testfeature.util.mockedRequestCollapsedSupportingText
 import eu.europa.ec.testfeature.util.mockedTransactionQueryId
+import eu.europa.ec.testfeature.util.mockedUserImageClaimKeys
 import eu.europa.ec.testfeature.util.mockedValidPidWithBasicFieldsRequestMatch
 import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.ListItemDataUi
@@ -27,6 +36,7 @@ import eu.europa.ec.uilogic.component.ListItemMainContentDataUi
 import eu.europa.ec.uilogic.component.ListItemSupportingContentDataUi
 import eu.europa.ec.uilogic.component.ListItemTrailingContentDataUi
 import eu.europa.ec.uilogic.component.wrap.ExpandableListItemUi
+import eu.europa.ec.uilogic.extension.toggleCheckboxState
 import junit.framework.TestCase.assertEquals
 import junit.framework.TestCase.assertFalse
 import junit.framework.TestCase.assertNull
@@ -35,6 +45,95 @@ import junit.framework.TestCase.assertTrue
 import org.junit.Test
 
 class TestRequestDataUi {
+
+    @Test
+    fun `Given a selected portrait, When the request is read, Then it asks for and would share the portrait`() {
+        val requestDataUi = RequestDataUi.Single(
+            combination(document(keys = listOf("family_name", "portrait"), selectable = true))
+        )
+
+        assertTrue(requestDataUi.requestsUserImage)
+        assertTrue(requestDataUi.sharesUserImage)
+    }
+
+    @Test
+    fun `Given the portrait is unticked, When the request is read, Then it asks for the portrait but would not share it`() {
+        val requestDataUi = RequestDataUi.Single(
+            combination(
+                document(keys = listOf("family_name", "portrait"), selectable = true)
+                    .withUnchecked("portrait")
+            )
+        )
+
+        assertTrue(requestDataUi.requestsUserImage)
+        assertFalse(requestDataUi.sharesUserImage)
+    }
+
+    @Test
+    fun `Given claims disclosed as a whole, When the request includes the picture, Then it would be shared`() {
+        val requestDataUi = RequestDataUi.Single(
+            combination(document(keys = listOf("family_name", "picture"), selectable = false))
+        )
+
+        assertTrue(requestDataUi.requestsUserImage)
+        assertTrue(requestDataUi.sharesUserImage)
+    }
+
+    @Test
+    fun `Given no picture of the holder, When the request is read, Then neither the notice nor the confirmation applies`() {
+        val requestDataUi = RequestDataUi.Single(
+            combination(
+                document(
+                    keys = listOf("family_name", "signature_usual_mark"),
+                    selectable = true
+                )
+            )
+        )
+
+        assertFalse(requestDataUi.requestsUserImage)
+        assertFalse(requestDataUi.sharesUserImage)
+        assertFalse(RequestDataUi.NoData.requestsUserImage)
+    }
+
+    @Test
+    fun `Given a declined request, When it is read or edited, Then nothing can be shared and it stays as it is`() {
+        val declined = RequestDataUi.Declined(reason = "declined")
+
+        assertNull(declined.selectedCombination)
+        assertTrue(declined.selectedDocuments.isEmpty())
+        assertEquals(declined, declined.withSelectedDocuments(emptyList()))
+        assertEquals(declined, declined.toggleTransactionDataExpansion("section", "section"))
+    }
+
+    @Test
+    fun `Given several combinations, When only another one includes the portrait, Then the selected one decides`() {
+        val withPortrait = combination(document(keys = listOf("portrait"), selectable = true))
+        val withoutPortrait = combination(document(keys = listOf("family_name"), selectable = true))
+
+        val first = RequestDataUi.Multiple(listOf(withoutPortrait, withPortrait), selectedIndex = 0)
+        val second = first.copy(selectedIndex = 1)
+
+        assertFalse(first.requestsUserImage)
+        assertFalse(first.sharesUserImage)
+        assertTrue(second.requestsUserImage)
+        assertTrue(second.sharesUserImage)
+    }
+
+    @Test
+    fun `Given a picture claim added to the configuration, When the request is read, Then it counts as a picture of the holder`() {
+        val requestDataUi = RequestDataUi.Single(
+            combination(
+                document(
+                    keys = listOf("family_name", "face_image"),
+                    selectable = true,
+                    userImageClaimKeys = setOf("face_image"),
+                )
+            )
+        )
+
+        assertTrue(requestDataUi.requestsUserImage)
+        assertTrue(requestDataUi.sharesUserImage)
+    }
 
     //region toggleTransactionDataExpansion
 
@@ -603,7 +702,71 @@ class TestRequestDataUi {
     private val mockedNestedActionId = "$mockedNestedGroupId/open"
     private val mockedDocumentUrl = "https://documents.example.org/contract.pdf?token=a%2Fb#page=1"
     private val mockedResponseUri = "https://signer.example.org/response"
+    private fun document(
+        keys: List<String>,
+        selectable: Boolean = true,
+        docId: String = mockedPidId,
+        userImageClaimKeys: Set<String> = mockedUserImageClaimKeys,
+    ): RequestDocumentItemUi {
+        val payload = DocumentPayloadDomain(
+            docName = mockedPidDocName,
+            docId = docId,
+            docFormatDomain = DocumentFormatDomain.MsoMdoc,
+            docClaimsDomain = keys.map { key ->
+                ClaimDomain.Primitive(
+                    key = key,
+                    displayTitle = key,
+                    path = ClaimPathDomain.ofPlainKeys(
+                        names = listOf(key),
+                        type = ClaimType.MsoMdoc(namespace = mockedMdocPidNameSpace),
+                    ),
+                    value = "value",
+                    isRequired = false,
+                )
+            },
+        )
+        return RequestDocumentItemUi(
+            domainPayload = payload,
+            userImageItemIds = payload.userImageItemIds(userImageClaimKeys),
+            headerUi = ExpandableListItemUi.NestedListItem(
+                header = ListItemDataUi(
+                    itemId = docId,
+                    mainContentData = ListItemMainContentDataUi.Text(mockedPidDocName),
+                ),
+                nestedItems = if (selectable) {
+                    payload.toSelectiveExpandableListItems(userImageClaimKeys = userImageClaimKeys)
+                } else {
+                    payload.toExpandableListItems(userImageClaimKeys = userImageClaimKeys)
+                },
+                isExpanded = false,
+            ),
+        )
+    }
+
+    private fun RequestDocumentItemUi.withUnchecked(key: String): RequestDocumentItemUi {
+        val itemId = ClaimItemId.Claim(
+            docId = domainPayload.docId,
+            queryId = domainPayload.queryId,
+            path = ClaimPathDomain.ofPlainKeys(
+                names = listOf(key),
+                type = ClaimType.MsoMdoc(namespace = mockedMdocPidNameSpace),
+            ),
+        ).encode()
+        return copy(
+            headerUi = headerUi.copy(
+                nestedItems = headerUi.nestedItems.map { item -> item.toggleCheckboxState(id = itemId) },
+            ),
+        )
+    }
+
+    private fun combination(document: RequestDocumentItemUi) = RequestCombinationUi(
+        documents = listOf(document),
+        matches = emptyList(),
+        transactionData = null,
+    )
+
     private val mockedDocument = RequestDocumentItemUi(
+        userImageItemIds = emptySet(),
         domainPayload = DocumentPayloadDomain(
             docName = mockedPidDocName,
             docId = mockedPidId,

@@ -34,12 +34,16 @@ import eu.europa.ec.uilogic.mvi.ViewSideEffect
 import eu.europa.ec.uilogic.mvi.ViewState
 import eu.europa.ec.uilogic.navigation.helper.generateComposableArguments
 import eu.europa.ec.uilogic.navigation.helper.generateComposableNavigationLink
+import eu.europa.ec.uilogic.navigation.helper.isOpenableExternalLink
 
 data class State(
     val isLoading: Boolean = false,
     val headerConfig: ContentHeaderConfig,
 
     val bannerText: String = "",
+
+    /** A warning shown under the header, for example about documents that were not issued. */
+    val warningText: String? = null,
 
     val items: List<ExpandableListItemUi.NestedListItem> = emptyList(),
 ) : ViewState
@@ -65,8 +69,12 @@ sealed class Effect : ViewSideEffect {
 
         data object Pop : Navigation()
 
-        data class DeepLink(
-            val link: Uri,
+        /**
+         * Opens [link], a verifier's redirect, in the browser when there is one the wallet may open,
+         * and returns to [routeToPop], or to the previous screen when it is null.
+         */
+        data class OpenRedirect(
+            val link: Uri?,
             val routeToPop: String?,
         ) : Navigation()
 
@@ -178,12 +186,12 @@ abstract class DocumentSuccessViewModel : MviViewModel<Event, State, Effect>() {
                 )
             }
 
-            is NavigationType.Deeplink -> Effect.Navigation.DeepLink(
-                nav.link.toUri(),
-                nav.routeToPop
+            is NavigationType.Deeplink -> Effect.Navigation.OpenRedirect(
+                link = nav.link.takeIf(::isOpenableExternalLink)?.toUri(),
+                routeToPop = nav.routeToPop
             )
 
-            is NavigationType.Pop, NavigationType.Finish -> Effect.Navigation.Pop
+            is NavigationType.Pop, is NavigationType.Finish -> Effect.Navigation.Pop
 
             is NavigationType.PushRoute -> Effect.Navigation.SwitchScreen(
                 nav.route,

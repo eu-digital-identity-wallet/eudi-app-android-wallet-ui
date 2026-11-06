@@ -27,7 +27,6 @@ import eu.europa.ec.uilogic.mvi.MviViewModel
 import eu.europa.ec.uilogic.mvi.ViewEvent
 import eu.europa.ec.uilogic.mvi.ViewSideEffect
 import eu.europa.ec.uilogic.mvi.ViewState
-import org.koin.core.annotation.KoinViewModel
 
 data class State(
     val isLoading: Boolean = false,
@@ -51,7 +50,6 @@ sealed class Effect : ViewSideEffect {
     data class OpenDocumentSelection(val selection: List<String>) : Effect()
 }
 
-@KoinViewModel
 class DocumentSignViewModel(
     private val documentSignInteractor: DocumentSignInteractor,
     private val resourceProvider: ResourceProvider,

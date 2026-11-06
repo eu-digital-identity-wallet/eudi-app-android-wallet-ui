@@ -19,8 +19,6 @@ package eu.europa.ec.commonfeature.util
 object DocumentJsonKeys {
     const val FIRST_NAME = "given_name"
     const val LAST_NAME = "family_name"
-    const val PORTRAIT = "portrait"
-    const val PICTURE = "picture"
     const val SIGNATURE = "signature_usual_mark"
     const val EXPIRY_DATE = "expiry_date"
     const val USER_PSEUDONYM = "user_pseudonym"
@@ -28,5 +26,4 @@ object DocumentJsonKeys {
     private const val SEX = "sex"
 
     val GENDER_KEYS: List<String> = listOf(GENDER, SEX)
-    val BASE64_USER_IMAGE_KEYS: List<String> = listOf(PORTRAIT, PICTURE)
 }

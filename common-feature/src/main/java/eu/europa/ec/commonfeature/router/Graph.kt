@@ -22,8 +22,6 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
 import androidx.navigation.navArgument
-import androidx.navigation.navDeepLink
-import eu.europa.ec.commonfeature.BuildConfig
 import eu.europa.ec.commonfeature.config.BiometricUiConfig
 import eu.europa.ec.commonfeature.config.QrScanUiConfig
 import eu.europa.ec.commonfeature.config.SuccessUIConfig
@@ -68,12 +66,6 @@ fun NavGraphBuilder.featureCommonGraph(navController: NavController) {
 
         composable(
             route = CommonScreens.Biometric.screenRoute,
-            deepLinks = listOf(
-                navDeepLink {
-                    uriPattern =
-                        BuildConfig.DEEPLINK + CommonScreens.Biometric.screenRoute
-                }
-            ),
             arguments = listOf(
                 navArgument(BiometricUiConfig.serializedKeyName) {
                     type = NavType.StringType
@@ -94,12 +86,6 @@ fun NavGraphBuilder.featureCommonGraph(navController: NavController) {
 
         composable(
             route = CommonScreens.Success.screenRoute,
-            deepLinks = listOf(
-                navDeepLink {
-                    uriPattern =
-                        BuildConfig.DEEPLINK + CommonScreens.Success.screenRoute
-                }
-            ),
             arguments = listOf(
                 navArgument(SuccessUIConfig.serializedKeyName) {
                     type = NavType.StringType
@@ -120,11 +106,6 @@ fun NavGraphBuilder.featureCommonGraph(navController: NavController) {
 
         composable(
             route = CommonScreens.QuickPin.screenRoute,
-            deepLinks = listOf(
-                navDeepLink {
-                    uriPattern = BuildConfig.DEEPLINK + CommonScreens.QuickPin.screenRoute
-                }
-            ),
             arguments = listOf(
                 navArgument("pinFlow") {
                     type = NavType.StringType
@@ -147,12 +128,6 @@ fun NavGraphBuilder.featureCommonGraph(navController: NavController) {
 
         composable(
             route = CommonScreens.QrScan.screenRoute,
-            deepLinks = listOf(
-                navDeepLink {
-                    uriPattern =
-                        BuildConfig.DEEPLINK + CommonScreens.QrScan.screenRoute
-                }
-            ),
             arguments = listOf(
                 navArgument(QrScanUiConfig.serializedKeyName) {
                     type = NavType.StringType

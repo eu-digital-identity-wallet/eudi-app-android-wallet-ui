@@ -19,6 +19,7 @@ package eu.europa.ec.dashboardfeature.interactor
 import android.content.Context
 import eu.europa.ec.authenticationlogic.controller.authentication.BiometricsAvailability
 import eu.europa.ec.authenticationlogic.controller.authentication.DeviceAuthenticationResult
+import eu.europa.ec.authenticationlogic.controller.session.SessionController
 import eu.europa.ec.authenticationlogic.model.BiometricCrypto
 import eu.europa.ec.businesslogic.config.ConfigLogic
 import eu.europa.ec.businesslogic.controller.storage.PrefKeys
@@ -42,9 +43,11 @@ import eu.europa.ec.eudi.wallet.document.DocumentId
 import eu.europa.ec.eudi.wallet.document.IssuedDocument
 import eu.europa.ec.eudi.wallet.document.format.MsoMdocFormat
 import eu.europa.ec.eudi.wallet.document.format.SdJwtVcFormat
+import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.uilogic.component.IssuerDetailsCardDataUi
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.FlowCollector
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 
@@ -52,6 +55,12 @@ sealed class DocumentDetailsInteractorIssuancePartialState {
     data object Success : DocumentDetailsInteractorIssuancePartialState()
 
     data class Failure(val errorMessage: String) : DocumentDetailsInteractorIssuancePartialState()
+
+    /**
+     * The issuer has revoked or suspended the document, so it was not re-issued. The details on
+     * screen may predate that and are reloaded.
+     */
+    data class Blocked(val errorMessage: String) : DocumentDetailsInteractorIssuancePartialState()
 
     data class IssuerNotTrusted(
         val reason: UntrustedIssuerReasonDomain,
@@ -113,6 +122,12 @@ interface DocumentDetailsInteractor {
         documentId: String
     ): Flow<DocumentDetailsInteractorDeleteBookmarkPartialState>
 
+    /**
+     * Re-issues the document from its issuer. A revoked, suspended or unrecognised document is
+     * refused, because the new copy would carry no revocation record and the block would be lost;
+     * so is any document whose records cannot be read. The details screen disables Re-issue for a
+     * blocked document; this check also covers one blocked while the screen is open.
+     */
     fun reIssueDocument(
         documentId: String,
         issuerId: String,
@@ -135,6 +150,7 @@ class DocumentDetailsInteractorImpl(
     private val uuidProvider: UuidProvider,
     private val configLogic: ConfigLogic,
     private val prefKeys: PrefKeys,
+    private val sessionController: SessionController,
 ) : DocumentDetailsInteractor {
 
     private val genericErrorMsg
@@ -169,29 +185,45 @@ class DocumentDetailsInteractorImpl(
 
                 val userLocale = resourceProvider.getLocale()
                 val issuerName = safeIssuedDocument.localizedIssuerMetadata(userLocale)?.name
-                val issuerLogo = safeIssuedDocument.localizedIssuerMetadata(userLocale)?.logo
+                val issuerLogo =
+                    walletCoreDocumentsController.getIssuerLogo(safeIssuedDocument, userLocale)
 
                 val documentIsBookmarked =
                     walletCoreDocumentsController.isDocumentBookmarked(documentId)
 
                 val documentIsRevoked = walletCoreDocumentsController.isDocumentRevoked(documentId)
+                val documentIsSuspended = documentIsRevoked &&
+                        walletCoreDocumentsController.isDocumentSuspended(documentId)
+                val hasStatusRefreshFailed =
+                    walletCoreDocumentsController.hasStatusRefreshFailed(documentId)
+                val hasReIssuanceFailed =
+                    walletCoreDocumentsController.hasReIssuanceFailed(documentId)
+                val issuerTrustVerdict =
+                    walletCoreDocumentsController.getIssuerTrustVerdict(documentId)
                 val issuerDetails = IssuerDetailsCardDataUi(
                     issuerName = issuerName,
-                    issuerLogo = issuerLogo?.uri,
+                    issuerLogo = issuerLogo,
                     documentState = when {
+                        documentIsSuspended -> IssuerDetailsCardDataUi.DocumentState.Suspended
+
                         documentIsRevoked -> IssuerDetailsCardDataUi.DocumentState.Revoked
 
-                        safeIssuedDocument.isExpired() -> IssuerDetailsCardDataUi.DocumentState.Expired(
-                            issuanceDate = documentDetailsDomain.documentIssuanceDate,
-                            expirationDate = documentDetailsDomain.documentExpirationDate
-                        )
+                        safeIssuedDocument.isExpired() -> IssuerDetailsCardDataUi.DocumentState
+                            .Expired(
+                                issuanceDate = documentDetailsDomain.documentIssuanceDate,
+                                expirationDate = documentDetailsDomain.documentExpirationDate
+                            )
 
                         else -> IssuerDetailsCardDataUi.DocumentState.Issued(
                             issuanceDate = documentDetailsDomain.documentIssuanceDate,
                             expirationDate = documentDetailsDomain.documentExpirationDate
                         )
                     },
-                    isExpanded = wasIssuerDetailsExpanded ?: false
+                    isExpanded = wasIssuerDetailsExpanded == true || hasStatusRefreshFailed ||
+                            hasReIssuanceFailed,
+                    issuerTrustVerdict = issuerTrustVerdict,
+                    hasStatusRefreshFailed = hasStatusRefreshFailed,
+                    hasReIssuanceFailed = hasReIssuanceFailed,
                 )
 
                 emit(
@@ -219,7 +251,8 @@ class DocumentDetailsInteractorImpl(
             val docIdentifier = docType?.toDocumentIdentifier()
 
             val shouldDeleteAllDocuments: Boolean = if (configLogic.forcePidActivation
-                && (docIdentifier == DocumentIdentifier.MdocPid || docIdentifier == DocumentIdentifier.SdJwtPid)
+                && (docIdentifier == DocumentIdentifier.MdocPid ||
+                        docIdentifier == DocumentIdentifier.SdJwtPid)
             ) {
 
                 val allPidDocuments = walletCoreDocumentsController.getAllDocumentsByType(
@@ -242,21 +275,27 @@ class DocumentDetailsInteractorImpl(
                 walletCoreDocumentsController.deleteAllDocuments()
                     .map {
                         when (it) {
-                            is DeleteAllDocumentsPartialState.Failure -> DocumentDetailsInteractorDeleteDocumentPartialState.Failure(
-                                errorMessage = it.errorMessage
-                            )
+                            is DeleteAllDocumentsPartialState.Failure ->
+                                DocumentDetailsInteractorDeleteDocumentPartialState.Failure(
+                                    errorMessage = it.errorMessage
+                                )
 
-                            is DeleteAllDocumentsPartialState.Success -> DocumentDetailsInteractorDeleteDocumentPartialState.AllDocumentsDeleted
+                            is DeleteAllDocumentsPartialState.Success ->
+                                DocumentDetailsInteractorDeleteDocumentPartialState
+                                    .AllDocumentsDeleted
                         }
                     }
             } else {
                 walletCoreDocumentsController.deleteDocument(documentId = documentId).map {
                     when (it) {
-                        is DeleteDocumentPartialState.Failure -> DocumentDetailsInteractorDeleteDocumentPartialState.Failure(
-                            errorMessage = it.errorMessage
-                        )
+                        is DeleteDocumentPartialState.Failure ->
+                            DocumentDetailsInteractorDeleteDocumentPartialState.Failure(
+                                errorMessage = it.errorMessage
+                            )
 
-                        is DeleteDocumentPartialState.Success -> DocumentDetailsInteractorDeleteDocumentPartialState.SingleDocumentDeleted
+                        is DeleteDocumentPartialState.Success ->
+                            DocumentDetailsInteractorDeleteDocumentPartialState
+                                .SingleDocumentDeleted
                     }
                 }
             }.collect {
@@ -268,7 +307,9 @@ class DocumentDetailsInteractorImpl(
             )
         }
 
-    override fun storeBookmark(documentId: DocumentId): Flow<DocumentDetailsInteractorStoreBookmarkPartialState> =
+    override fun storeBookmark(
+        documentId: DocumentId
+    ): Flow<DocumentDetailsInteractorStoreBookmarkPartialState> =
         flow {
             walletCoreDocumentsController.storeBookmark(documentId)
             emit(DocumentDetailsInteractorStoreBookmarkPartialState.Success(documentId))
@@ -276,7 +317,9 @@ class DocumentDetailsInteractorImpl(
             DocumentDetailsInteractorStoreBookmarkPartialState.Failure
         }
 
-    override fun deleteBookmark(documentId: DocumentId): Flow<DocumentDetailsInteractorDeleteBookmarkPartialState> =
+    override fun deleteBookmark(
+        documentId: DocumentId
+    ): Flow<DocumentDetailsInteractorDeleteBookmarkPartialState> =
         flow {
             walletCoreDocumentsController.deleteBookmark(documentId)
             emit(DocumentDetailsInteractorDeleteBookmarkPartialState.Success)
@@ -289,6 +332,39 @@ class DocumentDetailsInteractorImpl(
         issuerId: String,
     ): Flow<DocumentDetailsInteractorIssuancePartialState> = flow {
 
+        if (walletCoreDocumentsController.isDocumentRevoked(documentId)) {
+            emit(
+                DocumentDetailsInteractorIssuancePartialState.Blocked(
+                    errorMessage = resourceProvider.getString(
+                        R.string.document_details_reissue_blocked_text
+                    )
+                )
+            )
+            return@flow
+        }
+
+        sessionController.beginExternalFlow()
+        try {
+            emitReIssuanceStates(documentId = documentId, issuerId = issuerId)
+        } finally {
+            sessionController.endExternalFlow()
+        }
+    }.safeAsync {
+        DocumentDetailsInteractorIssuancePartialState.Failure(
+            errorMessage = it.localizedMessage ?: genericErrorMsg
+        )
+    }
+
+    /**
+     * Re-issuance can continue at the issuer's website, so it runs as an external flow for the
+     * session lock: from document details, which is not a protected-flow screen, the background
+     * timeout would otherwise end the session before the user returns. The flow ends with the
+     * first final outcome.
+     */
+    private suspend fun FlowCollector<DocumentDetailsInteractorIssuancePartialState>.emitReIssuanceStates(
+        documentId: String,
+        issuerId: String,
+    ) {
         walletCoreDocumentsController.reIssueDocument(
             documentId = documentId,
             issuerId = issuerId,
@@ -348,12 +424,11 @@ class DocumentDetailsInteractorImpl(
                 DocumentDetailsInteractorIssuancePartialState.Failure(genericErrorMsg)
             }
 
+            if (state !is DocumentDetailsInteractorIssuancePartialState.UserAuthRequired) {
+                sessionController.endExternalFlow()
+            }
             emit(state)
         }
-    }.safeAsync {
-        DocumentDetailsInteractorIssuancePartialState.Failure(
-            errorMessage = it.localizedMessage ?: genericErrorMsg
-        )
     }
 
     override fun handleUserAuth(

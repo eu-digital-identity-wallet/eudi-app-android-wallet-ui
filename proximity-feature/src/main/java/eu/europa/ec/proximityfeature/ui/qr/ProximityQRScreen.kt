@@ -126,6 +126,20 @@ fun ProximityQRScreen(
             )
         )
     }
+
+    val activity = context as ComponentActivity
+    val backStackEntry = LocalLifecycleOwner.current
+    LifecycleEffect(
+        lifecycleOwner = activity,
+        lifecycleEvent = Lifecycle.Event.ON_STOP
+    ) {
+        viewModel.setEvent(
+            Event.OnStop(
+                isChangingConfigurations = activity.isChangingConfigurations,
+                isCurrentScreen = navController.currentBackStackEntry === backStackEntry
+            )
+        )
+    }
 }
 
 @Composable

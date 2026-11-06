@@ -23,6 +23,8 @@ import eu.europa.ec.commonfeature.util.transformPathsToDomainClaims
 import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
 import eu.europa.ec.corelogic.extension.localizedIssuerMetadata
 import eu.europa.ec.corelogic.extension.toClaimPaths
+import eu.europa.ec.corelogic.extension.toIssuerVerificationTextResId
+import eu.europa.ec.corelogic.model.IssuerTrustVerdictDomain
 import eu.europa.ec.eudi.wallet.document.DocumentId
 import eu.europa.ec.eudi.wallet.document.IssuedDocument
 import eu.europa.ec.resourceslogic.R
@@ -33,8 +35,11 @@ import eu.europa.ec.uilogic.component.ListItemMainContentDataUi
 import eu.europa.ec.uilogic.component.ListItemSupportingContentDataUi
 import eu.europa.ec.uilogic.component.ListItemTrailingContentDataUi
 import eu.europa.ec.uilogic.component.RelyingPartyDataUi
+import eu.europa.ec.uilogic.component.ThemeColorKey
 import eu.europa.ec.uilogic.component.content.ContentHeaderConfig
 import eu.europa.ec.uilogic.component.wrap.ExpandableListItemUi
+import eu.europa.ec.uilogic.config.ConfigUILogic
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import java.net.URI
@@ -44,6 +49,7 @@ sealed class DocumentIssuanceSuccessInteractorGetUiItemsPartialState {
         val documentsUi: List<ExpandableListItemUi.NestedListItem>,
         val headerConfig: ContentHeaderConfig,
         val bannerText: String,
+        val warningText: String? = null,
     ) : DocumentIssuanceSuccessInteractorGetUiItemsPartialState()
 
     data class Failed(
@@ -52,26 +58,37 @@ sealed class DocumentIssuanceSuccessInteractorGetUiItemsPartialState {
 }
 
 interface DocumentIssuanceSuccessInteractor {
-    fun getUiItems(documentIds: List<DocumentId>): Flow<DocumentIssuanceSuccessInteractorGetUiItemsPartialState>
+    /**
+     * The success screen for the issued [documentIds]. When [notIssuedDocuments] is not empty, the
+     * screen also warns that those documents were not issued.
+     */
+    fun getUiItems(
+        documentIds: List<DocumentId>,
+        notIssuedDocuments: List<String> = emptyList(),
+    ): Flow<DocumentIssuanceSuccessInteractorGetUiItemsPartialState>
 }
 
 class DocumentIssuanceSuccessInteractorImpl(
     private val walletCoreDocumentsController: WalletCoreDocumentsController,
     private val resourceProvider: ResourceProvider,
-    private val uuidProvider: UuidProvider
+    private val uuidProvider: UuidProvider,
+    private val configUILogic: ConfigUILogic,
 ) : DocumentIssuanceSuccessInteractor {
 
     private val genericErrorMsg
         get() = resourceProvider.genericErrorMessage()
 
-    override fun getUiItems(documentIds: List<DocumentId>): Flow<DocumentIssuanceSuccessInteractorGetUiItemsPartialState> {
+    override fun getUiItems(
+        documentIds: List<DocumentId>,
+        notIssuedDocuments: List<String>,
+    ): Flow<DocumentIssuanceSuccessInteractorGetUiItemsPartialState> {
         return flow {
 
             val documentsUi = mutableListOf<ExpandableListItemUi.NestedListItem>()
 
             var issuerName =
                 resourceProvider.getString(R.string.issuance_success_header_issuer_default_name)
-            val issuerIsTrusted = false
+            var allIssuersTrusted = true
             var issuerLogo: URI? = null
 
             val userLocale = resourceProvider.getLocale()
@@ -81,15 +98,20 @@ class DocumentIssuanceSuccessInteractorImpl(
                     val document =
                         walletCoreDocumentsController.getDocumentById(documentId = documentId) as IssuedDocument
 
+                    val issuerTrustVerdict = getIssuerTrustVerdict(documentId)
+                    val documentIssuerIsTrusted =
+                        issuerTrustVerdict == IssuerTrustVerdictDomain.TRUSTED
+
                     val localizedIssuerMetadata = document.localizedIssuerMetadata(userLocale)
 
                     localizedIssuerMetadata?.name?.let { safeIssuerName ->
                         issuerName = safeIssuerName
                     }
 
-                    localizedIssuerMetadata?.logo?.uri?.let { safeIssuerLogo ->
-                        issuerLogo = safeIssuerLogo
-                    }
+                    walletCoreDocumentsController.getIssuerLogo(document, userLocale)
+                        ?.let { safeIssuerLogo ->
+                            issuerLogo = safeIssuerLogo
+                        }
 
                     val claimsPaths = document.data.claims.flatMap { claim ->
                         claim.toClaimPaths()
@@ -106,6 +128,7 @@ class DocumentIssuanceSuccessInteractorImpl(
                         selectedDomainClaim.toExpandableListItems(
                             docId = documentId,
                             queryId = null,
+                            userImageClaimKeys = configUILogic.userImageClaimKeys,
                         )
                     }
 
@@ -113,9 +136,18 @@ class DocumentIssuanceSuccessInteractorImpl(
                         header = ListItemDataUi(
                             itemId = documentId,
                             mainContentData = ListItemMainContentDataUi.Text(text = document.name),
-                            supportingContentData = ListItemSupportingContentDataUi.Text(
-                                text = resourceProvider.getString(R.string.document_success_collapsed_supporting_text),
-                            ),
+                            supportingContentData = if (documentIssuerIsTrusted) {
+                                ListItemSupportingContentDataUi.Text(
+                                    text = resourceProvider.getString(R.string.document_success_collapsed_supporting_text),
+                                )
+                            } else {
+                                ListItemSupportingContentDataUi.Text(
+                                    text = resourceProvider.getString(
+                                        issuerTrustVerdict.toIssuerVerificationTextResId()
+                                    ),
+                                    textColorKey = ThemeColorKey.Warning,
+                                )
+                            },
                             trailingContentData = ListItemTrailingContentDataUi.Icon(
                                 iconData = AppIcons.KeyboardArrowDown
                             )
@@ -125,6 +157,9 @@ class DocumentIssuanceSuccessInteractorImpl(
                     )
 
                     documentsUi.add(documentUi)
+                    if (!documentIssuerIsTrusted) {
+                        allIssuersTrusted = false
+                    }
                 } catch (_: Exception) {
                 }
             }
@@ -138,7 +173,7 @@ class DocumentIssuanceSuccessInteractorImpl(
                 description = headerConfigDescription,
                 relyingPartyData = RelyingPartyDataUi(
                     logo = issuerLogo,
-                    isVerified = issuerIsTrusted,
+                    isVerified = documentsUi.isNotEmpty() && allIssuersTrusted,
                     name = issuerName,
                     uniqueId = null,
                     description = null,
@@ -150,6 +185,12 @@ class DocumentIssuanceSuccessInteractorImpl(
                     documentsUi = documentsUi,
                     headerConfig = headerConfig,
                     bannerText = resourceProvider.getString(R.string.issuance_success_banner_text),
+                    warningText = notIssuedDocuments.takeIf { it.isNotEmpty() }?.let { names ->
+                        resourceProvider.getString(
+                            R.string.issuance_success_not_issued_text,
+                            names.joinToString(separator = ", "),
+                        )
+                    },
                 )
             )
         }.safeAsync {
@@ -158,4 +199,17 @@ class DocumentIssuanceSuccessInteractorImpl(
             )
         }
     }
+
+    /**
+     * The stored issuer-trust verdict for [documentId]. If the lookup fails, keep the document
+     * visible with verification unavailable and without a verified badge.
+     */
+    private suspend fun getIssuerTrustVerdict(documentId: DocumentId): IssuerTrustVerdictDomain? =
+        try {
+            walletCoreDocumentsController.getIssuerTrustVerdict(documentId = documentId)
+        } catch (e: CancellationException) {
+            throw e
+        } catch (_: Exception) {
+            null
+        }
 }

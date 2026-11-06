@@ -39,6 +39,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.shareIn
 import org.junit.After
+import org.junit.Assert.assertNotEquals
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -396,7 +397,7 @@ class TestProximityQRInteractor {
         // Given
         val initiator = DashboardScreens.Dashboard.screenRoute
         val config = RequestUriConfig(
-            mode = PresentationMode.Ble(initiator)
+            mode = PresentationMode.Ble(initiatorRoute = initiator, sessionId = "session-1")
         )
 
         // When
@@ -406,7 +407,15 @@ class TestProximityQRInteractor {
         verify(walletCorePresentationController, times(1))
             .setConfig(PresentationControllerConfig.Ble(initiator))
 
-        assertEquals(interactor.presentationScopeId, "ble_presentation_scope_id")
+        assertEquals("ble_presentation_scope_id_session-1", interactor.presentationScopeId)
+    }
+
+    @Test
+    fun `Given two proximity sessions, When their scopes are named, Then each has its own`() {
+        val first = PresentationMode.Ble(initiatorRoute = DashboardScreens.Dashboard.screenRoute)
+        val second = PresentationMode.Ble(initiatorRoute = DashboardScreens.Dashboard.screenRoute)
+
+        assertNotEquals(first.scopeId, second.scopeId)
     }
 
     @Test

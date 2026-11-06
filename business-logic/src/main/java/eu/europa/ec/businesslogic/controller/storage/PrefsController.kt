@@ -31,10 +31,14 @@ import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStoreFile
 import androidx.datastore.tink.AeadSerializer
 import com.google.crypto.tink.Aead
+import com.google.crypto.tink.InsecureSecretKeyAccess
 import com.google.crypto.tink.KeyTemplates
+import com.google.crypto.tink.KeysetReader
+import com.google.crypto.tink.LegacyKeysetSerialization
 import com.google.crypto.tink.RegistryConfiguration
 import com.google.crypto.tink.aead.AeadConfig
 import com.google.crypto.tink.integration.android.AndroidKeysetManager
+import com.google.crypto.tink.integration.android.SharedPrefKeysetReader
 import eu.europa.ec.businesslogic.extension.decodeFromBase64
 import eu.europa.ec.businesslogic.extension.encodeToBase64String
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
@@ -42,11 +46,16 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.first
+import java.io.IOException
+import java.security.GeneralSecurityException
 
 interface PrefsController {
     suspend fun contains(key: String): Boolean
     suspend fun clear(key: String)
     suspend fun clear()
+
+    /** Removes every preference except those named in [keys], in a single edit. */
+    suspend fun clearExcept(keys: Set<String>)
     suspend fun setString(key: String, value: String)
     suspend fun setLong(key: String, value: Long)
     suspend fun setBool(key: String, value: Boolean)
@@ -112,6 +121,14 @@ class PrefsControllerImpl(
         edit { it.clear() }
     }
 
+    override suspend fun clearExcept(keys: Set<String>) {
+        edit { prefs ->
+            prefs.asMap().keys
+                .filter { it.name !in keys }
+                .forEach { prefs.remove(it) }
+        }
+    }
+
     override suspend fun setString(key: String, value: String) {
         edit { prefs ->
             prefs[stringPreferencesKey(key)] = value
@@ -164,19 +181,70 @@ class PrefsControllerImpl(
 
         AeadConfig.register()
 
-        val keysetHandle = AndroidKeysetManager.Builder()
-            .withSharedPref(context, KEYSET_PREFS_KEY, KEYSET_PREFS_FILE)
-            .withKeyTemplate(KeyTemplates.get("AES256_GCM"))
-            .withMasterKeyUri(MASTER_KEY_URI)
-            .build()
-            .keysetHandle
+        val keysetHandle = keystoreBackedKeysetManager(context).keysetHandle
 
         return keysetHandle.getPrimitive(
             RegistryConfiguration.get(),
             Aead::class.java
         )
     }
+
+    /**
+     * The preferences keyset, refused unless the Android Keystore protects it. When Tink cannot use
+     * its Keystore master key, it writes the keyset in cleartext to the app's shared preferences and
+     * still returns a working AEAD, so the preferences, which hold the PIN hash and the database key,
+     * would be encrypted with a key stored beside them. A keyset written that way stays in cleartext
+     * after the Keystore works again, while `isUsingKeystore` then reports true, so the stored keyset
+     * is checked as well. A keyset that is not protected and has encrypted nothing yet, because the
+     * preferences file does not exist, is discarded and created again once; otherwise, or if the
+     * second one is not protected either, [KeystoreUnavailableException] is thrown and the
+     * preferences are not opened.
+     */
+    private fun keystoreBackedKeysetManager(context: Context): AndroidKeysetManager {
+        repeat(2) {
+            val manager = AndroidKeysetManager.Builder()
+                .withSharedPref(context, KEYSET_PREFS_KEY, KEYSET_PREFS_FILE)
+                .withKeyTemplate(KeyTemplates.get("AES256_GCM"))
+                .withMasterKeyUri(MASTER_KEY_URI)
+                .build()
+            val storedKeyset = SharedPrefKeysetReader(context, KEYSET_PREFS_KEY, KEYSET_PREFS_FILE)
+            if (manager.isUsingKeystore && !isCleartextKeyset(storedKeyset)) return manager
+            if (!discardUnusedKeyset(context)) throw KeystoreUnavailableException()
+        }
+        throw KeystoreUnavailableException()
+    }
+
+    /** Removes the stored keyset unless the preferences file exists; returns whether it did. */
+    private fun discardUnusedKeyset(context: Context): Boolean {
+        if (context.preferencesDataStoreFile(DATASTORE_FILE).exists()) return false
+        context.getSharedPreferences(KEYSET_PREFS_FILE, Context.MODE_PRIVATE)
+            .edit()
+            .remove(KEYSET_PREFS_KEY)
+            .apply()
+        return true
+    }
 }
+
+/**
+ * Whether [keyset] holds a keyset in cleartext, the same test Tink applies: an encrypted keyset does
+ * not parse as a plain one.
+ */
+internal fun isCleartextKeyset(keyset: KeysetReader): Boolean = try {
+    LegacyKeysetSerialization.parseKeyset(keyset, InsecureSecretKeyAccess.get())
+    true
+} catch (_: IOException) {
+    false
+} catch (_: GeneralSecurityException) {
+    false
+}
+
+/**
+ * The preferences keyset is not protected by the Android Keystore, so the wallet does not open
+ * its preferences.
+ */
+class KeystoreUnavailableException : GeneralSecurityException(
+    "The preferences keyset is not protected by the Android Keystore"
+)
 
 interface PrefKeys {
     suspend fun getTrustMarkIntroductionCompleted(): Boolean
@@ -188,17 +256,39 @@ interface PrefKeys {
     suspend fun getRegistrationCheckEnabled(): Boolean
     suspend fun setRegistrationCheckEnabled(value: Boolean)
 
+    /** Whether the wallet offers its documents through the Digital Credential API; on by default. */
+    suspend fun getDCAPIEnabled(): Boolean
+    suspend fun setDCAPIEnabled(value: Boolean)
+
     suspend fun getCryptoAlias(): String
     suspend fun setCryptoAlias(value: String)
     suspend fun setSessionId(value: String)
     suspend fun getSessionId(): String
     suspend fun setDbKey(value: ByteArray)
     suspend fun getDbKey(): ByteArray?
+
+    /**
+     * The task and link fingerprint the host activity recorded when a screen last used the link the
+     * task was started with, or empty. It holds no link, only a SHA-256 fingerprint.
+     */
+    suspend fun getOpenedLaunchLink(): String
+    suspend fun setOpenedLaunchLink(value: String)
+
+    /**
+     * Clears every preference except the session id and the database key, in a single edit, for the
+     * factory reset: the running app still needs both, and a reader never sees them missing.
+     */
+    suspend fun clearAllExceptSessionIdAndDbKey()
 }
 
 class PrefKeysImpl(
     private val prefsController: PrefsController
 ) : PrefKeys {
+
+    private companion object {
+        const val SESSION_ID = "SessionId"
+        const val DB_KEY = "dbKey"
+    }
 
     override suspend fun getTrustMarkIntroductionCompleted(): Boolean {
         return prefsController.getBool("TrustMarkIntroductionCompleted", false)
@@ -224,6 +314,14 @@ class PrefKeysImpl(
         prefsController.setBool("RegistrationCheckEnabled", value)
     }
 
+    override suspend fun getDCAPIEnabled(): Boolean {
+        return prefsController.getBool("DCAPIEnabled", true)
+    }
+
+    override suspend fun setDCAPIEnabled(value: Boolean) {
+        prefsController.setBool("DCAPIEnabled", value)
+    }
+
     override suspend fun getCryptoAlias(): String {
         return prefsController.getString("CryptoAlias", "")
     }
@@ -233,20 +331,32 @@ class PrefKeysImpl(
     }
 
     override suspend fun setSessionId(value: String) {
-        prefsController.setString("SessionId", value)
+        prefsController.setString(SESSION_ID, value)
     }
 
     override suspend fun getSessionId(): String {
-        return prefsController.getString("SessionId", "")
+        return prefsController.getString(SESSION_ID, "")
     }
 
     override suspend fun setDbKey(value: ByteArray) {
         val encoded = value.encodeToBase64String(flags = Base64.NO_WRAP)
-        prefsController.setString("dbKey", encoded)
+        prefsController.setString(DB_KEY, encoded)
     }
 
     override suspend fun getDbKey(): ByteArray? {
-        val encoded = prefsController.getString("dbKey", "").ifBlank { return null }
+        val encoded = prefsController.getString(DB_KEY, "").ifBlank { return null }
         return encoded.decodeFromBase64(flags = Base64.NO_WRAP)
+    }
+
+    override suspend fun getOpenedLaunchLink(): String {
+        return prefsController.getString("OpenedLaunchLink", "")
+    }
+
+    override suspend fun setOpenedLaunchLink(value: String) {
+        prefsController.setString("OpenedLaunchLink", value)
+    }
+
+    override suspend fun clearAllExceptSessionIdAndDbKey() {
+        prefsController.clearExcept(keys = setOf(SESSION_ID, DB_KEY))
     }
 }

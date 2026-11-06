@@ -264,6 +264,45 @@ class TestDocumentOfferInteractor {
             }
         }
 
+    /**
+     * A transaction code whose length the offer does not give is refused before the code screen,
+     * as on iOS: the screen could not size its input, and the issuance would fail at the issuer.
+     */
+    @Test
+    fun `Given an offer whose transaction code has no length, When resolveDocumentOffer is called, Then the code format failure is returned`() =
+        coroutineRule.runTest {
+            val mockedOffer = mockOffer(
+                issuerName = mockedIssuerName,
+                offeredDocuments = mockedOfferedDocumentsList,
+                txCodeSpec = mockOfferTxCodeSpec(
+                    inputMode = TxCodeInputMode.NUMERIC,
+                    length = null
+                )
+            )
+            whenever(
+                resourceProvider.getString(
+                    R.string.issuance_document_offer_error_invalid_txcode_format,
+                    4,
+                    6
+                )
+            ).thenReturn(mockedInvalidCodeFormatMessage)
+            mockWalletDocumentsControllerResolveOfferEventEmission(
+                event = ResolveDocumentOfferPartialState.Success(
+                    offer = mockedOffer,
+                    issuerRegistration = mockedVerifiedIssuerRegistration,
+                )
+            )
+
+            interactor.resolveDocumentOffer(mockedUriPath1).runFlowTest {
+                assertEquals(
+                    ResolveDocumentOfferInteractorPartialState.Failure(
+                        errorMessage = mockedInvalidCodeFormatMessage
+                    ),
+                    awaitItem()
+                )
+            }
+        }
+
     // Case 3:
     // 1. walletCoreDocumentsController.resolveDocumentOffer() returns ResolveDocumentOfferPartialState.Success with:
     // - invalid response.offer.txCodeSpec?.inputMode (TxCodeSpec.InputMode.TEXT),
@@ -993,7 +1032,8 @@ class TestDocumentOfferInteractor {
                 txCode = securePin(mockedTxCode)
             ).runFlowTest {
                 val expectedResult = IssueDocumentsInteractorPartialState.Success(
-                    documentIds = listOf(mockSuccessfullyIssuedDocId)
+                    documentIds = listOf(mockSuccessfullyIssuedDocId),
+                    notIssuedDocuments = nonIssuedDeferredDocuments.values.toList(),
                 )
 
                 // Then
@@ -1043,6 +1083,7 @@ class TestDocumentOfferInteractor {
             ).runFlowTest {
                 val expectedResult = IssueDocumentsInteractorPartialState.Success(
                     documentIds = listOf(mockSuccessfullyIssuedDocId),
+                    notIssuedDocuments = nonIssuedDeferredDocuments.values.toList(),
                 )
 
                 // Then
@@ -1196,7 +1237,8 @@ class TestDocumentOfferInteractor {
                 offerUri = mockedUriPath1,
                 event = IssueDocumentsPartialState.PartialSuccessWithUntrustedIssuer(
                     issuedDocumentIds = listOf(mockedMdlId),
-                    untrustedDocuments = mapOf(mockedMdocPidDocType to mockedOfferedDocumentName)
+                    untrustedDocuments = mapOf(mockedMdocPidDocType to mockedOfferedDocumentName),
+                    nonIssuedDocuments = mapOf("org.iso.18013.5.1.mDL" to "mDL"),
                 )
             )
 
@@ -1210,7 +1252,8 @@ class TestDocumentOfferInteractor {
                 // Then
                 assertEquals(
                     IssueDocumentsInteractorPartialState.PartialSuccessWithUntrustedIssuer(
-                        issuedDocumentIds = listOf(mockedMdlId)
+                        issuedDocumentIds = listOf(mockedMdlId),
+                        notIssuedDocuments = listOf(mockedOfferedDocumentName, "mDL"),
                     ),
                     awaitItem()
                 )

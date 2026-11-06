@@ -27,7 +27,8 @@ Install or prepare:
 * Android Studio, preferably the current stable version.
 * Android SDK Platform 37, because the project currently compiles with `compileSdk = 37`.
 * Android SDK Build Tools compatible with Android Gradle Plugin used in `gradle/libs.versions.toml`.
-* JDK 17. The build logic configures Java/Kotlin target 17.
+* JDK 17. The build logic configures Java/Kotlin target 17. Unit tests run on JDK 21, which Gradle
+  downloads through the toolchain resolver if it is missing.
 * Git.
 * A physical Android device or emulator running Android 10/API 29 or higher.
 
@@ -202,6 +203,20 @@ issuerUrl = "https://192.168.1.50:8443"
 
 The issuer/verifier metadata, redirect URIs, and wallet deep links must match the app's configured
 schemes and hosts. See [CONFIGURATION.md](CONFIGURATION.md) for those values.
+
+`issuerUrl` must be exactly the `credential_issuer` value the local issuer publishes in its offers and
+metadata, so configure the issuer with the address the device uses, for example
+`https://10.0.2.2:8443`. The wallet refuses an offer from any other issuer, and refuses an offer passed
+by reference unless it is hosted on that issuer's `https` origin.
+
+The reference trust configuration also applies to local services. The issuer's metadata must be
+signed with a certificate on the `wrpacProviders` list, and a PID issuer must be on `pidProviders`.
+The hosted development lists do not contain your services, so point `loteLocations` at lists that do
+(see [CONFIGURATION.md](CONFIGURATION.md#general-configuration)). With *Check Registration
+Certificates* on, the issuer also needs a registration certificate on `wrprcProviders`.
+
+The wallet opens a verifier's redirect only if it is an `https` URL, and loads issuer logos only over
+`https`. A local verifier UI served over `http` is not returned to after a presentation.
 
 ## Why 10.0.2.2?
 

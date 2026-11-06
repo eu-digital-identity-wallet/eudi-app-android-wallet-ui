@@ -46,7 +46,7 @@ import eu.europa.ec.uilogic.component.wrap.ButtonType
 import eu.europa.ec.uilogic.component.wrap.StickyBottomConfig
 import eu.europa.ec.uilogic.component.wrap.StickyBottomType
 import eu.europa.ec.uilogic.component.wrap.WrapStickyBottomContent
-import eu.europa.ec.uilogic.extension.openUrl
+import eu.europa.ec.uilogic.extension.openInBrowser
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.onEach
@@ -112,7 +112,7 @@ fun LoadingScreen(
                             inclusive = false,
                         )
                         navigationEffect.redirectUri?.let { redirectUri ->
-                            context.openUrl(uri = redirectUri)
+                            context.openInBrowser(uri = redirectUri)
                         }
                     }
                 }
@@ -184,7 +184,7 @@ private fun RejectionAction(
 
 @ThemeModePreviews
 @Composable
-private fun RejectionPreview() {
+private fun LoadingScreenRejectionPreview() {
     PreviewTheme {
         ContentScreen(
             navigatableAction = ScreenNavigateAction.NONE,

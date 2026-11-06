@@ -38,6 +38,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import eu.europa.ec.dashboardfeature.ui.transactions.component.PrivacyActionExplanation
 import eu.europa.ec.dashboardfeature.ui.transactions.component.PrivacyActionInfoCard
+import eu.europa.ec.dashboardfeature.ui.transactions.component.WarningText
 import eu.europa.ec.dashboardfeature.ui.transactions.dpa_report.model.DpaReportContactUi
 import eu.europa.ec.dashboardfeature.ui.transactions.dpa_report.model.DpaReportUi
 import eu.europa.ec.dashboardfeature.ui.transactions.openTransactionAction
@@ -128,6 +129,13 @@ private fun Content(
                     )
                 }
 
+                report.registrationWarning?.let { warning ->
+                    WarningText(
+                        modifier = Modifier.fillMaxWidth(),
+                        text = warning,
+                    )
+                }
+
                 // Wallet responsibility and external follow-up.
                 PrivacyActionExplanation(
                     modifier = Modifier.fillMaxWidth(),
@@ -195,8 +203,9 @@ private fun ContactRow(
 private fun DpaReportPreview(
     @PreviewParameter(DpaReportPreviewProvider::class) state: State,
 ) {
-    val scrollState = rememberScrollState()
     PreviewTheme {
+        val scrollState = rememberScrollState()
+
         ContentScreen(
             isLoading = state.isLoading,
             contentErrorConfig = state.error,
@@ -215,8 +224,9 @@ private fun DpaReportPreview(
 }
 
 @LargeTextPreviews
+@ThemeModePreviews
 @Composable
-private fun WebsiteContactLargeTextPreview() {
+private fun ContactRowWebsiteLargeTextPreview() {
     PreviewTheme {
         ContactRow(
             modifier = Modifier

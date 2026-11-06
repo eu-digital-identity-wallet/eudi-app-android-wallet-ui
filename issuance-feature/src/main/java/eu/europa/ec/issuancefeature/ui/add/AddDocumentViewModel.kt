@@ -55,8 +55,6 @@ import eu.europa.ec.uilogic.navigation.helper.hasDeepLink
 import eu.europa.ec.uilogic.serializer.UiSerializer
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
-import org.koin.core.annotation.InjectedParam
-import org.koin.core.annotation.KoinViewModel
 
 data class State(
     val navigatableAction: ScreenNavigateAction,
@@ -126,12 +124,11 @@ sealed class AddDocumentBottomSheetContent {
     data object NoTrustedIssuers : AddDocumentBottomSheetContent()
 }
 
-@KoinViewModel
 class AddDocumentViewModel(
     private val addDocumentInteractor: AddDocumentInteractor,
     private val resourceProvider: ResourceProvider,
     private val uiSerializer: UiSerializer,
-    @InjectedParam private val issuanceConfig: String,
+    private val issuanceConfig: String,
 ) : MviViewModel<Event, State, Effect>() {
 
     private var issuanceJob: Job? = null
@@ -409,7 +406,8 @@ class AddDocumentViewModel(
                             )
                         }
                         navigateToDocumentIssuanceSuccessScreen(
-                            documentIds = response.documentIds
+                            documentIds = response.documentIds,
+                            notIssuedDocuments = response.notIssuedDocuments,
                         )
                     }
 
@@ -447,7 +445,10 @@ class AddDocumentViewModel(
         }
     }
 
-    private fun navigateToDocumentIssuanceSuccessScreen(documentIds: List<String>) {
+    private fun navigateToDocumentIssuanceSuccessScreen(
+        documentIds: List<String>,
+        notIssuedDocuments: List<String>,
+    ) {
         val onSuccessNavigation = when (viewState.value.issuanceConfig.flowType) {
             is IssuanceFlowType.NoDocument -> ConfigNavigation(
                 navigationType = NavigationType.PushScreen(
@@ -472,6 +473,7 @@ class AddDocumentViewModel(
                             IssuanceSuccessUiConfig.serializedKeyName to uiSerializer.toBase64(
                                 model = IssuanceSuccessUiConfig(
                                     documentIds = documentIds,
+                                    notIssuedDocuments = notIssuedDocuments,
                                     onSuccessNavigation = onSuccessNavigation,
                                 ),
                                 parser = IssuanceSuccessUiConfig.Parser

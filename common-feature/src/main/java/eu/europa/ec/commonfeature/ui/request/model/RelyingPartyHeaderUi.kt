@@ -20,6 +20,7 @@ import eu.europa.ec.businesslogic.extension.ifEmptyOrNull
 import eu.europa.ec.corelogic.model.RegistrationStatusDomain
 import eu.europa.ec.corelogic.model.RelyingPartyDomain
 import eu.europa.ec.uilogic.component.RelyingPartyDataUi
+import eu.europa.ec.uilogic.navigation.helper.isOpenableExternalLink
 
 /**
  * The request screen's who-is-asking header: the requester's identity block and the registration
@@ -56,20 +57,27 @@ fun RelyingPartyDomain.toRelyingPartyHeaderUi(fallbackName: String): RelyingPart
             description = null,
         ),
         intendedUse = details?.intendedUse,
-        privacyPolicyUrl = details?.privacyPolicyUrl,
+        privacyPolicyUrl = details?.privacyPolicyUrl?.takeIf(::isOpenableExternalLink),
     )
 }
 
 /**
- * The acknowledge banner of a request with registration problems; Share stays disabled until
- * the user flips [riskAccepted].
+ * The acknowledge banner of a request whose requester could not be verified or has registration
+ * problems; Share stays disabled until the user flips [riskAccepted].
  */
 data class RegistrationWarningUi(
     val variant: RegistrationWarningVariantUi,
     val riskAccepted: Boolean,
 )
 
+/**
+ * Why the banner is shown. [ACCESS_CERTIFICATE_NOT_TRUSTED] means the request carried no access
+ * certificate, or one that did not validate against the trust source, so who is asking is not
+ * known; it takes precedence over the registration outcomes.
+ */
 enum class RegistrationWarningVariantUi {
+    ACCESS_CERTIFICATE_NOT_TRUSTED,
+
     /** The registration could not be obtained or validated. */
     NOT_VERIFIED,
 
@@ -78,10 +86,19 @@ enum class RegistrationWarningVariantUi {
 }
 
 /**
- * The banner the registration outcome demands, or null when none. Always starts
- * unacknowledged — the user must flip the switch anew for every rendered request.
+ * The banner the trust outcome demands, or null when none. An untrusted access certificate is
+ * warned about first, whatever the registration outcome; otherwise the registration outcome
+ * decides. Always starts unacknowledged — the user must flip the switch anew for every rendered
+ * request.
  */
 fun RelyingPartyDomain.toRegistrationWarningUi(): RegistrationWarningUi? {
+    if (!hasTrustedAccessCertificate) {
+        return RegistrationWarningUi(
+            variant = RegistrationWarningVariantUi.ACCESS_CERTIFICATE_NOT_TRUSTED,
+            riskAccepted = false,
+        )
+    }
+
     return when (val safeRegistration = registration) {
         is RegistrationStatusDomain.Verified -> {
             if (safeRegistration.overaskedClaims.isNotEmpty()) {

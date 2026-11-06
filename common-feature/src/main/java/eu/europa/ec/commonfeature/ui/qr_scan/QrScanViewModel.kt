@@ -43,8 +43,6 @@ import eu.europa.ec.uilogic.navigation.helper.generateComposableArguments
 import eu.europa.ec.uilogic.navigation.helper.generateComposableNavigationLink
 import eu.europa.ec.uilogic.serializer.UiSerializer
 import kotlinx.coroutines.launch
-import org.koin.core.annotation.InjectedParam
-import org.koin.core.annotation.KoinViewModel
 
 private const val MAX_ALLOWED_FAILED_SCANS = 5
 
@@ -75,12 +73,11 @@ sealed class Effect : ViewSideEffect {
     }
 }
 
-@KoinViewModel
 class QrScanViewModel(
     private val interactor: QrScanInteractor,
     private val uiSerializer: UiSerializer,
     private val resourceProvider: ResourceProvider,
-    @InjectedParam private val qrScannedConfig: String,
+    private val qrScannedConfig: String,
 ) : MviViewModel<Event, State, Effect>() {
 
     override fun setInitialState(): State {

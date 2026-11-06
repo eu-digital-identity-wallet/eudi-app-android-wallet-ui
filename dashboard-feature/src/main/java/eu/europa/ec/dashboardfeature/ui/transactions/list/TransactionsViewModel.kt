@@ -41,7 +41,6 @@ import eu.europa.ec.uilogic.navigation.DashboardScreens
 import eu.europa.ec.uilogic.navigation.helper.generateComposableArguments
 import eu.europa.ec.uilogic.navigation.helper.generateComposableNavigationLink
 import kotlinx.coroutines.launch
-import org.koin.core.annotation.KoinViewModel
 import java.time.LocalDate
 
 data class State(
@@ -122,7 +121,6 @@ sealed class TransactionsBottomSheetContent {
         TransactionsBottomSheetContent()
 }
 
-@KoinViewModel
 class TransactionsViewModel(
     private val interactor: TransactionsInteractor,
 ) : MviViewModel<Event, State, Effect>() {

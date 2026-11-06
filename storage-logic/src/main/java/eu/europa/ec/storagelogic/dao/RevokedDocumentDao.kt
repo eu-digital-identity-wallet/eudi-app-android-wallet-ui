@@ -26,10 +26,10 @@ import eu.europa.ec.storagelogic.model.RevokedDocument
 
 @Dao
 interface RevokedDocumentDao : StorageDao<RevokedDocument> {
-    @Insert(onConflict = OnConflictStrategy.ABORT)
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     override suspend fun store(value: RevokedDocument)
 
-    @Insert(onConflict = OnConflictStrategy.ABORT)
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     override suspend fun storeAll(values: List<RevokedDocument>)
 
     @Query("SELECT * FROM revokedDocuments WHERE identifier = :identifier")

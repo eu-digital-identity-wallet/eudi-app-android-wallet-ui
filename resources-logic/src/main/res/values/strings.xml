@@ -48,6 +48,10 @@
     <string name="generic_filters_sort_by">Sort by</string>
     <string name="generic_search">Search</string>
     <string name="generic_unknown_issuer">Unknown</string>
+    <string name="generic_issuer_verified">Issuer verified</string>
+    <string name="generic_issuer_trust_not_confirmed">Issuer trust not confirmed</string>
+    <string name="generic_issuer_verification_not_performed">Issuer verification not performed</string>
+    <string name="generic_issuer_verification_unavailable">Issuer verification unavailable</string>
     <!--endregion-->
 
     <!-- region Trust Mark -->
@@ -163,6 +167,9 @@
     <!-- region Quick Pin -->
     <string name="quick_pin_invalid_error">Invalid pin</string>
     <string name="quick_pin_non_match">Pins do not match</string>
+    <string name="quick_pin_weak">This PIN is too easy to guess. Avoid one digit repeated, sequences such as 123456, and common PINs.</string>
+    <string name="quick_pin_device_lock_missing">This device has no screen lock. Set one in the device settings to better protect your wallet.</string>
+    <string name="quick_pin_device_lock_required">Set a screen lock in the device settings to use the wallet.</string>
     <string name="quick_pin_locked_out">You have entered the wrong PIN %1$d times in a row.\nPlease wait %2$s before trying again.</string>
 
     <string name="quick_pin_create_title">Welcome to your Wallet</string>
@@ -198,6 +205,7 @@
     <string name="request_intended_use_section_title">Intended use</string>
     <string name="request_requested_data_section_title">Requested data</string>
     <string name="request_cancel_button_text">@string/generic_cancel</string>
+    <string name="request_access_certificate_not_trusted_warning_text">Warning: The identity of this relying party could not be verified. Review carefully before sharing your data.</string>
     <string name="request_registration_not_verified_warning_text">Warning: The information registered about the entity could not be obtained. Review carefully before sharing your data.</string>
     <string name="request_registration_overasked_warning_text">Warning: Some of the requested data are not registered with this interacting party. Review carefully before sharing your data.</string>
     <string name="request_registration_acknowledge_text">I understand the risks and agree to share my data</string>
@@ -231,9 +239,34 @@
     <string name="request_transaction_signature_format">Signature format</string>
     <string name="request_transaction_conformance_level">Conformance level</string>
     <string name="request_transaction_signed_attributes">Signed attributes</string>
+    <string name="request_transaction_relying_party_attribute">Chosen by the relying party; not checked by the wallet</string>
     <string name="request_transaction_otp">One-time password (OTP)</string>
     <string name="request_transaction_response_uri">Response URI</string>
+    <string name="request_transaction_location">Location</string>
+    <string name="request_transaction_data_hash_algorithm">Transaction data hash algorithm</string>
+    <string name="request_transaction_circumstantial_data">Circumstantial data</string>
+    <string name="request_transaction_signed_envelope_property">Signed envelope property</string>
+    <string name="request_transaction_reference_uri">Reference URI</string>
+    <string name="request_transaction_signature_algorithm">Signature algorithm</string>
+    <string name="request_transaction_signature_algorithm_parameters">Signature algorithm parameters</string>
+    <string name="request_transaction_document_access">Document access</string>
+    <string name="request_transaction_document_access_public">Public</string>
+    <string name="request_transaction_document_access_otp">One-time password</string>
+    <string name="request_transaction_document_access_basic">Basic authentication</string>
+    <string name="request_transaction_document_access_digest">Digest authentication</string>
+    <string name="request_transaction_document_access_oauth">OAuth 2.0</string>
+    <string name="request_transaction_document_content">Document content</string>
+    <string name="request_transaction_document_content_inline">Included in the request</string>
+    <string name="request_transaction_document_type">Document type</string>
+    <string name="request_transaction_document_type_original">Original document</string>
+    <string name="request_transaction_document_type_formatted">Formatted document</string>
+    <string name="request_transaction_document_size">Document size</string>
+    <plurals name="request_transaction_document_size_value">
+        <item quantity="one">%d byte</item>
+        <item quantity="other">%d bytes</item>
+    </plurals>
     <string name="request_transaction_unavailable">Details for this transaction are unavailable.</string>
+    <string name="request_transaction_data_not_shown_error">This request asks you to sign data that the wallet cannot show in full, so it was declined.</string>
     <string name="request_transaction_qes">Qualified electronic signature (QES)</string>
     <string name="request_transaction_qeseal">Qualified electronic seal</string>
     <string name="request_transaction_aes">Advanced electronic signature</string>
@@ -249,6 +282,11 @@
     <string name="request_blocked_bottom_sheet_title">Presentation blocked</string>
     <string name="request_blocked_bottom_sheet_message">This presentation request has been blocked because the relying party could not be verified by your Wallet.\n\nYour personal information or other data has not been shared with this relying party.</string>
     <string name="request_blocked_bottom_sheet_primary_button_text">@string/generic_close</string>
+    <string name="request_user_image_notice">This request includes your portrait, which can be used as biometric data to identify you by your face.</string>
+    <string name="request_bottom_sheet_user_image_title">Share your portrait?</string>
+    <string name="request_bottom_sheet_user_image_message">Your portrait will be sent to this relying party. Share it only if you trust the relying party and the request needs it.</string>
+    <string name="request_bottom_sheet_user_image_primary_button_text">@string/request_sticky_button_text</string>
+    <string name="request_bottom_sheet_user_image_secondary_button_text">@string/generic_cancel</string>
     <string name="request_gender_male">Male</string>
     <string name="request_gender_female">Female</string>
     <string name="request_gender_not_known">Not known</string>
@@ -257,7 +295,7 @@
 
     <!-- region Loading Screen -->
     <string name="loading_header_description">Please wait…</string>
-    <string name="loading_rejection_description">The Relying Party rejected the response.</string>
+    <string name="loading_rejection_description">Your response was sent to the relying party, which then rejected it.</string>
     <string name="loading_biometry_biometrics_enabled_description">Use your biometrics to approve the transaction.</string>
     <string name="loading_biometry_biometrics_not_enabled_description">To approve the transaction you need to verify your identity.</string>
     <!--endregion-->
@@ -268,6 +306,7 @@
     <string name="dashboard_document_deferred_pending">Pending</string>
     <string name="dashboard_document_deferred_failed">Issuance failed</string>
     <string name="dashboard_document_revoked">Revoked</string>
+    <string name="dashboard_document_suspended">Suspended</string>
     <string name="dashboard_document_credentials_info_text">%d/%d</string>
 
     <string name="dashboard_bottom_sheet_bluetooth_title">Enable bluetooth?</string>
@@ -283,8 +322,8 @@
     <string name="dashboard_bottom_sheet_deferred_documents_ready_title">Documents issued</string>
     <string name="dashboard_bottom_sheet_deferred_documents_ready_subtitle">New documents have been added to your wallet.</string>
 
-    <string name="dashboard_bottom_sheet_revoked_document_dialog_title">Revoked documents</string>
-    <string name="dashboard_bottom_sheet_revoked_document_dialog_subtitle">The following documents have been revoked.</string>
+    <string name="dashboard_bottom_sheet_revoked_document_dialog_title">Revoked or suspended documents</string>
+    <string name="dashboard_bottom_sheet_revoked_document_dialog_subtitle">The issuers of the following documents have revoked or suspended them, so they cannot be used.</string>
     <!--endregion-->
 
     <!-- region Dashboard Side Menu -->
@@ -300,8 +339,23 @@
     <string name="settings_screen_option_retrieve_logs">Retrieve logs</string>
     <string name="settings_screen_option_changelog">Changelog</string>
     <string name="settings_screen_option_registration_check">Check Registration Certificates</string>
+    <string name="settings_screen_option_dc_api">Allow document requests from apps and websites (DC API)</string>
     <string name="settings_screen_option_registration_check_restart">Restart the app to apply this change</string>
     <string name="settings_intent_chooser_logs_share_title">Share logs</string>
+    <string name="settings_screen_option_reset_wallet">Reset wallet</string>
+    <string name="settings_bottom_sheet_reset_wallet_title">Reset the wallet?</string>
+    <string name="settings_bottom_sheet_reset_wallet_message">This permanently deletes from this device:\n• your documents and their keys\n• your transaction history\n• your PIN, settings and logs\n\nThe wallet then starts again as on first use.</string>
+    <string name="settings_bottom_sheet_reset_wallet_primary_button_text">Reset</string>
+    <string name="settings_bottom_sheet_reset_wallet_secondary_button_text">@string/generic_cancel</string>
+    <string name="settings_reset_wallet_biometrics_enabled_description">Use your biometrics to reset the wallet.</string>
+    <string name="settings_reset_wallet_biometrics_not_enabled_description">To reset the wallet you need to verify your identity.</string>
+    <string name="settings_biometrics_switch_enabled_description">Use your biometrics or your PIN to turn off authentication with biometrics.</string>
+    <string name="settings_biometrics_switch_not_enabled_description">Enter your PIN to turn on authentication with biometrics.</string>
+    <!--endregion-->
+
+    <!-- region Reset Wallet Screen -->
+    <string name="reset_wallet_screen_title">Resetting the wallet</string>
+    <string name="reset_wallet_screen_subtitle">Your documents and data are being deleted. The wallet then starts again as on first use.</string>
     <!--endregion-->
 
     <!-- region Home Screen -->
@@ -424,16 +478,21 @@
     <string name="document_details_main_section_text">DOCUMENT DATA</string>
     <string name="document_details_issuer_section_text">ISSUER DETAILS</string>
     <string name="document_details_issuer_card_unknown_issuer">@string/generic_unknown_issuer</string>
+    <string name="document_details_issuer_card_reissuance_failed_text">The wallet could not renew this document automatically. Use Reissue document to try again.</string>
+    <string name="document_details_issuer_card_status_refresh_failed_text">The document\'s status could not be refreshed. The state shown is from the last successful check.</string>
     <string name="document_details_issuer_card_expires_on_text">Expires on:\ %1$s</string>
     <string name="document_details_issuer_card_revoked_text">Document revoked</string>
+    <string name="document_details_issuer_card_suspended_text">Document suspended</string>
     <string name="document_details_issuer_card_issued_on_text">Issued on:\ %1$s</string>
     <string name="document_details_issuer_card_issued_message_text">You may reissue this document at any time.</string>
     <string name="document_details_issuer_card_issued_action_btn_text">Reissue document</string>
     <string name="document_details_issuer_card_revoked_message_text">This document cannot be used for verification.</string>
+    <string name="document_details_issuer_card_suspended_message_text">The issuer has suspended this document. It cannot be used for verification unless the issuer reinstates it.</string>
     <string name="document_details_issuer_card_expired_action_btn_text">@string/document_details_issuer_card_issued_action_btn_text</string>
     <string name="document_details_issuer_card_expired_on_text">Expired on:\ %1$s</string>
     <string name="document_details_issuer_card_expired_text">Expired</string>
     <string name="document_details_issuer_card_expired_message_text">This document has expired. You may reissue it.</string>
+    <string name="document_details_reissue_blocked_text">The issuer has revoked or suspended this document, so it cannot be reissued.</string>
     <string name="document_details_secondary_button_text">Remove from wallet</string>
 
     <string name="document_details_bottom_sheet_bookmark_info_title">Saved to favourites</string>
@@ -458,6 +517,8 @@
     <string name="transaction_details_report_transaction_message">If you believe this Relying Party has unlawfully requested your personal data, you can report it to the relevant Member State’s data protection authority.</string>
     <string name="transaction_details_request_deletion_button">Initiate deletion request</string>
     <string name="transaction_details_report_transaction_button">Initiate transaction report</string>
+    <string name="transaction_details_registration_not_verified">The relying party\'s registration was not verified when the data was shared, so the contact details shown with it may not be its own.</string>
+    <string name="transaction_details_registration_not_bound">The registration shown here was issued to another party than the one that asked for the data, so its contact details are not that party\'s. A deletion request is not offered.</string>
     <string name="transaction_details_action_unavailable">This action is unavailable. No suitable contact or shared data was recorded for it.</string>
     <string name="transaction_details_action_open_failed">This contact could not be opened. No attempt was recorded. Retry to open it again, or cancel to return to the transaction.</string>
     <string name="transaction_details_action_save_failed">The external application opened, but this attempt could not be saved in your history. Retry to save it without opening the application again.</string>
@@ -528,6 +589,7 @@
     <!-- region Issuance Success Screen -->
     <string name="issuance_success_banner_text">Document issued</string>
     <string name="issuance_success_header_description">You have successfully added the following to your wallet</string>
+    <string name="issuance_success_not_issued_text">These documents were not added to your wallet: %1$s.</string>
     <string name="issuance_success_header_description_when_error">You have successfully added the document(s) to your wallet</string>
     <string name="issuance_success_header_issuer_default_name">@string/generic_default_issuer_name</string>
     <!--endregion-->
@@ -547,6 +609,7 @@
     <string name="issuance_document_offer_error_missing_pid_text">Wallet needs to be activated first with a National ID</string>
     <string name="issuance_document_offer_error_invalid_txcode_format">Invalid transaction code format. Length should be between %1$d to %2$d digits and only numeric characters are allowed.</string>
     <string name="issuance_document_offer_error_no_document">Unable to fetch and process the credential offer</string>
+    <string name="issuance_document_offer_error_issuer_not_configured">This offer comes from an issuer that this wallet is not set up to use</string>
 
     <string name="issuance_document_offer_relying_party_default_name">@string/generic_default_issuer_name</string>
     <!--endregion-->

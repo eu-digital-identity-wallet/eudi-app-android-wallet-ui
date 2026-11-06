@@ -39,18 +39,22 @@ import eu.europa.ec.businesslogic.validator.FormValidator
 import eu.europa.ec.businesslogic.validator.FormValidatorImpl
 import eu.europa.ec.eudi.rqes.core.RqesSigningLogger
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
-import org.koin.core.annotation.ComponentScan
-import org.koin.core.annotation.Configuration
-import org.koin.core.annotation.Factory
-import org.koin.core.annotation.Module
-import org.koin.core.annotation.Single
+import org.koin.core.module.dsl.factoryOf
+import org.koin.core.module.dsl.singleOf
+import org.koin.dsl.module
 
-@Module
-@Configuration
-@ComponentScan("eu.europa.ec.businesslogic")
-class LogicBusinessModule
+val logicBusinessModule = module {
+    singleOf(::provideConfigLogic)
+    singleOf(::provideLogController)
+    singleOf(::providePrefsController)
+    singleOf(::providePrefKeys)
+    singleOf(::provideKeystoreController)
+    singleOf(::provideUuidProvider)
+    factoryOf(::provideCryptoController)
+    factoryOf(::provideFormValidator)
+    factoryOf(::provideFiltersValidator)
+}
 
-@Single
 fun provideConfigLogic(
     context: Context,
     signingLogger: RqesSigningLogger,
@@ -59,22 +63,23 @@ fun provideConfigLogic(
     signingLogger = signingLogger,
 )
 
-@Single
+/**
+ * Only a debug build writes the log to files and offers them in Settings; a release build writes
+ * none. The build type is read here, not from [ConfigLogic], which itself depends on logging.
+ */
 fun provideLogController(context: Context): LogController =
     LogControllerImpl(
         context = context,
         tag = "EUDI Wallet ${BuildConfig.FLAVOR.uppercase()}-${AppBuildType.getType()}",
+        shouldWriteLogFile = AppBuildType.getType() == AppBuildType.DEBUG,
     )
 
-@Single
 fun providePrefsController(resourceProvider: ResourceProvider): PrefsController =
     PrefsControllerImpl(resourceProvider)
 
-@Single
 fun providePrefKeys(prefsController: PrefsController): PrefKeys =
     PrefKeysImpl(prefsController)
 
-@Single
 fun provideKeystoreController(
     prefKeys: PrefKeys,
     logController: LogController,
@@ -82,18 +87,14 @@ fun provideKeystoreController(
 ): KeystoreController =
     KeystoreControllerImpl(prefKeys, logController, uuidProvider)
 
-@Single
 fun provideUuidProvider(): UuidProvider {
     return UuidProviderImpl()
 }
 
-@Factory
 fun provideCryptoController(keystoreController: KeystoreController): CryptoController =
     CryptoControllerImpl(keystoreController)
 
-@Factory
 fun provideFormValidator(logController: LogController): FormValidator =
     FormValidatorImpl(logController)
 
-@Factory
 fun provideFiltersValidator(): FilterValidator = FilterValidatorImpl()

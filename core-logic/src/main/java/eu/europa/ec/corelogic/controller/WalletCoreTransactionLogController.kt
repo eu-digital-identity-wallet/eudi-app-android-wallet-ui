@@ -16,15 +16,24 @@
 
 package eu.europa.ec.corelogic.controller
 
+import eu.europa.ec.corelogic.extension.recordedRegistrationCheckOf
 import eu.europa.ec.corelogic.extension.toCommunicationMethodDomainOrNull
 import eu.europa.ec.corelogic.extension.toCoreTransactionLog
+import eu.europa.ec.corelogic.extension.toRecordedRegistrationCheck
+import eu.europa.ec.corelogic.extension.toRegistrationStatusDomain
 import eu.europa.ec.corelogic.extension.toStoredCommunicationMethod
+import eu.europa.ec.corelogic.extension.toStoredRegistrationCheck
+import eu.europa.ec.corelogic.extension.toStoredRegistrationFailureReason
 import eu.europa.ec.corelogic.extension.toTransactionLogDomain
 import eu.europa.ec.corelogic.model.CommunicationMethodDomain
+import eu.europa.ec.corelogic.model.RecordedRegistrationCheckDomain
 import eu.europa.ec.corelogic.model.TransactionLogDomain
 import eu.europa.ec.corelogic.model.TransactionLogDomain.PresentationAction
+import eu.europa.ec.eudi.iso18013.transfer.TransferEvent
+import eu.europa.ec.eudi.iso18013.transfer.response.RequestProcessor
 import eu.europa.ec.eudi.wallet.transactionLogging.TransactionLogger
 import eu.europa.ec.eudi.wallet.transactionLogging.model.TransactionEntry
+import eu.europa.ec.eudi.wallet.transactionLogging.producers.presentation.PresentationLogBuilder
 import eu.europa.ec.eudi.wallet.transactionLogging.toJson
 import eu.europa.ec.eudi.wallet.transfer.openId4vp.TransactionDataType
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
@@ -44,9 +53,15 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.util.Locale
+import java.util.concurrent.atomic.AtomicReference
 import eu.europa.ec.storagelogic.model.TransactionLog as TransactionStorage
 
-interface WalletCoreTransactionLogController : TransactionLogger {
+/**
+ * The wallet's transaction history. Wallet Core writes the entries through [TransactionLogger]. As a
+ * [TransferEvent.Listener] registered after Wallet Core's own, it also records beside each presentation
+ * whether the relying party's registration was verified, which Wallet Core does not keep in the entry.
+ */
+interface WalletCoreTransactionLogController : TransactionLogger, TransferEvent.Listener {
     suspend fun getTransactionLogs(): List<TransactionLogDomain>
     suspend fun getTransactionLog(id: String): TransactionLogDomain?
 
@@ -62,6 +77,10 @@ interface WalletCoreTransactionLogController : TransactionLogger {
 
     suspend fun deleteTransactionLog(id: String)
 
+    /**
+     * Deletes every entry, after the writes already queued by [log]. Only the factory reset calls it:
+     * the history is a legal record, so the app offers no other way to clear it.
+     */
     suspend fun deleteAllTransactionLogs()
 }
 
@@ -73,6 +92,15 @@ interface WalletCoreTransactionLogController : TransactionLogger {
  *
  * [log] queues a save and returns immediately. Recording a presentation action and deleting logs
  * wait for their queued operation to finish.
+ *
+ * The registration check is matched to its entry by order. When a request arrives, Wallet Core's
+ * listener, registered first, writes a new pending entry through [log] before this listener sees
+ * the same request; the check of that request is then recorded for that entry, once, after its
+ * relying party is confirmed to be the one in the entry. An entry for which no check could be
+ * matched reads as not verified. If a second entry is written before the first one's request
+ * reaches this listener, as can happen when two requests are dispatched from different threads,
+ * neither check is recorded. Wallet Core's `PresentationLogger.removeAllTransferEventListeners`
+ * adds back only its own listener; calling it would silently drop this one.
  */
 class WalletCoreTransactionLogControllerImpl(
     private val transactionLogDao: TransactionLogDao,
@@ -90,11 +118,22 @@ class WalletCoreTransactionLogControllerImpl(
         },
     )
 
+    /**
+     * The presentation entry Wallet Core wrote last, until the request it belongs to is seen, or
+     * [PendingPresentation.Ambiguous] when a second one was written first.
+     */
+    private val pendingPresentation = AtomicReference<PendingPresentation?>(null)
+
+    /** Recent presentation entry ids, so that a later write of an entry is not taken for a new one. */
+    private val seenPresentationIds = ArrayDeque<String>()
+
     init {
         coroutineScope.launch {
             for (operation in operations) {
                 when (operation) {
                     is StorageOperation.Store -> store(operation.entry)
+
+                    is StorageOperation.StoreRegistrationCheck -> storeRegistrationCheck(operation)
 
                     is StorageOperation.StorePresentationAction -> completeOperation(operation.completion) {
                         persist(
@@ -122,8 +161,61 @@ class WalletCoreTransactionLogControllerImpl(
     }
 
     override fun log(transaction: TransactionEntry) {
+        if (transaction is TransactionEntry.Presentation && isNewPresentation(transaction.transactionIdentifier)) {
+            pendingPresentation.getAndUpdate { current ->
+                if (current == null) PendingPresentation.Entry(transaction) else PendingPresentation.Ambiguous
+            }
+        }
         operations.trySend(StorageOperation.Store(entry = transaction))
     }
+
+    override fun onTransferEvent(event: TransferEvent) {
+        if (event !is TransferEvent.RequestReceived) return
+        val pending =
+            (pendingPresentation.getAndSet(null) as? PendingPresentation.Entry)?.entry ?: return
+        val request = event.processedRequest.getOrNull() ?: return
+        if (pending.relyingPartyFields() != event.processedRequest.loggedRelyingPartyFields()) return
+        val check = request.wrpRegistration
+            .toRegistrationStatusDomain(locale = resourceProvider.getLocale())
+            .toRecordedRegistrationCheck()
+        operations.trySend(
+            StorageOperation.StoreRegistrationCheck(
+                id = pending.transactionIdentifier,
+                check = check,
+            )
+        )
+    }
+
+    /** Whether [id] has not been seen before; remembers it if so. */
+    private fun isNewPresentation(id: String): Boolean = synchronized(seenPresentationIds) {
+        if (id in seenPresentationIds) return@synchronized false
+        seenPresentationIds.addLast(id)
+        if (seenPresentationIds.size > MAX_SEEN_PRESENTATIONS) seenPresentationIds.removeFirst()
+        true
+    }
+
+    /** The relying-party fields Wallet Core records for [this] request. */
+    private fun RequestProcessor.ProcessedRequest.loggedRelyingPartyFields(): List<Any?> {
+        val builder = PresentationLogBuilder()
+        return builder.withRelyingParty(builder.createEmptyPresentationLog(), this)
+            .relyingPartyFields()
+    }
+
+    private fun TransactionEntry.Presentation.relyingPartyFields(): List<Any?> = listOf(
+        interactingPartyName,
+        interactingPartyIdentifier,
+        interactingPartyContact,
+        isIntermediary,
+        intermediaryIdentifier,
+        intermediaryName,
+        intermediaryContact,
+        registrarURL,
+        purpose,
+        privacyPolicy,
+        dpaName,
+        dpaCountry,
+        dpaContact,
+    )
 
     override suspend fun getTransactionLogs(): List<TransactionLogDomain> =
         withContext(dispatcher) {
@@ -217,6 +309,19 @@ class WalletCoreTransactionLogControllerImpl(
         }
     }
 
+    private suspend fun storeRegistrationCheck(operation: StorageOperation.StoreRegistrationCheck) {
+        val check = operation.check.toStoredRegistrationCheck() ?: return
+        runCatching {
+            transactionLogDao.recordRegistrationCheck(
+                identifier = operation.id,
+                check = check,
+                failureReason = operation.check.toStoredRegistrationFailureReason(),
+            )
+        }.onFailure { error ->
+            if (error is CancellationException) throw error
+        }
+    }
+
     private fun TransactionStorage.toDomain(
         entry: TransactionEntry,
         userLocale: Locale,
@@ -226,6 +331,10 @@ class WalletCoreTransactionLogControllerImpl(
         parentPresentationId = parentPresentationId,
         communicationMethod = communicationMethod,
         transactionDataTypes = transactionDataTypes,
+        registrationCheck = recordedRegistrationCheckOf(
+            check = registrationCheck,
+            failureReason = registrationFailureReason,
+        ),
     )
 
     private suspend fun persist(
@@ -292,6 +401,11 @@ class WalletCoreTransactionLogControllerImpl(
     private sealed interface StorageOperation {
         data class Store(val entry: TransactionEntry) : StorageOperation
 
+        data class StoreRegistrationCheck(
+            val id: String,
+            val check: RecordedRegistrationCheckDomain,
+        ) : StorageOperation
+
         sealed interface Awaited : StorageOperation {
             val completion: CompletableDeferred<Boolean>
         }
@@ -313,4 +427,16 @@ class WalletCoreTransactionLogControllerImpl(
         ) : Awaited
     }
 
+    /** What [log] left for the next request to claim. */
+    private sealed interface PendingPresentation {
+
+        data class Entry(val entry: TransactionEntry.Presentation) : PendingPresentation
+
+        /** A second entry was written before the first one's request was seen. */
+        data object Ambiguous : PendingPresentation
+    }
+
+    private companion object {
+        const val MAX_SEEN_PRESENTATIONS = 32
+    }
 }

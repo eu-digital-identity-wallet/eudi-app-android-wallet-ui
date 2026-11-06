@@ -47,6 +47,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import eu.europa.ec.commonfeature.ui.issuance.IssuerNotTrustedSheetContent
 import eu.europa.ec.corelogic.model.DocumentIdentifier
+import eu.europa.ec.corelogic.model.IssuerTrustVerdictDomain
 import eu.europa.ec.corelogic.util.CoreActions
 import eu.europa.ec.dashboardfeature.ui.documents.detail.model.DocumentDetailsUi
 import eu.europa.ec.dashboardfeature.ui.documents.model.DocumentCredentialsInfoUi
@@ -231,7 +232,9 @@ private fun getToolbarConfig(
                     text = stringResource(R.string.document_details_toolbar_action_reissue),
                     icon = null,
                     onClick = { onEventSend(Event.IssuerDetails.OnActionButtonClicked(context)) },
-                    enabled = !state.isLoading && state.issuerDetails?.documentState != IssuerDetailsCardDataUi.DocumentState.Revoked,
+                    enabled = !state.isLoading
+                            && state.issuerDetails?.documentState != IssuerDetailsCardDataUi.DocumentState.Revoked
+                            && state.issuerDetails?.documentState != IssuerDetailsCardDataUi.DocumentState.Suspended,
                     throttleClicks = true,
                 ),
                 ToolbarActionUi(
@@ -547,6 +550,9 @@ private fun DocumentDetailsScreenPreview() {
                     expirationDate = "22 March 2030"
                 ),
                 isExpanded = true,
+                issuerTrustVerdict = IssuerTrustVerdictDomain.TRUSTED,
+                hasStatusRefreshFailed = false,
+                hasReIssuanceFailed = false,
             ),
             documentCredentialsInfoUi = DocumentCredentialsInfoUi(
                 availableCredentials = availableCredentials,

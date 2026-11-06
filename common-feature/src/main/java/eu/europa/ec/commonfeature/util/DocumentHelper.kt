@@ -53,9 +53,9 @@ fun extractValueFromDocumentOrEmpty(
         ?: ""
 }
 
-fun keyIsUserImage(key: String): Boolean {
-    val listOfUserImageKeys = DocumentJsonKeys.BASE64_USER_IMAGE_KEYS
-    return listOfUserImageKeys.contains(key)
+/** True if [key] names a claim that holds a picture of the holder, per [userImageClaimKeys]. */
+fun keyIsUserImage(key: String, userImageClaimKeys: Set<String>): Boolean {
+    return key in userImageClaimKeys
 }
 
 fun keyIsSignature(key: String): Boolean {

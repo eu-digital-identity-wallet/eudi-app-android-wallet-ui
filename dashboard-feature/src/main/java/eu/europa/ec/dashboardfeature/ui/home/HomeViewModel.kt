@@ -39,7 +39,6 @@ import eu.europa.ec.uilogic.navigation.helper.generateComposableArguments
 import eu.europa.ec.uilogic.navigation.helper.generateComposableNavigationLink
 import eu.europa.ec.uilogic.serializer.UiSerializer
 import kotlinx.coroutines.launch
-import org.koin.core.annotation.KoinViewModel
 
 enum class BleAvailability {
     AVAILABLE, NO_PERMISSION, DISABLED, UNKNOWN
@@ -121,7 +120,6 @@ sealed class HomeScreenBottomSheetContent {
     data class Bluetooth(val availability: BleAvailability) : HomeScreenBottomSheetContent()
 }
 
-@KoinViewModel
 class HomeViewModel(
     private val homeInteractor: HomeInteractor,
     private val uiSerializer: UiSerializer,

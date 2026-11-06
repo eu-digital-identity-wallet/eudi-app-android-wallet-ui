@@ -27,9 +27,13 @@ import eu.europa.ec.commonfeature.ui.request.transformer.RequestTransformer
 import eu.europa.ec.corelogic.controller.TransferEventPartialState
 import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
 import eu.europa.ec.corelogic.controller.WalletCorePresentationController
+import eu.europa.ec.corelogic.model.PresentationCombinationDomain
+import eu.europa.ec.corelogic.model.PresentationTransactionDataDomain
 import eu.europa.ec.corelogic.model.RelyingPartyDomain
 import eu.europa.ec.corelogic.model.overaskedClaimsOrEmpty
+import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
+import eu.europa.ec.uilogic.config.ConfigUILogic
 import eu.europa.ec.uilogic.navigation.helper.IntentAction
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.mapNotNull
@@ -43,6 +47,12 @@ sealed class PresentationRequestInteractorPartialState {
 
     data class NoData(
         val relyingParty: RelyingPartyDomain,
+    ) : PresentationRequestInteractorPartialState()
+
+    /** The wallet declined the request, for [reason]; nothing can be shared. */
+    data class Declined(
+        val relyingParty: RelyingPartyDomain,
+        val reason: String,
     ) : PresentationRequestInteractorPartialState()
 
     data class Failure(val error: String) : PresentationRequestInteractorPartialState()
@@ -61,6 +71,7 @@ class PresentationRequestInteractorImpl(
     private val resourceProvider: ResourceProvider,
     private val uuidProvider: UuidProvider,
     private val walletCoreDocumentsController: WalletCoreDocumentsController,
+    private val configUILogic: ConfigUILogic,
     walletCorePresentationController: WalletCorePresentationController? = null
 ) : PresentationRequestInteractor,
     ScopedPresentationInteractorDelegate(walletCorePresentationController) {
@@ -106,17 +117,34 @@ class PresentationRequestInteractorImpl(
                                 )
                             }
 
-                        val combinationsUi = RequestTransformer.transformToCombinationsUi(
+                        val presentedCombinations = RequestTransformer.transformToCombinationsUi(
                             storageDocuments = storageDocuments,
                             resourceProvider = resourceProvider,
                             uuidProvider = uuidProvider,
                             combinationsDomain = combinationsDomain,
                             claimsAreSelectable = claimsAreSelectable,
                             overaskedClaims = response.relyingParty.registration.overaskedClaimsOrEmpty(),
+                            userImageClaimKeys = configUILogic.userImageClaimKeys,
                         ).getOrThrow()
-                            .filter { it.documents.isNotEmpty() }
+                            .withIndex()
+                            .filter { (_, combinationUi) -> combinationUi.documents.isNotEmpty() }
+                        val combinationsUi = presentedCombinations.map { it.value }
+                        val canShowAllTransactionData =
+                            presentedCombinations.all { (index, combinationUi) ->
+                                canShowTransactionData(
+                                    requested = response.combinationsDomain[index],
+                                    shown = combinationUi,
+                                )
+                            }
 
-                        if (combinationsUi.isNotEmpty()) {
+                        if (!canShowAllTransactionData) {
+                            PresentationRequestInteractorPartialState.Declined(
+                                relyingParty = response.relyingParty,
+                                reason = resourceProvider.getString(
+                                    R.string.request_transaction_data_not_shown_error
+                                ),
+                            )
+                        } else if (combinationsUi.isNotEmpty()) {
                             PresentationRequestInteractorPartialState.Success(
                                 relyingParty = response.relyingParty,
                                 combinationsUi = combinationsUi,
@@ -152,6 +180,28 @@ class PresentationRequestInteractorImpl(
 
     override fun stopPresentation() {
         walletCorePresentationController.stopPresentation()
+    }
+
+    /**
+     * True when every transaction-data entry of [requested] can be shown as it will be signed:
+     * readable, and bound to a match on the consent screen ([shown]), keyed as the selection is by
+     * document and query. A match left out because its document is blocked or cannot be shown, or
+     * because it asks for no claims, takes its entries with it, so the request is declined rather
+     * than shown in part, as on iOS.
+     */
+    private fun canShowTransactionData(
+        requested: PresentationCombinationDomain,
+        shown: RequestCombinationUi,
+    ): Boolean {
+        val shownMatches = shown.documents
+            .map { it.domainPayload.docId to it.domainPayload.queryId }
+            .toSet()
+        return requested.matches
+            .filter { it.transactionData.isNotEmpty() }
+            .all { match ->
+                (match.documentId to match.queryId) in shownMatches &&
+                        PresentationTransactionDataDomain.Unavailable !in match.transactionData
+            }
     }
 
     override fun updateRequestedDocuments(selectedCombination: RequestCombinationUi?) {
