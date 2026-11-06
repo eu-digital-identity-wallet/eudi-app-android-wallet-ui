@@ -73,7 +73,7 @@ internal fun DocumentSignScreen(
             onEventSend = { viewModel.setEvent(it) },
             onNavigationRequested = { navigationEffect ->
                 when (navigationEffect) {
-                    Effect.Navigation.Pop -> navController.popBackStack()
+                    is Effect.Navigation.Pop -> navController.popBackStack()
                 }
             },
             paddingValues = contentPadding

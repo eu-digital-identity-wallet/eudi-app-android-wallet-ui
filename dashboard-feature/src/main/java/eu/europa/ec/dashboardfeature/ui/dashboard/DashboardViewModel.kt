@@ -49,7 +49,6 @@ import eu.europa.ec.uilogic.navigation.helper.generateComposableNavigationLink
 import eu.europa.ec.uilogic.navigation.helper.hasDeepLink
 import eu.europa.ec.uilogic.navigation.helper.hasIntentAction
 import eu.europa.ec.uilogic.serializer.UiSerializer
-import org.koin.core.annotation.KoinViewModel
 
 data class State(
 
@@ -133,7 +132,6 @@ enum class SideMenuAnimation {
     SLIDE, FADE
 }
 
-@KoinViewModel
 class DashboardViewModel(
     private val dashboardInteractor: DashboardInteractor,
     private val uiSerializer: UiSerializer,
@@ -148,7 +146,10 @@ class DashboardViewModel(
 
     override fun handleEvents(event: Event) {
         when (event) {
-            is Event.Init -> handleDeepLink(event.intent)
+            is Event.Init -> {
+                dashboardInteractor.scheduleBackgroundWork()
+                handleDeepLink(event.intent)
+            }
 
             is Event.Pop -> setEffect { Effect.Navigation.Pop }
 

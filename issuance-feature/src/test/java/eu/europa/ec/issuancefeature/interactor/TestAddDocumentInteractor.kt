@@ -642,6 +642,7 @@ class TestAddDocumentInteractor {
                 IssueDocumentsPartialState.PartialSuccessWithUntrustedIssuer(
                     issuedDocumentIds = listOf(mockedPidId),
                     untrustedDocuments = emptyMap(),
+                    nonIssuedDocuments = emptyMap(),
                 ).toFlow()
             )
 
@@ -654,6 +655,71 @@ class TestAddDocumentInteractor {
                 // Then
                 assertEquals(
                     AddDocumentInteractorIssueDocumentsPartialState.Success(listOf(mockedPidId)),
+                    awaitItem()
+                )
+            }
+        }
+    }
+
+    @Test
+    fun `Given controller emits PartialSuccess with documents not issued, When issueDocuments is called, Then Success names them`() {
+        coroutineRule.runTest {
+            whenever(
+                walletCoreDocumentsController.issueDocuments(
+                    issuanceMethod = IssuanceMethod.OPENID4VCI,
+                    configIds = listOf("id"),
+                    issuerId = "issuerId",
+                )
+            ).thenReturn(
+                IssueDocumentsPartialState.PartialSuccess(
+                    documentIds = listOf(mockedPidId),
+                    nonIssuedDocuments = mapOf("org.iso.18013.5.1.mDL" to "mDL"),
+                ).toFlow()
+            )
+
+            interactor.issueDocuments(
+                issuanceMethod = IssuanceMethod.OPENID4VCI,
+                configIds = listOf("id"),
+                issuerId = "issuerId",
+            ).runFlowTest {
+                assertEquals(
+                    AddDocumentInteractorIssueDocumentsPartialState.Success(
+                        documentIds = listOf(mockedPidId),
+                        notIssuedDocuments = listOf("mDL"),
+                    ),
+                    awaitItem()
+                )
+            }
+        }
+    }
+
+    @Test
+    fun `Given controller emits PartialSuccessWithUntrustedIssuer with refused documents, When issueDocuments is called, Then Success names them`() {
+        coroutineRule.runTest {
+            whenever(
+                walletCoreDocumentsController.issueDocuments(
+                    issuanceMethod = IssuanceMethod.OPENID4VCI,
+                    configIds = listOf("id"),
+                    issuerId = "issuerId",
+                )
+            ).thenReturn(
+                IssueDocumentsPartialState.PartialSuccessWithUntrustedIssuer(
+                    issuedDocumentIds = listOf(mockedPidId),
+                    untrustedDocuments = mapOf("org.iso.18013.5.1.mDL" to "mDL"),
+                    nonIssuedDocuments = mapOf("eu.europa.ec.eudi.photoid.1" to "Photo ID"),
+                ).toFlow()
+            )
+
+            interactor.issueDocuments(
+                issuanceMethod = IssuanceMethod.OPENID4VCI,
+                configIds = listOf("id"),
+                issuerId = "issuerId",
+            ).runFlowTest {
+                assertEquals(
+                    AddDocumentInteractorIssueDocumentsPartialState.Success(
+                        documentIds = listOf(mockedPidId),
+                        notIssuedDocuments = listOf("mDL", "Photo ID"),
+                    ),
                     awaitItem()
                 )
             }

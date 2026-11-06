@@ -22,6 +22,7 @@ import eu.europa.ec.authenticationlogic.secure.SecurePin
 import eu.europa.ec.commonfeature.config.IssuanceFlowType
 import eu.europa.ec.commonfeature.config.IssuanceUiConfig
 import eu.europa.ec.commonfeature.config.SuccessUIConfig
+import eu.europa.ec.commonfeature.interactor.DeviceLockNotice
 import eu.europa.ec.commonfeature.interactor.QuickPinInteractor
 import eu.europa.ec.commonfeature.interactor.QuickPinInteractorPinValidPartialState
 import eu.europa.ec.commonfeature.interactor.QuickPinInteractorSetPinPartialState
@@ -46,8 +47,6 @@ import eu.europa.ec.uilogic.serializer.UiSerializer
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import org.koin.core.annotation.InjectedParam
-import org.koin.core.annotation.KoinViewModel
 import kotlin.time.Duration.Companion.milliseconds
 
 enum class PinValidationState {
@@ -70,7 +69,9 @@ data class State(
     val sheetContent: PinBottomSheetContent = PinBottomSheetContent.CancelConfirmation,
     val quickPinSize: Int = 6,
     val isLockedOut: Boolean = false,
-    val lockoutMessage: String? = null
+    val lockoutMessage: String? = null,
+    val deviceLockNotice: String? = null,
+    val isBlockedByDeviceLock: Boolean = false,
 ) : ViewState {
     val action: ScreenNavigateAction
         get() {
@@ -93,6 +94,9 @@ sealed class Event : ViewEvent {
     data object Init : Event()
     data class PinEntered(val pin: SecurePin) : Event()
     data object OnQuickPinLengthChanged : Event()
+
+    /** The screen came to the front, for example after the user set a screen lock in the settings. */
+    data object OnResume : Event()
     data object CancelPressed : Event()
     data object Finish : Event()
     sealed class BottomSheet : Event() {
@@ -123,12 +127,11 @@ sealed class PinBottomSheetContent {
     data object CancelConfirmation : PinBottomSheetContent()
 }
 
-@KoinViewModel
 class PinViewModel(
     private val interactor: QuickPinInteractor,
     private val resourceProvider: ResourceProvider,
     private val uiSerializer: UiSerializer,
-    @InjectedParam private val pinFlow: PinFlow
+    private val pinFlow: PinFlow
 ) : MviViewModel<Event, State, Effect>() {
 
     private var enteredPin: SecurePin? = null
@@ -174,7 +177,7 @@ class PinViewModel(
                 viewModelScope.launch {
                     when (val lockoutState = interactor.getPinLockoutState()) {
                         is PinLockoutState.Active -> startLockoutTick(lockoutState.remaining.inWholeMilliseconds)
-                        PinLockoutState.Idle -> Unit
+                        is PinLockoutState.Idle -> Unit
                     }
                 }
             }
@@ -184,17 +187,24 @@ class PinViewModel(
                 handleQuickPinLengthChanged()
             }
 
+            is Event.OnResume -> checkDeviceLock()
+
             is Event.PinEntered -> {
                 val state = viewState.value
-                if (state.isLockedOut) {
+                if (state.isLockedOut || state.isBlockedByDeviceLock) {
                     event.pin.close()
                     return
                 }
 
                 when (state.pinState) {
                     PinValidationState.ENTER -> {
-                        // Set state for re-enter phase
-                        setupReenterPhase(enteredPin = event.pin)
+                        val weakPinError = interactor.getWeakPinError(event.pin)
+                        if (weakPinError != null) {
+                            event.pin.close()
+                            showWeakPinError(message = weakPinError)
+                        } else {
+                            setupReenterPhase(enteredPin = event.pin)
+                        }
                     }
 
                     PinValidationState.REENTER -> {
@@ -270,7 +280,7 @@ class PinViewModel(
                                 startLockoutTick(lockoutState.remaining.inWholeMilliseconds)
                             }
 
-                            PinLockoutState.Idle -> {
+                            is PinLockoutState.Idle -> {
                                 setState {
                                     copy(
                                         quickPinError = it.errorMessage,
@@ -281,13 +291,42 @@ class PinViewModel(
                         }
                     }
 
-                    QuickPinInteractorPinValidPartialState.Success -> {
+                    is QuickPinInteractorPinValidPartialState.Success -> {
                         interactor.resetPinThrottle()
                         stopLockoutTick()
                         setupEnterPhase()
                     }
                 }
             }
+        }
+    }
+
+    /**
+     * Shows [message] the way the other PIN errors are shown, after the field has cleared itself:
+     * the field clears when the PIN is complete, and that change of length removes any error set
+     * before it.
+     */
+    private fun showWeakPinError(message: String) {
+        setState { copy(isLoading = true) }
+        viewModelScope.launch {
+            artificialDelay()
+            setState { copy(quickPinError = message, isLoading = false) }
+        }
+    }
+
+    /**
+     * Shows whether the device lacks a screen lock while the wallet is being set up, and blocks PIN
+     * entry when the configuration requires one. Changing the PIN of a wallet already set up is not
+     * affected.
+     */
+    private fun checkDeviceLock() {
+        if (pinFlow == PinFlow.UPDATE) return
+        val notice = interactor.getDeviceLockNotice()
+        setState {
+            copy(
+                deviceLockNotice = notice?.message,
+                isBlockedByDeviceLock = notice is DeviceLockNotice.Blocking,
+            )
         }
     }
 
@@ -373,6 +412,11 @@ class PinViewModel(
         }
     }
 
+    /**
+     * Counts the lockout down on screen. When the count reaches zero the state is read again, as on
+     * iOS: that clears a lockout that has run its course, so a later restart does not begin it
+     * again, and a lockout that is still running, for example after a restart, goes on.
+     */
     private fun startLockoutTick(initialRemainingMs: Long) {
         lockoutTickJob?.cancel()
         if (initialRemainingMs <= 0L) {
@@ -397,7 +441,12 @@ class PinViewModel(
                     copy(lockoutMessage = buildLockoutMessage(remaining))
                 }
             }
-            stopLockoutTick()
+            when (val lockoutState = interactor.getPinLockoutState()) {
+                is PinLockoutState.Active ->
+                    startLockoutTick(lockoutState.remaining.inWholeMilliseconds)
+
+                is PinLockoutState.Idle -> stopLockoutTick()
+            }
         }
     }
 

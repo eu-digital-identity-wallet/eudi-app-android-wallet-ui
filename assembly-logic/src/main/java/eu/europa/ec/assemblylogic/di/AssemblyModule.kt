@@ -17,48 +17,47 @@
 package eu.europa.ec.assemblylogic.di
 
 import android.app.Application
-import eu.europa.ec.analyticslogic.di.LogicAnalyticsModule
-import eu.europa.ec.authenticationlogic.di.LogicAuthenticationModule
-import eu.europa.ec.businesslogic.di.LogicBusinessModule
-import eu.europa.ec.commonfeature.di.FeatureCommonModule
-import eu.europa.ec.corelogic.di.LogicCoreModule
-import eu.europa.ec.dashboardfeature.di.FeatureDashboardModule
-import eu.europa.ec.issuancefeature.di.FeatureIssuanceModule
-import eu.europa.ec.networklogic.di.LogicNetworkModule
-import eu.europa.ec.presentationfeature.di.FeaturePresentationModule
-import eu.europa.ec.proximityfeature.di.FeatureProximityModule
-import eu.europa.ec.resourceslogic.di.LogicResourceModule
-import eu.europa.ec.startupfeature.di.FeatureStartupModule
-import eu.europa.ec.storagelogic.di.LogicStorageModule
-import eu.europa.ec.uilogic.di.LogicUiModule
+import eu.europa.ec.analyticslogic.di.logicAnalyticsModule
+import eu.europa.ec.authenticationlogic.di.logicAuthenticationModule
+import eu.europa.ec.businesslogic.di.logicBusinessModule
+import eu.europa.ec.commonfeature.di.featureCommonModule
+import eu.europa.ec.corelogic.di.logicCoreModule
+import eu.europa.ec.dashboardfeature.di.featureDashboardModule
+import eu.europa.ec.issuancefeature.di.featureIssuanceModule
+import eu.europa.ec.networklogic.di.logicNetworkModule
+import eu.europa.ec.presentationfeature.di.featurePresentationModule
+import eu.europa.ec.proximityfeature.di.featureProximityModule
+import eu.europa.ec.resourceslogic.di.logicResourceModule
+import eu.europa.ec.startupfeature.di.featureStartupModule
+import eu.europa.ec.storagelogic.di.logicStorageModule
+import eu.europa.ec.uilogic.di.logicUiModule
 import org.koin.android.ext.koin.androidContext
 import org.koin.android.ext.koin.androidLogger
 import org.koin.androidx.workmanager.koin.workManagerFactory
-import org.koin.core.annotation.KoinApplication
-import org.koin.plugin.module.dsl.startKoin
+import org.koin.core.KoinApplication
+import org.koin.core.context.startKoin
+import org.koin.core.module.Module
 
-@KoinApplication(
-    modules = [
-        LogicNetworkModule::class,
-        LogicUiModule::class,
-        LogicResourceModule::class,
-        LogicBusinessModule::class,
-        LogicAnalyticsModule::class,
-        LogicAuthenticationModule::class,
-        LogicCoreModule::class,
-        LogicStorageModule::class,
-        FeatureCommonModule::class,
-        FeatureDashboardModule::class,
-        FeatureStartupModule::class,
-        FeaturePresentationModule::class,
-        FeatureProximityModule::class,
-        FeatureIssuanceModule::class
-    ]
+internal val eudiWalletModules: List<Module> = listOf(
+    logicNetworkModule,
+    logicUiModule,
+    logicResourceModule,
+    logicBusinessModule,
+    logicAnalyticsModule,
+    logicAuthenticationModule,
+    logicCoreModule,
+    logicStorageModule,
+    featureCommonModule,
+    featureDashboardModule,
+    featureStartupModule,
+    featurePresentationModule,
+    featureProximityModule,
+    featureIssuanceModule,
 )
-class EudiWalletKoin
 
-internal fun Application.setupKoin() = startKoin<EudiWalletKoin> {
-    androidContext(this@setupKoin)
+internal fun Application.setupKoin(): KoinApplication = startKoin {
     androidLogger()
+    androidContext(this@setupKoin)
     workManagerFactory()
+    modules(eudiWalletModules)
 }

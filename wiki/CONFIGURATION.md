@@ -17,7 +17,7 @@
 ## General configuration
 
 Wallet Core settings are exposed through the `WalletCoreConfig` interface inside the
-**core-logic** module. `LogicCoreModule` constructs and injects SDK dependencies using this
+**core-logic** module. `logicCoreModule` constructs and injects SDK dependencies using this
 configuration:
 
 ```kotlin
@@ -42,6 +42,13 @@ interface WalletCoreConfig {
 
     // 7. Trust Mark source.
     val trustMarkSource: TrustMarkSource
+
+    // 8. Registration-certificate checking, read once per process from the Settings switch.
+    val isRegistrationCheckEnabled: Boolean
+
+    // 9. How long a factory reset waits for the background workers; default 30.seconds.
+    val workerStopTimeout: Duration
+
 }
 ```
 
@@ -78,6 +85,7 @@ overridden by a flavor when needed.
             ),
             VciConfig(
                 issuerUrl = "https://dev.issuer-backend.eudiw.dev",
+                logoOrigins = listOf("https://eudiw.dev"),
                 config = OpenId4VciManager.Config.Builder()
                     .withClientAuthenticationType(
                         OpenId4VciManager.ClientAuthenticationType.AttestationBased(
@@ -143,7 +151,7 @@ overridden by a flavor when needed.
             )
             // dev/demo only — remove for production:
             relaxCertificateProfiles()
-            relaxPkixRevocation()
+            pkixRevocationPolicy(PkixRevocationPolicy.Disabled)
         }
         // issuer trust, status-list trust and reader auth inherit the LoTE trust source
         configureIssuerTrust {
@@ -156,7 +164,7 @@ overridden by a flavor when needed.
             // the issuer half of the registration check; driven by the Settings switch,
             // so Disabled unless the user turns it on
             configureIssuerRegistrationPolicy(
-                if (registrationCheckEnabled) {
+                if (isRegistrationCheckEnabled) {
                     IssuerRegistrationPolicy.Enabled
                 } else {
                     IssuerRegistrationPolicy.Disabled
@@ -176,7 +184,7 @@ overridden by a flavor when needed.
         }
         // the verifier half of the same switch
         configureWrpRegistrationPolicy(
-            if (registrationCheckEnabled) {
+            if (isRegistrationCheckEnabled) {
                 WrpRegistrationPolicy.Enabled
             } else {
                 WrpRegistrationPolicy.Disabled
@@ -189,6 +197,12 @@ overridden by a flavor when needed.
    reader/verifier authentication, and the registration certificates of issuers and verifiers — and
    the trusted/untrusted behavior varies per presentation protocol. Change these values carefully.
 
+   **Signed issuer metadata.** `requireSignedMetadata()` applies whether the registration check is on
+   or off: an issuer that does not serve signed metadata, validated against `wrpacProviders`, is
+   refused when its offer is resolved, when wallet-initiated issuance starts, and when the app reads
+   its metadata. The switch adds the registration-certificate check. See
+   [GO_LIVE.md](GO_LIVE.md#etsi-trusted-lists-lote).
+
    **Credential issuer-trust policy.** Both reference flavors use `ENFORCE` for the configured mdoc
    and SD-JWT PID types and default to `INFORM` for other attestations. The Wallet keeps
    classification limited to those PID types. `ENFORCE` requires verified credential issuer trust
@@ -196,31 +210,29 @@ overridden by a flavor when needed.
    is unverified or untrusted. Other configured checks still apply.
 
    **Two trust layers.** An access certificate answers *who is this party*, a registration
-   certificate answers *what is it registered to do*. They are checked independently. Access-
-   certificate trust is always enforced; the registration layer is governed by a single runtime
-   setting described below.
+   certificate answers *what is it registered to do*. They are checked independently. Issuer
+   screens use the stored trust verdict and distinguish trusted, untrusted, not evaluated and
+   unavailable results. The registration layer is governed by the setting described below.
 
-   With the registration check **on**, both layers are needed on the issuance path: a document is
-   only stored when the issuer authenticates **and** its registration is verified and covers the
-   credential being issued. Either failure refuses the issuance and reports it the same way, so an
-   issuer must be registered for what it offers, not merely authenticated. On the presentation path
-   an unverified registration — or a request reaching beyond the registered scope — does not block
-   the request; the user is warned and must acknowledge it explicitly before any data is shared. The
-   verified badge needs both layers, and a request that over-asks keeps the badge and marks the
-   offending claims instead.
+   With the registration check **on**, issuance requires a verified issuer registration covering
+   the credential being issued. Credential issuer-trust enforcement still follows the per-type
+   policy above. On the presentation path, a failed registration evaluation or a request reaching
+   beyond the registered scope triggers a warning that the user must acknowledge before sharing.
+   The verified badge requires a trusted access certificate and no failed registration result.
+   A request that exceeds its verified registration scope keeps the badge and marks the affected
+   claims.
 
    **The registration-certificate setting.** *Check Registration Certificates* in the app's Settings
    drives both `configureIssuerRegistrationPolicy` and `configureWrpRegistrationPolicy` from one
    preference, and it **ships off**. Changes take effect after an app restart, as indicated in
    Settings.
 
-   With the setting off nothing is evaluated: no registered identity, intended use or warning
-   appears on any screen, no issuance is refused over a registration, and the verified badge falls
-   back to the access certificate alone. **Turn the setting on for production** — see
-   [GO_LIVE.md](GO_LIVE.md#registration-certificates-the-second-trust-layer).
+   With the setting off, the app hides registration details and warnings, skips registration-based
+   issuance checks, and bases the verified badge on the access certificate alone. **Turn the setting
+   on for production** — see [GO_LIVE.md](GO_LIVE.md#registration-certificates-the-second-trust-layer).
 
-   **Static trust anchors (alternative).** The Wallet Core SDK also supports a reader trust store
-   built from certificates loaded from raw resources:
+   **Static trust anchors (alternative).** To configure reader trust from certificates in raw
+   resources:
 
     ```kotlin
     _config = EudiWalletConfig {
@@ -241,8 +253,16 @@ overridden by a flavor when needed.
    [General configuration](#general-configuration)).
 
    Both reference flavors use the configured ETSI trusted lists for reader authentication. Use
-   `trustedCertificates(...)` when your deployment needs explicit trust anchors; those anchors
-   take precedence over the shared trusted-list configuration for reader authentication.
+   `trustedCertificates(...)` when your deployment needs explicit reader trust anchors, which take
+   precedence over the shared trusted-list configuration for reader authentication, and verify the
+   selected trust source with your deployment's readers.
+
+   Configure trust for registration certificates separately from reader authentication. Use the
+   registration-certificate list in `configureEtsiTrust`, or supply explicit trust through
+   `configureWrpRegistrationTrust(...)` and `configureIssuerRegistrationTrust(...)`. Configure these
+   trust sources before enabling registration checking: with the check on and nothing vouching for
+   registration certificates (for issuers, when signed metadata is required), Wallet Core 0.31.1
+   refuses to build `EudiWallet` (`IllegalArgumentException`).
 
    Configure `EudiWalletConfig` per flavor inside the appropriate `WalletCoreConfigImpl`. The
    development trusted-list URLs (and any demo/development trust anchors) must be replaced before
@@ -388,8 +408,11 @@ configureOpenId4Vp {
 ```
 
 Keep this alongside the other OpenID4VP settings in any flavor that supports these requests.
-The configured types are also used to display recorded signing-request details in transaction
-history. See [Transaction history](GO_LIVE.md#transaction-history) for the displayed information.
+The app also displays recorded signing-request details in transaction history. A type that is not
+configured is refused by the OpenID4VP library. Add another type only once the app can display it
+and handle it throughout the request flow. The wallet declines a request whose transaction data it
+cannot display in full. See
+[Transaction history](GO_LIVE.md#transaction-history) for the displayed information.
 
 ## Trust Mark configuration
 
@@ -413,7 +436,7 @@ val trustMarkSource: TrustMarkSource
 passes the configured source to the SDK:
 
 ```kotlin
-EudiWallet(
+val eudiWallet = EudiWallet(
     context = context,
     config = walletCoreConfig.config,
     walletProvider = walletCoreAttestationProvider,
@@ -422,15 +445,20 @@ EudiWallet(
     withLogger(walletCoreLogController)
     withTransactionLogger(walletCoreTransactionLogController)
     withKtorHttpClientFactory { httpClient }
+    withDCAPIRegistration(walletCoreDCAPIRegistrationController)
 }
+eudiWallet.addTransferEventListener(walletCoreTransactionLogController)
 ```
 
 To change the Trust Mark settings for a build flavor, override `trustMarkSource` in its
 `WalletCoreConfigImpl`. Use `TrustMarkSource.Static` for predefined information, or
 `TrustMarkSource.Dynamic` with a `TrustMarkProvider` that supplies the information at runtime.
 
-The SDK fetches JSON from `trustMarkResourceURL`. The Trust Mark screen displays the image from
-`image.url` above the localized text from the resource.
+The SDK fetches JSON from `trustMarkResourceURL` with a plain GET; neither the resource nor its
+image is signed. The Trust Mark screen displays the image from the configured resource's
+`image.url` above its localized text. The image must be an `https` URL; any other address is not
+loaded. Host the resource and image on infrastructure controlled by your organisation or the
+certification authority.
 
 "EUDI Wallet Provider Trusted List" opens `listOfCertifiedWalletsURL` in the browser.
 "Certification information page" opens `walletSolutionInfoPageURL` in the browser.
@@ -452,32 +480,39 @@ complete production process, see [GO_LIVE.md](GO_LIVE.md).
 | App ID                                     | `app/build.gradle.kts`                                                                                                                    | A reverse-DNS package name owned by the implementer, for example `eu.example.wallet`. Do not change after public release unless publishing a separate app.                                                                                                                                                                                                                                                                                                                                                                           |
 | App name suffix                            | `build-logic/convention/src/main/kotlin/project/convention/logic/AppFlavor.kt`                                                            | Empty for production. Keep suffixes only for dev/test builds.                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
 | Build flavor                               | `AppFlavor.kt` and matching source sets                                                                                                   | Add a dedicated production flavor, for example `prod`, instead of reusing `dev` or `demo`.                                                                                                                                                                                                                                                                                                                                                                                                                                           |
-| Issuer URLs                                | `core-logic/src/<flavor>/java/.../WalletCoreConfigImpl.kt`                                                                                | HTTPS URLs for approved production OpenID4VCI issuers. Include scheme and port if non-default.                                                                                                                                                                                                                                                                                                                                                                                                                                       |
+| Issuer URLs                                | `core-logic/src/<flavor>/java/.../WalletCoreConfigImpl.kt`                                                                                | HTTPS URLs for approved production OpenID4VCI issuers, each exactly the issuer's `credential_issuer` identifier, including any trailing slash. Offers naming another issuer, or a `credential_offer_uri` not on a configured issuer's `https` origin, are refused.                                                                                                                                                                                                                                                                                                                                                                                                                                       |
 | Issuer order                               | `VciConfig(order = ...)`                                                                                                                  | Integer display order in the add-document flow. Use stable ordering for user support and screenshots.                                                                                                                                                                                                                                                                                                                                                                                                                                |
 | Wallet Provider host                       | `walletProviderHost` in `WalletCoreConfigImpl.kt`                                                                                         | HTTPS base URL for the production wallet provider/attestation service.                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
 | OpenID4VCI redirect URI                    | `BuildConfig.ISSUE_AUTHORIZATION_DEEPLINK` from build-logic placeholders                                                                  | A registered URI accepted by the issuer and handled only by the wallet app.                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
 | OpenID4VP schemes                          | `AndroidLibraryConventionPlugin.kt` and `EudiWalletConfig.configureOpenId4Vp`                                                             | Schemes and client ID schemes approved for the ecosystem. Keep the manifest, `BuildConfig`, and Wallet Core config aligned.                                                                                                                                                                                                                                                                                                                                                                                                          |
-| Reader/verifier trust anchors              | `configureReaderAuthentication { ... }` in `WalletCoreConfigImpl.kt`                                                                      | Use the central ETSI trust source or explicitly supply approved trust material. The reference flavors use `enforceIfPresent()`, which admits readers that send no reader authentication; `alwaysRequire()` refuses them.                                                                                                                                                                                                                                                                                                             |
-| ETSI trusted lists (LoTE)                  | `configureEtsiTrust { ... }` in `WalletCoreConfigImpl.kt`                                                                                 | Production LoTE URLs from the approved trust framework, including the registration-certificate list (`wrprcProviders`) — without it no registration certificate can be validated in either direction. Remove the dev relaxations (`relaxCertificateProfiles()`, `relaxPkixRevocation()`) so certificate profile checks and revocation checking are enforced. Review the credential issuer-trust policy (`ENFORCE` for PID, `INFORM` otherwise in the reference flavors), the status-list-trust (`INFORM`) policy and the cache TTLs. |
+| Reader/verifier trust anchors              | `configureReaderAuthentication { ... }` in `WalletCoreConfigImpl.kt`                                                                      | Use the central ETSI trust source or explicitly supply approved reader trust anchors. The reference flavors configure `enforceIfPresent()`, which admits readers that send no reader authentication once the user accepts the warning; `alwaysRequire()` refuses them. Choose the authentication policy for your deployment and verify missing, invalid and trusted reader-authentication cases; see [GO_LIVE.md](GO_LIVE.md#etsi-trusted-lists-lote). |
+| ETSI trusted lists (LoTE)                  | `configureEtsiTrust { ... }` in `WalletCoreConfigImpl.kt`                                                                                 | Use production LoTE URLs, including the registration-certificate list (`wrprcProviders`). Remove `relaxCertificateProfiles()` and `pkixRevocationPolicy(PkixRevocationPolicy.Disabled)`; select an explicit production revocation policy (without the call Wallet Core 0.31.1 uses `PkixRevocationPolicy.CRLPriority`, the CRL then OCSP) and do not use `SoftFail`, which accepts a chain whose CRL cannot be fetched. Provide HTTPS revocation endpoints: every certificate below its list entry must give its CRL distribution points and OCSP address as `https://` URLs, since the wallet refuses cleartext and a certificate that gives only `http://` addresses always fails. Review credential classifications, issuer and status-list trust policies (the reference flavors use `INFORM` for status lists; use `ENFORCE` in production), list-signature verification and cache settings. See [GO_LIVE.md](GO_LIVE.md#etsi-trusted-lists-lote). |
 | Registration-certificate checking          | The *Check Registration Certificates* setting, feeding `configureIssuerRegistrationPolicy(...)` and `configureWrpRegistrationPolicy(...)` | **Ships off; turn it on for production.** One setting drives both policies. On, a verified in-scope registration certificate becomes a precondition for storing any document, and verifiers' registrations are shown and warned about — so confirm every production issuer and verifier is on the `wrprcProviders` list before release. Decide too whether the switch should remain user-visible in a production build.                                                                                                              |
 | Document key settings                      | `configureDocumentKeyCreation(...)`                                                                                                       | For LoA High PID and other high-assurance EAA/QEAA credentials, require strong user authentication and hardware-backed key protection unless an approved remote high-assurance key protection design replaces local key use. Use `0.seconds` only when one prompt per key use is acceptable; for batch issuing, a short approved window such as `10.seconds` may be needed.                                                                                                                                                          |
-| Document key storage                       | `EudiWallet.Builder` in `core-logic/src/main/java/.../LogicCoreModule.kt`                                                                 | Default Wallet Core behavior uses Android Keystore secure areas. Use `withSecureAreas(...)`, `withStorage(...)`, or `withDocumentManager(...)` if production requires an alternative secure area, remote-backed key service, or custom document manager.                                                                                                                                                                                                                                                                             |
+| Document key storage                       | `EudiWallet.Builder` in `core-logic/src/main/java/.../LogicCoreModule.kt`                                                                 | Default Wallet Core behavior uses Android Keystore secure areas; review the document key provider configured for your deployment. Integrate an alternative through `withSecureAreas(...)`, `withStorage(...)`, or `withDocumentManager(...)` when required, and verify key protection, deletion and recovery against your requirements. |
 | Wallet attestation key storage             | `EudiWallet.Builder.withWalletKeyManager(...)` and Wallet Provider policy                                                                 | Use if wallet attestation/client-attestation keys must be generated, stored, attested, or unlocked by a custom secure area or remote high-assurance key service.                                                                                                                                                                                                                                                                                                                                                                     |
 | DPoP key storage                           | `DPopConfig.Default` or `DPopConfig.Custom(...)` in each issuer config                                                                    | Prefer DPoP where supported. Use `DPopConfig.Custom(...)` when issuance proof-of-possession keys require custom secure area, StrongBox, user authentication, or issuer-specific key policy.                                                                                                                                                                                                                                                                                                                                          |
-| Remote presentation ephemeral key handling | OpenID4VP/presentation-manager integration                                                                                                | Ephemeral protocol key material must be generated per transaction, not reused across verifiers, and not persisted beyond the protocol flow. If the Wallet Core version exposes a dedicated ephemeral key-storage option, configure it in the production `EudiWallet` or presentation-manager integration and document the exact SDK API.                                                                                                                                                                                             |
-| DCAPI                                      | `configureDCAPI { withEnabled(...) }`                                                                                                     | Enable only if the production wallet supports Digital Credential API flows and has tested them.                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| Remote presentation ephemeral key handling | OpenID4VP/presentation-manager integration                                                                                                | Ephemeral protocol key material must be generated per transaction, not reused across verifiers, and not persisted beyond the protocol flow. Verify these requirements for the selected presentation integration and retain the results in the release evidence. |
+| DCAPI                                      | `configureDCAPI { withEnabled(...); withSupportedProtocols(...) }` and the *Allow document requests from apps and websites (DC API)* setting (`DCAPISettingProvider`) | Enable only if the production wallet supports Digital Credential API flows and has tested them. List only approved protocols; at least one is required. The user setting is on by default, is shown only when the build enables the API, and should be kept (GO_LIVE §Digital Credential API).                                                                                                                                                                                                                                                                                                                                                                                                                                      |
 | Document issuance rules                    | `documentIssuanceConfig`                                                                                                                  | Credential rotation, one-time-use, quantity, and re-issuance intervals agreed with issuer capacity and privacy policy.                                                                                                                                                                                                                                                                                                                                                                                                               |
 | Revocation interval                        | `revocationInterval`                                                                                                                      | A value that balances user experience, battery/network use, and relying-party risk.                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| Worker stop timeout                        | `workerStopTimeout`                                                                                                                       | How long a factory reset waits for running revocation and re-issuance work to finish after cancellation. The default is 30 seconds. The app blocks new checks and waits for active operations to complete. A timeout fails the reset before data deletion. See [GO_LIVE.md](GO_LIVE.md#data-deletion-and-factory-reset). |
 | RQES QTSP endpoint                         | `business-logic/src/<flavor>/java/.../RQESConfigImpl.kt`                                                                                  | Production CSC/QTSP endpoint provided by the selected qualified trust service provider.                                                                                                                                                                                                                                                                                                                                                                                                                                              |
 | RQES TSA URL                               | `RQESConfigImpl.kt`                                                                                                                       | Production timestamp authority URL required by the QTSP/signature profile.                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
 | RQES client ID/secret                      | `RQESConfigImpl.kt`                                                                                                                       | Do not hardcode confidential secrets in the app. Use an approved public-client or backend-mediated design.                                                                                                                                                                                                                                                                                                                                                                                                                           |
-| RQES redirect URI                          | `BuildConfig.RQES_DEEPLINK`                                                                                                               | Redirect URI registered with the QTSP and declared in the Android manifest.                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| RQES redirect URI                          | `BuildConfig.RQES_DEEPLINK`                                                                                                               | Redirect URI registered with the QTSP and declared in the Android manifest. The wallet resumes a signing only on its host and path (`rqesHost`, `rqesPath`).                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| RQES document retrieval host              | `rqesDocRetrievalHost` in `AndroidLibraryConventionPlugin.kt` | The host of the QTSP's document-retrieval links. The reference `*` accepts any host and is for development only. |
 | RQES document retrieval trust              | `DocumentRetrievalConfig`                                                                                                                 | Production certificates or trust material required for retrieving signing documents.                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
 | RQES transaction logging                   | `signingLogger` in `RQESConfigImpl`, supplied through `ConfigLogicImpl`                                                                   | Keep the provided logger configured so signing activity appears in transaction history, including with `printLogs = false`.                                                                                                                                                                                                                                                                                                                                                                                                          |
 | PIN storage                                | `authentication-logic` and `StorageConfig`                                                                                                | Confirm PBKDF2 parameters, encrypted preferences, and migration behavior meet policy.                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| Session lock                               | `AuthenticationConfig` and `ConfigUILogic` | Confirm `backgroundLockTimeout`, `idleLockTimeout` and `protectedFlowLockTimeout` for the assurance level, and keep `loginScreens` and `protectedFlowScreens` in step with the app's screens. |
+| Pictures of the holder                     | `ConfigUILogic.userImageClaimKeys` in `ui-logic` | The claims that hold a picture of the holder, `portrait` and `picture` in the reference configuration. They are shown as images, and a request that includes one raises the biometric-data notice and the confirmation on Share. Add any such claim your credentials use. |
+| Screen capture                             | `ConfigUILogic.shouldPreventScreenCapture` in `ui-logic` | False in the reference configuration, so that screens can be captured in development and testing. Set it to true for production: the wallet's window then carries `FLAG_SECURE`, and screenshots, screen recordings and the recent-apps thumbnail show no wallet content. The RQES SDK's screens are not covered. See [GO_LIVE.md](GO_LIVE.md#screenshots-overlays-and-sensitive-ui). |
+| Network limits                             | `NetworkConfig` in `network-logic` | The timeouts (`connectTimeout` 15 s, `socketTimeout` 30 s, `requestTimeout` 60 s) and the largest response body (`maxResponseBodySize`, 10 MiB) of the HTTP client the wallet hands to Wallet Core. Change them in `NetworkConfigImpl` (provided by `provideNetworkConfig`). The same client carries the app's wallet-provider requests. A request past a limit fails as a network error. The RQES SDK's requests and the issuer-logo loader (OkHttp) are not covered. Set the limits for your services and your users' networks. See [GO_LIVE.md](GO_LIVE.md#network-security). |
+| PIN rules                                  | `AuthenticationConfig`                                                                                                                    | Extend `commonPins` to match the PIN policy, and set `requireDeviceSecure` to true if the wallet must not be set up or opened on a device without a screen lock (the check runs at setup and at each login).                                                                                                                                                                                                                                                                                                                                                                                   |
 | PIN throttle policy                        | `authentication-logic` and `AuthenticationConfig`                                                                                         | Confirm `maxFailedPinAttempts` and `pinLockoutDurations` meet policy. Define what happens once the final lockout tier is reached (e.g. wipe, support flow, step-up).                                                                                                                                                                                                                                                                                                                                                                 |
 | Database key/storage                       | `storage-logic` and encrypted `PrefsController`                                                                                           | Ensure database keys are generated securely, encrypted at rest, excluded from backup, and migrated safely.                                                                                                                                                                                                                                                                                                                                                                                                                           |
-| Network logging                            | `network-logic/.../NetworkModule.kt`                                                                                                      | `LogLevel.NONE` for release. Never log tokens, credentials, signatures, or document data.                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| Network logging                            | `network-logic/.../NetworkModule.kt` and `WalletCoreLogController`                                                                       | The app configures `LogLevel.NONE` on its HTTP client for release. This does not reach Wallet Core's issuance, presentation and Trust Mark requests, which Wallet Core logs at `LogLevel.ALL` through the configured logger as debug records; `WalletCoreLogController` separately filters SDK log records using the configured `logLevel`, set to `LEVEL_INFO` for release. Keep both controls and verify the resulting release logs. Never log tokens, credentials, signatures or document data. See [Diagnostic logging](GO_LIVE.md#diagnostic-logging). |
 | Network security config                    | `network-logic/src/main/res/xml/network_security_config.xml`                                                                              | Cleartext disabled. No debug CA or trust-all logic in release.                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
 | Analytics providers                        | `analytics-logic`                                                                                                                         | Only approved providers, with data minimization, consent, retention, and no credential contents.                                                                                                                                                                                                                                                                                                                                                                                                                                     |
 | Release signing                            | `app/build.gradle.kts` and CI secrets                                                                                                     | Keystore and passwords controlled through CI secret storage, HSM/KMS, or an equivalent process.                                                                                                                                                                                                                                                                                                                                                                                                                                      |
@@ -507,6 +542,9 @@ val credentialOfferHost = "*"
 val credentialOfferHaipScheme = "haip-vci"
 val credentialOfferHaipHost = "*"
 
+val openId4VciAuthorizationScheme = "eu.europa.ec.euidi"
+val openId4VciAuthorizationHost = "authorization"
+
 val rqesScheme = "rqes"
 val rqesHost = "oauth"
 val rqesPath = "/callback"
@@ -518,6 +556,16 @@ val rqesDocRetrievalHost = "*"
 The reference configuration uses broad wildcard hosts for several custom-scheme links. For
 production, restrict hosts and paths where the protocol allows it, register redirect URIs with the
 issuer/verifier/QTSP, and validate every inbound URI before acting on it.
+
+`rqesHost` and `rqesPath` are also exported as `BuildConfig.RQES_HOST` and
+`BuildConfig.RQES_PATH`, and a signing callback resumes the signing only when its host and path
+match (`DeepLinkType.parse`), as on iOS; any other link in the `rqes` scheme is ignored.
+`rqesDocRetrievalHost` is also exported as `BuildConfig.RQES_DOC_RETRIEVAL_HOST`, and a document
+retrieval link starts a signing only when its host matches. The reference value `*`
+(`DeepLinkType.ANY_HOST`) matches any host and is meant for development; set the exact host of your
+document-retrieval service for production, as the check does not support the manifest's `*.domain`
+form. The certificate trust in `documentRetrievalConfig` remains the control that decides whether a
+document is retrieved; see [GO_LIVE.md](GO_LIVE.md#deep-links-and-redirect-uris).
 
 Let's assume you want to change the credential offer scheme to custom-my-offer:// the *AndroidLibraryConventionPlugin* should look like this:
 
@@ -615,7 +663,11 @@ Android Manifest (inside assembly-logic module):
 DeepLinkType (enum in `ui-logic/src/main/java/eu/europa/ec/uilogic/navigation/helper/DeepLinkAction.kt`):
 
 ```kotlin
-enum class DeepLinkType(val schemas: List<String>, val host: String? = null) {
+enum class DeepLinkType(
+    val schemas: List<String>,
+    val host: String? = null,
+    val path: String? = null
+) {
 
     OPENID4VP(
         schemas = listOf(
@@ -641,10 +693,12 @@ enum class DeepLinkType(val schemas: List<String>, val host: String? = null) {
     ),
     RQES(
         schemas = listOf(BuildConfig.RQES_SCHEME),
-        host = BuildConfig.RQES_HOST
+        host = BuildConfig.RQES_HOST,
+        path = BuildConfig.RQES_PATH
     ),
     RQES_DOC_RETRIEVAL(
-        schemas = listOf(BuildConfig.RQES_DOC_RETRIEVAL_SCHEME)
+        schemas = listOf(BuildConfig.RQES_DOC_RETRIEVAL_SCHEME),
+        host = BuildConfig.RQES_DOC_RETRIEVAL_HOST
     ),
     EXTERNAL(emptyList())
 }
@@ -674,6 +728,10 @@ module at `core-logic/src/demo/java/eu/europa/ec/corelogic/config/WalletCoreConf
 `core-logic/src/dev/java/eu/europa/ec/corelogic/config/WalletCoreConfigImpl.kt`.
 The *order* property determines the order the issuers appear into, in the *AddDocumentScreen*, if
 more than one exists.
+The wallet accepts credential offers only from the issuers listed in *issuersConfig*, and uses each
+issuer only with its own configuration; see [GO_LIVE.md](GO_LIVE.md#issuer-configuration-issuersconfig).
+An issuer's logo is loaded from the issuer's own origin, or from an origin listed in its
+*logoOrigins*. Each must be an `https` origin; a logo anywhere else is replaced by a placeholder.
 If you want to add or adjust the displayed scoped documents, you must modify the issuer's metadata, and the wallet will automatically resolve your changes.
 
 ## How to work with self-signed certificates
@@ -762,6 +820,12 @@ hash with a random salt and an iteration count, backed by the encrypted `PrefsCo
 encrypted preferences use Jetpack DataStore with Google Tink AEAD and an Android Keystore master
 key. For production, confirm the iteration count, lockout behavior, device binding, migration,
 backup exclusion, and recovery policy against your security requirements.
+`PrefsPinStorageProvider.setPin` refuses an empty PIN; a provider of your own should do the same.
+
+The factory reset clears the PIN, with every other preference except the session id and the
+database key, through `PrefKeys.clearAllExceptSessionIdAndDbKey()`. A provider that keeps its data
+anywhere else must be cleared by `WalletCoreResetController` as well; see
+[GO_LIVE.md](GO_LIVE.md#data-deletion-and-factory-reset).
 
 ```kotlin
 interface StorageConfig {
@@ -772,7 +836,7 @@ interface StorageConfig {
 ```
 
 You can provide your storage implementation by implementing the *PinStorageProvider* interface and then setting it as the default to the *StorageConfigImpl* pinStorageProvider variable.
-The project utilizes Koin for Dependency Injection (DI), thus requiring adjustment of the *LogicAuthenticationModule* graph to provide the configuration.
+The project utilizes Koin for Dependency Injection (DI), thus requiring adjustment of the *logicAuthenticationModule* graph to provide the configuration.
 
 Implementation Example:
 
@@ -815,15 +879,26 @@ class StorageConfigImpl(
 Config Construction via Koin DI Example:
 
 ```kotlin
-@Single
 fun provideStorageConfig(
+    context: Context,
     prefsController: PrefsController,
     authenticationConfig: AuthenticationConfig,
 ): StorageConfig = StorageConfigImpl(
     pinImpl = PrefsPinStorageProvider(prefsController),
     biometryImpl = PrefsBiometryStorageProvider(prefsController),
-    pinThrottleImpl = PrefsPinThrottleProvider(prefsController, authenticationConfig)
+    pinThrottleImpl = PrefsPinThrottleProvider(
+        prefsController = prefsController,
+        authenticationConfig = authenticationConfig,
+        bootCount = {
+            Settings.Global.getInt(context.contentResolver, Settings.Global.BOOT_COUNT, -1)
+        },
+    )
 )
+
+val logicAuthenticationModule = module {
+    singleOf(::provideStorageConfig)
+    // ...
+}
 ```
 
 The *pinThrottleProvider* is consumed by *PinThrottleController* to enforce
@@ -837,8 +912,11 @@ The application protects against brute-force PIN attempts via an
 escalating lockout mechanism. After a configurable number of consecutive
 failed attempts the PIN input is disabled for an increasing duration.
 Lockout state is persisted in the encrypted *PrefsController* DataStore,
-so it survives process death and device reboot. State is reset on any
-successful PIN or biometric authentication.
+so it survives process death. It runs on the elapsed real time, not the
+wall clock, so a device restart begins it again in full and a change of
+the date does not end it early; preferences that cannot be read count as
+the longest lockout. State is reset on any successful PIN or biometric
+authentication.
 
 The policy is configurable via the *AuthenticationConfig* interface
 inside the authentication-logic module:
@@ -858,6 +936,35 @@ interface AuthenticationConfig {
      * the last entry is reused for every subsequent lockout.
      */
     val pinLockoutDurations: List<Duration>
+
+    /** How long the app may stay in the background before the wallet locks. */
+    val backgroundLockTimeout: Duration
+
+    /**
+     * How long the app may stay in the foreground without interaction before the wallet locks.
+     * While the RQES SDK's screens are in front, protectedFlowLockTimeout applies instead.
+     */
+    val idleLockTimeout: Duration
+
+    /**
+     * The background limit while an issuance, presentation, signing or factory reset is in
+     * progress.
+     * Duration.INFINITE never locks during such a flow.
+     */
+    val protectedFlowLockTimeout: Duration
+
+    /**
+     * PINs refused when the user creates or changes the PIN, besides one digit repeated and
+     * ascending or descending runs, which are always refused.
+     */
+    val commonPins: Set<String>
+
+    /**
+     * Whether the wallet can be set up, and logged in to, only on a device with a screen lock. When
+     * false, a device without one gets a warning on the PIN screen at setup and on the login
+     * screen, and the user goes on.
+     */
+    val requireDeviceSecure: Boolean
 }
 ```
 
@@ -871,8 +978,28 @@ class AuthenticationConfigImpl : AuthenticationConfig {
         90.seconds,
         5.minutes
     )
+    override val backgroundLockTimeout: Duration = 60.seconds
+    override val idleLockTimeout: Duration = 5.minutes
+    override val protectedFlowLockTimeout: Duration = 10.minutes
+    override val commonPins: Set<String> = setOf(
+        "123123", "121212", "112233", "123321", "102030",
+        "147258", "159753", "789456", "696969", "000123",
+    )
+    override val requireDeviceSecure: Boolean = false
 }
 ```
+
+`commonPins` applies when the PIN is set: a PIN on the list, one digit repeated or an ascending
+or descending run is refused with the `quick_pin_weak` message. `requireDeviceSecure` applies at
+setup and at each login. Without a screen lock the PIN screen during setup, and the login screen,
+show `quick_pin_device_lock_missing`, or, when `requireDeviceSecure` is true, show
+`quick_pin_device_lock_required` and accept no PIN, and at login no biometric, until a lock is set.
+
+The three timeouts drive the session lock (*SessionController*). The screens it treats as login
+screens and as protected-flow screens are listed in *ConfigUILogic* (`loginScreens`,
+`protectedFlowScreens`, in `ui-logic`); keep both lists in step with the screens you add. The
+proximity QR screen is not a protected-flow screen: leaving the app there stops the session. See
+[GO_LIVE.md](GO_LIVE.md) for the behaviour.
 
 Resulting behavior with the defaults:
 
@@ -883,15 +1010,20 @@ Resulting behavior with the defaults:
 | 3 more wrong attempts                       | Third lockout: 5 minutes.                    |
 | Each subsequent batch of 3 wrong attempts   | 5 minutes (last list entry reused).          |
 | Successful PIN or biometric authentication  | Failure counter and lockout level reset.     |
-| App kill or device reboot                   | Active lockout window persists (wall-clock). |
-| Device clock rolled back                    | Detected; user remains locked.               |
+| App kill                                    | Active lockout window persists.              |
+| Device reboot                               | The lockout begins again in full.            |
+| Device date or time changed                 | No effect on the lockout.                    |
 
 You can change the policy by providing your own *AuthenticationConfigImpl*
-and wiring it in *LogicAuthenticationModule*:
+and wiring it in *logicAuthenticationModule*:
 
 ```kotlin
-@Single
 fun provideAuthenticationConfig(): AuthenticationConfig = AuthenticationConfigImpl()
+
+val logicAuthenticationModule = module {
+    singleOf(::provideAuthenticationConfig)
+    // ...
+}
 ```
 
 The lockout is enforced through the *PinThrottleController* and applied
@@ -928,7 +1060,7 @@ interface AnalyticsConfig {
 
 You can provide your implementation by implementing the *AnalyticsProvider* interface and then adding it to your *AnalyticsConfigImpl* analyticsProviders variable.
 You will also need the provider's token/key, thus requiring a Map<String, AnalyticsProvider> configuration.
-The project utilizes Koin for Dependency Injection (DI), thus requiring adjustment of the *LogicAnalyticsModule* graph to provide the configuration.
+The project utilizes Koin for Dependency Injection (DI), thus requiring adjustment of the *logicAnalyticsModule* graph to provide the configuration.
 
 Implementation Example:
 
@@ -966,6 +1098,10 @@ class AnalyticsConfigImpl : AnalyticsConfig {
 Config Construction via Koin DI Example:
 
 ```kotlin
-@Single
 fun provideAnalyticsConfig(): AnalyticsConfig = AnalyticsConfigImpl()
+
+val logicAnalyticsModule = module {
+    singleOf(::provideAnalyticsConfig)
+    // ...
+}
 ```

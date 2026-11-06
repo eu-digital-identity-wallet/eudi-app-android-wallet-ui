@@ -27,6 +27,8 @@ enum class SettingsMenuItemType(val itemId: String) {
     BIOMETRICS_AUTHENTICATION("biometricsAuthenticationId"),
     SHOW_BATCH_ISSUANCE_COUNTER("showBatchIssuanceCounterId"),
     REGISTRATION_CHECK("registrationCheckId"),
+    DC_API("dcApiId"),
     RETRIEVE_LOGS("retrieveLogsId"),
     CHANGELOG("changelogId"),
+    RESET_WALLET("resetWalletId"),
 }

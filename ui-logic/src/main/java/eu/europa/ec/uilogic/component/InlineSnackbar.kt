@@ -147,7 +147,7 @@ fun InlineSnackbar(
 
 @ThemeModePreviews
 @Composable
-private fun InlineSnackbar_Preview_NoAction() {
+private fun InlineSnackbarNoActionPreview() {
     PreviewTheme {
         Box(
             modifier = Modifier
@@ -167,7 +167,7 @@ private fun InlineSnackbar_Preview_NoAction() {
 
 @ThemeModePreviews
 @Composable
-private fun InlineSnackbar_Preview_WithAction() {
+private fun InlineSnackbarWithActionPreview() {
     PreviewTheme {
         Box(
             modifier = Modifier
@@ -187,7 +187,7 @@ private fun InlineSnackbar_Preview_WithAction() {
 
 @ThemeModePreviews
 @Composable
-private fun InlineSnackbar_Preview_LongScrollable() {
+private fun InlineSnackbarLongScrollablePreview() {
     PreviewTheme {
         val longText =
             "This is a very long message intended to demonstrate vertical scrolling inside the snackbar. " +

@@ -21,6 +21,7 @@ import eu.europa.ec.commonfeature.util.keyIsSignature
 import eu.europa.ec.commonfeature.util.keyIsUserImage
 import eu.europa.ec.corelogic.model.ClaimDomain
 import eu.europa.ec.corelogic.model.ClaimItemId
+import eu.europa.ec.corelogic.model.ClaimPathDomain
 import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.ListItemDataUi
 import eu.europa.ec.uilogic.component.ListItemLeadingContentDataUi
@@ -29,9 +30,15 @@ import eu.europa.ec.uilogic.component.ListItemTrailingContentDataUi
 import eu.europa.ec.uilogic.component.wrap.CheckboxDataUi
 import eu.europa.ec.uilogic.component.wrap.ExpandableListItemUi
 
-fun DocumentPayloadDomain.toSelectiveExpandableListItems(): List<ExpandableListItemUi> {
+fun DocumentPayloadDomain.toSelectiveExpandableListItems(
+    userImageClaimKeys: Set<String>,
+): List<ExpandableListItemUi> {
     return this.docClaimsDomain.map { claim ->
-        claim.toSelectiveExpandableListItems(docId = docId, queryId = queryId)
+        claim.toSelectiveExpandableListItems(
+            docId = docId,
+            queryId = queryId,
+            userImageClaimKeys = userImageClaimKeys,
+        )
     }
 }
 
@@ -40,15 +47,22 @@ fun DocumentPayloadDomain.toSelectiveExpandableListItems(): List<ExpandableListI
  * checkboxes, for requests whose claims aren't individually selectable (DCQL — see
  * [WalletCorePresentationController.requestAllowsClaimSelection][eu.europa.ec.corelogic.controller.WalletCorePresentationController.requestAllowsClaimSelection]).
  */
-fun DocumentPayloadDomain.toExpandableListItems(): List<ExpandableListItemUi> {
+fun DocumentPayloadDomain.toExpandableListItems(
+    userImageClaimKeys: Set<String>,
+): List<ExpandableListItemUi> {
     return this.docClaimsDomain.map { claimDomain ->
-        claimDomain.toExpandableListItems(docId = docId, queryId = queryId)
+        claimDomain.toExpandableListItems(
+            docId = docId,
+            queryId = queryId,
+            userImageClaimKeys = userImageClaimKeys,
+        )
     }
 }
 
 fun ClaimDomain.toSelectiveExpandableListItems(
     docId: String,
     queryId: String?,
+    userImageClaimKeys: Set<String>,
 ): ExpandableListItemUi {
     return when (this) {
         is ClaimDomain.Group -> {
@@ -63,7 +77,11 @@ fun ClaimDomain.toSelectiveExpandableListItems(
                     trailingContentData = ListItemTrailingContentDataUi.Icon(iconData = AppIcons.KeyboardArrowDown)
                 ),
                 nestedItems = items.map {
-                    it.toSelectiveExpandableListItems(docId = docId, queryId = queryId)
+                    it.toSelectiveExpandableListItems(
+                        docId = docId,
+                        queryId = queryId,
+                        userImageClaimKeys = userImageClaimKeys,
+                    )
                 },
                 isExpanded = false
             )
@@ -77,9 +95,9 @@ fun ClaimDomain.toSelectiveExpandableListItems(
                         queryId = queryId,
                         path = path,
                     ).encode(),
-                    mainContentData = calculateMainContent(key, value),
+                    mainContentData = calculateMainContent(key, value, userImageClaimKeys),
                     overlineText = calculateOverlineText(displayTitle),
-                    leadingContentData = calculateLeadingContent(key, value),
+                    leadingContentData = calculateLeadingContent(key, value, userImageClaimKeys),
                     trailingContentData = ListItemTrailingContentDataUi.Checkbox(
                         checkboxData = CheckboxDataUi(
                             isChecked = true,
@@ -95,6 +113,7 @@ fun ClaimDomain.toSelectiveExpandableListItems(
 fun ClaimDomain.toExpandableListItems(
     docId: String,
     queryId: String?,
+    userImageClaimKeys: Set<String>,
 ): ExpandableListItemUi {
     return when (this) {
         is ClaimDomain.Group -> {
@@ -112,6 +131,7 @@ fun ClaimDomain.toExpandableListItems(
                     it.toExpandableListItems(
                         docId = docId,
                         queryId = queryId,
+                        userImageClaimKeys = userImageClaimKeys,
                     )
                 },
                 isExpanded = false
@@ -126,9 +146,9 @@ fun ClaimDomain.toExpandableListItems(
                         queryId = queryId,
                         path = path,
                     ).encode(),
-                    mainContentData = calculateMainContent(key, value),
+                    mainContentData = calculateMainContent(key, value, userImageClaimKeys),
                     overlineText = calculateOverlineText(displayTitle),
-                    leadingContentData = calculateLeadingContent(key, value),
+                    leadingContentData = calculateLeadingContent(key, value, userImageClaimKeys),
                 )
             )
         }
@@ -138,9 +158,10 @@ fun ClaimDomain.toExpandableListItems(
 private fun calculateMainContent(
     key: String,
     value: String,
+    userImageClaimKeys: Set<String>,
 ): ListItemMainContentDataUi {
     return when {
-        keyIsUserImage(key = key) -> {
+        keyIsUserImage(key = key, userImageClaimKeys = userImageClaimKeys) -> {
             ListItemMainContentDataUi.Text(text = "")
         }
 
@@ -157,8 +178,9 @@ private fun calculateMainContent(
 private fun calculateLeadingContent(
     key: String,
     value: String,
+    userImageClaimKeys: Set<String>,
 ): ListItemLeadingContentDataUi? {
-    return if (keyIsUserImage(key = key)) {
+    return if (keyIsUserImage(key = key, userImageClaimKeys = userImageClaimKeys)) {
         ListItemLeadingContentDataUi.UserImage(userBase64Image = value)
     } else {
         null
@@ -170,3 +192,34 @@ private fun calculateOverlineText(displayTitle: String): String? {
         null
     }
 }
+
+/**
+ * The ids of this document's rows that hold a picture of the holder, meaning a claim named in
+ * [userImageClaimKeys]. They are the ids the rows are built with.
+ */
+fun DocumentPayloadDomain.userImageItemIds(userImageClaimKeys: Set<String>): Set<String> =
+    docClaimsDomain
+        .flatMap { claim -> claim.userImagePaths(userImageClaimKeys) }
+        .map { path ->
+            ClaimItemId.Claim(
+                docId = docId,
+                queryId = queryId,
+                path = path,
+            ).encode()
+        }
+        .toSet()
+
+private fun ClaimDomain.userImagePaths(userImageClaimKeys: Set<String>): List<ClaimPathDomain> =
+    when (this) {
+        is ClaimDomain.Primitive -> if (keyIsUserImage(
+                key = key,
+                userImageClaimKeys = userImageClaimKeys
+            )
+        ) {
+            listOf(path)
+        } else {
+            emptyList()
+        }
+
+        is ClaimDomain.Group -> items.flatMap { item -> item.userImagePaths(userImageClaimKeys) }
+    }

@@ -22,9 +22,7 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
 import androidx.navigation.navArgument
-import androidx.navigation.navDeepLink
 import eu.europa.ec.commonfeature.config.RequestUriConfig
-import eu.europa.ec.proximityfeature.BuildConfig
 import eu.europa.ec.proximityfeature.ui.loading.ProximityLoadingScreen
 import eu.europa.ec.proximityfeature.ui.qr.ProximityQRScreen
 import eu.europa.ec.proximityfeature.ui.request.ProximityRequestScreen
@@ -42,12 +40,6 @@ fun NavGraphBuilder.featureProximityGraph(navController: NavController) {
         // QR
         composable(
             route = ProximityScreens.QR.screenRoute,
-            deepLinks = listOf(
-                navDeepLink {
-                    uriPattern =
-                        BuildConfig.DEEPLINK + ProximityScreens.QR.screenRoute
-                }
-            ),
             arguments = listOf(
                 navArgument(RequestUriConfig.serializedKeyName) {
                     type = NavType.StringType
@@ -69,12 +61,6 @@ fun NavGraphBuilder.featureProximityGraph(navController: NavController) {
         // Request
         composable(
             route = ProximityScreens.Request.screenRoute,
-            deepLinks = listOf(
-                navDeepLink {
-                    uriPattern =
-                        BuildConfig.DEEPLINK + ProximityScreens.Request.screenRoute
-                }
-            ),
             arguments = listOf(
                 navArgument("scopeId") {
                     type = NavType.StringType

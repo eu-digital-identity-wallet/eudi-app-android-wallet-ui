@@ -31,15 +31,15 @@ sealed class ThemeFontWeight {
 
     companion object {
         fun ThemeFontWeight.toFontWeight(): FontWeight = when (this) {
-            W100 -> FontWeight.W100
-            W200 -> FontWeight.W200
-            W300 -> FontWeight.W300
-            W400 -> FontWeight.W400
-            W500 -> FontWeight.W500
-            W600 -> FontWeight.W600
-            W700 -> FontWeight.W700
-            W800 -> FontWeight.W800
-            W900 -> FontWeight.W900
+            is W100 -> FontWeight.W100
+            is W200 -> FontWeight.W200
+            is W300 -> FontWeight.W300
+            is W400 -> FontWeight.W400
+            is W500 -> FontWeight.W500
+            is W600 -> FontWeight.W600
+            is W700 -> FontWeight.W700
+            is W800 -> FontWeight.W800
+            is W900 -> FontWeight.W900
         }
     }
 }

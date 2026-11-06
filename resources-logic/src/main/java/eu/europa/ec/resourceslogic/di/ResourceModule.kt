@@ -19,17 +19,13 @@ package eu.europa.ec.resourceslogic.di
 import android.content.Context
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.resourceslogic.provider.ResourceProviderImpl
-import org.koin.core.annotation.ComponentScan
-import org.koin.core.annotation.Configuration
-import org.koin.core.annotation.Module
-import org.koin.core.annotation.Single
+import org.koin.core.module.dsl.singleOf
+import org.koin.dsl.module
 
-@Module
-@Configuration
-@ComponentScan("eu.europa.ec.resourceslogic")
-class LogicResourceModule
+val logicResourceModule = module {
+    singleOf(::provideResourceProvider)
+}
 
-@Single
 fun provideResourceProvider(context: Context): ResourceProvider {
     return ResourceProviderImpl(context)
 }

@@ -18,6 +18,7 @@ package eu.europa.ec.commonfeature.ui.request.transformer
 import eu.europa.ec.commonfeature.ui.request.model.RequestTransactionDataUi
 import eu.europa.ec.corelogic.model.DocumentChecksumDomain
 import eu.europa.ec.corelogic.model.PresentationTransactionDataDomain
+import eu.europa.ec.corelogic.model.QesInlineDocumentDomain
 import eu.europa.ec.corelogic.model.QesSignatureRequestDomain
 import eu.europa.ec.corelogic.model.SigningAttributeDomain
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
@@ -32,6 +33,7 @@ import eu.europa.ec.uilogic.component.ListItemDataUi
 import eu.europa.ec.uilogic.component.ListItemMainContentDataUi
 import eu.europa.ec.uilogic.component.ListItemSupportingContentDataUi
 import eu.europa.ec.uilogic.component.ListItemTrailingContentDataUi
+import eu.europa.ec.uilogic.component.ThemeColorKey
 import junit.framework.TestCase.assertEquals
 import junit.framework.TestCase.assertFalse
 import junit.framework.TestCase.assertNull
@@ -74,7 +76,7 @@ class TestTransactionDataTransformer {
     // 1. An approval supplies one labelled digest, no qualifier and no link.
     //
     // Case 1 Expected Result:
-    // One collapsed section includes the SDK type name without a qualifier or integrity result.
+    // One expanded section includes the SDK type name without a qualifier or integrity result.
     @Test
     fun `Given Case 1, When transformToUi is called, Then Case 1 Expected Result is returned`() {
         // Given
@@ -87,14 +89,14 @@ class TestTransactionDataTransformer {
 
         // Then
         assertEquals("Data to be signed", section.title)
-        assertFalse(section.details.isExpanded)
+        assertTrue(section.details.isExpanded)
         assertEquals("Signature details", section.details.header.text())
         assertEquals(
             ListItemSupportingContentDataUi.Text(mockedRequestCollapsedSupportingText),
             section.details.header.supportingContentData,
         )
         assertEquals(
-            ListItemTrailingContentDataUi.Icon(iconData = AppIcons.KeyboardArrowDown),
+            ListItemTrailingContentDataUi.Icon(iconData = AppIcons.KeyboardArrowUp),
             section.details.header.trailingContentData,
         )
         assertEquals(
@@ -560,6 +562,150 @@ class TestTransactionDataTransformer {
         assertEquals(listOf("eIDAS"), section.values("Trust framework"))
     }
 
+    @Test
+    fun `Given a QES request with every optional field, When transformToUi is called, Then each field has a row`() {
+        val request = PresentationTransactionDataDomain.Qes(
+            displayName = mockedRequestDisplayName,
+            credentialIds = listOf(mockedTransactionQueryId),
+            signatureRequests = listOf(
+                mockedSignature.copy(
+                    href = mockedDocumentUrl,
+                    oneTimePassword = mockedOtp,
+                    accessMode = "OTP",
+                    signedEnvelopeProperty = "Enveloped",
+                    referenceUri = "#signed-part",
+                    circumstantialData = "Signed at the branch",
+                    signAlgo = "1.2.840.10045.4.3.2",
+                    signAlgoParams = "BgUrgQQAIg==",
+                ),
+            ),
+            transactionDataHashAlgorithms = listOf("sha-256"),
+        )
+
+        val section = transform(transactions = listOf(request))!!
+
+        assertEquals(listOf("sha-256"), section.values("Transaction data hash algorithm"))
+        assertEquals(listOf("Enveloped"), section.values("Signed envelope property"))
+        assertEquals(listOf("#signed-part"), section.values("Reference URI"))
+        assertEquals(listOf("Signed at the branch"), section.values("Circumstantial data"))
+        assertEquals(listOf("ECDSA with SHA-256"), section.values("Signature algorithm"))
+        assertEquals(listOf("BgUrgQQAIg=="), section.values("Signature algorithm parameters"))
+        assertEquals(listOf("One-time password"), section.values("Document access"))
+        assertEquals(listOf(mockedOtp), section.values("One-time password (OTP)"))
+    }
+
+    @Test
+    fun `Given a QES request carrying its document, When transformToUi is called, Then the document is shown as included`() {
+        val request = PresentationTransactionDataDomain.Qes(
+            displayName = mockedRequestDisplayName,
+            credentialIds = listOf(mockedTransactionQueryId),
+            signatureRequests = listOf(
+                mockedSignature.copy(
+                    inlineDocument = QesInlineDocumentDomain(
+                        documentType = "sod",
+                        sizeInBytes = 2048
+                    ),
+                ),
+                mockedSignature.copy(
+                    label = "Formatted.pdf",
+                    inlineDocument = QesInlineDocumentDomain(
+                        documentType = "sfd",
+                        sizeInBytes = null
+                    ),
+                ),
+            ),
+        )
+
+        val section = transform(transactions = listOf(request))!!
+
+        assertEquals(
+            listOf("Included in the request", "Included in the request"),
+            section.values("Document content"),
+        )
+        assertEquals(
+            listOf("Original document", "Formatted document"),
+            section.values("Document type"),
+        )
+        assertEquals(listOf("2048 bytes"), section.values("Document size"))
+        assertTrue(section.documentUrlsByItemId.isEmpty())
+    }
+
+    @Test
+    fun `Given an approval with locations and document circumstances, When transformToUi is called, Then they are shown`() {
+        val approval = mockedTransactionDataApproval.copy(
+            locations = listOf("https://qtsp.example/csc/v2"),
+            transactionDataHashAlgorithms = listOf("sha-256", "sha-384"),
+            documentDigests = mockedTransactionDataApproval.documentDigests.map { document ->
+                document.copy(circumstantialData = "Branch office", accessMode = "public")
+            },
+        )
+
+        val section = transform(transactions = listOf(approval))!!
+
+        assertEquals(listOf("https://qtsp.example/csc/v2"), section.values("Location"))
+        assertEquals(
+            listOf("sha-256", "sha-384"),
+            section.values("Transaction data hash algorithm"),
+        )
+        assertEquals(listOf("Branch office"), section.values("Circumstantial data"))
+        assertEquals(listOf("Public"), section.values("Document access"))
+    }
+
+    @Test
+    fun `Given attributes from the relying party, When transformToUi is called, Then each is marked as set by it`() {
+        val request = PresentationTransactionDataDomain.Qes(
+            displayName = mockedRequestDisplayName,
+            credentialIds = listOf(mockedTransactionQueryId),
+            signatureRequests = listOf(
+                mockedSignature.copy(
+                    signedProperties = listOf(
+                        SigningAttributeDomain(name = "reason", value = "Contract"),
+                        SigningAttributeDomain(name = "commitment", value = null),
+                    ),
+                ),
+            ),
+        )
+
+        val section = transform(transactions = listOf(request))!!
+
+        val attributeRows = section.rows().filter { row -> row.itemId.contains("/attribute-") }
+        assertEquals(2, attributeRows.size)
+        assertTrue(attributeRows.all { row ->
+            row.supportingContentData == ListItemSupportingContentDataUi.Text(
+                text = "Chosen by the relying party; not checked by the wallet",
+                textColorKey = ThemeColorKey.Warning,
+            )
+        })
+        assertEquals(
+            listOf("Signed attributes"),
+            section.rows().filter { row -> row.itemId.endsWith("/attributes") }
+                .map { row -> row.text() },
+        )
+    }
+
+    @Test
+    fun `Given a recorded request with a one-time password, When transformRecordedToUi is called, Then the password is not shown`() {
+        val request = PresentationTransactionDataDomain.Qes(
+            displayName = null,
+            credentialIds = listOf(mockedTransactionQueryId),
+            signatureRequests = listOf(
+                mockedSignature.copy(
+                    href = mockedDocumentUrl,
+                    oneTimePassword = mockedOtp,
+                    accessMode = "OTP"
+                ),
+            ),
+        )
+
+        val rows = transformer.transformRecordedToUi(
+            transactions = listOf(request),
+            sectionId = mockedSectionId,
+        ).map { item -> item.header }
+
+        assertTrue(rows.none { row -> row.text() == mockedOtp })
+        assertTrue(rows.any { row -> row.overlineText == "Document access" && row.text() == "One-time password" })
+    }
+
     //endregion
 
     //region transformRecordedToUi
@@ -612,7 +758,7 @@ class TestTransactionDataTransformer {
         val values = rows.map { row -> row.overlineText to row.text() }
         assertFalse(rows.any { row -> row.overlineText == "Transaction type" })
         assertTrue(values.contains("Document location" to mockedDocumentUrl))
-        assertTrue(values.contains("One-time password (OTP)" to mockedOtp))
+        assertFalse(rows.any { row -> row.overlineText == "One-time password (OTP)" })
         assertTrue(values.contains("Response URI" to mockedResponseUri))
         assertTrue(values.contains("DTBSR hash" to approval.documentDigests.single().hash))
         assertTrue(values.contains("DTBSR hash algorithm" to "SHA-256"))

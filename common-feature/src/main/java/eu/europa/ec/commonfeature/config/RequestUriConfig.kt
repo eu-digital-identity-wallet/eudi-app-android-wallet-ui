@@ -23,6 +23,7 @@ import eu.europa.ec.uilogic.serializer.UiSerializable
 import eu.europa.ec.uilogic.serializer.UiSerializableParser
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import java.util.UUID
 
 @Serializable
 sealed interface PresentationMode {
@@ -39,14 +40,20 @@ sealed interface PresentationMode {
             get() = "vp_presentation_scope_id"
     }
 
+    /**
+     * A proximity presentation. Each one gets its own presentation scope, named after [sessionId],
+     * so a session that was not torn down cannot be picked up by the next one. The id travels with
+     * the configuration to every screen of the session.
+     */
     @Serializable
     @SerialName("Ble")
     data class Ble(
         val initiatorRoute: String,
+        val sessionId: String = UUID.randomUUID().toString(),
     ) : PresentationMode {
 
         override val scopeId: String
-            get() = "ble_presentation_scope_id"
+            get() = "ble_presentation_scope_id_$sessionId"
     }
 
     @Serializable

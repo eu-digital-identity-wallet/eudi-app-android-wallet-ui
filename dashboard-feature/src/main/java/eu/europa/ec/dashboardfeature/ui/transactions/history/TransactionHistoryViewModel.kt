@@ -28,8 +28,6 @@ import eu.europa.ec.uilogic.mvi.ViewSideEffect
 import eu.europa.ec.uilogic.mvi.ViewState
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
-import org.koin.core.annotation.InjectedParam
-import org.koin.core.annotation.KoinViewModel
 
 data class State(
     val isLoading: Boolean = false,
@@ -48,11 +46,10 @@ sealed class Effect : ViewSideEffect {
     data object PopToDashboard : Effect()
 }
 
-@KoinViewModel
 internal class TransactionHistoryViewModel(
     private val interactor: TransactionHistoryInteractor,
-    @InjectedParam private val transactionId: String,
-    @InjectedParam private val actionType: String,
+    private val transactionId: String,
+    private val actionType: String,
 ) : MviViewModel<Event, State, Effect>() {
 
     private var historyJob: Job? = null

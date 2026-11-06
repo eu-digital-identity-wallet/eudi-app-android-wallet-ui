@@ -19,6 +19,7 @@ package eu.europa.ec.corelogic.extension
 import eu.europa.ec.corelogic.model.DocumentChecksumDomain
 import eu.europa.ec.corelogic.model.PresentationTransactionDataDomain
 import eu.europa.ec.corelogic.model.QesDocumentDigestDomain
+import eu.europa.ec.corelogic.model.QesInlineDocumentDomain
 import eu.europa.ec.corelogic.model.QesSignatureRequestDomain
 import eu.europa.ec.corelogic.model.SigningAttributeDomain
 import eu.europa.ec.eudi.wallet.transactionLogging.model.TransactionalData
@@ -60,6 +61,8 @@ private fun Any.toTransactionPayloadDomain(displayName: String?): PresentationTr
             documentDigests = transactionPayload.documentDigests.map { documentDigest ->
                 documentDigest.toQesDocumentDigestDomain()
             },
+            locations = transactionPayload.locations.orEmpty().toList(),
+            transactionDataHashAlgorithms = transactionPayload.hashAlgorithms.orEmpty().toList(),
         )
 
         is QesRequest -> PresentationTransactionDataDomain.Qes(
@@ -68,6 +71,7 @@ private fun Any.toTransactionPayloadDomain(displayName: String?): PresentationTr
             signatureRequests = transactionPayload.signatureRequests.map { signatureRequest ->
                 signatureRequest.toQesSignatureRequestDomain()
             },
+            transactionDataHashAlgorithms = transactionPayload.hashAlgorithms.orEmpty().toList(),
         )
 
         else -> PresentationTransactionDataDomain.Unavailable
@@ -82,10 +86,13 @@ private fun DocumentDigest.toQesDocumentDigestDomain(): QesDocumentDigestDomain 
         href = href,
         checksum = checksum?.toDocumentChecksumDomain(),
         oneTimePassword = access?.oneTimePassword,
+        circumstantialData = circumstantialData,
+        accessMode = access?.accessMode,
     )
 
 private fun SignatureRequest.toQesSignatureRequestDomain(): QesSignatureRequestDomain {
     val documentReference = this as? SignatureRequest.WithDocumentReference
+    val inlineDocument = this as? SignatureRequest.WithDocument
     return QesSignatureRequestDomain(
         label = label,
         signatureQualifier = signatureQualifier,
@@ -96,8 +103,42 @@ private fun SignatureRequest.toQesSignatureRequestDomain(): QesSignatureRequestD
         href = documentReference?.href,
         checksum = documentReference?.checksum?.toDocumentChecksumDomain(),
         oneTimePassword = documentReference?.access?.oneTimePassword,
+        signedEnvelopeProperty = signedEnvelopeProperty,
+        referenceUri = referenceUri,
+        circumstantialData = circumstantialData,
+        signAlgo = signAlgo,
+        signAlgoParams = signAlgoParams,
+        accessMode = documentReference?.access?.accessMode,
+        inlineDocument = inlineDocument?.let { document ->
+            QesInlineDocumentDomain(
+                documentType = document.documentType,
+                sizeInBytes = decodedSize(base64 = document.document),
+            )
+        },
     )
 }
+
+/**
+ * The size of [base64] once decoded, or null when it is not Base64 in either alphabet. It is worked
+ * out from the length, so that reading the history does not decode every document again.
+ */
+private fun decodedSize(base64: String): Int? {
+    val content = base64.filterNot { character -> character.isWhitespace() }
+    val data = content.trimEnd('=')
+    val padding = content.length - data.length
+    val isStandard =
+        data.all { character -> character.isBase64Digit() || character == '+' || character == '/' }
+    val isUrlSafe =
+        data.all { character -> character.isBase64Digit() || character == '-' || character == '_' }
+    return when {
+        !isStandard && !isUrlSafe -> null
+        data.length % 4 == 1 || padding > 2 -> null
+        padding > 0 && content.length % 4 != 0 -> null
+        else -> (data.length.toLong() * 3 / 4).toInt()
+    }
+}
+
+private fun Char.isBase64Digit(): Boolean = this in 'A'..'Z' || this in 'a'..'z' || this in '0'..'9'
 
 private fun Checksum.toDocumentChecksumDomain(): DocumentChecksumDomain =
     DocumentChecksumDomain(

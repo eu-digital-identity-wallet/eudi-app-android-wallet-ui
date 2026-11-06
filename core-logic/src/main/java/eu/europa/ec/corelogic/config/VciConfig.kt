@@ -26,9 +26,13 @@ import eu.europa.ec.eudi.wallet.issue.openid4vci.OpenId4VciManager
  * and to match an incoming credential offer to this config.
  * @property config OpenID4VCI configuration for this issuer.
  * @property order Display order on the Add Document screen; lower comes first.
+ * @property logoOrigins Origins, besides the issuer's own, from which the wallet loads this
+ * issuer's logo, such as `https://cdn.example`, for an issuer that serves it elsewhere. Each must be
+ * an `https` origin; a logo on any other origin is replaced by a placeholder.
  */
 data class VciConfig(
     val issuerUrl: String,
     val config: OpenId4VciManager.Config,
     val order: Int,
+    val logoOrigins: List<String> = emptyList(),
 )

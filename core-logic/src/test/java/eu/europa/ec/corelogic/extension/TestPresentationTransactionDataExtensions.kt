@@ -19,6 +19,7 @@ package eu.europa.ec.corelogic.extension
 import eu.europa.ec.corelogic.model.DocumentChecksumDomain
 import eu.europa.ec.corelogic.model.PresentationTransactionDataDomain
 import eu.europa.ec.corelogic.model.QesDocumentDigestDomain
+import eu.europa.ec.corelogic.model.QesInlineDocumentDomain
 import eu.europa.ec.corelogic.model.QesSignatureRequestDomain
 import eu.europa.ec.corelogic.model.SigningAttributeDomain
 import eu.europa.ec.eudi.wallet.transactionLogging.model.TransactionalData
@@ -112,6 +113,7 @@ class TestPresentationTransactionDataExtensions {
         href = mockedDocumentHref,
         checksum = mockedChecksumDomain,
         oneTimePassword = mockedOneTimePassword,
+        accessMode = AccessControlMethod.ACCESS_MODE_ONE_TIME_PASSWORD,
     )
     private val mockedApproval = QesApprovalRequest(
         type = QesApprovalRequest.TYPE,
@@ -145,6 +147,8 @@ class TestPresentationTransactionDataExtensions {
         href = mockedDocumentHref,
         checksum = mockedChecksumDomain,
         oneTimePassword = mockedOneTimePassword,
+        signAlgo = mockedSigningAlgorithmOid,
+        accessMode = AccessControlMethod.ACCESS_MODE_ONE_TIME_PASSWORD,
     )
 
     @Before
@@ -184,6 +188,7 @@ class TestPresentationTransactionDataExtensions {
                 numSignatures = mockedSignatureCount,
                 hashAlgorithmOid = mockedDocumentHashAlgorithmOid,
                 documentDigests = listOf(mockedDigestDomain),
+                transactionDataHashAlgorithms = listOf("sha-256"),
             ),
             result,
         )
@@ -282,6 +287,41 @@ class TestPresentationTransactionDataExtensions {
     // Case 4 Expected Result:
     // Order and metadata survive; only referenced documents have href/checksum/OTP.
     @Test
+    fun `Given inline documents in either Base64 alphabet, When toPresentationTransactionDataDomain is called, Then their decoded sizes are given`() {
+        val documents = listOf(
+            "aW5s\naW5l",
+            "aW5saW5lIQ",
+            "aW5saW5lIQ==",
+            "-_-_",
+            "aW5saW5lI",
+            "+-AA",
+            "aW5saW5lIQ=",
+        )
+        val transaction = mockedTransaction(
+            payload = QesRequest(
+                type = QesRequest.TYPE,
+                credentialIds = mockedQueryIds,
+                signatureRequests = documents.map { document ->
+                    SignatureRequest.WithDocument(
+                        signatureQualifier = mockedQualifier,
+                        document = document,
+                        documentType = SignatureRequest.DOCUMENT_TYPE_FORMATTED,
+                        signAlgo = mockedSigningAlgorithmOid,
+                    )
+                },
+            )
+        )
+
+        val result = transaction.toPresentationTransactionDataDomain()
+                as PresentationTransactionDataDomain.Qes
+
+        assertEquals(
+            listOf(6, 7, 7, 3, null, null, null),
+            result.signatureRequests.map { request -> request.inlineDocument?.sizeInBytes },
+        )
+    }
+
+    @Test
     fun `Given mixed signature requests, When toPresentationTransactionDataDomain is called, Then reference fields stay with their documents`() {
         // Given
         val mockedInlineLabel = "Inline document"
@@ -318,6 +358,11 @@ class TestPresentationTransactionDataExtensions {
                         href = null,
                         checksum = null,
                         oneTimePassword = null,
+                        accessMode = null,
+                        inlineDocument = QesInlineDocumentDomain(
+                            documentType = SignatureRequest.DOCUMENT_TYPE_ORIGINAL,
+                            sizeInBytes = "inline".length,
+                        ),
                     ),
                     mockedReferenceDomain,
                 ),
@@ -367,6 +412,7 @@ class TestPresentationTransactionDataExtensions {
                         href = mockedDocumentHref,
                         checksum = null,
                         oneTimePassword = null,
+                        signAlgo = mockedSigningAlgorithmOid,
                     )
                 ),
             ),
@@ -423,6 +469,72 @@ class TestPresentationTransactionDataExtensions {
         assertEquals(listOf(mockedDigestDomain), result.documentDigests)
     }
 
+    @Test
+    fun `Given every optional field, When toPresentationTransactionDataDomain is called, Then each is carried over`() {
+        val transaction = mockedTransaction(
+            payload = QesRequest(
+                type = QesRequest.TYPE,
+                credentialIds = mockedQueryIds,
+                hashAlgorithms = listOf("sha-256", "sha-384"),
+                signatureRequests = listOf(
+                    mockedReference.copy(
+                        signedEnvelopeProperty = "Enveloped",
+                        referenceUri = "#signed-part",
+                        circumstantialData = "Signed at the branch",
+                        signAlgoParams = "BgUrgQQAIg==",
+                    ),
+                    SignatureRequest.WithDocument(
+                        signatureQualifier = mockedQualifier,
+                        document = "not base64 !",
+                        documentType = SignatureRequest.DOCUMENT_TYPE_FORMATTED,
+                        signAlgo = mockedSigningAlgorithmOid,
+                    ),
+                ),
+            )
+        )
+
+        val result = transaction.toPresentationTransactionDataDomain()
+                as PresentationTransactionDataDomain.Qes
+
+        assertEquals(listOf("sha-256", "sha-384"), result.transactionDataHashAlgorithms)
+        assertEquals(
+            mockedReferenceDomain.copy(
+                signedEnvelopeProperty = "Enveloped",
+                referenceUri = "#signed-part",
+                circumstantialData = "Signed at the branch",
+                signAlgoParams = "BgUrgQQAIg==",
+            ),
+            result.signatureRequests[0],
+        )
+        assertEquals(
+            QesInlineDocumentDomain(
+                documentType = SignatureRequest.DOCUMENT_TYPE_FORMATTED,
+                sizeInBytes = null,
+            ),
+            result.signatureRequests[1].inlineDocument,
+        )
+    }
+
+    @Test
+    fun `Given an approval with locations and document circumstances, When toPresentationTransactionDataDomain is called, Then they are carried over`() {
+        val transaction = mockedTransaction(
+            payload = mockedApproval.copy(
+                locations = listOf("https://qtsp.example/csc/v2"),
+                documentDigests = listOf(mockedDigest.copy(circumstantialData = "Branch office")),
+            )
+        )
+
+        val result = transaction.toPresentationTransactionDataDomain()
+                as PresentationTransactionDataDomain.QesApproval
+
+        assertEquals(listOf("https://qtsp.example/csc/v2"), result.locations)
+        assertEquals(listOf("sha-256"), result.transactionDataHashAlgorithms)
+        assertEquals(
+            listOf(mockedDigestDomain.copy(circumstantialData = "Branch office")),
+            result.documentDigests,
+        )
+    }
+
     //endregion
 
     //region toPresentationTransactionDataDomains
@@ -459,6 +571,7 @@ class TestPresentationTransactionDataExtensions {
             numSignatures = mockedSignatureCount,
             hashAlgorithmOid = mockedDocumentHashAlgorithmOid,
             documentDigests = listOf(mockedDigestDomain),
+            transactionDataHashAlgorithms = listOf("sha-256"),
         )
         assertEquals(
             listOf(

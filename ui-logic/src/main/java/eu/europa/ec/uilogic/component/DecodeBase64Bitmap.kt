@@ -47,18 +47,56 @@ fun rememberBase64DecodedBitmap(base64Image: String): ImageBitmap? {
     }
 }
 
+/**
+ * The longest side, in pixels, to which an image embedded in a document is decoded. A larger image
+ * is downsampled, so that a picture in a credential cannot exhaust the app's memory.
+ */
+const val MAX_EMBEDDED_IMAGE_DIMENSION: Int = 2048
+
+/** An embedded image that declares more pixels than this is not decoded at all. */
+const val MAX_EMBEDDED_IMAGE_PIXELS: Long = 40_000_000
+
 private fun decodeBase64Bitmap(value: String): Bitmap? {
     return value.decodeBase64ToByteArrays().toBitmapOrNull()
 }
 
 private fun List<ByteArray>.toBitmapOrNull(): Bitmap? {
-    return firstNotNullOfOrNull { decodedBytes ->
-        runCatching {
-            BitmapFactory.decodeByteArray(
-                decodedBytes,
-                0,
-                decodedBytes.size
-            )
-        }.getOrNull()
+    return firstNotNullOfOrNull { decodedBytes -> decodeBoundedBitmap(decodedBytes) }
+}
+
+/**
+ * Reads the image size from the header first, then decodes the image downsampled per
+ * [sampleSizeFor], or not at all when it is too large or not an image.
+ */
+private fun decodeBoundedBitmap(bytes: ByteArray): Bitmap? = runCatching {
+    val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
+    BitmapFactory.decodeByteArray(bytes, 0, bytes.size, bounds)
+    val sampleSize = sampleSizeFor(width = bounds.outWidth, height = bounds.outHeight)
+        ?: return@runCatching null
+    BitmapFactory.decodeByteArray(
+        bytes,
+        0,
+        bytes.size,
+        BitmapFactory.Options().apply { inSampleSize = sampleSize }
+    )
+}.getOrNull()
+
+/**
+ * The power-of-two sample size that brings an image of [width] by [height] pixels within
+ * [maxDimension] on its longest side, or null when the image must not be decoded: its size is
+ * unknown, or it declares more than [maxPixels] pixels.
+ */
+internal fun sampleSizeFor(
+    width: Int,
+    height: Int,
+    maxDimension: Int = MAX_EMBEDDED_IMAGE_DIMENSION,
+    maxPixels: Long = MAX_EMBEDDED_IMAGE_PIXELS,
+): Int? {
+    if (width <= 0 || height <= 0) return null
+    if (width.toLong() * height > maxPixels) return null
+    var sampleSize = 1
+    while (maxOf(width, height) / sampleSize > maxDimension) {
+        sampleSize *= 2
     }
+    return sampleSize
 }

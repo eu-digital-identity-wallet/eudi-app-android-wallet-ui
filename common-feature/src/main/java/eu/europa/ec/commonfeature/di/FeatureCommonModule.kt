@@ -19,6 +19,8 @@ package eu.europa.ec.commonfeature.di
 import eu.europa.ec.authenticationlogic.config.AuthenticationConfig
 import eu.europa.ec.authenticationlogic.controller.authentication.BiometricAuthenticationController
 import eu.europa.ec.authenticationlogic.controller.authentication.DeviceAuthenticationController
+import eu.europa.ec.authenticationlogic.controller.device.DeviceLockController
+import eu.europa.ec.authenticationlogic.controller.session.SessionController
 import eu.europa.ec.authenticationlogic.controller.storage.BiometryStorageController
 import eu.europa.ec.authenticationlogic.controller.storage.PinStorageController
 import eu.europa.ec.authenticationlogic.controller.throttle.PinThrottleController
@@ -34,19 +36,38 @@ import eu.europa.ec.commonfeature.interactor.QuickPinInteractor
 import eu.europa.ec.commonfeature.interactor.QuickPinInteractorImpl
 import eu.europa.ec.commonfeature.interactor.TrustMarkInteractor
 import eu.europa.ec.commonfeature.interactor.TrustMarkInteractorImpl
+import eu.europa.ec.commonfeature.model.PinFlow
+import eu.europa.ec.commonfeature.ui.biometric.BiometricViewModel
+import eu.europa.ec.commonfeature.ui.pin.PinViewModel
+import eu.europa.ec.commonfeature.ui.qr_scan.QrScanViewModel
+import eu.europa.ec.commonfeature.ui.success.SuccessViewModel
+import eu.europa.ec.commonfeature.ui.trustmark.TrustMarkViewModel
 import eu.europa.ec.corelogic.controller.WalletCoreTrustMarkController
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
-import org.koin.core.annotation.ComponentScan
-import org.koin.core.annotation.Configuration
-import org.koin.core.annotation.Factory
-import org.koin.core.annotation.Module
+import org.koin.core.module.dsl.factoryOf
+import org.koin.core.module.dsl.viewModel
+import org.koin.dsl.module
 
-@Module
-@Configuration
-@ComponentScan("eu.europa.ec.commonfeature")
-class FeatureCommonModule
+val featureCommonModule = module {
+    factoryOf(::provideTrustMarkInteractor)
+    factoryOf(::provideQuickPinInteractor)
+    factoryOf(::provideBiometricInteractor)
+    factoryOf(::provideDeviceAuthenticationInteractor)
+    factoryOf(::provideQrScanInteractor)
 
-@Factory
+    viewModel { (biometricConfig: String) ->
+        BiometricViewModel(get(), get(), get(), biometricConfig)
+    }
+    viewModel { (pinFlow: PinFlow) -> PinViewModel(get(), get(), get(), pinFlow) }
+    viewModel { (qrScannedConfig: String) ->
+        QrScanViewModel(get(), get(), get(), qrScannedConfig)
+    }
+    viewModel { (successConfig: String) -> SuccessViewModel(get(), successConfig) }
+    viewModel { (trustMarkConfig: String) ->
+        TrustMarkViewModel(get(), get(), trustMarkConfig)
+    }
+}
+
 fun provideTrustMarkInteractor(
     walletCoreTrustMarkController: WalletCoreTrustMarkController,
     prefKeys: PrefKeys,
@@ -57,46 +78,48 @@ fun provideTrustMarkInteractor(
     resourceProvider = resourceProvider,
 )
 
-@Factory
 fun provideQuickPinInteractor(
     pinStorageController: PinStorageController,
     resourceProvider: ResourceProvider,
     pinThrottleController: PinThrottleController,
-    authenticationConfig: AuthenticationConfig
+    authenticationConfig: AuthenticationConfig,
+    sessionController: SessionController,
+    deviceLockController: DeviceLockController,
 ): QuickPinInteractor {
     return QuickPinInteractorImpl(
         pinStorageController,
         resourceProvider,
         pinThrottleController,
-        authenticationConfig
+        authenticationConfig,
+        sessionController,
+        deviceLockController,
     )
 }
 
-@Factory
 fun provideBiometricInteractor(
     biometryStorageController: BiometryStorageController,
     biometricAuthenticationController: BiometricAuthenticationController,
     quickPinInteractor: QuickPinInteractor,
     pinThrottleController: PinThrottleController,
-    authenticationConfig: AuthenticationConfig
+    authenticationConfig: AuthenticationConfig,
+    sessionController: SessionController
 ): BiometricInteractor {
     return BiometricInteractorImpl(
         biometryStorageController,
         biometricAuthenticationController,
         quickPinInteractor,
         pinThrottleController,
-        authenticationConfig
+        authenticationConfig,
+        sessionController
     )
 }
 
-@Factory
 fun provideDeviceAuthenticationInteractor(
     deviceAuthenticationController: DeviceAuthenticationController
 ): DeviceAuthenticationInteractor {
     return DeviceAuthenticationInteractorImpl(deviceAuthenticationController)
 }
 
-@Factory
 fun provideQrScanInteractor(
     formValidator: FormValidator
 ): QrScanInteractor {

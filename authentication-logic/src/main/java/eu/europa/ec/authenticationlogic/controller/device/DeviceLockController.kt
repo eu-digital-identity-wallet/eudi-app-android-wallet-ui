@@ -14,11 +14,25 @@
  * governing permissions and limitations under the Licence.
  */
 
-package eu.europa.ec.corelogic.model
+package eu.europa.ec.authenticationlogic.controller.device
 
-import eu.europa.ec.authenticationlogic.model.BiometricCrypto
+import android.app.KeyguardManager
+import android.content.Context
 
-data class AuthenticationData(
-    val crypto: BiometricCrypto,
-    val onAuthenticationSuccess: () -> Unit
-)
+/** Whether the device itself is protected by a screen lock. */
+interface DeviceLockController {
+
+    /**
+     * True when the device has a PIN, pattern or password screen lock
+     * (`KeyguardManager.isDeviceSecure`).
+     */
+    fun isDeviceSecure(): Boolean
+}
+
+class DeviceLockControllerImpl(
+    private val context: Context,
+) : DeviceLockController {
+
+    override fun isDeviceSecure(): Boolean =
+        context.getSystemService(KeyguardManager::class.java)?.isDeviceSecure == true
+}

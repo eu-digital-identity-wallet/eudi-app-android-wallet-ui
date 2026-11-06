@@ -27,6 +27,12 @@ interface SecurePin : AutoCloseable {
 
     fun contentEquals(other: SecurePin): Boolean
 
+    /**
+     * Runs [block] with the PIN's characters, without clearing them, for a check such as
+     * [eu.europa.ec.authenticationlogic.util.isWeakPin]. The array must not be kept or changed.
+     */
+    fun <T> readChars(block: (CharArray) -> T): T
+
     override fun close()
 }
 
@@ -66,6 +72,12 @@ class SecurePinImpl(text: CharSequence) : SecurePin {
             diff = diff or (left[index].code xor right[index].code)
         }
         return diff == 0
+    }
+
+    @Synchronized
+    override fun <T> readChars(block: (CharArray) -> T): T {
+        val current = chars ?: throw IllegalStateException("PIN has already been cleared")
+        return block(current)
     }
 
     @Synchronized

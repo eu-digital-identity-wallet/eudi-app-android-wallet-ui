@@ -317,7 +317,7 @@ private class NumericPinInputTransformation(
  */
 @ThemeModePreviews
 @Composable
-private fun PreviewWrapSecurePinTextField() {
+private fun WrapSecurePinTextFieldPreview() {
     PreviewTheme {
 
         val pinInputState = rememberSecurePinTextFieldState(

@@ -20,8 +20,6 @@ import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
-import androidx.navigation.navDeepLink
-import eu.europa.ec.startupfeature.BuildConfig
 import eu.europa.ec.startupfeature.ui.splash.SplashScreen
 import eu.europa.ec.uilogic.navigation.ModuleRoute
 import eu.europa.ec.uilogic.navigation.StartupScreens
@@ -33,13 +31,7 @@ fun NavGraphBuilder.featureStartupGraph(navController: NavController) {
         route = ModuleRoute.StartupModule.route
     ) {
         composable(
-            route = StartupScreens.Splash.screenRoute,
-            deepLinks = listOf(
-                navDeepLink {
-                    uriPattern =
-                        BuildConfig.DEEPLINK + StartupScreens.Splash.screenRoute
-                }
-            )
+            route = StartupScreens.Splash.screenRoute
         ) {
             SplashScreen(navController, koinViewModel())
         }

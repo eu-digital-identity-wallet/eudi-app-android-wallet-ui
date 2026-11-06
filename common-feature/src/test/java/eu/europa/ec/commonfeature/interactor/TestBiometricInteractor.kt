@@ -20,6 +20,7 @@ import androidx.biometric.BiometricManager.Authenticators.BIOMETRIC_STRONG
 import eu.europa.ec.authenticationlogic.config.AuthenticationConfig
 import eu.europa.ec.authenticationlogic.controller.authentication.BiometricAuthenticationController
 import eu.europa.ec.authenticationlogic.controller.authentication.BiometricsAuthenticate
+import eu.europa.ec.authenticationlogic.controller.session.SessionController
 import eu.europa.ec.authenticationlogic.controller.storage.BiometryStorageController
 import eu.europa.ec.authenticationlogic.controller.throttle.PinThrottleController
 import eu.europa.ec.authenticationlogic.provider.PinLockoutState
@@ -64,6 +65,9 @@ class TestBiometricInteractor {
     @Mock
     private lateinit var authenticationConfig: AuthenticationConfig
 
+    @Mock
+    private lateinit var sessionController: SessionController
+
     private lateinit var interactor: BiometricInteractor
 
     private lateinit var closeable: AutoCloseable
@@ -77,13 +81,21 @@ class TestBiometricInteractor {
             biometricAuthenticationController = biometricAuthenticationController,
             quickPinInteractor = quickPinInteractor,
             pinThrottleController = pinThrottleController,
-            authenticationConfig = authenticationConfig
+            authenticationConfig = authenticationConfig,
+            sessionController = sessionController
         )
     }
 
     @After
     fun after() {
         closeable.close()
+    }
+
+    @Test
+    fun `When unlockSession is called, Then the session controller is unlocked`() {
+        interactor.unlockSession()
+
+        verify(sessionController).unlock()
     }
 
     //region isPinValid
@@ -253,6 +265,14 @@ class TestBiometricInteractor {
             verify(pinThrottleController).recordSuccess()
         }
     //endregion
+
+    @Test
+    fun `Given a device without a screen lock, When the login notice is read, Then it is the notice setup shows`() {
+        val notice = DeviceLockNotice.Blocking("Set a screen lock to use the wallet.")
+        whenever(quickPinInteractor.getDeviceLockNotice()).thenReturn(notice)
+
+        assertEquals(notice, interactor.getDeviceLockNotice())
+    }
 
     //region Mocked objects
     private val mockedPin = "1234"

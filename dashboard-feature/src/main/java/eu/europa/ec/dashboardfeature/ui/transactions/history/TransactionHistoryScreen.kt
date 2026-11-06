@@ -200,8 +200,9 @@ private fun HistoryRow(
 private fun TransactionHistoryPreview(
     @PreviewParameter(TransactionHistoryPreviewProvider::class) state: State,
 ) {
-    val listState = rememberLazyListState()
     PreviewTheme {
+        val listState = rememberLazyListState()
+
         ContentScreen(
             isLoading = state.isLoading,
             contentErrorConfig = state.error,

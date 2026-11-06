@@ -29,6 +29,90 @@ class TestTransactionLogDomain {
 
     //region canRequestDataDeletion
 
+    @Test
+    fun `Given a registration issued to another party, When canRequestDataDeletion is read, Then it is false`() {
+        val presentation = mockedPresentation.copy(
+            claimsPresented = listOf(mockedCredentialClaims),
+            registrationCheck = RecordedRegistrationCheckDomain.NotVerified(
+                reason = RegistrationFailureReasonDomain.NOT_BOUND_TO_REQUESTER,
+            ),
+        )
+
+        assertFalse(presentation.canRequestDataDeletion)
+    }
+
+    @Test
+    fun `Given a registration that expired, When canRequestDataDeletion is read, Then it is still true`() {
+        val presentation = mockedPresentation.copy(
+            claimsPresented = listOf(mockedCredentialClaims),
+            registrationCheck = RecordedRegistrationCheckDomain.NotVerified(
+                reason = RegistrationFailureReasonDomain.EXPIRED,
+            ),
+        )
+
+        assertTrue(presentation.canRequestDataDeletion)
+    }
+
+    @Test
+    fun `Given registration details, When hasUnverifiedRegistration is read, Then only a verified check clears it`() {
+        val withRegistration = mockedPresentation.copy(registration = mockedRegistration)
+
+        assertFalse(withRegistration.hasUnverifiedRegistration)
+        assertTrue(
+            withRegistration.copy(registrationCheck = RecordedRegistrationCheckDomain.Unknown)
+                .hasUnverifiedRegistration
+        )
+        assertTrue(
+            withRegistration.copy(registrationCheck = RecordedRegistrationCheckDomain.NotEvaluated)
+                .hasUnverifiedRegistration
+        )
+        assertFalse(
+            mockedPresentation.copy(registrationCheck = RecordedRegistrationCheckDomain.Unknown)
+                .hasUnverifiedRegistration
+        )
+    }
+
+    @Test
+    fun `Given only party details from a registration certificate, When hasUnverifiedRegistration is read, Then an unverified check sets it`() {
+        val withContacts = mockedPresentation.copy(
+            party = mockedPresentation.party.copy(contacts = listOf("https://verifier.example/contact")),
+        )
+
+        assertFalse(withContacts.hasUnverifiedRegistration)
+        assertTrue(
+            withContacts.copy(registrationCheck = RecordedRegistrationCheckDomain.Unknown)
+                .hasUnverifiedRegistration
+        )
+        assertTrue(
+            withContacts.copy(
+                registrationCheck = RecordedRegistrationCheckDomain.NotVerified(
+                    reason = RegistrationFailureReasonDomain.EXPIRED,
+                ),
+            ).hasUnverifiedRegistration
+        )
+        assertTrue(
+            mockedPresentation.copy(
+                party = mockedPresentation.party.copy(
+                    identifier = QualifiedIdentifierDomain(
+                        schemeUri = "urn:example:register",
+                        value = "42"
+                    ),
+                ),
+                registrationCheck = RecordedRegistrationCheckDomain.Unknown,
+            ).hasUnverifiedRegistration
+        )
+        assertTrue(
+            mockedPresentation.copy(
+                intermediary = InteractingPartyDomain(
+                    name = null,
+                    identifier = null,
+                    contacts = emptyList()
+                ),
+                registrationCheck = RecordedRegistrationCheckDomain.Unknown,
+            ).hasUnverifiedRegistration
+        )
+    }
+
     // Case 1:
     // 1. A completed presentation has recorded disclosed claims.
     //
@@ -131,8 +215,16 @@ class TestTransactionLogDomain {
         credential = CredentialRefDomain(identifier = mockedCredentialType),
         claims = listOf(ClaimRefDomain(segments = mockedClaimSegments)),
     )
+    private val mockedRegistration = PresentationRegistrationDomain(
+        registrarUrl = null,
+        purpose = null,
+        privacyPolicyUrls = emptyList(),
+        dpa = null,
+    )
+
     private val mockedPresentation = TransactionLogDomain.Presentation(
         transactionData = emptyList(),
+        registrationCheck = RecordedRegistrationCheckDomain.Verified,
         id = mockedTransactionId,
         time = mockedTransactionTime.atZone(ZoneOffset.UTC).toLocalDateTime(),
         result = TransactionResultDomain.Completed,

@@ -32,8 +32,6 @@ import eu.europa.ec.uilogic.mvi.ViewEvent
 import eu.europa.ec.uilogic.mvi.ViewSideEffect
 import eu.europa.ec.uilogic.mvi.ViewState
 import kotlinx.coroutines.launch
-import org.koin.core.annotation.InjectedParam
-import org.koin.core.annotation.KoinViewModel
 import java.time.Instant
 
 data class State(
@@ -58,11 +56,10 @@ sealed class Effect : ViewSideEffect {
     data class OpenChannel(val actionId: String, val url: String) : Effect()
 }
 
-@KoinViewModel
 internal class DataDeletionRequestViewModel(
     private val interactor: TransactionDetailsInteractor,
     private val resourceProvider: ResourceProvider,
-    @InjectedParam private val transactionId: String,
+    private val transactionId: String,
 ) : MviViewModel<Event, State, Effect>() {
 
     override fun setInitialState(): State = State()

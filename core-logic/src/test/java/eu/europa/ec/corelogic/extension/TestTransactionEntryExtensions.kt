@@ -28,6 +28,7 @@ import eu.europa.ec.corelogic.model.LocalizedTextDomain
 import eu.europa.ec.corelogic.model.PresentationRegistrationDomain
 import eu.europa.ec.corelogic.model.PresentationTransactionDataDomain
 import eu.europa.ec.corelogic.model.QualifiedIdentifierDomain
+import eu.europa.ec.corelogic.model.RecordedRegistrationCheckDomain
 import eu.europa.ec.corelogic.model.TransactionLogDomain
 import eu.europa.ec.corelogic.model.TransactionResultDomain
 import eu.europa.ec.corelogic.util.mockedClaimName
@@ -97,6 +98,7 @@ class TestTransactionEntryExtensions {
         assertEquals(
             TransactionLogDomain.Presentation(
                 transactionData = emptyList(),
+                registrationCheck = RecordedRegistrationCheckDomain.Unknown,
                 id = mockedTransactionId,
                 time = mockedLocalTime,
                 result = TransactionResultDomain.Completed,
@@ -1511,6 +1513,7 @@ class TestTransactionEntryExtensions {
     )
     private val mockedHostPresentation = TransactionLogDomain.Presentation(
         transactionData = emptyList(),
+        registrationCheck = RecordedRegistrationCheckDomain.Unknown,
         id = mockedTransactionId,
         time = mockedLocalTime,
         result = TransactionResultDomain.NotCompleted(mockedReason),

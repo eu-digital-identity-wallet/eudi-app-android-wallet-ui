@@ -36,6 +36,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import eu.europa.ec.authenticationlogic.secure.SecurePin
@@ -47,6 +49,7 @@ import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.uilogic.component.AppIconAndText
 import eu.europa.ec.uilogic.component.AppIconAndTextDataUi
 import eu.europa.ec.uilogic.component.AppIcons
+import eu.europa.ec.uilogic.component.ThemeColorKey
 import eu.europa.ec.uilogic.component.content.ContentHeader
 import eu.europa.ec.uilogic.component.content.ContentHeaderConfig
 import eu.europa.ec.uilogic.component.content.ContentScreen
@@ -54,6 +57,8 @@ import eu.europa.ec.uilogic.component.content.ImePaddingConfig
 import eu.europa.ec.uilogic.component.content.ScreenNavigateAction
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
+import eu.europa.ec.uilogic.component.toColor
+import eu.europa.ec.uilogic.component.utils.LifecycleEffect
 import eu.europa.ec.uilogic.component.utils.OncePerViewModelEffect
 import eu.europa.ec.uilogic.component.utils.SIZE_MEDIUM
 import eu.europa.ec.uilogic.component.utils.SPACING_LARGE
@@ -176,6 +181,13 @@ fun BiometricScreen(
 
     OncePerViewModelEffect(viewModel) {
         viewModel.setEvent(Event.Init)
+    }
+
+    LifecycleEffect(
+        lifecycleOwner = LocalLifecycleOwner.current,
+        lifecycleEvent = Lifecycle.Event.ON_RESUME
+    ) {
+        viewModel.setEvent(Event.OnResume)
     }
 }
 
@@ -334,6 +346,14 @@ private fun MainContent(
                         color = MaterialTheme.colorScheme.onSurface
                     )
                 )
+                state.deviceLockNotice?.let { safeNotice ->
+                    Text(
+                        text = safeNotice,
+                        style = MaterialTheme.typography.bodyMedium.copy(
+                            color = ThemeColorKey.Warning.toColor()
+                        )
+                    )
+                }
             }
 
             PinFieldLayout(
@@ -369,9 +389,11 @@ private fun PinFieldLayout(
         hasError = !state.quickPinError.isNullOrEmpty() || state.isLockedOut,
         errorMessage = state.lockoutMessage ?: state.quickPinError,
         pinWidth = 42.dp,
-        focusOnCreate = !state.userBiometricsAreEnabled && !state.isLockedOut,
+        focusOnCreate = !state.userBiometricsAreEnabled &&
+                !state.isLockedOut &&
+                !state.isBlockedByDeviceLock,
         shouldHideKeyboardOnCompletion = true,
-        enabled = !state.isLoading && !state.isLockedOut
+        enabled = !state.isLoading && !state.isLockedOut && !state.isBlockedByDeviceLock
     )
 }
 
@@ -380,7 +402,7 @@ private fun PinFieldLayout(
  */
 @ThemeModePreviews
 @Composable
-private fun PreviewBiometricScreen() {
+private fun BiometricScreenPreview() {
     PreviewTheme {
         Body(
             state = State(

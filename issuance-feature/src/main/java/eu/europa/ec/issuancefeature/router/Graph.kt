@@ -22,12 +22,10 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
 import androidx.navigation.navArgument
-import androidx.navigation.navDeepLink
 import eu.europa.ec.commonfeature.config.IssuanceSuccessUiConfig
 import eu.europa.ec.commonfeature.config.IssuanceUiConfig
 import eu.europa.ec.commonfeature.config.OfferCodeUiConfig
 import eu.europa.ec.commonfeature.config.OfferUiConfig
-import eu.europa.ec.issuancefeature.BuildConfig
 import eu.europa.ec.issuancefeature.ui.add.AddDocumentScreen
 import eu.europa.ec.issuancefeature.ui.code.DocumentOfferCodeScreen
 import eu.europa.ec.issuancefeature.ui.offer.DocumentOfferScreen
@@ -45,12 +43,6 @@ fun NavGraphBuilder.featureIssuanceGraph(navController: NavController) {
         // Add Document
         composable(
             route = IssuanceScreens.AddDocument.screenRoute,
-            deepLinks = listOf(
-                navDeepLink {
-                    uriPattern =
-                        BuildConfig.DEEPLINK + IssuanceScreens.AddDocument.screenRoute
-                }
-            ),
             arguments = listOf(
                 navArgument(IssuanceUiConfig.serializedKeyName) {
                     type = NavType.StringType
@@ -72,12 +64,6 @@ fun NavGraphBuilder.featureIssuanceGraph(navController: NavController) {
         // Document Offer
         composable(
             route = IssuanceScreens.DocumentOffer.screenRoute,
-            deepLinks = listOf(
-                navDeepLink {
-                    uriPattern =
-                        BuildConfig.DEEPLINK + IssuanceScreens.DocumentOffer.screenRoute
-                }
-            ),
             arguments = listOf(
                 navArgument(OfferUiConfig.serializedKeyName) {
                     type = NavType.StringType
@@ -99,12 +85,6 @@ fun NavGraphBuilder.featureIssuanceGraph(navController: NavController) {
         // Document Offer Code
         composable(
             route = IssuanceScreens.DocumentOfferCode.screenRoute,
-            deepLinks = listOf(
-                navDeepLink {
-                    uriPattern =
-                        BuildConfig.DEEPLINK + IssuanceScreens.DocumentOfferCode.screenRoute
-                }
-            ),
             arguments = listOf(
                 navArgument(OfferCodeUiConfig.serializedKeyName) {
                     type = NavType.StringType
@@ -126,12 +106,6 @@ fun NavGraphBuilder.featureIssuanceGraph(navController: NavController) {
         // Document Issuance Success
         composable(
             route = IssuanceScreens.DocumentIssuanceSuccess.screenRoute,
-            deepLinks = listOf(
-                navDeepLink {
-                    uriPattern =
-                        BuildConfig.DEEPLINK + IssuanceScreens.DocumentIssuanceSuccess.screenRoute
-                }
-            ),
             arguments = listOf(
                 navArgument(IssuanceSuccessUiConfig.serializedKeyName) {
                     type = NavType.StringType

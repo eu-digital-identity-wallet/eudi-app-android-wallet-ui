@@ -16,9 +16,13 @@
 
 package eu.europa.ec.uilogic.config
 
+import eu.europa.ec.uilogic.navigation.CommonScreens
 import eu.europa.ec.uilogic.navigation.DashboardScreens
 import eu.europa.ec.uilogic.navigation.IssuanceScreens
+import eu.europa.ec.uilogic.navigation.PresentationScreens
+import eu.europa.ec.uilogic.navigation.ProximityScreens
 import eu.europa.ec.uilogic.navigation.Screen
+import eu.europa.ec.uilogic.navigation.StartupScreens
 
 class ConfigUILogicImpl : ConfigUILogic {
     override val dashboardScreenIdentifier: Screen
@@ -26,4 +30,32 @@ class ConfigUILogicImpl : ConfigUILogic {
 
     override val issuanceScreenIdentifier: Screen
         get() = IssuanceScreens.AddDocument
+
+    override val loginScreens: List<Screen>
+        get() = listOf(
+            StartupScreens.Splash,
+            CommonScreens.TrustMark,
+            CommonScreens.QuickPin,
+            CommonScreens.Biometric,
+        )
+
+    override val protectedFlowScreens: List<Screen>
+        get() = listOf(
+            IssuanceScreens.AddDocument,
+            IssuanceScreens.DocumentOffer,
+            IssuanceScreens.DocumentOfferCode,
+            PresentationScreens.PresentationRequest,
+            PresentationScreens.PresentationLoading,
+            ProximityScreens.Request,
+            ProximityScreens.Loading,
+            DashboardScreens.DocumentSign,
+            DashboardScreens.ResetWallet,
+            CommonScreens.Biometric,
+        )
+
+    override val userImageClaimKeys: Set<String>
+        get() = setOf("portrait", "picture")
+
+    override val shouldPreventScreenCapture: Boolean
+        get() = false
 }

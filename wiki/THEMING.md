@@ -432,8 +432,9 @@ is the only optional input. After `build()`, `ThemeManager.instance` returns you
   correct.
 * **Run both flavors.** Build `dev` and `demo` and confirm the launcher icon is correct for each (the
   app name is shared across flavors by default).
-* **Screenshot the key surfaces:** splash, dashboard/home, a presentation request, the PIN screen,
-  document details, and the RQES signing flow.
+* **Screenshot the key surfaces** (with `ConfigUILogic.shouldPreventScreenCapture` false, as in the
+  reference configuration): splash, dashboard/home, a presentation request, the PIN screen, document
+  details, and the RQES signing flow.
 
 ## Production and accessibility checklist
 

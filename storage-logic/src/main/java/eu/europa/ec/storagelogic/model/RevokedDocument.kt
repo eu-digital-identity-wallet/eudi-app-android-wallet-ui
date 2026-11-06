@@ -19,8 +19,23 @@ package eu.europa.ec.storagelogic.model
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
+/**
+ * A document the wallet must not present, and why. See [RevocationStatus].
+ */
 @Entity(tableName = "revokedDocuments")
 data class RevokedDocument(
     @PrimaryKey
-    val identifier: String
+    val identifier: String,
+    val status: RevocationStatus,
 )
+
+/**
+ * The status-list value that blocked a document. [INVALID] is permanent: a later Valid does not
+ * clear it. [SUSPENDED] is cleared by a later Valid. [UNRECOGNISED] covers application-specific
+ * and reserved values the wallet cannot interpret; they block the document until a later Valid.
+ */
+enum class RevocationStatus {
+    INVALID,
+    SUSPENDED,
+    UNRECOGNISED,
+}

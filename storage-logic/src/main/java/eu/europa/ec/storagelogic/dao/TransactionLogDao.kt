@@ -25,7 +25,7 @@ import eu.europa.ec.storagelogic.dao.type.StorageDao
 import eu.europa.ec.storagelogic.model.TransactionLog
 import kotlinx.coroutines.flow.Flow
 
-/** Payload updates preserve the original parent and communication method. */
+/** Payload updates preserve the original parent, communication method and registration check. */
 @Dao
 abstract class TransactionLogDao : StorageDao<TransactionLog> {
     @Transaction
@@ -52,6 +52,21 @@ abstract class TransactionLogDao : StorageDao<TransactionLog> {
         updateStored(value.withStoredMetadata())
     }
 
+    /**
+     * Records the registration check of the presentation [identifier] once: a check already
+     * recorded is kept.
+     */
+    @Query(
+        "UPDATE transactionLogs SET registrationCheck = :check, " +
+                "registrationFailureReason = :failureReason " +
+                "WHERE identifier = :identifier AND registrationCheck IS NULL"
+    )
+    abstract suspend fun recordRegistrationCheck(
+        identifier: String,
+        check: String,
+        failureReason: String?,
+    )
+
     @Query("DELETE FROM transactionLogs WHERE identifier = :identifier")
     abstract override suspend fun delete(identifier: String)
 
@@ -71,6 +86,8 @@ abstract class TransactionLogDao : StorageDao<TransactionLog> {
         return copy(
             parentPresentationId = stored.parentPresentationId,
             communicationMethod = stored.communicationMethod,
+            registrationCheck = stored.registrationCheck,
+            registrationFailureReason = stored.registrationFailureReason,
         )
     }
 }

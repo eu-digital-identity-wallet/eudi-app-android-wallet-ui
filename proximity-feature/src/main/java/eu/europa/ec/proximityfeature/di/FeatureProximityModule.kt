@@ -27,50 +27,69 @@ import eu.europa.ec.proximityfeature.interactor.ProximityRequestInteractor
 import eu.europa.ec.proximityfeature.interactor.ProximityRequestInteractorImpl
 import eu.europa.ec.proximityfeature.interactor.ProximitySuccessInteractor
 import eu.europa.ec.proximityfeature.interactor.ProximitySuccessInteractorImpl
+import eu.europa.ec.proximityfeature.ui.loading.ProximityLoadingViewModel
+import eu.europa.ec.proximityfeature.ui.qr.ProximityQRViewModel
+import eu.europa.ec.proximityfeature.ui.request.ProximityRequestViewModel
+import eu.europa.ec.proximityfeature.ui.success.ProximitySuccessViewModel
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
-import org.koin.core.annotation.ComponentScan
-import org.koin.core.annotation.Configuration
-import org.koin.core.annotation.Factory
-import org.koin.core.annotation.Module
+import eu.europa.ec.uilogic.config.ConfigUILogic
+import org.koin.core.module.dsl.factoryOf
+import org.koin.core.module.dsl.viewModel
+import org.koin.dsl.module
 
-@Module
-@Configuration
-@ComponentScan("eu.europa.ec.proximityfeature")
-class FeatureProximityModule
+val featureProximityModule = module {
+    factoryOf(::provideProximityQRInteractor)
+    factoryOf(::provideProximityRequestInteractor)
+    factoryOf(::provideProximityLoadingInteractor)
+    factoryOf(::provideProximitySuccessInteractor)
 
-@Factory
+    viewModel { (presentationScopeId: String) ->
+        ProximityLoadingViewModel(get(), get(), presentationScopeId)
+    }
+    viewModel { (requestUriConfigRaw: String) ->
+        ProximityQRViewModel(get(), get(), requestUriConfigRaw)
+    }
+    viewModel { (presentationScopeId: String) ->
+        ProximityRequestViewModel(get(), get(), get(), presentationScopeId)
+    }
+    viewModel { (presentationScopeId: String) ->
+        ProximitySuccessViewModel(get(), presentationScopeId)
+    }
+}
+
 fun provideProximityQRInteractor(
     resourceProvider: ResourceProvider
 ): ProximityQRInteractor =
     ProximityQRInteractorImpl(resourceProvider)
 
-@Factory
 fun provideProximityRequestInteractor(
     resourceProvider: ResourceProvider,
     uuidProvider: UuidProvider,
-    walletCoreDocumentsController: WalletCoreDocumentsController
+    walletCoreDocumentsController: WalletCoreDocumentsController,
+    configUILogic: ConfigUILogic,
 ): ProximityRequestInteractor =
     ProximityRequestInteractorImpl(
         resourceProvider,
         uuidProvider,
-        walletCoreDocumentsController
+        walletCoreDocumentsController,
+        configUILogic,
     )
 
-@Factory
 fun provideProximityLoadingInteractor(
     deviceAuthenticationInteractor: DeviceAuthenticationInteractor
 ): ProximityLoadingInteractor =
     ProximityLoadingInteractorImpl(deviceAuthenticationInteractor)
 
-@Factory
 fun provideProximitySuccessInteractor(
     walletCoreDocumentsController: WalletCoreDocumentsController,
     resourceProvider: ResourceProvider,
-    uuidProvider: UuidProvider
+    uuidProvider: UuidProvider,
+    configUILogic: ConfigUILogic,
 ): ProximitySuccessInteractor {
     return ProximitySuccessInteractorImpl(
         walletCoreDocumentsController,
         resourceProvider,
-        uuidProvider
+        uuidProvider,
+        configUILogic,
     )
 }

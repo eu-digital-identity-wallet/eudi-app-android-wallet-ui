@@ -66,11 +66,12 @@ object DocumentDetailsTransformer {
         )
     }
 
-    fun DocumentDetailsDomain.transformToDocumentDetailsUi(): DocumentDetailsUi {
+    fun DocumentDetailsDomain.transformToDocumentDetailsUi(userImageClaimKeys: Set<String>): DocumentDetailsUi {
         val documentDetailsUi = this.documentClaims.map { domainClaim ->
             domainClaim.toExpandableListItems(
                 docId = this.docId,
                 queryId = null,
+                userImageClaimKeys = userImageClaimKeys,
             )
         }
         return DocumentDetailsUi(

@@ -19,6 +19,7 @@ package eu.europa.ec.commonfeature.ui.request.transformer
 import eu.europa.ec.businesslogic.provider.UuidProvider
 import eu.europa.ec.commonfeature.extension.toExpandableListItems
 import eu.europa.ec.commonfeature.extension.toSelectiveExpandableListItems
+import eu.europa.ec.commonfeature.extension.userImageItemIds
 import eu.europa.ec.commonfeature.ui.request.model.DocumentFormatDomain
 import eu.europa.ec.commonfeature.ui.request.model.DocumentPayloadDomain
 import eu.europa.ec.commonfeature.ui.request.model.RequestCombinationUi
@@ -51,6 +52,8 @@ object RequestTransformer {
      * [claimsAreSelectable] = checkbox vs read-only leaves.
      * [overaskedClaims] = the request's claims not covered by the relying party's registration;
      * their rows get the "not registered" mark.
+     * [userImageClaimKeys] = the claims that hold a picture of the holder
+     * ([eu.europa.ec.uilogic.config.ConfigUILogic.userImageClaimKeys]).
      */
     fun transformToCombinationsUi(
         storageDocuments: List<IssuedDocument>,
@@ -59,6 +62,7 @@ object RequestTransformer {
         combinationsDomain: List<PresentationCombinationDomain>,
         claimsAreSelectable: Boolean,
         overaskedClaims: List<OveraskedClaimDomain>,
+        userImageClaimKeys: Set<String>,
     ): Result<List<RequestCombinationUi>> {
         return runCatching {
             combinationsDomain.mapIndexed { combinationIndex, combinationDomain ->
@@ -78,6 +82,7 @@ object RequestTransformer {
                     documentsDomain = documentsDomain,
                     resourceProvider = resourceProvider,
                     claimsAreSelectable = claimsAreSelectable,
+                    userImageClaimKeys = userImageClaimKeys,
                 )
                 val representedDomainMatches = representedMatches.map { (match, _) -> match }
                 val hasTransactionData = representedDomainMatches.any { match ->
@@ -165,11 +170,14 @@ object RequestTransformer {
      * Builds the request-screen rows.
      * [claimsAreSelectable] = selectable (checkbox) vs read-only
      * leaves; the document headers are the same either way.
+     * [userImageClaimKeys] = the claims rendered as images; their row ids fill
+     * [RequestDocumentItemUi.userImageItemIds].
      */
     fun transformToUiItems(
         documentsDomain: List<DocumentPayloadDomain>,
         resourceProvider: ResourceProvider,
         claimsAreSelectable: Boolean,
+        userImageClaimKeys: Set<String>,
     ): List<RequestDocumentItemUi> {
         return documentsDomain.map { documentDomain ->
             RequestDocumentItemUi(
@@ -189,12 +197,13 @@ object RequestTransformer {
                         )
                     ),
                     nestedItems = if (claimsAreSelectable) {
-                        documentDomain.toSelectiveExpandableListItems()
+                        documentDomain.toSelectiveExpandableListItems(userImageClaimKeys = userImageClaimKeys)
                     } else {
-                        documentDomain.toExpandableListItems()
+                        documentDomain.toExpandableListItems(userImageClaimKeys = userImageClaimKeys)
                     },
                     isExpanded = false,
                 ),
+                userImageItemIds = documentDomain.userImageItemIds(userImageClaimKeys = userImageClaimKeys),
             )
         }
     }

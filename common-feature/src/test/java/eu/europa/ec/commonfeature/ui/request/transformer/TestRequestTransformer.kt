@@ -19,6 +19,7 @@ package eu.europa.ec.commonfeature.ui.request.transformer
 import eu.europa.ec.businesslogic.provider.UuidProvider
 import eu.europa.ec.commonfeature.ui.request.model.DocumentFormatDomain
 import eu.europa.ec.commonfeature.ui.request.model.RequestCombinationUi
+import eu.europa.ec.commonfeature.ui.request.model.RequestDataUi
 import eu.europa.ec.commonfeature.ui.request.model.RequestDocumentItemUi
 import eu.europa.ec.corelogic.model.ClaimDomain
 import eu.europa.ec.corelogic.model.ClaimItemId
@@ -57,6 +58,7 @@ import eu.europa.ec.testfeature.util.mockedSdJwtVcClaim
 import eu.europa.ec.testfeature.util.mockedSelectableClaims
 import eu.europa.ec.testfeature.util.mockedTransactionDataApproval
 import eu.europa.ec.testfeature.util.mockedTransactionQueryId
+import eu.europa.ec.testfeature.util.mockedUserImageClaimKeys
 import eu.europa.ec.testfeature.util.mockedUuid
 import eu.europa.ec.testfeature.util.mockedValidMdlWithBasicFieldsRequestMatch
 import eu.europa.ec.testfeature.util.mockedValidPidWithBasicFieldsRequestMatch
@@ -142,6 +144,7 @@ class TestRequestTransformer {
                 combinationsDomain = combinationsDomain,
                 claimsAreSelectable = mockedSelectableClaims,
                 overaskedClaims = emptyList(),
+                userImageClaimKeys = mockedUserImageClaimKeys,
             ).getOrThrow()
 
             // Then
@@ -160,6 +163,57 @@ class TestRequestTransformer {
             val leafKeys = payload.docClaimsDomain.leafKeys()
             assertFalse("portrait" in leafKeys)
             assertFalse("issuing_country" in leafKeys)
+        }
+    }
+
+    @Test
+    fun `Given a request for the portrait of an mDL that stores it, When transformToCombinationsUi, Then the portrait stays selected and Share would disclose it`() {
+        coroutineRule.runTest {
+            val combinationsUi = RequestTransformer.transformToCombinationsUi(
+                storageDocuments = listOf(getMockedMdlWithBasicFields()),
+                resourceProvider = resourceProvider,
+                uuidProvider = uuidProvider,
+                combinationsDomain = listOf(
+                    PresentationCombinationDomain(
+                        matches = listOf(
+                            mockedValidMdlWithBasicFieldsRequestMatch
+                        )
+                    )
+                ),
+                claimsAreSelectable = true,
+                overaskedClaims = emptyList(),
+                userImageClaimKeys = mockedUserImageClaimKeys,
+            ).getOrThrow()
+
+            val requestDataUi = RequestDataUi.of(combinationsUi)
+            assertTrue("portrait" in requestDataUi.selectedDocuments.single().domainPayload.docClaimsDomain.leafKeys())
+            assertTrue(requestDataUi.requestsUserImage)
+            assertTrue(requestDataUi.sharesUserImage)
+        }
+    }
+
+    @Test
+    fun `Given the requested portrait is not stored, When transformToCombinationsUi, Then the portrait notice and confirmation do not apply`() {
+        coroutineRule.runTest {
+            val combinationsUi = RequestTransformer.transformToCombinationsUi(
+                storageDocuments = listOf(getMockedPidWithBasicFields()),
+                resourceProvider = resourceProvider,
+                uuidProvider = uuidProvider,
+                combinationsDomain = listOf(
+                    PresentationCombinationDomain(
+                        matches = listOf(
+                            mockedValidPidWithBasicFieldsRequestMatch
+                        )
+                    )
+                ),
+                claimsAreSelectable = false,
+                overaskedClaims = emptyList(),
+                userImageClaimKeys = mockedUserImageClaimKeys,
+            ).getOrThrow()
+
+            val requestDataUi = RequestDataUi.of(combinationsUi)
+            assertFalse(requestDataUi.requestsUserImage)
+            assertFalse(requestDataUi.sharesUserImage)
         }
     }
 
@@ -198,6 +252,7 @@ class TestRequestTransformer {
                 combinationsDomain = combinationsDomain,
                 claimsAreSelectable = mockedSelectableClaims,
                 overaskedClaims = emptyList(),
+                userImageClaimKeys = mockedUserImageClaimKeys,
             ).getOrThrow()
 
             // Then
@@ -238,6 +293,7 @@ class TestRequestTransformer {
                 combinationsDomain = combinationsDomain,
                 claimsAreSelectable = mockedSelectableClaims,
                 overaskedClaims = emptyList(),
+                userImageClaimKeys = mockedUserImageClaimKeys,
             ).getOrThrow()
 
             // Then
@@ -272,6 +328,7 @@ class TestRequestTransformer {
                 combinationsDomain = combinationsDomain,
                 claimsAreSelectable = mockedSelectableClaims,
                 overaskedClaims = emptyList(),
+                userImageClaimKeys = mockedUserImageClaimKeys,
             ).getOrThrow()
 
             // Then
@@ -299,6 +356,7 @@ class TestRequestTransformer {
                 combinationsDomain = emptyList(),
                 claimsAreSelectable = mockedSelectableClaims,
                 overaskedClaims = emptyList(),
+                userImageClaimKeys = mockedUserImageClaimKeys,
             ).getOrThrow()
 
             // Then
@@ -333,6 +391,7 @@ class TestRequestTransformer {
                 combinationsDomain = combinationsDomain,
                 claimsAreSelectable = mockedSelectableClaims,
                 overaskedClaims = emptyList(),
+                userImageClaimKeys = mockedUserImageClaimKeys,
             ).getOrThrow()
 
             // Then
@@ -363,6 +422,7 @@ class TestRequestTransformer {
                 combinationsDomain = combinationsDomain,
                 claimsAreSelectable = mockedNonSelectableClaims,
                 overaskedClaims = emptyList(),
+                userImageClaimKeys = mockedUserImageClaimKeys,
             ).getOrThrow()
 
             // Then
@@ -393,6 +453,7 @@ class TestRequestTransformer {
                 combinationsDomain = combinationsDomain,
                 claimsAreSelectable = mockedNonSelectableClaims,
                 overaskedClaims = emptyList(),
+                userImageClaimKeys = mockedUserImageClaimKeys,
             ).getOrThrow()
 
             // Then
@@ -430,6 +491,7 @@ class TestRequestTransformer {
                 combinationsDomain = combinationsDomain,
                 claimsAreSelectable = mockedNonSelectableClaims,
                 overaskedClaims = emptyList(),
+                userImageClaimKeys = mockedUserImageClaimKeys,
             ).getOrThrow()
 
             // Then
@@ -462,6 +524,7 @@ class TestRequestTransformer {
                 combinationsDomain = combinationsDomain,
                 claimsAreSelectable = mockedNonSelectableClaims,
                 overaskedClaims = emptyList(),
+                userImageClaimKeys = mockedUserImageClaimKeys,
             ).getOrThrow()
 
             // Then
@@ -507,6 +570,7 @@ class TestRequestTransformer {
                 combinationsDomain = combinationsDomain,
                 claimsAreSelectable = mockedSelectableClaims,
                 overaskedClaims = emptyList(),
+                userImageClaimKeys = mockedUserImageClaimKeys,
             ).getOrThrow()
 
             // Then
@@ -540,6 +604,7 @@ class TestRequestTransformer {
                 combinationsDomain = combinationsDomain,
                 claimsAreSelectable = mockedSelectableClaims,
                 overaskedClaims = emptyList(),
+                userImageClaimKeys = mockedUserImageClaimKeys,
             ).getOrThrow()
 
             // Then
@@ -687,6 +752,7 @@ class TestRequestTransformer {
                 ),
                 claimsAreSelectable = mockedSelectableClaims,
                 overaskedClaims = overaskedClaims,
+                userImageClaimKeys = mockedUserImageClaimKeys,
             ).getOrThrow()
 
             // Then
@@ -746,6 +812,7 @@ class TestRequestTransformer {
                 ),
                 claimsAreSelectable = mockedSelectableClaims,
                 overaskedClaims = overaskedClaims,
+                userImageClaimKeys = mockedUserImageClaimKeys,
             ).getOrThrow()
 
             // Then
@@ -787,6 +854,7 @@ class TestRequestTransformer {
                 ),
                 claimsAreSelectable = mockedNonSelectableClaims,
                 overaskedClaims = overaskedClaims,
+                userImageClaimKeys = mockedUserImageClaimKeys,
             ).getOrThrow()
 
             // Then
@@ -833,6 +901,7 @@ class TestRequestTransformer {
                 ),
                 claimsAreSelectable = mockedNonSelectableClaims,
                 overaskedClaims = overaskedClaims,
+                userImageClaimKeys = mockedUserImageClaimKeys,
             ).getOrThrow()
 
             // Then
@@ -879,6 +948,7 @@ class TestRequestTransformer {
                 ),
                 claimsAreSelectable = mockedNonSelectableClaims,
                 overaskedClaims = overaskedClaims,
+                userImageClaimKeys = mockedUserImageClaimKeys,
             ).getOrThrow()
 
             // Then
@@ -892,7 +962,7 @@ class TestRequestTransformer {
     // 1. Alternative combinations contain the same credential/query but different signing documents.
     //
     // Case 21 Expected Result:
-    // Each combination has only its own collapsed section and distinct IDs.
+    // Each combination has only its own expanded section and distinct IDs.
     @Test
     fun `Given Case 21, When transformToCombinationsUi is called, Then Case 21 Expected Result is returned`() =
         coroutineRule.runTest {
@@ -928,7 +998,7 @@ class TestRequestTransformer {
             )
             assertEquals(listOf("Second.pdf"), combinations[1].transactionValues("Document"))
             val sections = combinations.map { combination -> combination.transactionData!! }
-            assertTrue(sections.all { section -> !section.details.isExpanded })
+            assertTrue(sections.all { section -> section.details.isExpanded })
             assertEquals(2, sections.map { section -> section.details.header.itemId }.toSet().size)
             assertTrue(sections.all { section ->
                 section.details.header.itemId.startsWith("transaction-data:")
@@ -1022,6 +1092,7 @@ class TestRequestTransformer {
                         attestationTypes = setOf(mockedMdocPidDocType)
                     ),
                 ),
+                userImageClaimKeys = mockedUserImageClaimKeys,
             ).getOrThrow().single()
 
             // Then
@@ -1764,6 +1835,7 @@ class TestRequestTransformer {
             documentsDomain = domainItems,
             resourceProvider = resourceProvider,
             claimsAreSelectable = mockedSelectableClaims,
+            userImageClaimKeys = mockedUserImageClaimKeys,
         )
     }
 
@@ -1785,6 +1857,7 @@ class TestRequestTransformer {
         combinationsDomain = combinationsDomain,
         claimsAreSelectable = claimsAreSelectable,
         overaskedClaims = emptyList(),
+        userImageClaimKeys = mockedUserImageClaimKeys,
     ).getOrThrow()
 
     /** A PID mso_mdoc match requesting the given data elements (queryId = null). */

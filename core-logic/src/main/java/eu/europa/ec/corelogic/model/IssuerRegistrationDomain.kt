@@ -42,10 +42,7 @@ sealed interface IssuerRegistrationDomain {
         val details: RegistrationDetailsDomain?,
     ) : IssuerRegistrationDomain
 
-    /**
-     * The registration was not evaluated at all: policy disabled, unsigned metadata, or no
-     * certificate carried in the metadata.
-     */
+    /** No issuer-registration evaluation result is available. */
     data object NotEvaluated : IssuerRegistrationDomain
 
     /**

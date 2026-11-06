@@ -16,6 +16,7 @@
 
 package eu.europa.ec.uilogic.component.wrap
 
+import android.app.Activity
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -38,16 +39,20 @@ import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.SheetState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.DialogWindowProvider
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.theme.values.divider
 import eu.europa.ec.resourceslogic.theme.values.warning
@@ -67,7 +72,10 @@ import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
 import eu.europa.ec.uilogic.component.utils.SPACING_SMALL
 import eu.europa.ec.uilogic.component.utils.VSpacer
 import eu.europa.ec.uilogic.extension.exposeTestTagsAsResourceId
+import eu.europa.ec.uilogic.extension.findActivityOrNull
 import eu.europa.ec.uilogic.extension.optionalTestTag
+import eu.europa.ec.uilogic.extension.reportAccessibilityInteraction
+import eu.europa.ec.uilogic.extension.reportTouchInteraction
 import eu.europa.ec.uilogic.extension.throttledClickable
 import eu.europa.ec.uilogic.mvi.ViewEvent
 import eu.europa.ec.uilogic.util.TestTag
@@ -124,6 +132,7 @@ fun WrapModalBottomSheet(
     dragHandle: @Composable (() -> Unit) = { BottomSheetDefaultHandle() },
     sheetContent: @Composable ColumnScope.() -> Unit,
 ) {
+    val activity = LocalContext.current.findActivityOrNull()
     ModalBottomSheet(
         onDismissRequest = onDismissRequest,
         modifier = Modifier
@@ -133,8 +142,34 @@ fun WrapModalBottomSheet(
         sheetState = sheetState,
         shape = shape,
         dragHandle = dragHandle,
-        content = sheetContent,
+        content = {
+            ReportUserInteraction(activity)
+            sheetContent()
+        },
     )
+}
+
+/**
+ * The sheet has its own window. Observe it without adding a touch target ahead of Material's
+ * sheet-positioning modifier, which would block taps on the scrim.
+ */
+@Composable
+private fun ReportUserInteraction(activity: Activity?) {
+    val view = LocalView.current
+    val root = view.rootView
+    val window = (view.parent as? DialogWindowProvider)?.window
+    DisposableEffect(root, window, activity) {
+        val removeTouchReporting = activity?.let { safeActivity ->
+            window?.reportTouchInteraction(safeActivity::onUserInteraction)
+        }
+        val removeAccessibilityReporting = activity?.let { safeActivity ->
+            root.reportAccessibilityInteraction(safeActivity::onUserInteraction)
+        }
+        onDispose {
+            removeTouchReporting?.invoke()
+            removeAccessibilityReporting?.invoke()
+        }
+    }
 }
 
 /**

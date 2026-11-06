@@ -19,6 +19,7 @@ package eu.europa.ec.dashboardfeature.interactor
 import android.content.Context
 import eu.europa.ec.authenticationlogic.controller.authentication.BiometricsAvailability
 import eu.europa.ec.authenticationlogic.controller.authentication.DeviceAuthenticationResult
+import eu.europa.ec.authenticationlogic.controller.session.SessionController
 import eu.europa.ec.authenticationlogic.model.BiometricCrypto
 import eu.europa.ec.businesslogic.config.ConfigLogic
 import eu.europa.ec.businesslogic.controller.storage.PrefKeys
@@ -32,6 +33,7 @@ import eu.europa.ec.corelogic.model.ClaimDomain
 import eu.europa.ec.corelogic.model.ClaimPathDomain
 import eu.europa.ec.corelogic.model.ClaimType
 import eu.europa.ec.corelogic.model.DocumentIdentifier
+import eu.europa.ec.corelogic.model.IssuerTrustVerdictDomain
 import eu.europa.ec.corelogic.model.UntrustedIssuerReasonDomain
 import eu.europa.ec.dashboardfeature.ui.documents.detail.model.DocumentDetailsDomain
 import eu.europa.ec.dashboardfeature.ui.documents.model.DocumentCredentialsInfoUi
@@ -71,6 +73,7 @@ import eu.europa.ec.testlogic.rule.CoroutineTestRule
 import eu.europa.ec.uilogic.component.IssuerDetailsCardDataUi
 import junit.framework.TestCase.assertEquals
 import junit.framework.TestCase.assertTrue
+import kotlinx.coroutines.runBlocking
 import org.junit.After
 import org.junit.Before
 import org.junit.Rule
@@ -79,8 +82,10 @@ import org.mockito.ArgumentMatchers
 import org.mockito.Mock
 import org.mockito.MockitoAnnotations
 import org.mockito.kotlin.any
+import org.mockito.kotlin.atLeastOnce
 import org.mockito.kotlin.inOrder
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.never
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
@@ -112,10 +117,14 @@ class TestDocumentDetailsInteractor {
     @Mock
     private lateinit var mockContext: Context
 
+    @Mock
+    private lateinit var sessionController: SessionController
+
     private lateinit var interactor: DocumentDetailsInteractor
 
     private val mockedReIssueIssuerId = "mockedReIssueIssuerId"
     private val mockedReIssueUri = "mockedReIssueUri"
+    private val mockedReIssueBlockedMessage = "mockedReIssueBlockedMessage"
 
     private lateinit var closeable: AutoCloseable
 
@@ -130,11 +139,18 @@ class TestDocumentDetailsInteractor {
             uuidProvider = uuidProvider,
             configLogic = configLogic,
             prefKeys = prefKeys,
+            sessionController = sessionController,
         )
 
         whenever(resourceProvider.genericErrorMessage()).thenReturn(mockedGenericErrorMessage)
         whenever(resourceProvider.getLocale()).thenReturn(mockedDefaultLocale)
         whenever(configLogic.forcePidActivation).thenReturn(true)
+        runBlocking {
+            mockIsDocumentRevoked(isRevoked = false)
+            mockGetIssuerTrustVerdictCall(response = IssuerTrustVerdictDomain.NOT_TRUSTED)
+            mockHasStatusRefreshFailed(hasFailed = false)
+            mockHasReIssuanceFailed(hasFailed = false)
+        }
     }
 
     @After
@@ -142,21 +158,20 @@ class TestDocumentDetailsInteractor {
         closeable.close()
     }
 
-    //region getDocumentDetails
-
-    // Case 1:
-    // 1. walletCoreDocumentsController.getDocumentById() returns a PID document.
-    // 2. walletCoreDocumentsController.isDocumentBookmarked() returns false.
-    // 3. walletCoreDocumentsController.isDocumentLowOnCredentials() returns false.
-    // 4. prefKeys.getShowBatchIssuanceCounter() returns true.
-
-    // Case 1 Expected Result:
-    // DocumentDetailsInteractorPartialState.Success state, with a PID document item and
-    // documentIsBookmarked is false and document credentials info is returned.
+    /**
+     * Case 1:
+     * 1. walletCoreDocumentsController.getDocumentById() returns a PID document.
+     * 2. walletCoreDocumentsController.isDocumentBookmarked() returns false.
+     * 3. walletCoreDocumentsController.isDocumentLowOnCredentials() returns false.
+     * 4. prefKeys.getShowBatchIssuanceCounter() returns true.
+     *
+     * Case 1 Expected Result:
+     * DocumentDetailsInteractorPartialState.Success state, with a PID document item and
+     * documentIsBookmarked is false and document credentials info is returned.
+     */
     @Test
     fun `Given Case 1, When getDocumentDetails is called, Then Case 1 Expected Result is returned`() {
         coroutineRule.runTest {
-            // Given
             val mockedDocIsLowOnCredentials = false
             mockShowBatchIssuanceCounterPreference(response = true)
             mockGetDocumentDetailsStrings(
@@ -171,17 +186,17 @@ class TestDocumentDetailsInteractor {
                 resourceProvider = resourceProvider,
             )
 
-            val issuerDetails = getMockedIssuerDetailsCardDataUi()
+            val issuerDetails = getMockedIssuerDetailsCardDataUi(
+                issuerTrustVerdict = IssuerTrustVerdictDomain.NOT_TRUSTED,
+            )
 
             mockRetrieveBookmarkCall(response = false)
             mockIsDocumentRevoked(isRevoked = false)
 
-            // When
             interactor.getDocumentDetails(
                 documentId = mockedPidId,
                 wasIssuerDetailsExpanded = null,
             ).runFlowTest {
-                // Then
                 assertEquals(
                     DocumentDetailsInteractorPartialState.Success(
                         issuerDetails = issuerDetails,
@@ -195,19 +210,149 @@ class TestDocumentDetailsInteractor {
         }
     }
 
-    // Case 2:
-    // 1. walletCoreDocumentsController.getDocumentById() returns a PID document.
-    // 2. walletCoreDocumentsController.isDocumentBookmarked() returns false.
-    // 3. walletCoreDocumentsController.isDocumentLowOnCredentials() returns true.
-    // 4. prefKeys.getShowBatchIssuanceCounter() returns true.
+    @Test
+    fun `Given the last status refresh failed, When getDocumentDetails is called, Then the issuer card opens and says so`() {
+        coroutineRule.runTest {
+            mockShowBatchIssuanceCounterPreference(response = true)
+            mockGetDocumentDetailsStrings(
+                resourceProvider = resourceProvider,
+            )
 
-    // Case 2 Expected Result:
-    // DocumentDetailsInteractorPartialState.Success state, with
-    // a PID document item and document credentials info is returned.
+            val mockedPidWithBasicFields = getMockedPidWithBasicFields()
+            mockGetDocumentByIdCall(response = mockedPidWithBasicFields)
+            mockIsDocumentLowOnCredentialsCall(response = false)
+            mockRetrieveBookmarkCall(response = false)
+            mockIsDocumentRevoked(isRevoked = false)
+            mockHasStatusRefreshFailed(hasFailed = true)
+
+            interactor.getDocumentDetails(
+                documentId = mockedPidId,
+                wasIssuerDetailsExpanded = null,
+            ).runFlowTest {
+                val success = awaitItem() as DocumentDetailsInteractorPartialState.Success
+
+                assertEquals(
+                    getMockedIssuerDetailsCardDataUi(
+                        issuerTrustVerdict = IssuerTrustVerdictDomain.NOT_TRUSTED,
+                        isExpanded = true,
+                        hasStatusRefreshFailed = true
+                    ),
+                    success.issuerDetails
+                )
+            }
+        }
+    }
+
+    @Test
+    fun `Given the last automatic re-issuance failed, When getDocumentDetails is called, Then the issuer card opens and says so`() {
+        coroutineRule.runTest {
+            mockShowBatchIssuanceCounterPreference(response = true)
+            mockGetDocumentDetailsStrings(
+                resourceProvider = resourceProvider,
+            )
+
+            val mockedPidWithBasicFields = getMockedPidWithBasicFields()
+            mockGetDocumentByIdCall(response = mockedPidWithBasicFields)
+            mockIsDocumentLowOnCredentialsCall(response = false)
+            mockRetrieveBookmarkCall(response = false)
+            mockIsDocumentRevoked(isRevoked = false)
+            mockHasStatusRefreshFailed(hasFailed = false)
+            mockHasReIssuanceFailed(hasFailed = true)
+
+            interactor.getDocumentDetails(
+                documentId = mockedPidId,
+                wasIssuerDetailsExpanded = false,
+            ).runFlowTest {
+                val success = awaitItem() as DocumentDetailsInteractorPartialState.Success
+
+                assertEquals(
+                    getMockedIssuerDetailsCardDataUi(
+                        issuerTrustVerdict = IssuerTrustVerdictDomain.NOT_TRUSTED,
+                        isExpanded = true,
+                        hasReIssuanceFailed = true,
+                    ),
+                    success.issuerDetails
+                )
+            }
+        }
+    }
+
+    @Test
+    fun `Given a collapsed card and a failed status refresh, When getDocumentDetails is called again, Then the card opens`() {
+        coroutineRule.runTest {
+            mockShowBatchIssuanceCounterPreference(response = true)
+            mockGetDocumentDetailsStrings(
+                resourceProvider = resourceProvider,
+            )
+
+            val mockedPidWithBasicFields = getMockedPidWithBasicFields()
+            mockGetDocumentByIdCall(response = mockedPidWithBasicFields)
+            mockIsDocumentLowOnCredentialsCall(response = false)
+            mockRetrieveBookmarkCall(response = false)
+            mockIsDocumentRevoked(isRevoked = false)
+            mockHasStatusRefreshFailed(hasFailed = true)
+
+            interactor.getDocumentDetails(
+                documentId = mockedPidId,
+                wasIssuerDetailsExpanded = false,
+            ).runFlowTest {
+                val success = awaitItem() as DocumentDetailsInteractorPartialState.Success
+
+                assertEquals(true, success.issuerDetails.isExpanded)
+            }
+        }
+    }
+
+    @Test
+    fun `Given the issuer was trusted at issuance, When getDocumentDetails is called, Then the issuer is shown as verified`() {
+        coroutineRule.runTest {
+            mockShowBatchIssuanceCounterPreference(response = true)
+            mockGetDocumentDetailsStrings(
+                resourceProvider = resourceProvider,
+            )
+
+            val mockedPidWithBasicFields = getMockedPidWithBasicFields()
+            mockGetDocumentByIdCall(response = mockedPidWithBasicFields)
+            mockIsDocumentLowOnCredentialsCall(response = false)
+            mockRetrieveBookmarkCall(response = false)
+            mockIsDocumentRevoked(isRevoked = false)
+            mockGetIssuerTrustVerdictCall(response = IssuerTrustVerdictDomain.TRUSTED)
+
+            interactor.getDocumentDetails(
+                documentId = mockedPidId,
+                wasIssuerDetailsExpanded = null,
+            ).runFlowTest {
+                assertEquals(
+                    DocumentDetailsInteractorPartialState.Success(
+                        issuerDetails = getMockedIssuerDetailsCardDataUi(
+                            issuerTrustVerdict = IssuerTrustVerdictDomain.TRUSTED,
+                        ),
+                        documentDetailsDomain = mockedBasicPidDomain,
+                        documentIsBookmarked = false,
+                        documentCredentialsInfoUi = getMockedDocumentCredentialsInfoUi(
+                            resourceProvider = resourceProvider,
+                        ),
+                    ),
+                    awaitItem()
+                )
+            }
+        }
+    }
+
+    /**
+     * Case 2:
+     * 1. walletCoreDocumentsController.getDocumentById() returns a PID document.
+     * 2. walletCoreDocumentsController.isDocumentBookmarked() returns false.
+     * 3. walletCoreDocumentsController.isDocumentLowOnCredentials() returns true.
+     * 4. prefKeys.getShowBatchIssuanceCounter() returns true.
+     *
+     * Case 2 Expected Result:
+     * DocumentDetailsInteractorPartialState.Success state, with
+     * a PID document item and document credentials info is returned.
+     */
     @Test
     fun `Given Case 2, When getDocumentDetails is called, Then Case 2 Expected Result is returned`() {
         coroutineRule.runTest {
-            // Given
             val mockedDocIsLowOnCredentials = true
             mockShowBatchIssuanceCounterPreference(response = true)
             mockGetDocumentDetailsStrings(
@@ -222,17 +367,17 @@ class TestDocumentDetailsInteractor {
                 resourceProvider = resourceProvider,
             )
 
-            val issuerDetails = getMockedIssuerDetailsCardDataUi()
+            val issuerDetails = getMockedIssuerDetailsCardDataUi(
+                issuerTrustVerdict = IssuerTrustVerdictDomain.NOT_TRUSTED,
+            )
 
             mockRetrieveBookmarkCall(response = false)
             mockIsDocumentRevoked(isRevoked = false)
 
-            // When
             interactor.getDocumentDetails(
                 documentId = mockedPidId,
                 wasIssuerDetailsExpanded = null,
             ).runFlowTest {
-                // Then
                 assertEquals(
                     DocumentDetailsInteractorPartialState.Success(
                         issuerDetails = issuerDetails,
@@ -246,19 +391,20 @@ class TestDocumentDetailsInteractor {
         }
     }
 
-    // Case 3:
-    // 1. walletCoreDocumentsController.getDocumentById() returns a PID document.
-    // 2. walletCoreDocumentsController.isDocumentBookmarked() returns true.
-    // 3. walletCoreDocumentsController.isDocumentLowOnCredentials() returns false.
-    // 4. prefKeys.getShowBatchIssuanceCounter() returns true.
-
-    // Case 3 Expected Result:
-    // DocumentDetailsInteractorPartialState.Success state, with a PID document item and
-    // documentIsBookmarked is true and document credentials info is returned.
+    /**
+     * Case 3:
+     * 1. walletCoreDocumentsController.getDocumentById() returns a PID document.
+     * 2. walletCoreDocumentsController.isDocumentBookmarked() returns true.
+     * 3. walletCoreDocumentsController.isDocumentLowOnCredentials() returns false.
+     * 4. prefKeys.getShowBatchIssuanceCounter() returns true.
+     *
+     * Case 3 Expected Result:
+     * DocumentDetailsInteractorPartialState.Success state, with a PID document item and
+     * documentIsBookmarked is true and document credentials info is returned.
+     */
     @Test
     fun `Given Case 3, When getDocumentDetails is called, Then Case 3 Expected Result is returned`() {
         coroutineRule.runTest {
-            // Given
             val mockedDocIsLowOnCredentials = false
             mockShowBatchIssuanceCounterPreference(response = true)
             mockGetDocumentDetailsStrings(
@@ -273,17 +419,17 @@ class TestDocumentDetailsInteractor {
                 resourceProvider = resourceProvider,
             )
 
-            val issuerDetails = getMockedIssuerDetailsCardDataUi()
+            val issuerDetails = getMockedIssuerDetailsCardDataUi(
+                issuerTrustVerdict = IssuerTrustVerdictDomain.NOT_TRUSTED,
+            )
 
             mockRetrieveBookmarkCall(response = true)
             mockIsDocumentRevoked(isRevoked = false)
 
-            // When
             interactor.getDocumentDetails(
                 documentId = mockedPidId,
                 wasIssuerDetailsExpanded = null,
             ).runFlowTest {
-                // Then
                 assertEquals(
                     DocumentDetailsInteractorPartialState.Success(
                         issuerDetails = issuerDetails,
@@ -297,19 +443,20 @@ class TestDocumentDetailsInteractor {
         }
     }
 
-    // Case 4:
-    // 1. walletCoreDocumentsController.getDocumentById() returns an mDL document.
-    // 2. walletCoreDocumentsController.isDocumentBookmarked() returns false.
-    // 3. walletCoreDocumentsController.isDocumentLowOnCredentials() returns false.
-    // 4. prefKeys.getShowBatchIssuanceCounter() returns true.
-
-    // Case 4 Expected Result:
-    // DocumentDetailsInteractorPartialState.Success state, with an mDL document item and
-    // documentIsBookmarked is false and document credentials info is returned.
+    /**
+     * Case 4:
+     * 1. walletCoreDocumentsController.getDocumentById() returns an mDL document.
+     * 2. walletCoreDocumentsController.isDocumentBookmarked() returns false.
+     * 3. walletCoreDocumentsController.isDocumentLowOnCredentials() returns false.
+     * 4. prefKeys.getShowBatchIssuanceCounter() returns true.
+     *
+     * Case 4 Expected Result:
+     * DocumentDetailsInteractorPartialState.Success state, with an mDL document item and
+     * documentIsBookmarked is false and document credentials info is returned.
+     */
     @Test
     fun `Given Case 4, When getDocumentDetails is called, Then Case 4 Expected Result is returned`() {
         coroutineRule.runTest {
-            // Given
             val mockedDocIsLowOnCredentials = false
             mockShowBatchIssuanceCounterPreference(response = true)
             mockGetDocumentDetailsStrings(
@@ -324,17 +471,17 @@ class TestDocumentDetailsInteractor {
                 resourceProvider = resourceProvider,
             )
 
-            val issuerDetails = getMockedIssuerDetailsCardDataUi()
+            val issuerDetails = getMockedIssuerDetailsCardDataUi(
+                issuerTrustVerdict = IssuerTrustVerdictDomain.NOT_TRUSTED,
+            )
 
             mockRetrieveBookmarkCall(response = false)
             mockIsDocumentRevoked(isRevoked = false)
 
-            // When
             interactor.getDocumentDetails(
                 documentId = mockedMdlId,
                 wasIssuerDetailsExpanded = null,
             ).runFlowTest {
-                // Then
                 assertEquals(
                     DocumentDetailsInteractorPartialState.Success(
                         issuerDetails = issuerDetails,
@@ -348,24 +495,23 @@ class TestDocumentDetailsInteractor {
         }
     }
 
-    // Case 5:
-    // 1. walletCoreDocumentsController.getDocumentById() returns null.
-
-    // Case 5 Expected Result:
-    // DocumentDetailsInteractorPartialState.Failed state,
-    // with the generic error message.
+    /**
+     * Case 5:
+     * 1. walletCoreDocumentsController.getDocumentById() returns null.
+     *
+     * Case 5 Expected Result:
+     * DocumentDetailsInteractorPartialState.Failed state,
+     * with the generic error message.
+     */
     @Test
     fun `Given Case 5, When getDocumentDetails is called, Then Case 5 Expected Result is returned`() {
         coroutineRule.runTest {
-            // Given
             mockGetDocumentByIdCall(response = null)
 
-            // When
             interactor.getDocumentDetails(
                 documentId = mockedPidId,
                 wasIssuerDetailsExpanded = null,
             ).runFlowTest {
-                // Then
                 assertEquals(
                     DocumentDetailsInteractorPartialState.Failure(
                         error = mockedGenericErrorMessage
@@ -376,22 +522,23 @@ class TestDocumentDetailsInteractor {
         }
     }
 
-    // Case 6:
-    // 1. walletCoreDocumentsController.getDocumentById() returns a PID document, with:
-    // no expiration date,
-    // no image, and
-    // no user name.
-    // 2. walletCoreDocumentsController.isDocumentBookmarked() returns false.
-    // 3. walletCoreDocumentsController.isDocumentLowOnCredentials() returns false.
-    // 4. prefKeys.getShowBatchIssuanceCounter() returns true.
-
-    // Case 6 Expected Result:
-    // DocumentDetailsInteractorPartialState.Success state, with a PID document item, with:
-    // documentIsBookmarked is false and document credentials info is returned.
+    /**
+     * Case 6:
+     * 1. walletCoreDocumentsController.getDocumentById() returns a PID document, with:
+     * no expiration date,
+     * no image, and
+     * no user name.
+     * 2. walletCoreDocumentsController.isDocumentBookmarked() returns false.
+     * 3. walletCoreDocumentsController.isDocumentLowOnCredentials() returns false.
+     * 4. prefKeys.getShowBatchIssuanceCounter() returns true.
+     *
+     * Case 6 Expected Result:
+     * DocumentDetailsInteractorPartialState.Success state, with a PID document item, with:
+     * documentIsBookmarked is false and document credentials info is returned.
+     */
     @Test
     fun `Given Case 6, When getDocumentDetails is called, Then Case 6 Expected Result is returned`() {
         coroutineRule.runTest {
-            // Given
             val mockedDocIsLowOnCredentials = false
             mockShowBatchIssuanceCounterPreference(response = true)
             mockGetDocumentDetailsStrings(
@@ -419,17 +566,17 @@ class TestDocumentDetailsInteractor {
                 resourceProvider = resourceProvider,
             )
 
-            val issuerDetails = getMockedIssuerDetailsCardDataUi()
+            val issuerDetails = getMockedIssuerDetailsCardDataUi(
+                issuerTrustVerdict = IssuerTrustVerdictDomain.NOT_TRUSTED,
+            )
 
             mockRetrieveBookmarkCall(response = false)
             mockIsDocumentRevoked(isRevoked = false)
 
-            // When
             interactor.getDocumentDetails(
                 documentId = mockedPidId,
                 wasIssuerDetailsExpanded = null,
             ).runFlowTest {
-                // Then
                 assertEquals(
                     DocumentDetailsInteractorPartialState.Success(
                         issuerDetails = issuerDetails,
@@ -463,25 +610,24 @@ class TestDocumentDetailsInteractor {
         }
     }
 
-    // Case 7:
-    // 1. walletCoreDocumentsController.getDocumentById() throws an exception with a message.
-
-    // Case 7 Expected Result:
-    // DocumentDetailsInteractorPartialState.Failed state,
-    // with the exception's localized message.
+    /**
+     * Case 7:
+     * 1. walletCoreDocumentsController.getDocumentById() throws an exception with a message.
+     *
+     * Case 7 Expected Result:
+     * DocumentDetailsInteractorPartialState.Failed state,
+     * with the exception's localized message.
+     */
     @Test
     fun `Given Case 7, When getDocumentDetails is called, Then Case 7 Expected Result is returned`() {
         coroutineRule.runTest {
-            // Given
             whenever(walletCoreDocumentsController.getDocumentById(mockedPidId))
                 .thenThrow(mockedExceptionWithMessage)
 
-            // When
             interactor.getDocumentDetails(
                 documentId = mockedPidId,
                 wasIssuerDetailsExpanded = null,
             ).runFlowTest {
-                // Then
                 assertEquals(
                     DocumentDetailsInteractorPartialState.Failure(
                         error = mockedExceptionWithMessage.localizedMessage!!
@@ -492,25 +638,24 @@ class TestDocumentDetailsInteractor {
         }
     }
 
-    // Case 8:
-    // 1. walletCoreDocumentsController.getDocumentById() throws an exception with no message.
-
-    // Case 8 Expected Result:
-    // DocumentDetailsInteractorPartialState.Failed state,
-    // with the generic error message.
+    /**
+     * Case 8:
+     * 1. walletCoreDocumentsController.getDocumentById() throws an exception with no message.
+     *
+     * Case 8 Expected Result:
+     * DocumentDetailsInteractorPartialState.Failed state,
+     * with the generic error message.
+     */
     @Test
     fun `Given Case 8, When getDocumentDetails is called, Then Case 8 Expected Result is returned`() {
         coroutineRule.runTest {
-            // Given
             whenever(walletCoreDocumentsController.getDocumentById(mockedPidId))
                 .thenThrow(mockedExceptionWithNoMessage)
 
-            // When
             interactor.getDocumentDetails(
                 documentId = mockedPidId,
                 wasIssuerDetailsExpanded = null,
             ).runFlowTest {
-                // Then
                 assertEquals(
                     DocumentDetailsInteractorPartialState.Failure(
                         error = mockedGenericErrorMessage
@@ -521,14 +666,15 @@ class TestDocumentDetailsInteractor {
         }
     }
 
-    // Case 9:
-    // Same as Case 1 but with wasIssuerDetailsExpanded = true → IssuerDetailsCardDataUi.isExpanded
-    // is true (covers the non-null branch of `wasIssuerDetailsExpanded ?: false`).
-    // prefKeys.getShowBatchIssuanceCounter() returns true.
+    /**
+     * Case 9:
+     * Same as Case 1 but with wasIssuerDetailsExpanded = true → IssuerDetailsCardDataUi.isExpanded
+     * is true (covers the non-null branch of `wasIssuerDetailsExpanded ?: false`).
+     * prefKeys.getShowBatchIssuanceCounter() returns true.
+     */
     @Test
     fun `Given Case 9, When getDocumentDetails is called with wasIssuerDetailsExpanded=true, Then issuerDetails#isExpanded is true`() {
         coroutineRule.runTest {
-            // Given
             mockShowBatchIssuanceCounterPreference(response = true)
             mockGetDocumentDetailsStrings(resourceProvider = resourceProvider)
             val mockedPidWithBasicFields = getMockedPidWithBasicFields()
@@ -537,12 +683,10 @@ class TestDocumentDetailsInteractor {
             mockRetrieveBookmarkCall(response = false)
             mockIsDocumentRevoked(isRevoked = false)
 
-            // When
             interactor.getDocumentDetails(
                 documentId = mockedPidId,
                 wasIssuerDetailsExpanded = true,
             ).runFlowTest {
-                // Then
                 val result = awaitItem()
                 kotlin.test.assertTrue(result is DocumentDetailsInteractorPartialState.Success)
                 assertEquals(true, result.issuerDetails.isExpanded)
@@ -550,13 +694,14 @@ class TestDocumentDetailsInteractor {
         }
     }
 
-    // Case 10:
-    // prefKeys.getShowBatchIssuanceCounter() returns true.
-    // isDocumentRevoked returns true → IssuerDetailsCardDataUi.documentState is Revoked.
+    /**
+     * Case 10:
+     * prefKeys.getShowBatchIssuanceCounter() returns true.
+     * isDocumentRevoked returns true → IssuerDetailsCardDataUi.documentState is Revoked.
+     */
     @Test
     fun `Given Case 10, When getDocumentDetails is called for a revoked document, Then DocumentState is Revoked`() {
         coroutineRule.runTest {
-            // Given
             mockShowBatchIssuanceCounterPreference(response = true)
             mockGetDocumentDetailsStrings(resourceProvider = resourceProvider)
             val mockedPidWithBasicFields = getMockedPidWithBasicFields()
@@ -565,12 +710,10 @@ class TestDocumentDetailsInteractor {
             mockRetrieveBookmarkCall(response = false)
             mockIsDocumentRevoked(isRevoked = true)
 
-            // When
             interactor.getDocumentDetails(
                 documentId = mockedPidId,
                 wasIssuerDetailsExpanded = null,
             ).runFlowTest {
-                // Then
                 val result = awaitItem()
                 kotlin.test.assertTrue(result is DocumentDetailsInteractorPartialState.Success)
                 assertEquals(
@@ -581,15 +724,40 @@ class TestDocumentDetailsInteractor {
         }
     }
 
-    // Case 11:
-    // prefKeys.getShowBatchIssuanceCounter() returns false.
-    //
-    // Case 11 Expected Result:
-    // DocumentDetailsInteractorPartialState.Success state, with document credentials info hidden.
+    /**
+     * Case 11:
+     * prefKeys.getShowBatchIssuanceCounter() returns false.
+     *
+     * Case 11 Expected Result:
+     * DocumentDetailsInteractorPartialState.Success state, with document credentials info hidden.
+     */
+    @Test
+    fun `Given a suspended document, When getDocumentDetails is called, Then the issuer card says it is suspended`() {
+        coroutineRule.runTest {
+            mockShowBatchIssuanceCounterPreference(response = true)
+            mockGetDocumentDetailsStrings(resourceProvider = resourceProvider)
+            mockGetDocumentByIdCall(response = getMockedPidWithBasicFields())
+            mockIsDocumentLowOnCredentialsCall(response = false)
+            mockRetrieveBookmarkCall(response = false)
+            mockIsDocumentRevoked(isRevoked = true, isSuspended = true)
+
+            interactor.getDocumentDetails(
+                documentId = mockedPidId,
+                wasIssuerDetailsExpanded = null,
+            ).runFlowTest {
+                val result = awaitItem()
+                kotlin.test.assertTrue(result is DocumentDetailsInteractorPartialState.Success)
+                assertEquals(
+                    IssuerDetailsCardDataUi.DocumentState.Suspended,
+                    result.issuerDetails.documentState
+                )
+            }
+        }
+    }
+
     @Test
     fun `Given show batch issuance counter preference is false, When getDocumentDetails is called, Then credentials info is hidden`() {
         coroutineRule.runTest {
-            // Given
             mockShowBatchIssuanceCounterPreference(response = false)
             mockGetDocumentDetailsStrings(resourceProvider = resourceProvider)
             val mockedPidWithBasicFields = getMockedPidWithBasicFields()
@@ -598,12 +766,10 @@ class TestDocumentDetailsInteractor {
             mockRetrieveBookmarkCall(response = false)
             mockIsDocumentRevoked(isRevoked = false)
 
-            // When
             interactor.getDocumentDetails(
                 documentId = mockedPidId,
                 wasIssuerDetailsExpanded = null,
             ).runFlowTest {
-                // Then
                 val result = awaitItem()
                 assertTrue(result is DocumentDetailsInteractorPartialState.Success)
                 result as DocumentDetailsInteractorPartialState.Success
@@ -611,20 +777,18 @@ class TestDocumentDetailsInteractor {
             }
         }
     }
-    //endregion
 
-    //region deleteDocument
-
-    // Case 1:
-
-    // 1. A documentId and document is PID.
-    // 2. walletCoreDocumentsController.getAllDocuments() returns 1 Document and it is PID.
-    // 3. walletCoreDocumentsController.getDocumentById returns that PID Document.
-    // 4. walletCoreDocumentsController.deleteAllDocuments() returns Failed.
+    /**
+     * Case 1:
+     *
+     * 1. A documentId and document is PID.
+     * 2. walletCoreDocumentsController.getAllDocuments() returns 1 Document and it is PID.
+     * 3. walletCoreDocumentsController.getDocumentById returns that PID Document.
+     * 4. walletCoreDocumentsController.deleteAllDocuments() returns Failed.
+     */
     @Test
     fun `Given Case 1, When deleteDocument is called, Then it returns Failure with failure's error message`() {
         coroutineRule.runTest {
-            // Given
             val mockedPidWithBasicFields = getMockedPidWithBasicFields()
             mockGetAllDocumentsCall(
                 response = listOf(
@@ -640,11 +804,9 @@ class TestDocumentDetailsInteractor {
                 response = mockedPidWithBasicFields
             )
 
-            // When
             interactor.deleteDocument(
                 documentId = mockedPidId,
             ).runFlowTest {
-                // Then
                 assertEquals(
                     DocumentDetailsInteractorDeleteDocumentPartialState.Failure(
                         errorMessage = mockedPlainFailureMessage
@@ -655,16 +817,17 @@ class TestDocumentDetailsInteractor {
         }
     }
 
-    // Case 2:
-
-    // 1. A documentId and document is PID.
-    // 2. walletCoreDocumentsController.getAllDocuments() returns 1 Document and it is PID.
-    // 3. walletCoreDocumentsController.getDocumentById returns that PID Document.
-    // 4. walletCoreDocumentsController.deleteAllDocuments() returns Success.
+    /**
+     * Case 2:
+     *
+     * 1. A documentId and document is PID.
+     * 2. walletCoreDocumentsController.getAllDocuments() returns 1 Document and it is PID.
+     * 3. walletCoreDocumentsController.getDocumentById returns that PID Document.
+     * 4. walletCoreDocumentsController.deleteAllDocuments() returns Success.
+     */
     @Test
     fun `Given Case 2, When deleteDocument is called, Then it returns AllDocumentsDeleted`() {
         coroutineRule.runTest {
-            // Given
             val mockedPidWithBasicFields = getMockedPidWithBasicFields()
             mockGetAllDocumentsCall(
                 response = listOf(
@@ -676,11 +839,9 @@ class TestDocumentDetailsInteractor {
                 response = mockedPidWithBasicFields
             )
 
-            // When
             interactor.deleteDocument(
                 documentId = mockedPidId,
             ).runFlowTest {
-                // Then
                 assertEquals(
                     DocumentDetailsInteractorDeleteDocumentPartialState.AllDocumentsDeleted,
                     awaitItem()
@@ -689,16 +850,17 @@ class TestDocumentDetailsInteractor {
         }
     }
 
-    // Case 3:
-
-    // 1. A documentId and document is PID.
-    // 2. walletCoreDocumentsController.getAllDocuments() returns more than 1 PIDs
-    // 3. walletCoreDocumentsController.getDocumentById returns the oldest Document.
-    // 4. walletCoreDocumentsController.deleteAllDocuments() returns Success.
+    /**
+     * Case 3:
+     *
+     * 1. A documentId and document is PID.
+     * 2. walletCoreDocumentsController.getAllDocuments() returns more than 1 PIDs
+     * 3. walletCoreDocumentsController.getDocumentById returns the oldest Document.
+     * 4. walletCoreDocumentsController.deleteAllDocuments() returns Success.
+     */
     @Test
     fun `Given Case 3, When deleteDocument is called, Then it returns AllDocumentsDeleted`() {
         coroutineRule.runTest {
-            // Given
             val mockedMdlWithBasicFields = getMockedMdlWithBasicFields()
             val mockedPidWithBasicFields = getMockedPidWithBasicFields()
             val mockedOldestPidWithBasicFields = getMockedOldestPidWithBasicFields()
@@ -715,11 +877,9 @@ class TestDocumentDetailsInteractor {
                 response = mockedOldestPidWithBasicFields
             )
 
-            // When
             interactor.deleteDocument(
                 documentId = mockedOldestPidId,
             ).runFlowTest {
-                // Then
                 assertEquals(
                     DocumentDetailsInteractorDeleteDocumentPartialState.AllDocumentsDeleted,
                     awaitItem()
@@ -728,16 +888,18 @@ class TestDocumentDetailsInteractor {
         }
     }
 
-    // Case 4:
-
-    // 1. A documentId and document is PID.
-    // 2. walletCoreDocumentsController.getAllDocuments(documentIdentifier: DocumentIdentifier) returns more than 1 PIDs
-    //      AND the documentId we are about to delete is NOT the one of the oldest PID.
-    // 3. walletCoreDocumentsController.deleteDocument() returns Success.
+    /**
+     * Case 4:
+     *
+     * 1. A documentId and document is PID.
+     * 2. walletCoreDocumentsController.getAllDocuments(documentIdentifier: DocumentIdentifier)
+     *    returns more than 1 PIDs
+     *      AND the documentId we are about to delete is NOT the one of the oldest PID.
+     * 3. walletCoreDocumentsController.deleteDocument() returns Success.
+     */
     @Test
     fun `Given Case 4, When deleteDocument is called, Then it returns SingleDocumentDeleted`() {
         coroutineRule.runTest {
-            // Given
             val mockedPidWithBasicFields = getMockedPidWithBasicFields()
             val mockedOldestPidWithBasicFields = getMockedOldestPidWithBasicFields()
 
@@ -750,11 +912,9 @@ class TestDocumentDetailsInteractor {
             mockDeleteDocumentCall(response = DeleteDocumentPartialState.Success)
             mockGetMainPidDocument(mockedOldestPidWithBasicFields)
 
-            // When
             interactor.deleteDocument(
                 documentId = mockedPidId,
             ).runFlowTest {
-                // Then
                 assertEquals(
                     DocumentDetailsInteractorDeleteDocumentPartialState.SingleDocumentDeleted,
                     awaitItem()
@@ -763,25 +923,24 @@ class TestDocumentDetailsInteractor {
         }
     }
 
-    // Case 5:
-
-    // 1. A documentId and document is mDL.
-    // 2. walletCoreDocumentsController.deleteDocument() returns Failed.
+    /**
+     * Case 5:
+     *
+     * 1. A documentId and document is mDL.
+     * 2. walletCoreDocumentsController.deleteDocument() returns Failed.
+     */
     @Test
     fun `Given Case 5, When deleteDocument is called, Then it returns Failure with failure's error message`() {
         coroutineRule.runTest {
-            // Given
             mockDeleteDocumentCall(
                 response = DeleteDocumentPartialState.Failure(
                     errorMessage = mockedPlainFailureMessage
                 )
             )
 
-            // When
             interactor.deleteDocument(
                 documentId = mockedMdlId,
             ).runFlowTest {
-                // Then
                 assertEquals(
                     DocumentDetailsInteractorDeleteDocumentPartialState.Failure(
                         errorMessage = mockedPlainFailureMessage
@@ -792,21 +951,20 @@ class TestDocumentDetailsInteractor {
         }
     }
 
-    // Case 6:
-
-    // 1. A documentId and document is mDL.
-    // 2. walletCoreDocumentsController.deleteDocument() returns Success.
+    /**
+     * Case 6:
+     *
+     * 1. A documentId and document is mDL.
+     * 2. walletCoreDocumentsController.deleteDocument() returns Success.
+     */
     @Test
     fun `Given Case 6, When deleteDocument is called, Then it returns SingleDocumentDeleted`() {
         coroutineRule.runTest {
-            // Given
             mockDeleteDocumentCall(response = DeleteDocumentPartialState.Success)
 
-            // When
             interactor.deleteDocument(
                 documentId = mockedMdlId,
             ).runFlowTest {
-                // Then
                 assertEquals(
                     DocumentDetailsInteractorDeleteDocumentPartialState.SingleDocumentDeleted,
                     awaitItem()
@@ -815,22 +973,21 @@ class TestDocumentDetailsInteractor {
         }
     }
 
-    // Case 7:
-
-    // 1. A documentId and document is mDL.
-    // 2. walletCoreDocumentsController.deleteDocument() throws an exception with a message.
+    /**
+     * Case 7:
+     *
+     * 1. A documentId and document is mDL.
+     * 2. walletCoreDocumentsController.deleteDocument() throws an exception with a message.
+     */
     @Test
     fun `Given Case 7, When deleteDocument is called, Then it returns Failure with the exception's localized message`() {
         coroutineRule.runTest {
-            // Given
             whenever(walletCoreDocumentsController.deleteDocument(mockedMdlId))
                 .thenThrow(mockedExceptionWithMessage)
 
-            // When
             interactor.deleteDocument(
                 documentId = mockedMdlId,
             ).runFlowTest {
-                // Then
                 assertEquals(
                     DocumentDetailsInteractorDeleteDocumentPartialState.Failure(
                         errorMessage = mockedExceptionWithMessage.localizedMessage!!
@@ -841,22 +998,21 @@ class TestDocumentDetailsInteractor {
         }
     }
 
-    // Case 8:
-
-    // 1. A documentId and document is mDL.
-    // 2. walletCoreDocumentsController.deleteDocument() throws an exception with no message.
+    /**
+     * Case 8:
+     *
+     * 1. A documentId and document is mDL.
+     * 2. walletCoreDocumentsController.deleteDocument() throws an exception with no message.
+     */
     @Test
     fun `Given Case 8, When deleteDocument is called, Then it returns Failure with the generic error message`() {
         coroutineRule.runTest {
-            // Given
             whenever(walletCoreDocumentsController.deleteDocument(mockedMdlId))
                 .thenThrow(mockedExceptionWithNoMessage)
 
-            // When
             interactor.deleteDocument(
                 documentId = mockedMdlId,
             ).runFlowTest {
-                // Then
                 assertEquals(
                     DocumentDetailsInteractorDeleteDocumentPartialState.Failure(
                         errorMessage = mockedGenericErrorMessage
@@ -866,23 +1022,21 @@ class TestDocumentDetailsInteractor {
             }
         }
     }
-    //endregion
 
-    // Case 9 (deleteDocument):
-    // forcePidActivation=false → shouldDeleteAllDocuments=false (short-circuit on `&&`)
-    // → deleteDocument single-document path.
+    /**
+     * Case 9 (deleteDocument):
+     * forcePidActivation=false → shouldDeleteAllDocuments=false (short-circuit on `&&`)
+     * → deleteDocument single-document path.
+     */
     @Test
     fun `Given Case 9, When deleteDocument is called with forcePidActivation false, Then SingleDocumentDeleted is returned`() {
         coroutineRule.runTest {
-            // Given
             whenever(configLogic.forcePidActivation).thenReturn(false)
             val mockedPidWithBasicFields = getMockedPidWithBasicFields()
             mockGetDocumentByIdCall(response = mockedPidWithBasicFields)
             mockDeleteDocumentCall(response = DeleteDocumentPartialState.Success)
 
-            // When
             interactor.deleteDocument(documentId = mockedPidId).runFlowTest {
-                // Then
                 assertEquals(
                     DocumentDetailsInteractorDeleteDocumentPartialState.SingleDocumentDeleted,
                     awaitItem()
@@ -891,20 +1045,19 @@ class TestDocumentDetailsInteractor {
         }
     }
 
-    // Case 10 (deleteDocument):
-    // The fetched document is non-PID (e.g., mDL) → shouldDeleteAllDocuments=false
-    // (short-circuit on docIdentifier check) → deleteDocument single-document path.
+    /**
+     * Case 10 (deleteDocument):
+     * The fetched document is non-PID (e.g., mDL) → shouldDeleteAllDocuments=false
+     * (short-circuit on docIdentifier check) → deleteDocument single-document path.
+     */
     @Test
     fun `Given Case 10, When deleteDocument is called for a non-PID document, Then SingleDocumentDeleted is returned`() {
         coroutineRule.runTest {
-            // Given
             val mockedMdlWithBasicFields = getMockedMdlWithBasicFields()
             mockGetDocumentByIdCall(response = mockedMdlWithBasicFields)
             mockDeleteDocumentCall(response = DeleteDocumentPartialState.Success)
 
-            // When
             interactor.deleteDocument(documentId = mockedMdlId).runFlowTest {
-                // Then
                 assertEquals(
                     DocumentDetailsInteractorDeleteDocumentPartialState.SingleDocumentDeleted,
                     awaitItem()
@@ -912,26 +1065,24 @@ class TestDocumentDetailsInteractor {
             }
         }
     }
-    //endregion
 
-    // Case 11 (deleteDocument):
-    // The document is an SdJwt PID → the `docType` resolution falls through the
-    // `(format as? MsoMdocFormat)?.docType ?: (format as? SdJwtVcFormat)?.vct` chain to the
-    // SdJwt branch (line 598). With forcePidActivation=true and one SdJwt PID, the
-    // shouldDeleteAllDocuments branch returns true → deleteAllDocuments path.
+    /**
+     * Case 11 (deleteDocument):
+     * The document is an SdJwt PID → the `docType` resolution falls through the
+     * `(format as? MsoMdocFormat)?.docType ?: (format as? SdJwtVcFormat)?.vct` chain to the
+     * SdJwt branch (line 598). With forcePidActivation=true and one SdJwt PID, the
+     * shouldDeleteAllDocuments branch returns true → deleteAllDocuments path.
+     */
     @Test
     fun `Given Case 11, When deleteDocument is called for an SdJwt PID, Then AllDocumentsDeleted is returned`() {
         coroutineRule.runTest {
-            // Given
             val sdJwtPid = eu.europa.ec.testfeature.util.getMockedSdJwtPidWithBasicFields()
             mockGetAllDocumentsCall(response = listOf(sdJwtPid))
             mockGetAllDocumentsWithTypeCall(response = listOf(sdJwtPid))
             mockGetDocumentByIdCall(response = sdJwtPid)
             mockDeleteAllDocumentsCall(response = DeleteAllDocumentsPartialState.Success)
 
-            // When
             interactor.deleteDocument(documentId = sdJwtPid.id).runFlowTest {
-                // Then
                 assertEquals(
                     DocumentDetailsInteractorDeleteDocumentPartialState.AllDocumentsDeleted,
                     awaitItem()
@@ -940,14 +1091,15 @@ class TestDocumentDetailsInteractor {
         }
     }
 
-    // Case 12 (deleteDocument):
-    // Multiple PID documents exist; the document being deleted is NOT the main PID
-    // (allPidDocuments.count > 1 AND getMainPidDocument().id != documentId).
-    // → shouldDeleteAllDocuments evaluates false → single-document delete path.
+    /**
+     * Case 12 (deleteDocument):
+     * Multiple PID documents exist; the document being deleted is NOT the main PID
+     * (allPidDocuments.count > 1 AND getMainPidDocument().id != documentId).
+     * → shouldDeleteAllDocuments evaluates false → single-document delete path.
+     */
     @Test
     fun `Given Case 12, When deleteDocument is called for a non-main PID with multiple PIDs, Then SingleDocumentDeleted is returned`() {
         coroutineRule.runTest {
-            // Given
             val mainPid = getMockedPidWithBasicFields()
             val otherPid = getMockedOldestPidWithBasicFields()
             mockGetAllDocumentsWithTypeCall(response = listOf(mainPid, otherPid))
@@ -955,9 +1107,7 @@ class TestDocumentDetailsInteractor {
             mockGetMainPidDocument(response = mainPid)
             mockDeleteDocumentCall(response = DeleteDocumentPartialState.Success)
 
-            // When
             interactor.deleteDocument(documentId = otherPid.id).runFlowTest {
-                // Then
                 assertEquals(
                     DocumentDetailsInteractorDeleteDocumentPartialState.SingleDocumentDeleted,
                     awaitItem()
@@ -965,24 +1115,22 @@ class TestDocumentDetailsInteractor {
             }
         }
     }
-    //endregion
 
-    // Case 13 (deleteDocument):
-    // forcePidActivation=true, doc is PID, allPidDocuments has exactly 1 entry → the
-    // `if (allPidDocuments.count() > 1)` false branch runs → `else true` returns true →
-    // shouldDeleteAllDocuments=true → deleteAllDocuments path with single PID present.
+    /**
+     * Case 13 (deleteDocument):
+     * forcePidActivation=true, doc is PID, allPidDocuments has exactly 1 entry → the
+     * `if (allPidDocuments.count() > 1)` false branch runs → `else true` returns true →
+     * shouldDeleteAllDocuments=true → deleteAllDocuments path with single PID present.
+     */
     @Test
     fun `Given Case 13, When deleteDocument is called for the single PID, Then AllDocumentsDeleted is returned`() {
         coroutineRule.runTest {
-            // Given
             val mainPid = getMockedPidWithBasicFields()
             mockGetAllDocumentsWithTypeCall(response = listOf(mainPid))
             mockGetDocumentByIdCall(response = mainPid)
             mockDeleteAllDocumentsCall(response = DeleteAllDocumentsPartialState.Success)
 
-            // When
             interactor.deleteDocument(documentId = mainPid.id).runFlowTest {
-                // Then
                 assertEquals(
                     DocumentDetailsInteractorDeleteDocumentPartialState.AllDocumentsDeleted,
                     awaitItem()
@@ -991,13 +1139,15 @@ class TestDocumentDetailsInteractor {
         }
     }
 
-    // Case 15 (deleteDocument):
-    // Multiple PIDs exist but getMainPidDocument returns null → the `?.id` safe-call returns
-    // null → `null == documentId` is false → shouldDeleteAllDocuments=false → SingleDocumentDeleted.
+    /**
+     * Case 15 (deleteDocument):
+     * Multiple PIDs exist but getMainPidDocument returns null → the `?.id` safe-call returns
+     * null → `null == documentId` is false → shouldDeleteAllDocuments=false →
+     * SingleDocumentDeleted.
+     */
     @Test
     fun `Given Case 15, When deleteDocument is called and getMainPidDocument returns null, Then SingleDocumentDeleted is returned`() {
         coroutineRule.runTest {
-            // Given
             val pid1 = getMockedPidWithBasicFields()
             val pid2 = getMockedOldestPidWithBasicFields()
             mockGetAllDocumentsWithTypeCall(response = listOf(pid1, pid2))
@@ -1005,9 +1155,7 @@ class TestDocumentDetailsInteractor {
             mockGetMainPidDocument(response = null)
             mockDeleteDocumentCall(response = DeleteDocumentPartialState.Success)
 
-            // When
             interactor.deleteDocument(documentId = pid1.id).runFlowTest {
-                // Then
                 assertEquals(
                     DocumentDetailsInteractorDeleteDocumentPartialState.SingleDocumentDeleted,
                     awaitItem()
@@ -1016,14 +1164,15 @@ class TestDocumentDetailsInteractor {
         }
     }
 
-    // Case 14 (deleteDocument):
-    // forcePidActivation=true, doc is PID, multiple PIDs exist, AND getMainPidDocument().id
-    // matches the documentId being deleted → the inner `getMainPidDocument()?.id == documentId`
-    // branch evaluates true → shouldDeleteAllDocuments=true → deleteAllDocuments path.
+    /**
+     * Case 14 (deleteDocument):
+     * forcePidActivation=true, doc is PID, multiple PIDs exist, AND getMainPidDocument().id
+     * matches the documentId being deleted → the inner `getMainPidDocument()?.id == documentId`
+     * branch evaluates true → shouldDeleteAllDocuments=true → deleteAllDocuments path.
+     */
     @Test
     fun `Given Case 14, When deleteDocument is called for the main PID with multiple PIDs, Then AllDocumentsDeleted is returned`() {
         coroutineRule.runTest {
-            // Given
             val mainPid = getMockedPidWithBasicFields()
             val otherPid = getMockedOldestPidWithBasicFields()
             mockGetAllDocumentsWithTypeCall(response = listOf(mainPid, otherPid))
@@ -1031,9 +1180,7 @@ class TestDocumentDetailsInteractor {
             mockGetMainPidDocument(response = mainPid)
             mockDeleteAllDocumentsCall(response = DeleteAllDocumentsPartialState.Success)
 
-            // When
             interactor.deleteDocument(documentId = mainPid.id).runFlowTest {
-                // Then
                 assertEquals(
                     DocumentDetailsInteractorDeleteDocumentPartialState.AllDocumentsDeleted,
                     awaitItem()
@@ -1041,23 +1188,21 @@ class TestDocumentDetailsInteractor {
             }
         }
     }
-    //endregion
 
-    //region storeBookmark()
-    // Case 1:
-    // 1. A valid bookmarkId is provided.
-    // 2. walletCoreDocumentsController.storeBookmark() succeeds.
-    // Expected result:
-    // DocumentDetailsInteractorStoreBookmarkPartialState.Success state is returned with the bookmarkId.
+    /**
+     * Case 1:
+     * 1. A valid bookmarkId is provided.
+     * 2. walletCoreDocumentsController.storeBookmark() succeeds.
+     * Expected result:
+     * DocumentDetailsInteractorStoreBookmarkPartialState.Success state is returned with the
+     * bookmarkId.
+     */
     @Test
     fun `Given Case 1, When storeBookmark is called, Then the expected result is returned`() {
         coroutineRule.runTest {
-            // Arrange
             mockStoreBookmarkCall(bookmarkId = mockedBookmarkId)
 
-            // Act
             interactor.storeBookmark(documentId = mockedBookmarkId).runFlowTest {
-                // Assert
                 assertEquals(
                     DocumentDetailsInteractorStoreBookmarkPartialState.Success(
                         bookmarkId = mockedBookmarkId
@@ -1068,23 +1213,22 @@ class TestDocumentDetailsInteractor {
         }
     }
 
-    // Case 2:
-    // 1. A valid bookmarkId is provided.
-    // 2. When walletCoreDocumentsController.storeBookmark() is called, an exception is thrown.
-    // Expected result:
-    // DocumentDetailsInteractorStoreBookmarkPartialState.Failure state is returned.
+    /**
+     * Case 2:
+     * 1. A valid bookmarkId is provided.
+     * 2. When walletCoreDocumentsController.storeBookmark() is called, an exception is thrown.
+     * Expected result:
+     * DocumentDetailsInteractorStoreBookmarkPartialState.Failure state is returned.
+     */
     @Test
     fun `Given Case 2, When storeBookmark is called, Then the expected result is returned`() {
         coroutineRule.runTest {
-            // Arrange
             mockStoreBookmarkCall(
                 bookmarkId = mockedBookmarkId,
                 throwable = mockedExceptionWithMessage
             )
 
-            // Act
             interactor.storeBookmark(documentId = mockedBookmarkId).runFlowTest {
-                // Assert
                 assertEquals(
                     DocumentDetailsInteractorStoreBookmarkPartialState.Failure,
                     awaitItem()
@@ -1092,23 +1236,20 @@ class TestDocumentDetailsInteractor {
             }
         }
     }
-    //endregion
 
-    //region deleteBookmark()
-    // Case 1:
-    // 1. A valid bookmarkId is provided.
-    // 2. walletCoreDocumentsController.deleteBookmark() succeeds.
-    // Expected result:
-    // DocumentDetailsInteractorDeleteBookmarkPartialState.Success state is returned.
+    /**
+     * Case 1:
+     * 1. A valid bookmarkId is provided.
+     * 2. walletCoreDocumentsController.deleteBookmark() succeeds.
+     * Expected result:
+     * DocumentDetailsInteractorDeleteBookmarkPartialState.Success state is returned.
+     */
     @Test
     fun `Given Case 1, When deleteBookmark is called, Then the expected result is returned`() {
         coroutineRule.runTest {
-            // Arrange
             mockDeleteBookmarkCall(bookmarkId = mockedBookmarkId)
 
-            // Act
             interactor.deleteBookmark(documentId = mockedBookmarkId).runFlowTest {
-                // Assert
                 assertEquals(
                     DocumentDetailsInteractorDeleteBookmarkPartialState.Success,
                     awaitItem()
@@ -1117,23 +1258,22 @@ class TestDocumentDetailsInteractor {
         }
     }
 
-    // Case 2:
-    // 1. A valid bookmarkId is provided for the bookmark to be deleted.
-    // 2. When walletCoreDocumentsController.deleteBookmark() is called, an exception is thrown.
-    // Expected result:
-    // DocumentDetailsInteractorDeleteBookmarkPartialState.Failure state is returned.
+    /**
+     * Case 2:
+     * 1. A valid bookmarkId is provided for the bookmark to be deleted.
+     * 2. When walletCoreDocumentsController.deleteBookmark() is called, an exception is thrown.
+     * Expected result:
+     * DocumentDetailsInteractorDeleteBookmarkPartialState.Failure state is returned.
+     */
     @Test
     fun `Given Case 2, When deleteBookmark is called, Then the expected result is returned`() {
         coroutineRule.runTest {
-            // Given
             mockDeleteBookmarkCall(
                 bookmarkId = mockedBookmarkId,
                 throwable = mockedExceptionWithMessage
             )
 
-            // When
             interactor.deleteBookmark(documentId = mockedBookmarkId).runFlowTest {
-                // Then
                 assertEquals(
                     DocumentDetailsInteractorDeleteBookmarkPartialState.Failure,
                     awaitItem()
@@ -1141,14 +1281,10 @@ class TestDocumentDetailsInteractor {
             }
         }
     }
-    //endregion
-
-    //region reIssueDocument
 
     @Test
     fun `Given controller emits DeferredSuccess, When reIssueDocument is called, Then Success is emitted`() {
         coroutineRule.runTest {
-            // Given
             whenever(
                 walletCoreDocumentsController.reIssueDocument(
                     documentId = mockedPidId,
@@ -1161,12 +1297,10 @@ class TestDocumentDetailsInteractor {
                 ).toFlow()
             )
 
-            // When
             interactor.reIssueDocument(
                 documentId = mockedPidId,
                 issuerId = mockedReIssueIssuerId,
             ).runFlowTest {
-                // Then
                 assertEquals(
                     DocumentDetailsInteractorIssuancePartialState.Success,
                     awaitItem()
@@ -1178,7 +1312,6 @@ class TestDocumentDetailsInteractor {
     @Test
     fun `Given controller emits Failure, When reIssueDocument is called, Then Failure with the same message is emitted`() {
         coroutineRule.runTest {
-            // Given
             whenever(
                 walletCoreDocumentsController.reIssueDocument(
                     documentId = mockedPidId,
@@ -1190,12 +1323,10 @@ class TestDocumentDetailsInteractor {
                     .toFlow()
             )
 
-            // When
             interactor.reIssueDocument(
                 documentId = mockedPidId,
                 issuerId = mockedReIssueIssuerId,
             ).runFlowTest {
-                // Then
                 assertEquals(
                     DocumentDetailsInteractorIssuancePartialState.Failure(
                         errorMessage = mockedPlainFailureMessage
@@ -1209,7 +1340,6 @@ class TestDocumentDetailsInteractor {
     @Test
     fun `Given controller emits IssuerNotTrusted for the access certificate, When reIssueDocument is called, Then IssuerNotTrusted with that reason is emitted`() {
         coroutineRule.runTest {
-            // Given
             whenever(
                 walletCoreDocumentsController.reIssueDocument(
                     documentId = mockedPidId,
@@ -1222,12 +1352,10 @@ class TestDocumentDetailsInteractor {
                 ).toFlow()
             )
 
-            // When
             interactor.reIssueDocument(
                 documentId = mockedPidId,
                 issuerId = mockedReIssueIssuerId,
             ).runFlowTest {
-                // Then
                 assertEquals(
                     DocumentDetailsInteractorIssuancePartialState.IssuerNotTrusted(
                         reason = UntrustedIssuerReasonDomain.ACCESS_CERTIFICATE
@@ -1241,7 +1369,6 @@ class TestDocumentDetailsInteractor {
     @Test
     fun `Given controller emits Success, When reIssueDocument is called, Then Success is emitted`() {
         coroutineRule.runTest {
-            // Given
             whenever(
                 walletCoreDocumentsController.reIssueDocument(
                     documentId = mockedPidId,
@@ -1254,12 +1381,10 @@ class TestDocumentDetailsInteractor {
                 ).toFlow()
             )
 
-            // When
             interactor.reIssueDocument(
                 documentId = mockedPidId,
                 issuerId = mockedReIssueIssuerId,
             ).runFlowTest {
-                // Then
                 assertEquals(
                     DocumentDetailsInteractorIssuancePartialState.Success,
                     awaitItem()
@@ -1269,9 +1394,150 @@ class TestDocumentDetailsInteractor {
     }
 
     @Test
+    fun `Given a re-issuance that succeeds, When reIssueDocument is called, Then it runs as an external flow that ends with the outcome`() {
+        coroutineRule.runTest {
+            whenever(
+                walletCoreDocumentsController.reIssueDocument(
+                    documentId = mockedPidId,
+                    issuerId = mockedReIssueIssuerId,
+                    allowAuthorizationFallback = true,
+                )
+            ).thenReturn(
+                IssueDocumentsPartialState.Success(
+                    documentIds = listOf(mockedPidId),
+                ).toFlow()
+            )
+
+            interactor.reIssueDocument(
+                documentId = mockedPidId,
+                issuerId = mockedReIssueIssuerId,
+            ).runFlowTest {
+                awaitItem()
+            }
+
+            val order = inOrder(sessionController)
+            order.verify(sessionController).beginExternalFlow()
+            order.verify(sessionController, atLeastOnce()).endExternalFlow()
+        }
+    }
+
+    @Test
+    fun `Given a re-issuance that fails, When reIssueDocument is called, Then the external flow ends with the failure`() {
+        coroutineRule.runTest {
+            whenever(
+                walletCoreDocumentsController.reIssueDocument(
+                    documentId = mockedPidId,
+                    issuerId = mockedReIssueIssuerId,
+                    allowAuthorizationFallback = true,
+                )
+            ).thenReturn(
+                IssueDocumentsPartialState.Failure(
+                    errorMessage = mockedGenericErrorMessage,
+                ).toFlow()
+            )
+
+            interactor.reIssueDocument(
+                documentId = mockedPidId,
+                issuerId = mockedReIssueIssuerId,
+            ).runFlowTest {
+                awaitItem()
+            }
+
+            val order = inOrder(sessionController)
+            order.verify(sessionController).beginExternalFlow()
+            order.verify(sessionController, atLeastOnce()).endExternalFlow()
+        }
+    }
+
+    @Test
+    fun `Given a revoked document, When reIssueDocument is called, Then it is refused and nothing is re-issued`() {
+        coroutineRule.runTest {
+            mockIsDocumentRevoked(isRevoked = true)
+            whenever(resourceProvider.getString(R.string.document_details_reissue_blocked_text))
+                .thenReturn(mockedReIssueBlockedMessage)
+
+            interactor.reIssueDocument(
+                documentId = mockedPidId,
+                issuerId = mockedReIssueIssuerId,
+            ).runFlowTest {
+                assertEquals(
+                    DocumentDetailsInteractorIssuancePartialState.Blocked(
+                        errorMessage = mockedReIssueBlockedMessage
+                    ),
+                    awaitItem()
+                )
+            }
+
+            verify(walletCoreDocumentsController, never()).reIssueDocument(
+                any(),
+                any(),
+                any(),
+                any()
+            )
+            verify(sessionController, never()).beginExternalFlow()
+        }
+    }
+
+    @Test
+    fun `Given a suspended document, When reIssueDocument is called, Then it is refused and nothing is re-issued`() {
+        coroutineRule.runTest {
+            mockIsDocumentRevoked(isRevoked = true, isSuspended = true)
+            whenever(resourceProvider.getString(R.string.document_details_reissue_blocked_text))
+                .thenReturn(mockedReIssueBlockedMessage)
+
+            interactor.reIssueDocument(
+                documentId = mockedPidId,
+                issuerId = mockedReIssueIssuerId,
+            ).runFlowTest {
+                assertEquals(
+                    DocumentDetailsInteractorIssuancePartialState.Blocked(
+                        errorMessage = mockedReIssueBlockedMessage
+                    ),
+                    awaitItem()
+                )
+            }
+
+            verify(walletCoreDocumentsController, never()).reIssueDocument(
+                any(),
+                any(),
+                any(),
+                any()
+            )
+            verify(sessionController, never()).beginExternalFlow()
+        }
+    }
+
+    @Test
+    fun `Given the revocation records cannot be read, When reIssueDocument is called, Then it is refused and nothing is re-issued`() {
+        coroutineRule.runTest {
+            whenever(walletCoreDocumentsController.isDocumentRevoked(mockedPidId))
+                .thenThrow(RuntimeException(mockedPlainFailureMessage))
+
+            interactor.reIssueDocument(
+                documentId = mockedPidId,
+                issuerId = mockedReIssueIssuerId,
+            ).runFlowTest {
+                assertEquals(
+                    DocumentDetailsInteractorIssuancePartialState.Failure(
+                        errorMessage = mockedPlainFailureMessage
+                    ),
+                    awaitItem()
+                )
+            }
+
+            verify(walletCoreDocumentsController, never()).reIssueDocument(
+                any(),
+                any(),
+                any(),
+                any()
+            )
+            verify(sessionController, never()).beginExternalFlow()
+        }
+    }
+
+    @Test
     fun `Given controller emits PartialSuccess, When reIssueDocument is called, Then Success is emitted`() {
         coroutineRule.runTest {
-            // Given
             whenever(
                 walletCoreDocumentsController.reIssueDocument(
                     documentId = mockedPidId,
@@ -1285,12 +1551,10 @@ class TestDocumentDetailsInteractor {
                 ).toFlow()
             )
 
-            // When
             interactor.reIssueDocument(
                 documentId = mockedPidId,
                 issuerId = mockedReIssueIssuerId,
             ).runFlowTest {
-                // Then
                 assertEquals(
                     DocumentDetailsInteractorIssuancePartialState.Success,
                     awaitItem()
@@ -1299,12 +1563,13 @@ class TestDocumentDetailsInteractor {
         }
     }
 
-    // Single-document re-issue cannot mix an issued and a trust-blocked document; this locks in the
-    // defensive mapping to Success.
+    /**
+     * Single-document re-issue cannot mix an issued and a trust-blocked document; this locks in the
+     * defensive mapping to Success.
+     */
     @Test
     fun `Given controller emits PartialSuccessWithUntrustedIssuer, When reIssueDocument is called, Then Success is emitted`() {
         coroutineRule.runTest {
-            // Given
             whenever(
                 walletCoreDocumentsController.reIssueDocument(
                     documentId = mockedPidId,
@@ -1315,15 +1580,14 @@ class TestDocumentDetailsInteractor {
                 IssueDocumentsPartialState.PartialSuccessWithUntrustedIssuer(
                     issuedDocumentIds = listOf(mockedPidId),
                     untrustedDocuments = emptyMap(),
+                    nonIssuedDocuments = emptyMap(),
                 ).toFlow()
             )
 
-            // When
             interactor.reIssueDocument(
                 documentId = mockedPidId,
                 issuerId = mockedReIssueIssuerId,
             ).runFlowTest {
-                // Then
                 assertEquals(
                     DocumentDetailsInteractorIssuancePartialState.Success,
                     awaitItem()
@@ -1335,7 +1599,6 @@ class TestDocumentDetailsInteractor {
     @Test
     fun `Given controller emits UserAuthRequired, When reIssueDocument is called, Then UserAuthRequired is emitted`() {
         coroutineRule.runTest {
-            // Given
             val crypto = BiometricCrypto(cryptoObject = null)
             val resultHandler = DeviceAuthenticationResult()
             whenever(
@@ -1351,12 +1614,10 @@ class TestDocumentDetailsInteractor {
                 ).toFlow()
             )
 
-            // When
             interactor.reIssueDocument(
                 documentId = mockedPidId,
                 issuerId = mockedReIssueIssuerId,
             ).runFlowTest {
-                // Then
                 assertEquals(
                     DocumentDetailsInteractorIssuancePartialState.UserAuthRequired(
                         crypto = crypto,
@@ -1371,7 +1632,6 @@ class TestDocumentDetailsInteractor {
     @Test
     fun `Given controller throws with message, When reIssueDocument is called, Then Failure with localized message is emitted`() {
         coroutineRule.runTest {
-            // Given
             whenever(
                 walletCoreDocumentsController.reIssueDocument(
                     documentId = mockedPidId,
@@ -1380,12 +1640,10 @@ class TestDocumentDetailsInteractor {
                 )
             ).thenThrow(mockedExceptionWithMessage)
 
-            // When
             interactor.reIssueDocument(
                 documentId = mockedPidId,
                 issuerId = mockedReIssueIssuerId,
             ).runFlowTest {
-                // Then
                 assertEquals(
                     DocumentDetailsInteractorIssuancePartialState.Failure(
                         errorMessage = mockedExceptionWithMessage.localizedMessage!!
@@ -1399,7 +1657,6 @@ class TestDocumentDetailsInteractor {
     @Test
     fun `Given controller throws without message, When reIssueDocument is called, Then Failure with generic message is emitted`() {
         coroutineRule.runTest {
-            // Given
             whenever(
                 walletCoreDocumentsController.reIssueDocument(
                     documentId = mockedPidId,
@@ -1408,12 +1665,10 @@ class TestDocumentDetailsInteractor {
                 )
             ).thenThrow(mockedExceptionWithNoMessage)
 
-            // When
             interactor.reIssueDocument(
                 documentId = mockedPidId,
                 issuerId = mockedReIssueIssuerId,
             ).runFlowTest {
-                // Then
                 assertEquals(
                     DocumentDetailsInteractorIssuancePartialState.Failure(
                         errorMessage = mockedGenericErrorMessage
@@ -1424,12 +1679,13 @@ class TestDocumentDetailsInteractor {
         }
     }
 
-    // The pre-flight refuses before anything starts, so the original document is intact
-    // when this arrives; the reason travels through unchanged.
+    /**
+     * The pre-flight refuses before anything starts, so the original document is intact
+     * when this arrives; the reason travels through unchanged.
+     */
     @Test
     fun `Given controller emits IssuerNotTrusted for the registration certificate, When reIssueDocument is called, Then IssuerNotTrusted with that reason is emitted`() {
         coroutineRule.runTest {
-            // Given
             whenever(
                 walletCoreDocumentsController.reIssueDocument(
                     documentId = mockedPidId,
@@ -1442,12 +1698,10 @@ class TestDocumentDetailsInteractor {
                 ).toFlow()
             )
 
-            // When
             interactor.reIssueDocument(
                 documentId = mockedPidId,
                 issuerId = mockedReIssueIssuerId,
             ).runFlowTest {
-                // Then
                 assertEquals(
                     DocumentDetailsInteractorIssuancePartialState.IssuerNotTrusted(
                         reason = UntrustedIssuerReasonDomain.REGISTRATION_CERTIFICATE
@@ -1457,20 +1711,15 @@ class TestDocumentDetailsInteractor {
             }
         }
     }
-    //endregion
-
-    //region handleUserAuth
 
     @Test
     fun `Given biometrics availability is CanAuthenticate, When handleUserAuth is called, Then authenticateWithBiometrics is invoked`() {
-        // Given
         val context = mockContext
         val crypto = BiometricCrypto(cryptoObject = null)
         val resultHandler = DeviceAuthenticationResult()
         whenever(deviceAuthenticationInteractor.getBiometricsAvailability(crypto))
             .thenReturn(BiometricsAvailability.CanAuthenticate)
 
-        // When
         interactor.handleUserAuth(
             context = context,
             crypto = crypto,
@@ -1478,7 +1727,6 @@ class TestDocumentDetailsInteractor {
             resultHandler = resultHandler,
         )
 
-        // Then
         verify(deviceAuthenticationInteractor, times(1))
             .authenticateWithBiometrics(
                 context,
@@ -1490,14 +1738,12 @@ class TestDocumentDetailsInteractor {
 
     @Test
     fun `Given biometrics are not enrolled, Then end the request before opening enrollment`() {
-        // Given
         val crypto = BiometricCrypto(cryptoObject = null)
         val onError = mock<() -> Unit>()
         val resultHandler = DeviceAuthenticationResult(onAuthenticationError = onError)
         whenever(deviceAuthenticationInteractor.getBiometricsAvailability(crypto))
             .thenReturn(BiometricsAvailability.NonEnrolled)
 
-        // When
         interactor.handleUserAuth(
             context = mockContext,
             crypto = crypto,
@@ -1505,7 +1751,6 @@ class TestDocumentDetailsInteractor {
             resultHandler = resultHandler,
         )
 
-        // Then
         inOrder(onError, deviceAuthenticationInteractor) {
             verify(onError).invoke()
             verify(deviceAuthenticationInteractor).launchBiometricSystemScreen(crypto)
@@ -1515,14 +1760,12 @@ class TestDocumentDetailsInteractor {
 
     @Test
     fun `Given biometrics availability is Failure, When handleUserAuth is called, Then resultHandler#onAuthenticationError is invoked`() {
-        // Given
         val onError = mock<() -> Unit>()
         val resultHandler = DeviceAuthenticationResult(onAuthenticationError = onError)
         val crypto = BiometricCrypto(cryptoObject = null)
         whenever(deviceAuthenticationInteractor.getBiometricsAvailability(crypto))
             .thenReturn(BiometricsAvailability.Failure(errorMessage = mockedPlainFailureMessage))
 
-        // When
         interactor.handleUserAuth(
             context = mockContext,
             crypto = crypto,
@@ -1530,24 +1773,17 @@ class TestDocumentDetailsInteractor {
             resultHandler = resultHandler,
         )
 
-        // Then
         verify(onError).invoke()
     }
-    //endregion
 
-    //region resumeOpenId4VciWithAuthorization
     @Test
     fun `When resumeOpenId4VciWithAuthorization is called, Then it delegates to walletCoreDocumentsController`() {
-        // When
         interactor.resumeOpenId4VciWithAuthorization(mockedReIssueUri)
 
-        // Then
         verify(walletCoreDocumentsController, times(1))
             .resumeOpenId4VciWithAuthorization(mockedReIssueUri)
     }
-    //endregion
 
-    //region helper functions
     private fun mockGetAllDocumentsCall(response: List<IssuedDocument>) {
         whenever(walletCoreDocumentsController.getAllDocuments())
             .thenReturn(response)
@@ -1599,8 +1835,21 @@ class TestDocumentDetailsInteractor {
             .thenReturn(response)
     }
 
-    private suspend fun mockIsDocumentRevoked(isRevoked: Boolean) {
+    private suspend fun mockIsDocumentRevoked(isRevoked: Boolean, isSuspended: Boolean = false) {
         whenever(walletCoreDocumentsController.isDocumentRevoked(any())).thenReturn(isRevoked)
+        whenever(walletCoreDocumentsController.isDocumentSuspended(any())).thenReturn(isSuspended)
+    }
+
+    private suspend fun mockGetIssuerTrustVerdictCall(response: IssuerTrustVerdictDomain?) {
+        whenever(walletCoreDocumentsController.getIssuerTrustVerdict(any())).thenReturn(response)
+    }
+
+    private suspend fun mockHasStatusRefreshFailed(hasFailed: Boolean) {
+        whenever(walletCoreDocumentsController.hasStatusRefreshFailed(any())).thenReturn(hasFailed)
+    }
+
+    private suspend fun mockHasReIssuanceFailed(hasFailed: Boolean) {
+        whenever(walletCoreDocumentsController.hasReIssuanceFailed(any())).thenReturn(hasFailed)
     }
 
     private suspend fun mockIsDocumentLowOnCredentialsCall(response: Boolean) {
@@ -1629,6 +1878,7 @@ class TestDocumentDetailsInteractor {
     }
 
     private fun getMockedIssuerDetailsCardDataUi(
+        issuerTrustVerdict: IssuerTrustVerdictDomain?,
         issuerName: String? = null,
         issuerLogo: URI? = null,
         documentState: IssuerDetailsCardDataUi.DocumentState = IssuerDetailsCardDataUi.DocumentState.Issued(
@@ -1636,12 +1886,17 @@ class TestDocumentDetailsInteractor {
             expirationDate = mockedFormattedExpirationDate
         ),
         isExpanded: Boolean = false,
+        hasStatusRefreshFailed: Boolean = false,
+        hasReIssuanceFailed: Boolean = false,
     ): IssuerDetailsCardDataUi {
         return IssuerDetailsCardDataUi(
             issuerName = issuerName,
             issuerLogo = issuerLogo,
             documentState = documentState,
             isExpanded = isExpanded,
+            issuerTrustVerdict = issuerTrustVerdict,
+            hasStatusRefreshFailed = hasStatusRefreshFailed,
+            hasReIssuanceFailed = hasReIssuanceFailed,
         )
     }
 
@@ -1656,5 +1911,4 @@ class TestDocumentDetailsInteractor {
             totalCredentials = totalCredentials,
         )
     }
-    //endregion
 }

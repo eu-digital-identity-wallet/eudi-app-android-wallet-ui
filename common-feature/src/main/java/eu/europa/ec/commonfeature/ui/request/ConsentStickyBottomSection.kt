@@ -47,11 +47,12 @@ import eu.europa.ec.uilogic.extension.applyTestTag
 import eu.europa.ec.uilogic.extension.paddingFrom
 
 /**
- * The registration-warning slot of [ConsentStickyBottomSection]: the warning to render plus the
+ * The trust-warning slot of [ConsentStickyBottomSection]: the warning to render plus the
  * hosting screen's texts and acknowledge callback. Null when the screen never shows a warning.
  */
 data class ConsentWarningSection(
     val registrationWarning: RegistrationWarningUi?,
+    val accessCertificateNotTrustedWarningText: String,
     val notVerifiedWarningText: String,
     val overaskedWarningText: String,
     val acknowledgeText: String,
@@ -97,6 +98,7 @@ fun ConsentStickyBottomSection(
                 AcknowledgeWarningCard(
                     modifier = Modifier.fillMaxWidth(),
                     warningText = when (safeRegistrationWarning.variant) {
+                        RegistrationWarningVariantUi.ACCESS_CERTIFICATE_NOT_TRUSTED -> warningSection.accessCertificateNotTrustedWarningText
                         RegistrationWarningVariantUi.NOT_VERIFIED -> warningSection.notVerifiedWarningText
                         RegistrationWarningVariantUi.OVERASKED -> warningSection.overaskedWarningText
                     },
@@ -153,6 +155,8 @@ private fun ConsentStickyBottomSectionWithWarningPreview() {
                     variant = RegistrationWarningVariantUi.NOT_VERIFIED,
                     riskAccepted = false,
                 ),
+                accessCertificateNotTrustedWarningText = "Warning: The identity of this relying party " +
+                        "could not be verified. Review carefully before sharing your data.",
                 notVerifiedWarningText = "Warning: The information registered about the entity " +
                         "could not be obtained. Review carefully before sharing your data.",
                 overaskedWarningText = "Warning: Some of the requested data are not registered " +

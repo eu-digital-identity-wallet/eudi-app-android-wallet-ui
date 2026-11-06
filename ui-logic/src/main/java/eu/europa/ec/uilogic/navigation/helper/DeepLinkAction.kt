@@ -24,9 +24,13 @@ data class DeepLinkAction(
     val type: DeepLinkType
 )
 
+/**
+ * @property path The path a link must have, compared exactly; null when any path is accepted.
+ */
 enum class DeepLinkType(
     val schemas: List<String>,
-    val host: String? = null
+    val host: String? = null,
+    val path: String? = null
 ) {
     OPENID4VP(
         schemas = listOf(
@@ -54,14 +58,45 @@ enum class DeepLinkType(
     ),
     RQES(
         schemas = listOf(BuildConfig.RQES_SCHEME),
-        host = BuildConfig.RQES_HOST
+        host = BuildConfig.RQES_HOST,
+        path = BuildConfig.RQES_PATH
     ),
     RQES_DOC_RETRIEVAL(
-        schemas = listOf(BuildConfig.RQES_DOC_RETRIEVAL_SCHEME)
+        schemas = listOf(BuildConfig.RQES_DOC_RETRIEVAL_SCHEME),
+        host = BuildConfig.RQES_DOC_RETRIEVAL_HOST
     );
 
     companion object {
-        fun parse(scheme: String, host: String? = null): DeepLinkType = when {
+
+        /**
+         * A configured host that matches any host, as the Android manifest treats it. The reference
+         * build ships it for [RQES_DOC_RETRIEVAL] so that the demo signing flow works; a production
+         * build sets `rqesDocRetrievalHost` to the host of its document-retrieval service.
+         */
+        const val ANY_HOST = "*"
+
+        /**
+         * Whether [host] is the [configured] one, or [configured] is [ANY_HOST]. Hosts are compared
+         * without regard to case. A configured host must be exact: the manifest's `*.domain` form
+         * is not supported here, so with it no link would match and the wallet would ignore every
+         * such link (see [EXTERNAL]).
+         */
+        internal fun hostMatches(configured: String?, host: String?): Boolean =
+            configured == ANY_HOST || (host != null && host.equals(configured, ignoreCase = true))
+
+        /**
+         * The flow a link with [scheme], [host] and [path] starts. A link that matches none,
+         * although the wallet's manifest accepted it, is [EXTERNAL]. An [RQES] link must also have
+         * the path of the signing service's callback, as on iOS, because any app can open the
+         * scheme. [rqesDocRetrievalHost] is the configured document-retrieval host; it is a
+         * parameter only so that a specific host can be tested.
+         */
+        fun parse(
+            scheme: String,
+            host: String? = null,
+            path: String? = null,
+            rqesDocRetrievalHost: String? = RQES_DOC_RETRIEVAL.host,
+        ): DeepLinkType = when {
 
             OPENID4VP.schemas.contains(scheme) -> {
                 OPENID4VP
@@ -71,15 +106,18 @@ enum class DeepLinkType(
                 CREDENTIAL_OFFER
             }
 
-            ISSUANCE.schemas.contains(scheme) && host == ISSUANCE.host -> {
+            ISSUANCE.schemas.contains(scheme) && hostMatches(ISSUANCE.host, host) -> {
                 ISSUANCE
             }
 
-            RQES.schemas.contains(scheme) && host == RQES.host -> {
+            RQES.schemas.contains(scheme) && hostMatches(RQES.host, host) && path == RQES.path -> {
                 RQES
             }
 
-            RQES_DOC_RETRIEVAL.schemas.contains(scheme) -> {
+            RQES_DOC_RETRIEVAL.schemas.contains(scheme) && hostMatches(
+                rqesDocRetrievalHost,
+                host
+            ) -> {
                 RQES_DOC_RETRIEVAL
             }
 

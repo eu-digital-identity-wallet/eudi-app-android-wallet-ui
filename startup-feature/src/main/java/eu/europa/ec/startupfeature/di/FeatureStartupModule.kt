@@ -23,18 +23,17 @@ import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.startupfeature.interactor.SplashInteractor
 import eu.europa.ec.startupfeature.interactor.SplashInteractorImpl
+import eu.europa.ec.startupfeature.ui.splash.SplashViewModel
 import eu.europa.ec.uilogic.serializer.UiSerializer
-import org.koin.core.annotation.ComponentScan
-import org.koin.core.annotation.Configuration
-import org.koin.core.annotation.Factory
-import org.koin.core.annotation.Module
+import org.koin.core.module.dsl.factoryOf
+import org.koin.core.module.dsl.viewModelOf
+import org.koin.dsl.module
 
-@Module
-@Configuration
-@ComponentScan("eu.europa.ec.startupfeature")
-class FeatureStartupModule
+val featureStartupModule = module {
+    factoryOf(::provideSplashInteractor)
+    viewModelOf(::SplashViewModel)
+}
 
-@Factory
 fun provideSplashInteractor(
     quickPinInteractor: QuickPinInteractor,
     uiSerializer: UiSerializer,

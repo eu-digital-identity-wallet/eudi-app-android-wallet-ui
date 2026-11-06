@@ -20,6 +20,7 @@ import android.content.Context
 import android.net.Uri
 import android.util.Log
 import androidx.core.content.FileProvider
+import eu.europa.ec.businesslogic.extension.deleteContents
 import eu.europa.ec.businesslogic.util.FileLoggerTree
 import timber.log.Timber
 import java.io.File
@@ -35,12 +36,24 @@ interface LogController {
     fun w(message: () -> String)
     fun i(tag: String, message: () -> String)
     fun i(message: () -> String)
+
+    /**
+     * Whether this build writes the log to files that Settings offers to share ("Retrieve logs").
+     * The files hold what the wallet and Wallet Core log, so a release build writes none.
+     */
+    val shouldWriteLogFile: Boolean
+
     fun retrieveLogFileUris(): List<Uri>
+
+    /** Deletes the log files for reset, reporting cleanup errors. File logging is reopened when enabled. */
+    fun deleteLogFiles()
 }
 
 class LogControllerImpl(
     private val context: Context,
     private val tag: String,
+    /** When false, no log file is written, and files an earlier build left are deleted. */
+    override val shouldWriteLogFile: Boolean = true,
 ) : LogController {
 
     companion object {
@@ -51,17 +64,17 @@ class LogControllerImpl(
 
     private val logsDir = File(context.filesDir.absolutePath + "/logs")
 
-    private val fileLoggerTree: FileLoggerTree = FileLoggerTree.Builder()
-        .withFileName(LOG_FILE_NAME)
-        .withDir(logsDir)
-        .withSizeLimit(FILE_SIZE_LIMIT)
-        .withFileLimit(FILE_LIMIT)
-        .withMinPriority(Log.DEBUG)
-        .appendToFile(true)
-        .build()
+    @Volatile
+    private var fileLoggerTree: FileLoggerTree? =
+        if (shouldWriteLogFile) buildFileLoggerTree() else null
 
     init {
-        Timber.plant(Timber.DebugTree(), fileLoggerTree)
+        Timber.plant(Timber.DebugTree())
+        if (shouldWriteLogFile) {
+            fileLoggerTree?.let { Timber.plant(it) }
+        } else {
+            logsDir.listFiles()?.forEach { it.delete() }
+        }
     }
 
     override fun d(tag: String, message: () -> String) {
@@ -105,8 +118,37 @@ class LogControllerImpl(
     }
 
     override fun retrieveLogFileUris(): List<Uri> {
-        return fileLoggerTree.files.map {
+        return fileLoggerTree?.files.orEmpty().map {
             FileProvider.getUriForFile(context, "${context.packageName}.provider", it)
         }
     }
+
+    /**
+     * The current tree is forgotten before it is removed, so that a failure while building the new
+     * one leaves no closed tree behind, and a later call starts cleanly.
+     */
+    @Synchronized
+    override fun deleteLogFiles() {
+        fileLoggerTree?.let { previousTree ->
+            fileLoggerTree = null
+            Timber.uproot(previousTree)
+            previousTree.close()
+        }
+        try {
+            logsDir.deleteContents(recursively = false)
+        } finally {
+            if (shouldWriteLogFile) {
+                fileLoggerTree = buildFileLoggerTree().also { newTree -> Timber.plant(newTree) }
+            }
+        }
+    }
+
+    private fun buildFileLoggerTree(): FileLoggerTree = FileLoggerTree.Builder()
+        .withFileName(LOG_FILE_NAME)
+        .withDir(logsDir)
+        .withSizeLimit(FILE_SIZE_LIMIT)
+        .withFileLimit(FILE_LIMIT)
+        .withMinPriority(Log.DEBUG)
+        .appendToFile(true)
+        .build()
 }

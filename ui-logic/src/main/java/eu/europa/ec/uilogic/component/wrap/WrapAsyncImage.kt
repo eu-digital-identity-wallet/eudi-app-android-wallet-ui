@@ -25,9 +25,13 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import coil3.ImageLoader
 import coil3.compose.AsyncImage
+import coil3.network.okhttp.OkHttpNetworkFetcherFactory
 import coil3.request.ImageRequest
 import coil3.svg.SvgDecoder
 import eu.europa.ec.uilogic.component.IconDataUi
+import eu.europa.ec.uilogic.util.MAX_REMOTE_IMAGE_BYTES
+import eu.europa.ec.uilogic.util.remoteImageHttpClient
+import eu.europa.ec.uilogic.util.remoteImageSourceOrNull
 
 @Composable
 fun WrapAsyncImage(
@@ -53,6 +57,12 @@ fun WrapAsyncImage(
     )
 }
 
+/**
+ * Shows the remote image at [source]. Only an `https` URL is loaded (see [remoteImageSourceOrNull]);
+ * for anything else [fallback], or [error] when there is no fallback, is shown and [onError] called. A download stops once it exceeds
+ * [MAX_REMOTE_IMAGE_BYTES]. Coil scales the decoded image to the space it is shown in, and to at
+ * most 4096 pixels a side.
+ */
 @Composable
 fun WrapAsyncImage(
     source: String,
@@ -71,11 +81,12 @@ fun WrapAsyncImage(
         ImageLoader.Builder(context)
             .components {
                 add(SvgDecoder.Factory())
+                add(OkHttpNetworkFetcherFactory(callFactory = { remoteImageHttpClient }))
             }
             .build()
     }
     val request = remember(context, source) {
-        ImageRequest.Builder(context).data(source).build()
+        ImageRequest.Builder(context).data(remoteImageSourceOrNull(source)).build()
     }
 
     DisposableEffect(imageLoader) {
@@ -89,7 +100,8 @@ fun WrapAsyncImage(
         contentDescription = contentDescription,
         contentScale = contentScale,
         error = error?.resourceId?.let { resourceId -> painterResource(resourceId) },
-        fallback = fallback?.resourceId?.let { resourceId -> painterResource(resourceId) },
+        fallback = (fallback
+            ?: error)?.resourceId?.let { resourceId -> painterResource(resourceId) },
         placeholder = placeholder?.resourceId?.let { resourceId -> painterResource(resourceId) },
         onLoading = { onLoading() },
         onSuccess = { onSuccess() },

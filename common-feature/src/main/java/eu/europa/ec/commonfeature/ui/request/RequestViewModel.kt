@@ -46,6 +46,7 @@ data class State(
     val bottomSheetClosingInProgress: Boolean = false,
     val sheetContent: RequestBottomSheetContent = RequestBottomSheetContent.Warning,
     val hasWarnedUser: Boolean = false,
+    val shareAfterSheetCloses: Boolean = false,
     val presentationScopeId: String = "",
 
     val requestDataUi: RequestDataUi = RequestDataUi.Initial,
@@ -92,6 +93,11 @@ sealed class Event : ViewEvent {
         sealed class VerifierNotTrusted : BottomSheet() {
             data object Close : VerifierNotTrusted()
         }
+
+        sealed class UserImageConfirmation : BottomSheet() {
+            data object Share : UserImageConfirmation()
+            data object Cancel : UserImageConfirmation()
+        }
     }
 }
 
@@ -117,6 +123,9 @@ sealed class Effect : ViewSideEffect {
 sealed class RequestBottomSheetContent {
     data object Warning : RequestBottomSheetContent()
     data object VerifierNotTrusted : RequestBottomSheetContent()
+
+    /** Asks the user to confirm before Share discloses a picture of them, such as the portrait. */
+    data object UserImageConfirmation : RequestBottomSheetContent()
 }
 
 abstract class RequestViewModel : MviViewModel<Event, State, Effect>() {
@@ -165,7 +174,12 @@ abstract class RequestViewModel : MviViewModel<Event, State, Effect>() {
             }
 
             is Event.StickyButtonPressed -> {
-                doNavigation(NavigationType.PushRoute(getNextScreen()))
+                if (viewState.value.isLoading || !viewState.value.allowShare) return
+                if (viewState.value.requestDataUi.sharesUserImage) {
+                    showBottomSheet(sheetContent = RequestBottomSheetContent.UserImageConfirmation)
+                } else {
+                    share()
+                }
             }
 
             is Event.UserIdentificationClicked -> {
@@ -246,6 +260,13 @@ abstract class RequestViewModel : MviViewModel<Event, State, Effect>() {
                     is RequestBottomSheetContent.VerifierNotTrusted -> {
                         handleOnBack()
                     }
+
+                    is RequestBottomSheetContent.UserImageConfirmation -> {
+                        if (viewState.value.shareAfterSheetCloses) {
+                            setState { copy(shareAfterSheetCloses = false) }
+                            if (!viewState.value.isLoading && viewState.value.allowShare) share()
+                        }
+                    }
                 }
             }
 
@@ -255,7 +276,21 @@ abstract class RequestViewModel : MviViewModel<Event, State, Effect>() {
                     hideBottomSheet()
                 }
             }
+
+            is Event.BottomSheet.UserImageConfirmation.Share -> {
+                setState { copy(shareAfterSheetCloses = true) }
+                hideBottomSheet()
+            }
+
+            is Event.BottomSheet.UserImageConfirmation.Cancel -> {
+                setState { copy(shareAfterSheetCloses = false) }
+                hideBottomSheet()
+            }
         }
+    }
+
+    private fun share() {
+        doNavigation(NavigationType.PushRoute(getNextScreen()))
     }
 
     private fun handleOnBack() {

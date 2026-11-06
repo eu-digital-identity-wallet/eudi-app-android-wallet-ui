@@ -35,6 +35,7 @@ moduleConfig {
 dependencies {
     implementation(project(LibraryModule.BusinessLogic.path))
     testImplementation(project(LibraryModule.TestLogic.path))
+    testImplementation(libs.ktor.client.mock)
 }
 
 excludeFromKoverReport(

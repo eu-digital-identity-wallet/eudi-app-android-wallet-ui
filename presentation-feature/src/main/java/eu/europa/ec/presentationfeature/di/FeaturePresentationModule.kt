@@ -25,31 +25,45 @@ import eu.europa.ec.presentationfeature.interactor.PresentationRequestInteractor
 import eu.europa.ec.presentationfeature.interactor.PresentationRequestInteractorImpl
 import eu.europa.ec.presentationfeature.interactor.PresentationSuccessInteractor
 import eu.europa.ec.presentationfeature.interactor.PresentationSuccessInteractorImpl
+import eu.europa.ec.presentationfeature.ui.loading.PresentationLoadingViewModel
+import eu.europa.ec.presentationfeature.ui.request.PresentationRequestViewModel
+import eu.europa.ec.presentationfeature.ui.success.PresentationSuccessViewModel
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
-import org.koin.core.annotation.ComponentScan
-import org.koin.core.annotation.Configuration
-import org.koin.core.annotation.Factory
-import org.koin.core.annotation.Module
+import eu.europa.ec.uilogic.config.ConfigUILogic
+import org.koin.core.module.dsl.factoryOf
+import org.koin.core.module.dsl.viewModel
+import org.koin.dsl.module
 
-@Module
-@Configuration
-@ComponentScan("eu.europa.ec.presentationfeature")
-class FeaturePresentationModule
+val featurePresentationModule = module {
+    factoryOf(::providePresentationRequestInteractor)
+    factoryOf(::providePresentationLoadingInteractor)
+    factoryOf(::providePresentationSuccessInteractor)
 
-@Factory
+    viewModel { (presentationScopeId: String) ->
+        PresentationLoadingViewModel(get(), get(), presentationScopeId)
+    }
+    viewModel { (requestUriConfigRaw: String) ->
+        PresentationRequestViewModel(get(), get(), get(), requestUriConfigRaw)
+    }
+    viewModel { (presentationScopeId: String) ->
+        PresentationSuccessViewModel(get(), presentationScopeId)
+    }
+}
+
 fun providePresentationRequestInteractor(
     resourceProvider: ResourceProvider,
     uuidProvider: UuidProvider,
-    walletCoreDocumentsController: WalletCoreDocumentsController
+    walletCoreDocumentsController: WalletCoreDocumentsController,
+    configUILogic: ConfigUILogic,
 ): PresentationRequestInteractor {
     return PresentationRequestInteractorImpl(
         resourceProvider,
         uuidProvider,
-        walletCoreDocumentsController
+        walletCoreDocumentsController,
+        configUILogic,
     )
 }
 
-@Factory
 fun providePresentationLoadingInteractor(
     deviceAuthenticationInteractor: DeviceAuthenticationInteractor,
 ): PresentationLoadingInteractor {
@@ -58,15 +72,16 @@ fun providePresentationLoadingInteractor(
     )
 }
 
-@Factory
 fun providePresentationSuccessInteractor(
     walletCoreDocumentsController: WalletCoreDocumentsController,
     resourceProvider: ResourceProvider,
     uuidProvider: UuidProvider,
+    configUILogic: ConfigUILogic,
 ): PresentationSuccessInteractor {
     return PresentationSuccessInteractorImpl(
         walletCoreDocumentsController,
         resourceProvider,
         uuidProvider,
+        configUILogic,
     )
 }

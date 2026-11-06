@@ -37,6 +37,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import eu.europa.ec.dashboardfeature.ui.transactions.component.PrivacyActionExplanation
 import eu.europa.ec.dashboardfeature.ui.transactions.component.PrivacyActionInfoCard
+import eu.europa.ec.dashboardfeature.ui.transactions.component.WarningText
 import eu.europa.ec.dashboardfeature.ui.transactions.data_deletion.model.DataDeletionRequestUi
 import eu.europa.ec.dashboardfeature.ui.transactions.openTransactionAction
 import eu.europa.ec.resourceslogic.R
@@ -133,6 +134,13 @@ private fun Content(
                     text = request.description,
                 )
 
+                request.registrationWarning?.let { warning ->
+                    WarningText(
+                        modifier = Modifier.fillMaxWidth(),
+                        text = warning,
+                    )
+                }
+
                 // Wallet responsibility, data retention and follow-up.
                 PrivacyActionExplanation(
                     modifier = Modifier.fillMaxWidth(),
@@ -171,8 +179,9 @@ private fun ContinueButton(
 private fun DataDeletionRequestPreview(
     @PreviewParameter(DataDeletionPreviewProvider::class) state: State,
 ) {
-    val scrollState = rememberScrollState()
     PreviewTheme {
+        val scrollState = rememberScrollState()
+
         ContentScreen(
             isLoading = state.isLoading,
             contentErrorConfig = state.error,
@@ -202,6 +211,7 @@ private fun DataDeletionRequestPreview(
 }
 
 @LargeTextPreviews
+@ThemeModePreviews
 @Composable
 private fun ContinueButtonLargeTextPreview() {
     PreviewTheme {

@@ -51,10 +51,11 @@ class AndroidBaseLineProfilePlugin : Plugin<Project> {
 
             extensions.configure<TestAndroidComponentsExtension> {
                 onVariants { v ->
+                    val builtArtifactsLoader = v.artifacts.getBuiltArtifactsLoader()
                     v.instrumentationRunnerArguments.put(
                         "targetAppId",
                         v.testedApks.map {
-                            v.artifacts.getBuiltArtifactsLoader().load(it)?.applicationId.orEmpty()
+                            builtArtifactsLoader.load(it)?.applicationId.orEmpty()
                         }
                     )
                 }

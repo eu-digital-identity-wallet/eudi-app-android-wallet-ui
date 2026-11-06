@@ -37,6 +37,7 @@ data class TransactionDetailsCardUi(
     val providerType: String?,
     val nonCompletionReason: String?,
     val metadata: List<TransactionDetailsMetadataUi>,
+    val registrationWarning: String? = null,
 )
 
 data class TransactionDetailsMetadataUi(

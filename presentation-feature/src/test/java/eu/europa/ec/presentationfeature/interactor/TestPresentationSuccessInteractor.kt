@@ -35,6 +35,7 @@ import eu.europa.ec.testfeature.util.mockedMdocPresentationSelection
 import eu.europa.ec.testfeature.util.mockedPidId
 import eu.europa.ec.testfeature.util.mockedSdJwtPidId
 import eu.europa.ec.testfeature.util.mockedSdJwtPresentationSelection
+import eu.europa.ec.testfeature.util.mockedUserImageClaimKeys
 import eu.europa.ec.testfeature.util.mockedUuid
 import eu.europa.ec.testfeature.util.mockedVerifierName
 import eu.europa.ec.testlogic.extension.runFlowTest
@@ -47,6 +48,7 @@ import eu.europa.ec.uilogic.component.ListItemTrailingContentDataUi
 import eu.europa.ec.uilogic.component.RelyingPartyDataUi
 import eu.europa.ec.uilogic.component.content.ContentHeaderConfig
 import eu.europa.ec.uilogic.component.wrap.ExpandableListItemUi
+import eu.europa.ec.uilogic.config.ConfigUILogic
 import junit.framework.TestCase.assertEquals
 import junit.framework.TestCase.assertTrue
 import org.junit.After
@@ -75,6 +77,9 @@ class TestPresentationSuccessInteractor {
     private lateinit var resourceProvider: ResourceProvider
 
     @Mock
+    private lateinit var configUILogic: ConfigUILogic
+
+    @Mock
     private lateinit var uuidProvider: UuidProvider
 
     @Mock
@@ -87,12 +92,14 @@ class TestPresentationSuccessInteractor {
     @Before
     fun before() {
         closeable = MockitoAnnotations.openMocks(this)
+        whenever(configUILogic.userImageClaimKeys).thenReturn(mockedUserImageClaimKeys)
 
         interactor = PresentationSuccessInteractorImpl(
             walletCoreDocumentsController = walletCoreDocumentsController,
             resourceProvider = resourceProvider,
             uuidProvider = uuidProvider,
             walletCorePresentationController = walletCorePresentationController,
+            configUILogic = configUILogic,
         )
 
         whenever(resourceProvider.genericErrorMessage()).thenReturn(mockedGenericErrorMessage)
@@ -180,6 +187,7 @@ class TestPresentationSuccessInteractor {
             walletCoreDocumentsController = walletCoreDocumentsController,
             resourceProvider = resourceProvider,
             uuidProvider = uuidProvider,
+            configUILogic = configUILogic,
         )
 
         // Then

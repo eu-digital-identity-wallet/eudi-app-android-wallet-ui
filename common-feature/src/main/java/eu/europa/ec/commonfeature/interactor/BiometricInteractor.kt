@@ -22,6 +22,7 @@ import eu.europa.ec.authenticationlogic.config.AuthenticationConfig
 import eu.europa.ec.authenticationlogic.controller.authentication.BiometricAuthenticationController
 import eu.europa.ec.authenticationlogic.controller.authentication.BiometricsAuthenticate
 import eu.europa.ec.authenticationlogic.controller.authentication.BiometricsAvailability
+import eu.europa.ec.authenticationlogic.controller.session.SessionController
 import eu.europa.ec.authenticationlogic.controller.storage.BiometryStorageController
 import eu.europa.ec.authenticationlogic.controller.throttle.PinThrottleController
 import eu.europa.ec.authenticationlogic.provider.PinLockoutState
@@ -46,6 +47,16 @@ interface BiometricInteractor {
     suspend fun getPinLockoutState(): PinLockoutState
     suspend fun recordPinFailure(): PinLockoutState
     suspend fun resetPinThrottle()
+
+    /**
+     * What the login screen says on a device without a screen lock, or null when the device has
+     * one, under the same rules as setup ([QuickPinInteractor.getDeviceLockNotice]), so that a
+     * screen lock removed after setup is noticed.
+     */
+    fun getDeviceLockNotice(): DeviceLockNotice?
+
+    /** Marks the wallet as unlocked after a successful login. */
+    fun unlockSession()
 }
 
 class BiometricInteractorImpl(
@@ -54,6 +65,7 @@ class BiometricInteractorImpl(
     private val quickPinInteractor: QuickPinInteractor,
     private val pinThrottleController: PinThrottleController,
     private val authenticationConfig: AuthenticationConfig,
+    private val sessionController: SessionController,
 ) : BiometricInteractor {
 
     override val maxFailedPinAttempts: Int
@@ -71,6 +83,9 @@ class BiometricInteractorImpl(
     override suspend fun resetPinThrottle() {
         pinThrottleController.recordSuccess()
     }
+
+    override fun getDeviceLockNotice(): DeviceLockNotice? =
+        quickPinInteractor.getDeviceLockNotice()
 
     override suspend fun storeBiometricsUsageDecision(shouldUseBiometrics: Boolean) {
         biometryStorageController.setUseBiometricsAuth(shouldUseBiometrics)
@@ -98,5 +113,9 @@ class BiometricInteractorImpl(
 
     override fun launchBiometricSystemScreen() {
         biometricAuthenticationController.launchBiometricSystemScreen(BIOMETRIC_STRONG)
+    }
+
+    override fun unlockSession() {
+        sessionController.unlock()
     }
 }

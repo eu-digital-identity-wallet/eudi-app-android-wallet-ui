@@ -21,8 +21,8 @@ import eu.europa.ec.uilogic.extension.toggleExpansionState
 import eu.europa.ec.uilogic.extension.withExpansionIcon
 
 /**
- * The request screen's state: still loading ([Initial]), nothing to disclose ([NoData]), one
- * combination ([Single]), or several to choose between ([Multiple]).
+ * The request screen's state: still loading ([Initial]), nothing to disclose ([NoData]), declined
+ * ([Declined]), one combination ([Single]), or several to choose between ([Multiple]).
  */
 sealed interface RequestDataUi {
 
@@ -34,6 +34,12 @@ sealed interface RequestDataUi {
 
     /** No disclosable data — the screen shows the "no data" message and Share is disabled. */
     data object NoData : RequestDataUi
+
+    /**
+     * The wallet declined the request — the screen shows [reason] in place of the documents and
+     * Share is disabled, as on iOS.
+     */
+    data class Declined(val reason: String) : RequestDataUi
 
     /**
      * Exactly one combination — its documents render directly, with no radio or "Option N of M" title
@@ -57,22 +63,32 @@ sealed interface RequestDataUi {
         get() = when (this) {
             is Initial -> null
             is NoData -> null
+            is Declined -> null
             is Single -> combination
             is Multiple -> combinations.getOrNull(selectedIndex)
         }
 
-    /** The selected combination's items, or empty for [NoData]. */
+    /** The selected combination's items, or empty for [NoData] and [Declined]. */
     val selectedDocuments: List<RequestDocumentItemUi>
         get() = selectedCombination?.documents.orEmpty()
+
+    /** True if the selected combination asks for a picture of the holder, such as the portrait. */
+    val requestsUserImage: Boolean
+        get() = selectedDocuments.any { document -> document.requestsUserImage }
+
+    /** True if Share would disclose a picture of the holder from the selected combination. */
+    val sharesUserImage: Boolean
+        get() = selectedDocuments.any { document -> document.sharesUserImage }
 
     /**
      * Returns a copy with the selected combination's items replaced by [documents] — the
      * single write-back point for the view-model's toggle / expand edits. A no-op for
-     * [NoData].
+     * [NoData] and [Declined].
      */
     fun withSelectedDocuments(documents: List<RequestDocumentItemUi>): RequestDataUi = when (this) {
         is Initial -> this
         is NoData -> this
+        is Declined -> this
         is Single -> Single(combination = combination.copy(documents = documents))
         is Multiple -> Multiple(
             combinations = combinations.mapIndexed { index, combination ->
@@ -108,6 +124,7 @@ sealed interface RequestDataUi {
         return when (this) {
             is Initial -> this
             is NoData -> this
+            is Declined -> this
             is Single -> copy(combination = combination.copy(transactionData = updatedSection))
             is Multiple -> copy(
                 combinations = combinations.mapIndexed { index, combination ->

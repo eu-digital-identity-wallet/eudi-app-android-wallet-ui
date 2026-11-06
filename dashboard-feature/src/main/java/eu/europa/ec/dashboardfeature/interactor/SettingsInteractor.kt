@@ -22,6 +22,8 @@ import eu.europa.ec.businesslogic.config.ConfigLogic
 import eu.europa.ec.businesslogic.controller.log.LogController
 import eu.europa.ec.businesslogic.controller.storage.PrefKeys
 import eu.europa.ec.commonfeature.interactor.BiometricInteractor
+import eu.europa.ec.corelogic.controller.WalletCoreDCAPIRegistrationController
+import eu.europa.ec.corelogic.provider.DCAPISettingProvider
 import eu.europa.ec.dashboardfeature.ui.settings.model.SettingsItemUi
 import eu.europa.ec.dashboardfeature.ui.settings.model.SettingsMenuItemType
 import eu.europa.ec.resourceslogic.R
@@ -41,6 +43,12 @@ interface SettingsInteractor : BiometricInteractor {
     suspend fun toggleBiometricsAuthentication()
     suspend fun toggleShowBatchIssuanceCounter()
     suspend fun toggleRegistrationCheck()
+
+    /**
+     * Turns the Digital Credential API on or off and applies the change at once: the wallet's
+     * documents are registered with the system again, or removed from its registry.
+     */
+    suspend fun toggleDCAPI()
 }
 
 class SettingsInteractorImpl(
@@ -49,6 +57,8 @@ class SettingsInteractorImpl(
     private val logController: LogController,
     private val resourceProvider: ResourceProvider,
     private val prefKeys: PrefKeys,
+    private val dcapiSettingProvider: DCAPISettingProvider,
+    private val walletCoreDCAPIRegistrationController: WalletCoreDCAPIRegistrationController,
 ) : SettingsInteractor,
     BiometricInteractor by biometricInteractor {
 
@@ -72,7 +82,9 @@ class SettingsInteractorImpl(
                         data = ListItemDataUi(
                             itemId = SettingsMenuItemType.BIOMETRICS_AUTHENTICATION.itemId,
                             mainContentData = ListItemMainContentDataUi.Text(
-                                text = resourceProvider.getString(R.string.settings_screen_option_biometrics_authentication)
+                                text = resourceProvider.getString(
+                                    R.string.settings_screen_option_biometrics_authentication
+                                )
                             ),
                             leadingContentData = ListItemLeadingContentDataUi.Icon(
                                 iconData = AppIcons.TouchId
@@ -94,7 +106,9 @@ class SettingsInteractorImpl(
                     data = ListItemDataUi(
                         itemId = SettingsMenuItemType.SHOW_BATCH_ISSUANCE_COUNTER.itemId,
                         mainContentData = ListItemMainContentDataUi.Text(
-                            text = resourceProvider.getString(R.string.settings_screen_option_show_batch_issuance_counter)
+                            text = resourceProvider.getString(
+                                R.string.settings_screen_option_show_batch_issuance_counter
+                            )
                         ),
                         leadingContentData = ListItemLeadingContentDataUi.Icon(
                             iconData = AppIcons.BatchIssuanceCounter
@@ -115,7 +129,9 @@ class SettingsInteractorImpl(
                     data = ListItemDataUi(
                         itemId = SettingsMenuItemType.REGISTRATION_CHECK.itemId,
                         mainContentData = ListItemMainContentDataUi.Text(
-                            text = resourceProvider.getString(R.string.settings_screen_option_registration_check)
+                            text = resourceProvider.getString(
+                                R.string.settings_screen_option_registration_check
+                            )
                         ),
                         leadingContentData = ListItemLeadingContentDataUi.Icon(
                             iconData = AppIcons.Verified
@@ -130,23 +146,52 @@ class SettingsInteractorImpl(
                 )
             )
 
-            add(
-                SettingsItemUi(
-                    type = SettingsMenuItemType.RETRIEVE_LOGS,
-                    data = ListItemDataUi(
-                        itemId = SettingsMenuItemType.RETRIEVE_LOGS.itemId,
-                        mainContentData = ListItemMainContentDataUi.Text(
-                            text = resourceProvider.getString(R.string.settings_screen_option_retrieve_logs)
-                        ),
-                        leadingContentData = ListItemLeadingContentDataUi.Icon(
-                            iconData = AppIcons.OpenNew
-                        ),
-                        trailingContentData = ListItemTrailingContentDataUi.Icon(
-                            iconData = AppIcons.KeyboardArrowRight
+            if (dcapiSettingProvider.isAvailable) {
+                add(
+                    SettingsItemUi(
+                        type = SettingsMenuItemType.DC_API,
+                        data = ListItemDataUi(
+                            itemId = SettingsMenuItemType.DC_API.itemId,
+                            mainContentData = ListItemMainContentDataUi.Text(
+                                text = resourceProvider.getString(
+                                    R.string.settings_screen_option_dc_api
+                                )
+                            ),
+                            leadingContentData = ListItemLeadingContentDataUi.Icon(
+                                iconData = AppIcons.Id
+                            ),
+                            trailingContentData = ListItemTrailingContentDataUi.Switch(
+                                switchData = SwitchDataUi(
+                                    isChecked = dcapiSettingProvider.isEnabled(),
+                                    enabled = true,
+                                )
+                            )
                         )
                     )
                 )
-            )
+            }
+
+            if (logController.shouldWriteLogFile) {
+                add(
+                    SettingsItemUi(
+                        type = SettingsMenuItemType.RETRIEVE_LOGS,
+                        data = ListItemDataUi(
+                            itemId = SettingsMenuItemType.RETRIEVE_LOGS.itemId,
+                            mainContentData = ListItemMainContentDataUi.Text(
+                                text = resourceProvider.getString(
+                                    R.string.settings_screen_option_retrieve_logs
+                                )
+                            ),
+                            leadingContentData = ListItemLeadingContentDataUi.Icon(
+                                iconData = AppIcons.OpenNew
+                            ),
+                            trailingContentData = ListItemTrailingContentDataUi.Icon(
+                                iconData = AppIcons.KeyboardArrowRight
+                            )
+                        )
+                    )
+                )
+            }
 
             if (changelogUrl != null) {
                 add(
@@ -155,7 +200,9 @@ class SettingsInteractorImpl(
                         data = ListItemDataUi(
                             itemId = SettingsMenuItemType.CHANGELOG.itemId,
                             mainContentData = ListItemMainContentDataUi.Text(
-                                text = resourceProvider.getString(R.string.settings_screen_option_changelog)
+                                text = resourceProvider.getString(
+                                    R.string.settings_screen_option_changelog
+                                )
                             ),
                             leadingContentData = ListItemLeadingContentDataUi.Icon(
                                 iconData = AppIcons.OpenInBrowser
@@ -167,6 +214,26 @@ class SettingsInteractorImpl(
                     )
                 )
             }
+
+            add(
+                SettingsItemUi(
+                    type = SettingsMenuItemType.RESET_WALLET,
+                    data = ListItemDataUi(
+                        itemId = SettingsMenuItemType.RESET_WALLET.itemId,
+                        mainContentData = ListItemMainContentDataUi.Text(
+                            text = resourceProvider.getString(
+                                R.string.settings_screen_option_reset_wallet
+                            )
+                        ),
+                        leadingContentData = ListItemLeadingContentDataUi.Icon(
+                            iconData = AppIcons.Delete
+                        ),
+                        trailingContentData = ListItemTrailingContentDataUi.Icon(
+                            iconData = AppIcons.KeyboardArrowRight
+                        )
+                    )
+                )
+            )
         }
     }
 
@@ -186,6 +253,11 @@ class SettingsInteractorImpl(
         prefKeys.setRegistrationCheckEnabled(
             value = !getRegistrationCheckEnabled()
         )
+    }
+
+    override suspend fun toggleDCAPI() {
+        dcapiSettingProvider.setEnabled(enabled = !dcapiSettingProvider.isEnabled())
+        walletCoreDCAPIRegistrationController.registerCredentials()
     }
 
     private suspend fun getBiometricUsageDecision(): Boolean {

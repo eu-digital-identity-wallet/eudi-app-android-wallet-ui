@@ -44,15 +44,12 @@ import eu.europa.ec.uilogic.navigation.helper.generateComposableArguments
 import eu.europa.ec.uilogic.navigation.helper.generateComposableNavigationLink
 import eu.europa.ec.uilogic.serializer.UiSerializer
 import kotlinx.coroutines.launch
-import org.koin.core.annotation.InjectedParam
-import org.koin.core.annotation.KoinViewModel
 
-@KoinViewModel
 class PresentationRequestViewModel(
     private val interactor: PresentationRequestInteractor,
     private val resourceProvider: ResourceProvider,
     private val uiSerializer: UiSerializer,
-    @InjectedParam private val requestUriConfigRaw: String
+    private val requestUriConfigRaw: String
 ) : RequestViewModel() {
 
     override fun getNextScreen(): String {
@@ -195,6 +192,24 @@ class PresentationRequestViewModel(
                                 relyingPartyHeader = relyingPartyHeader,
                                 registrationWarning = null,
                                 requestDataUi = RequestDataUi.NoData,
+                            )
+                        }
+                    }
+
+                    is PresentationRequestInteractorPartialState.Declined -> {
+                        val relyingPartyHeader = response.relyingParty.toRelyingPartyHeaderUi(
+                            fallbackName = resourceProvider.getString(
+                                R.string.request_relying_party_default_name
+                            )
+                        )
+
+                        setState {
+                            copy(
+                                isLoading = false,
+                                error = null,
+                                relyingPartyHeader = relyingPartyHeader,
+                                registrationWarning = null,
+                                requestDataUi = RequestDataUi.Declined(reason = response.reason),
                             )
                         }
                     }

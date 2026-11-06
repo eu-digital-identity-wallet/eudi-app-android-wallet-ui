@@ -26,13 +26,13 @@ import eu.europa.ec.commonfeature.interactor.ScopedPresentationInteractorDelegat
 import eu.europa.ec.corelogic.controller.SendRequestedDocumentsPartialState
 import eu.europa.ec.corelogic.controller.WalletCorePartialState
 import eu.europa.ec.corelogic.controller.WalletCorePresentationController
-import eu.europa.ec.corelogic.model.AuthenticationData
+import eu.europa.ec.corelogic.model.AuthenticationDataDomain
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.mapNotNull
 
 sealed class ProximityLoadingObserveResponsePartialState {
     data class UserAuthenticationRequired(
-        val authenticationData: List<AuthenticationData>,
+        val authenticationData: List<AuthenticationDataDomain>,
     ) : ProximityLoadingObserveResponsePartialState()
 
     data class Failure(val error: String) : ProximityLoadingObserveResponsePartialState()

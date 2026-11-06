@@ -28,14 +28,26 @@ import eu.europa.ec.eudi.wallet.document.CreateDocumentSettings.CredentialPolicy
 import eu.europa.ec.eudi.wallet.document.IssuedDocument
 import eu.europa.ec.storagelogic.dao.FailedReIssuedDocumentDao
 import eu.europa.ec.storagelogic.model.FailedReIssuedDocument
+import kotlinx.coroutines.NonCancellable
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.first
-import org.koin.android.annotation.KoinWorker
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.withContext
 import kotlin.time.Clock
 import kotlin.time.Duration
 import kotlin.time.Instant
 import kotlin.time.toKotlinInstant
 
-@KoinWorker
+/**
+ * Re-issues documents whose credential policy says they are due. A revoked document is never
+ * re-issued: Wallet Core deletes the original after a successful re-issuance, and the new copy
+ * would carry no revocation record.
+ *
+ * Wallet Core finishes a re-issuance it has started even when the worker is cancelled, so the
+ * worker follows each one to its outcome before it stops, and holds [runLock] while it runs.
+ */
 class ReIssuanceWorkManager(
     appContext: Context,
     workerParams: WorkerParameters,
@@ -45,9 +57,14 @@ class ReIssuanceWorkManager(
 
     companion object {
         const val RE_ISSUANCE_WORK_NAME = "reIssuanceWorker"
+
+        /** Held while the worker runs, so that the factory reset can wait until it has finished. */
+        internal val runLock = Mutex()
     }
 
-    override suspend fun doWork(): Result {
+    override suspend fun doWork(): Result = runLock.withLock { reIssueDueDocuments() }
+
+    private suspend fun reIssueDueDocuments(): Result {
 
         try {
 
@@ -58,6 +75,7 @@ class ReIssuanceWorkManager(
 
             walletCoreDocumentsController
                 .getAllIssuedDocuments()
+                .filterNot { document -> walletCoreDocumentsController.isDocumentRevoked(document.id) }
                 .filter { document ->
                     when (val policy = document.credentialPolicy) {
                         is CredentialPolicy.LimitedTime -> document.isDueForLifetimeReIssue(
@@ -78,13 +96,17 @@ class ReIssuanceWorkManager(
                 }
                 .forEach { document ->
 
+                    currentCoroutineContext().ensureActive()
+
                     val issuerId = document.issuerMetadata?.credentialIssuerIdentifier.orEmpty()
 
-                    val state = walletCoreDocumentsController.reIssueDocument(
-                        documentId = document.id,
-                        issuerId = issuerId,
-                        allowAuthorizationFallback = false
-                    ).first()
+                    val state = withContext(NonCancellable) {
+                        walletCoreDocumentsController.reIssueDocument(
+                            documentId = document.id,
+                            issuerId = issuerId,
+                            allowAuthorizationFallback = false
+                        ).first()
+                    }
 
                     when (state) {
                         is IssueDocumentsPartialState.DeferredSuccess,

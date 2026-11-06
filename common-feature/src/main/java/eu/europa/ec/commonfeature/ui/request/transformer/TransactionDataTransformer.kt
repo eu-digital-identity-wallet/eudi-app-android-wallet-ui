@@ -19,6 +19,7 @@ import eu.europa.ec.commonfeature.ui.request.model.RequestTransactionDataUi
 import eu.europa.ec.corelogic.model.DocumentChecksumDomain
 import eu.europa.ec.corelogic.model.PresentationMatchDomain
 import eu.europa.ec.corelogic.model.PresentationTransactionDataDomain
+import eu.europa.ec.corelogic.model.QesInlineDocumentDomain
 import eu.europa.ec.corelogic.model.SigningAttributeDomain
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
@@ -27,6 +28,7 @@ import eu.europa.ec.uilogic.component.ListItemDataUi
 import eu.europa.ec.uilogic.component.ListItemMainContentDataUi
 import eu.europa.ec.uilogic.component.ListItemSupportingContentDataUi
 import eu.europa.ec.uilogic.component.ListItemTrailingContentDataUi
+import eu.europa.ec.uilogic.component.ThemeColorKey
 import eu.europa.ec.uilogic.component.wrap.ExpandableListItemUi
 import java.net.URI
 
@@ -46,6 +48,7 @@ class TransactionDataTransformer(
             transactions = transactions,
             sectionId = sectionId,
             documentUrlsByItemId = documentUrlsByItemId,
+            showOneTimePasswords = true,
         )
         return RequestTransactionDataUi(
             title = resourceProvider.getString(R.string.request_transaction_section_title),
@@ -59,16 +62,21 @@ class TransactionDataTransformer(
                         text = resourceProvider.getString(R.string.request_collapsed_supporting_text),
                     ),
                     trailingContentData = ListItemTrailingContentDataUi.Icon(
-                        iconData = AppIcons.KeyboardArrowDown,
+                        iconData = AppIcons.KeyboardArrowUp,
                     ),
                 ),
                 nestedItems = rows,
-                isExpanded = false,
+                isExpanded = true,
             ),
             documentUrlsByItemId = documentUrlsByItemId.toMap(),
         )
     }
 
+    /**
+     * The rows of [transactions] as transaction history shows them: the same fields as on the
+     * request, without document actions and without one-time passwords, which the log keeps but
+     * history does not show again.
+     */
     fun transformRecordedToUi(
         transactions: List<PresentationTransactionDataDomain>,
         sectionId: String,
@@ -78,13 +86,20 @@ class TransactionDataTransformer(
             transactions = transactions,
             sectionId = sectionId,
             documentUrlsByItemId = null,
+            showOneTimePasswords = false,
         )
     }
 
+    /**
+     * One row for every field of [transactions], since every field is bound into the response.
+     * The trust-framework row is a static product label and carries no verification result.
+     * The signed attributes, which the relying party chooses freely, are marked as not checked.
+     */
     private fun transactionRows(
         transactions: List<PresentationTransactionDataDomain>,
         sectionId: String,
         documentUrlsByItemId: MutableMap<String, String>?,
+        showOneTimePasswords: Boolean,
     ): List<ExpandableListItemUi> {
         return buildList {
             addField(
@@ -132,6 +147,16 @@ class TransactionDataTransformer(
                             labelRes = R.string.request_transaction_signature_count,
                             value = transaction.numSignatures.toString(),
                         )
+                        addFields(
+                            itemId = "$transactionId/location",
+                            labelRes = R.string.request_transaction_location,
+                            values = transaction.locations,
+                        )
+                        addFields(
+                            itemId = "$transactionId/data-hash-algorithm",
+                            labelRes = R.string.request_transaction_data_hash_algorithm,
+                            values = transaction.transactionDataHashAlgorithms,
+                        )
                         transaction.documentDigests.forEachIndexed { documentIndex, document ->
                             val documentId = "$transactionId/document-$documentIndex"
                             addDocumentName(
@@ -175,14 +200,20 @@ class TransactionDataTransformer(
                                 },
                                 value = hashAlgorithm(oid = transaction.hashAlgorithmOid),
                             )
+                            addField(
+                                itemId = "$documentId/circumstantial-data",
+                                labelRes = R.string.request_transaction_circumstantial_data,
+                                value = document.circumstantialData,
+                            )
                             addSignedAttributes(
                                 itemId = documentId,
                                 attributes = document.signedProperties,
                             )
-                            addField(
-                                itemId = "$documentId/otp",
-                                labelRes = R.string.request_transaction_otp,
-                                value = document.oneTimePassword,
+                            addDocumentAccess(
+                                itemId = documentId,
+                                accessMode = document.accessMode,
+                                oneTimePassword = document.oneTimePassword,
+                                showOneTimePasswords = showOneTimePasswords,
                             )
                         }
                     }
@@ -197,6 +228,11 @@ class TransactionDataTransformer(
                             itemId = transactionId,
                             credentialIds = transaction.credentialIds,
                         )
+                        addFields(
+                            itemId = "$transactionId/data-hash-algorithm",
+                            labelRes = R.string.request_transaction_data_hash_algorithm,
+                            values = transaction.transactionDataHashAlgorithms,
+                        )
                         transaction.signatureRequests.forEachIndexed { documentIndex, document ->
                             val documentId = "$transactionId/document-$documentIndex"
                             addDocumentName(
@@ -209,6 +245,10 @@ class TransactionDataTransformer(
                                 href = document.href,
                                 checksum = document.checksum,
                                 documentUrlsByItemId = documentUrlsByItemId,
+                            )
+                            addInlineDocument(
+                                itemId = documentId,
+                                document = document.inlineDocument,
                             )
                             addField(
                                 itemId = "$documentId/signature-type",
@@ -231,14 +271,40 @@ class TransactionDataTransformer(
                                 labelRes = R.string.request_transaction_conformance_level,
                                 value = document.conformanceLevel,
                             )
+                            addField(
+                                itemId = "$documentId/signed-envelope-property",
+                                labelRes = R.string.request_transaction_signed_envelope_property,
+                                value = document.signedEnvelopeProperty,
+                            )
+                            addField(
+                                itemId = "$documentId/reference-uri",
+                                labelRes = R.string.request_transaction_reference_uri,
+                                value = document.referenceUri,
+                            )
+                            addField(
+                                itemId = "$documentId/circumstantial-data",
+                                labelRes = R.string.request_transaction_circumstantial_data,
+                                value = document.circumstantialData,
+                            )
+                            addField(
+                                itemId = "$documentId/signature-algorithm",
+                                labelRes = R.string.request_transaction_signature_algorithm,
+                                value = document.signAlgo?.let { oid -> signatureAlgorithm(oid = oid) },
+                            )
+                            addField(
+                                itemId = "$documentId/signature-algorithm-parameters",
+                                labelRes = R.string.request_transaction_signature_algorithm_parameters,
+                                value = document.signAlgoParams,
+                            )
                             addSignedAttributes(
                                 itemId = documentId,
                                 attributes = document.signedProperties,
                             )
-                            addField(
-                                itemId = "$documentId/otp",
-                                labelRes = R.string.request_transaction_otp,
-                                value = document.oneTimePassword,
+                            addDocumentAccess(
+                                itemId = documentId,
+                                accessMode = document.accessMode,
+                                oneTimePassword = document.oneTimePassword,
+                                showOneTimePasswords = showOneTimePasswords,
                             )
                             addField(
                                 itemId = "$documentId/response-uri",
@@ -274,6 +340,73 @@ class TransactionDataTransformer(
                     mainContentData = ListItemMainContentDataUi.Text(text = value),
                 ),
             )
+        )
+    }
+
+    private fun MutableList<ExpandableListItemUi>.addFields(
+        itemId: String,
+        labelRes: Int,
+        values: List<String>,
+    ) {
+        values.forEachIndexed { index, value ->
+            addField(itemId = "$itemId-$index", labelRes = labelRes, value = value)
+        }
+    }
+
+    /**
+     * How the document is fetched and, on the request only, its one-time password. History does
+     * not show the password again.
+     */
+    private fun MutableList<ExpandableListItemUi>.addDocumentAccess(
+        itemId: String,
+        accessMode: String?,
+        oneTimePassword: String?,
+        showOneTimePasswords: Boolean,
+    ) {
+        addField(
+            itemId = "$itemId/access",
+            labelRes = R.string.request_transaction_document_access,
+            value = accessMode?.let { mode -> documentAccess(mode = mode) },
+        )
+        if (showOneTimePasswords) {
+            addField(
+                itemId = "$itemId/otp",
+                labelRes = R.string.request_transaction_otp,
+                value = oneTimePassword,
+            )
+        }
+    }
+
+    /** A document the request carries itself: that it is included, its type and its size. */
+    private fun MutableList<ExpandableListItemUi>.addInlineDocument(
+        itemId: String,
+        document: QesInlineDocumentDomain?,
+    ) {
+        if (document == null) return
+        addField(
+            itemId = "$itemId/content",
+            labelRes = R.string.request_transaction_document_content,
+            value = resourceProvider.getString(R.string.request_transaction_document_content_inline),
+        )
+        addField(
+            itemId = "$itemId/document-type",
+            labelRes = R.string.request_transaction_document_type,
+            value = when (document.documentType) {
+                "sod" -> resourceProvider.getString(R.string.request_transaction_document_type_original)
+                "sfd" -> resourceProvider.getString(R.string.request_transaction_document_type_formatted)
+                else -> document.documentType
+            },
+        )
+        addField(
+            itemId = "$itemId/size",
+            labelRes = R.string.request_transaction_document_size,
+            value = document.sizeInBytes?.let { size ->
+                resourceProvider.getQuantityString(
+                    R.plurals.request_transaction_document_size_value,
+                    size,
+                    size,
+                )
+            },
         )
     }
 
@@ -359,6 +492,10 @@ class TransactionDataTransformer(
             labelRes = null,
             value = resourceProvider.getString(R.string.request_transaction_signed_attributes),
         )
+        val setByRelyingParty = ListItemSupportingContentDataUi.Text(
+            text = resourceProvider.getString(R.string.request_transaction_relying_party_attribute),
+            textColorKey = ThemeColorKey.Warning,
+        )
         attributes.forEachIndexed { index, attribute ->
             add(
                 ExpandableListItemUi.SingleListItem(
@@ -368,6 +505,7 @@ class TransactionDataTransformer(
                         mainContentData = ListItemMainContentDataUi.Text(
                             text = attribute.value ?: attribute.name,
                         ),
+                        supportingContentData = setByRelyingParty,
                     ),
                 )
             )
@@ -385,6 +523,33 @@ class TransactionDataTransformer(
             else -> return qualifier
         }
         return resourceProvider.getString(labelRes)
+    }
+
+    private fun documentAccess(mode: String): String {
+        val labelRes = when (mode) {
+            "public" -> R.string.request_transaction_document_access_public
+            "OTP" -> R.string.request_transaction_document_access_otp
+            "Basic_Auth" -> R.string.request_transaction_document_access_basic
+            "Digest_Auth" -> R.string.request_transaction_document_access_digest
+            "OAuth_20" -> R.string.request_transaction_document_access_oauth
+            else -> return mode
+        }
+        return resourceProvider.getString(labelRes)
+    }
+
+    private fun signatureAlgorithm(oid: String): String {
+        return when (oid) {
+            "1.2.840.113549.1.1.1" -> "RSA"
+            "1.2.840.113549.1.1.10" -> "RSASSA-PSS"
+            "1.2.840.113549.1.1.11" -> "RSA with SHA-256"
+            "1.2.840.113549.1.1.12" -> "RSA with SHA-384"
+            "1.2.840.113549.1.1.13" -> "RSA with SHA-512"
+            "1.2.840.10045.2.1" -> "ECDSA"
+            "1.2.840.10045.4.3.2" -> "ECDSA with SHA-256"
+            "1.2.840.10045.4.3.3" -> "ECDSA with SHA-384"
+            "1.2.840.10045.4.3.4" -> "ECDSA with SHA-512"
+            else -> oid
+        }
     }
 
     private fun hashAlgorithm(oid: String): String {

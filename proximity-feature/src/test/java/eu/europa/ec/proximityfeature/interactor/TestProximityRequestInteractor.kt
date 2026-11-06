@@ -37,6 +37,7 @@ import eu.europa.ec.testfeature.util.mockedRelyingPartyDomain
 import eu.europa.ec.testfeature.util.mockedSelectableClaims
 import eu.europa.ec.testfeature.util.mockedTransactionDataApproval
 import eu.europa.ec.testfeature.util.mockedTransactionQueryId
+import eu.europa.ec.testfeature.util.mockedUserImageClaimKeys
 import eu.europa.ec.testfeature.util.mockedUuid
 import eu.europa.ec.testfeature.util.mockedValidMdlWithBasicFieldsRequestMatch
 import eu.europa.ec.testfeature.util.mockedValidPidWithBasicFieldsRequestMatch
@@ -46,6 +47,7 @@ import eu.europa.ec.testlogic.extension.runTest
 import eu.europa.ec.testlogic.extension.toFlow
 import eu.europa.ec.testlogic.rule.CoroutineTestRule
 import eu.europa.ec.uilogic.component.ListItemMainContentDataUi
+import eu.europa.ec.uilogic.config.ConfigUILogic
 import junit.framework.TestCase.assertEquals
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.flow
@@ -71,6 +73,9 @@ class TestProximityRequestInteractor {
     private lateinit var resourceProvider: ResourceProvider
 
     @Mock
+    private lateinit var configUILogic: ConfigUILogic
+
+    @Mock
     private lateinit var walletCorePresentationController: WalletCorePresentationController
 
     @Mock
@@ -86,12 +91,14 @@ class TestProximityRequestInteractor {
     @Before
     fun before() {
         closeable = MockitoAnnotations.openMocks(this)
+        whenever(configUILogic.userImageClaimKeys).thenReturn(mockedUserImageClaimKeys)
 
         interactor = ProximityRequestInteractorImpl(
             resourceProvider = resourceProvider,
             walletCorePresentationController = walletCorePresentationController,
             walletCoreDocumentsController = walletCoreDocumentsController,
-            uuidProvider = uuidProvider
+            uuidProvider = uuidProvider,
+            configUILogic = configUILogic,
         )
 
         whenever(resourceProvider.genericErrorMessage()).thenReturn(mockedGenericErrorMessage)
@@ -351,6 +358,7 @@ class TestProximityRequestInteractor {
                                         documentsDomain = requestDataUi.getOrThrow(),
                                         resourceProvider = resourceProvider,
                                         claimsAreSelectable = mockedSelectableClaims,
+                                        userImageClaimKeys = mockedUserImageClaimKeys,
                                     ),
                                     matches = listOf(mockedValidPidWithBasicFieldsRequestMatch),
                                 )
@@ -417,6 +425,7 @@ class TestProximityRequestInteractor {
                                         documentsDomain = requestDataUi.getOrThrow(),
                                         resourceProvider = resourceProvider,
                                         claimsAreSelectable = mockedSelectableClaims,
+                                        userImageClaimKeys = mockedUserImageClaimKeys,
                                     ),
                                     matches = listOf(mockedValidMdlWithBasicFieldsRequestMatch),
                                 )
@@ -496,6 +505,7 @@ class TestProximityRequestInteractor {
                                         documentsDomain = requestDataUi.getOrThrow(),
                                         resourceProvider = resourceProvider,
                                         claimsAreSelectable = mockedSelectableClaims,
+                                        userImageClaimKeys = mockedUserImageClaimKeys,
                                     ),
                                     matches = listOf(
                                         mockedValidMdlWithBasicFieldsRequestMatch,
@@ -578,6 +588,7 @@ class TestProximityRequestInteractor {
                                         documentsDomain = requestDataUi.getOrThrow(),
                                         resourceProvider = resourceProvider,
                                         claimsAreSelectable = mockedSelectableClaims,
+                                        userImageClaimKeys = mockedUserImageClaimKeys,
                                     ),
                                     matches = listOf(
                                         mockedValidPidWithBasicFieldsRequestMatch,
@@ -811,6 +822,7 @@ class TestProximityRequestInteractor {
                                         documentsDomain = survivingDomainItems.getOrThrow(),
                                         resourceProvider = resourceProvider,
                                         claimsAreSelectable = mockedSelectableClaims,
+                                        userImageClaimKeys = mockedUserImageClaimKeys,
                                     ),
                                     matches = listOf(mockedValidMdlWithBasicFieldsRequestMatch),
                                 )
@@ -854,6 +866,7 @@ class TestProximityRequestInteractor {
             resourceProvider = resourceProvider,
             uuidProvider = uuidProvider,
             walletCoreDocumentsController = walletCoreDocumentsController,
+            configUILogic = configUILogic,
         )
 
         assertEquals("DefaultPresentationScopeId", newInteractor.presentationScopeId)
@@ -863,7 +876,7 @@ class TestProximityRequestInteractor {
     // 1. A represented match has transaction data.
     //
     // Case 18 Expected Result:
-    // The shared transformer prepares a collapsed section with payload fields and no RP origin or identifier.
+    // The shared transformer prepares an expanded section with payload fields and no RP origin or identifier.
     @Test
     fun `Given Case 18, When getRequestDocuments is called, Then Case 18 Expected Result is returned`() =
         coroutineRule.runTest {
@@ -889,7 +902,7 @@ class TestProximityRequestInteractor {
                 // Then
                 val result = awaitItem() as ProximityRequestInteractorPartialState.Success
                 val section = result.combinationsUi.single().transactionData!!
-                assertEquals(false, section.details.isExpanded)
+                assertEquals(true, section.details.isExpanded)
                 assertEquals(
                     listOf(mockedTransactionQueryId),
                     section.details.nestedItems.filter { item -> item.header.overlineText == "Requested credentials" }
@@ -962,6 +975,7 @@ class TestProximityRequestInteractor {
                     documentsDomain = domainItems,
                     resourceProvider = resourceProvider,
                     claimsAreSelectable = mockedSelectableClaims,
+                    userImageClaimKeys = mockedUserImageClaimKeys,
                 ),
                 matches = listOf(mockedValidMdlWithBasicFieldsRequestMatch),
             )

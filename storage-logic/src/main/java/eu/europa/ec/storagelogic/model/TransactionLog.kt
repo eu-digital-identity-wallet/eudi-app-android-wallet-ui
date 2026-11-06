@@ -21,6 +21,14 @@ import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
 
+/**
+ * A transaction-log entry as Wallet Core wrote it ([value]), with what the app records beside it.
+ *
+ * @property registrationCheck for a presentation, the outcome of the relying party's registration
+ * check when the data was shared (`VERIFIED`, `NOT_VERIFIED` or `NOT_EVALUATED`), or null when
+ * none was recorded. Wallet Core does not keep it in the entry.
+ * @property registrationFailureReason why the registration was not verified, when it was not.
+ */
 @Entity(
     tableName = "transactionLogs",
     foreignKeys = [
@@ -39,4 +47,6 @@ data class TransactionLog(
     val value: String,
     val parentPresentationId: String?,
     val communicationMethod: String?,
+    val registrationCheck: String? = null,
+    val registrationFailureReason: String? = null,
 )

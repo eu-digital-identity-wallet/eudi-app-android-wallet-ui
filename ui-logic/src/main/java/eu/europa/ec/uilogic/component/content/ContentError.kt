@@ -78,7 +78,7 @@ data class ContentErrorConfig(
 
 @ThemeModePreviews
 @Composable
-private fun PreviewContentErrorWithRetry() {
+private fun ContentErrorWithRetryPreview() {
     PreviewTheme {
         ContentError(
             config = ContentErrorConfig(
@@ -92,7 +92,7 @@ private fun PreviewContentErrorWithRetry() {
 
 @ThemeModePreviews
 @Composable
-private fun PreviewContentErrorWithoutRetry() {
+private fun ContentErrorWithoutRetryPreview() {
     PreviewTheme {
         ContentError(
             config = ContentErrorConfig(

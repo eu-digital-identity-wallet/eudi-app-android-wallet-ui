@@ -37,6 +37,7 @@ import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.uilogic.component.IssuerDetailsCardDataUi
 import eu.europa.ec.uilogic.component.content.ContentErrorConfig
 import eu.europa.ec.uilogic.component.wrap.BottomSheetTextDataUi
+import eu.europa.ec.uilogic.config.ConfigUILogic
 import eu.europa.ec.uilogic.extension.toggleExpansionState
 import eu.europa.ec.uilogic.mvi.MviViewModel
 import eu.europa.ec.uilogic.mvi.ViewEvent
@@ -51,8 +52,6 @@ import eu.europa.ec.uilogic.navigation.helper.generateComposableNavigationLink
 import eu.europa.ec.uilogic.navigation.helper.hasDeepLink
 import eu.europa.ec.uilogic.serializer.UiSerializer
 import kotlinx.coroutines.launch
-import org.koin.core.annotation.InjectedParam
-import org.koin.core.annotation.KoinViewModel
 
 data class State(
     val isLoading: Boolean = true,
@@ -153,12 +152,12 @@ sealed class DocumentDetailsBottomSheetContent {
     data object IssuerNotTrusted : DocumentDetailsBottomSheetContent()
 }
 
-@KoinViewModel
 class DocumentDetailsViewModel(
     private val documentDetailsInteractor: DocumentDetailsInteractor,
     private val uiSerializer: UiSerializer,
     private val resourceProvider: ResourceProvider,
-    @InjectedParam private val documentId: DocumentId,
+    private val configUILogic: ConfigUILogic,
+    private val documentId: DocumentId,
 ) : MviViewModel<Event, State, Effect>() {
     override fun setInitialState(): State = State()
 
@@ -327,7 +326,7 @@ class DocumentDetailsViewModel(
                 when (response) {
                     is DocumentDetailsInteractorPartialState.Success -> {
                         val documentDetailsUi = response.documentDetailsDomain
-                            .transformToDocumentDetailsUi()
+                            .transformToDocumentDetailsUi(userImageClaimKeys = configUILogic.userImageClaimKeys)
 
                         setState {
                             copy(
@@ -538,6 +537,21 @@ class DocumentDetailsViewModel(
                         }
                     }
 
+                    is DocumentDetailsInteractorIssuancePartialState.Blocked -> {
+                        setState {
+                            copy(
+                                isLoading = false,
+                                error = ContentErrorConfig(
+                                    errorSubTitle = it.errorMessage,
+                                    onCancel = {
+                                        setEvent(Event.DismissError)
+                                        getDocumentDetails(Event.Init(deepLink = null))
+                                    }
+                                )
+                            )
+                        }
+                    }
+
                     is DocumentDetailsInteractorIssuancePartialState.IssuerNotTrusted -> {
                         setState {
                             copy(
@@ -601,7 +615,8 @@ class DocumentDetailsViewModel(
                 }
             }
 
-            is IssuerDetailsCardDataUi.DocumentState.Revoked -> {
+            is IssuerDetailsCardDataUi.DocumentState.Revoked,
+            is IssuerDetailsCardDataUi.DocumentState.Suspended -> {
                 // No-op
             }
         }

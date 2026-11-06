@@ -31,6 +31,7 @@ import eu.europa.ec.corelogic.model.IssuanceDetailsDomain
 import eu.europa.ec.corelogic.model.LocalizedTextDomain
 import eu.europa.ec.corelogic.model.PresentationRegistrationDomain
 import eu.europa.ec.corelogic.model.QualifiedIdentifierDomain
+import eu.europa.ec.corelogic.model.RecordedRegistrationCheckDomain
 import eu.europa.ec.corelogic.model.TransactionLogDomain
 import eu.europa.ec.corelogic.model.TransactionResultDomain
 import eu.europa.ec.dashboardfeature.ui.documents.detail.model.DocumentDetailsDomain
@@ -366,6 +367,7 @@ internal val mockedIssuanceDetails = IssuanceDetailsDomain(
 )
 internal val mockedPresentationLogDomain = TransactionLogDomain.Presentation(
     transactionData = emptyList(),
+    registrationCheck = RecordedRegistrationCheckDomain.Verified,
     id = "presentation",
     time = mockedTransactionDateTime,
     result = TransactionResultDomain.Completed,

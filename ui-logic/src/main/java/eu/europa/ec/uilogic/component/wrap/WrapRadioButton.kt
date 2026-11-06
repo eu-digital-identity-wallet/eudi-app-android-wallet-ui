@@ -77,19 +77,19 @@ fun WrapRadioButton(
 @ThemeModePreviews
 @Composable
 private fun WrapRadioButtonPreview() {
-    var isChecked by remember {
-        mutableStateOf(true)
-    }
-
-    val radioButtonData = RadioButtonDataUi(
-        isSelected = isChecked,
-        enabled = true,
-        onCheckedChange = {
-            isChecked = !isChecked
-        }
-    )
-
     PreviewTheme {
+        var isChecked by remember {
+            mutableStateOf(true)
+        }
+
+        val radioButtonData = RadioButtonDataUi(
+            isSelected = isChecked,
+            enabled = true,
+            onCheckedChange = {
+                isChecked = !isChecked
+            }
+        )
+
         WrapRadioButton(radioButtonData = radioButtonData)
     }
 }

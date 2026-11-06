@@ -26,7 +26,6 @@ import eu.europa.ec.uilogic.mvi.ViewState
 import eu.europa.ec.uilogic.navigation.ModuleRoute
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import org.koin.core.annotation.KoinViewModel
 
 data class State(
     val logoAnimationDuration: Int = 1500,
@@ -49,7 +48,6 @@ sealed class Effect : ViewSideEffect {
     }
 }
 
-@KoinViewModel
 class SplashViewModel(
     private val interactor: SplashInteractor,
 ) : MviViewModel<Event, State, Effect>() {

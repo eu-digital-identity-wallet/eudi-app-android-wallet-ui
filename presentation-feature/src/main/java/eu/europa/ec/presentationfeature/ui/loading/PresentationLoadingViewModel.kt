@@ -23,7 +23,7 @@ import eu.europa.ec.businesslogic.extension.toUri
 import eu.europa.ec.commonfeature.ui.loading.Effect
 import eu.europa.ec.commonfeature.ui.loading.Event
 import eu.europa.ec.commonfeature.ui.loading.LoadingViewModel
-import eu.europa.ec.corelogic.model.AuthenticationData
+import eu.europa.ec.corelogic.model.AuthenticationDataDomain
 import eu.europa.ec.presentationfeature.interactor.PresentationLoadingInteractor
 import eu.europa.ec.presentationfeature.interactor.PresentationLoadingObserveResponsePartialState
 import eu.europa.ec.presentationfeature.interactor.PresentationLoadingSendRequestedDocumentPartialState
@@ -39,18 +39,15 @@ import eu.europa.ec.uilogic.navigation.helper.generateComposableNavigationLink
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import org.koin.core.annotation.InjectedParam
-import org.koin.core.annotation.KoinViewModel
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.DurationUnit
 import kotlin.time.toDuration
 
-@KoinViewModel
 class PresentationLoadingViewModel(
     private val resourceProvider: ResourceProvider,
     private val interactor: PresentationLoadingInteractor,
-    @InjectedParam private val presentationScopeId: String
+    private val presentationScopeId: String
 ) : LoadingViewModel() {
 
     private var observationJob: Job? = null
@@ -181,7 +178,7 @@ class PresentationLoadingViewModel(
     private fun openAuthenticationPrompt(
         context: Context,
         popEffect: Effect,
-        authenticationDataList: List<AuthenticationData>,
+        authenticationDataList: List<AuthenticationDataDomain>,
         sendRequestedDocumentsAction: () -> Unit,
         index: Int = 0,
     ) {

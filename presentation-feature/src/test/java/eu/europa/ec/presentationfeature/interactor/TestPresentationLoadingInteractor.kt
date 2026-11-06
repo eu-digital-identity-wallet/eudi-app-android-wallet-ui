@@ -24,7 +24,7 @@ import eu.europa.ec.commonfeature.interactor.DeviceAuthenticationInteractor
 import eu.europa.ec.corelogic.controller.SendRequestedDocumentsPartialState
 import eu.europa.ec.corelogic.controller.WalletCorePartialState
 import eu.europa.ec.corelogic.controller.WalletCorePresentationController
-import eu.europa.ec.corelogic.model.AuthenticationData
+import eu.europa.ec.corelogic.model.AuthenticationDataDomain
 import eu.europa.ec.testfeature.util.mockedNotifyOnAuthenticationFailure
 import eu.europa.ec.testfeature.util.mockedPlainFailureMessage
 import eu.europa.ec.testfeature.util.mockedUriPath1
@@ -188,7 +188,7 @@ class TestPresentationLoadingInteractor {
         coroutineRule.runTest {
             // Given
             val mockedAuthenticationData = listOf(
-                AuthenticationData(
+                AuthenticationDataDomain(
                     crypto = crypto,
                     onAuthenticationSuccess = {}
                 )

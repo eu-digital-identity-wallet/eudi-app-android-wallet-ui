@@ -28,6 +28,7 @@ import eu.europa.ec.corelogic.controller.WalletCorePresentationController
 import eu.europa.ec.corelogic.model.RelyingPartyDomain
 import eu.europa.ec.corelogic.model.overaskedClaimsOrEmpty
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
+import eu.europa.ec.uilogic.config.ConfigUILogic
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.mapNotNull
 
@@ -57,6 +58,7 @@ class ProximityRequestInteractorImpl(
     private val resourceProvider: ResourceProvider,
     private val uuidProvider: UuidProvider,
     private val walletCoreDocumentsController: WalletCoreDocumentsController,
+    private val configUILogic: ConfigUILogic,
     walletCorePresentationController: WalletCorePresentationController? = null
 ) : ProximityRequestInteractor,
     ScopedPresentationInteractorDelegate(walletCorePresentationController) {
@@ -101,6 +103,7 @@ class ProximityRequestInteractorImpl(
                             combinationsDomain = combinationsDomain,
                             claimsAreSelectable = claimsAreSelectable,
                             overaskedClaims = response.relyingParty.registration.overaskedClaimsOrEmpty(),
+                            userImageClaimKeys = configUILogic.userImageClaimKeys,
                         ).getOrThrow()
                             .filter { it.documents.isNotEmpty() }
 

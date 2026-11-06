@@ -29,7 +29,8 @@ sealed interface PinLockoutState {
 interface PinThrottleProvider {
 
     /**
-     * Returns the current lockout state, evaluating wall-clock time against persisted values.
+     * Returns the current lockout state, evaluating the elapsed time since boot against persisted
+     * values.
      */
     suspend fun getState(): PinLockoutState
 

@@ -18,6 +18,7 @@ package eu.europa.ec.issuancefeature.interactor
 
 import eu.europa.ec.businesslogic.provider.UuidProvider
 import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
+import eu.europa.ec.corelogic.model.IssuerTrustVerdictDomain
 import eu.europa.ec.eudi.wallet.document.IssuedDocument
 import eu.europa.ec.issuancefeature.util.mockedErrorDescription
 import eu.europa.ec.issuancefeature.util.mockedMdocPidClaims
@@ -41,6 +42,7 @@ import eu.europa.ec.testfeature.util.mockedIssuerLogo
 import eu.europa.ec.testfeature.util.mockedIssuerName
 import eu.europa.ec.testfeature.util.mockedPidId
 import eu.europa.ec.testfeature.util.mockedSdJwtPidId
+import eu.europa.ec.testfeature.util.mockedUserImageClaimKeys
 import eu.europa.ec.testlogic.extension.runFlowTest
 import eu.europa.ec.testlogic.extension.runTest
 import eu.europa.ec.testlogic.rule.CoroutineTestRule
@@ -50,9 +52,13 @@ import eu.europa.ec.uilogic.component.ListItemMainContentDataUi
 import eu.europa.ec.uilogic.component.ListItemSupportingContentDataUi
 import eu.europa.ec.uilogic.component.ListItemTrailingContentDataUi
 import eu.europa.ec.uilogic.component.RelyingPartyDataUi
+import eu.europa.ec.uilogic.component.ThemeColorKey
 import eu.europa.ec.uilogic.component.content.ContentHeaderConfig
 import eu.europa.ec.uilogic.component.wrap.ExpandableListItemUi
+import eu.europa.ec.uilogic.config.ConfigUILogic
 import junit.framework.TestCase.assertEquals
+import junit.framework.TestCase.assertNull
+import kotlinx.coroutines.runBlocking
 import org.junit.After
 import org.junit.Before
 import org.junit.Rule
@@ -75,6 +81,9 @@ class TestDocumentIssuanceSuccessInteractor {
     private lateinit var resourceProvider: ResourceProvider
 
     @Mock
+    private lateinit var configUILogic: ConfigUILogic
+
+    @Mock
     private lateinit var uuidProvider: UuidProvider
 
     private lateinit var interactor: DocumentIssuanceSuccessInteractor
@@ -84,11 +93,13 @@ class TestDocumentIssuanceSuccessInteractor {
     @Before
     fun before() {
         closeable = MockitoAnnotations.openMocks(this)
+        whenever(configUILogic.userImageClaimKeys).thenReturn(mockedUserImageClaimKeys)
 
         interactor = DocumentIssuanceSuccessInteractorImpl(
             resourceProvider = resourceProvider,
             uuidProvider = uuidProvider,
-            walletCoreDocumentsController = walletCoreDocumentsController
+            walletCoreDocumentsController = walletCoreDocumentsController,
+            configUILogic = configUILogic,
         )
 
         whenever(resourceProvider.genericErrorMessage()).thenReturn(mockedGenericErrorMessage)
@@ -98,6 +109,7 @@ class TestDocumentIssuanceSuccessInteractor {
         mockTransformToUiItemsStrings(
             resourceProvider = resourceProvider,
         )
+        runBlocking { mockGetIssuerTrustVerdictCall(response = IssuerTrustVerdictDomain.TRUSTED) }
     }
 
     @After
@@ -156,7 +168,7 @@ class TestDocumentIssuanceSuccessInteractor {
                             description = mockedSuccessDescription,
                             relyingPartyData = RelyingPartyDataUi(
                                 logo = null,
-                                isVerified = false,
+                                isVerified = true,
                                 name = mockedIssuerName,
                                 uniqueId = null,
                                 description = null,
@@ -204,7 +216,7 @@ class TestDocumentIssuanceSuccessInteractor {
                             description = mockedSuccessDescription,
                             relyingPartyData = RelyingPartyDataUi(
                                 logo = null,
-                                isVerified = false,
+                                isVerified = true,
                                 name = mockedIssuerName,
                                 uniqueId = null,
                                 description = null,
@@ -282,7 +294,7 @@ class TestDocumentIssuanceSuccessInteractor {
                             description = mockedSuccessDescription,
                             relyingPartyData = RelyingPartyDataUi(
                                 logo = null,
-                                isVerified = false,
+                                isVerified = true,
                                 name = mockedIssuerName,
                                 uniqueId = null,
                                 description = null,
@@ -427,7 +439,7 @@ class TestDocumentIssuanceSuccessInteractor {
                             description = mockedSuccessDescription,
                             relyingPartyData = RelyingPartyDataUi(
                                 logo = null,
-                                isVerified = false,
+                                isVerified = true,
                                 name = mockedIssuerName,
                                 uniqueId = null,
                                 description = null,
@@ -543,6 +555,13 @@ class TestDocumentIssuanceSuccessInteractor {
 
             val mockedPidWithBasicFieldsAndMetadata = getMockedPidWithBasicFieldsAndMetadata()
             mockGetDocumentByIdCall(response = mockedPidWithBasicFieldsAndMetadata)
+            whenever(
+                walletCoreDocumentsController.getIssuerLogo(
+                    mockedPidWithBasicFieldsAndMetadata,
+                    mockedDefaultLocale
+                )
+            )
+                .thenReturn(URI.create(mockedIssuerLogo))
 
             // When
             interactor.getUiItems(
@@ -569,6 +588,54 @@ class TestDocumentIssuanceSuccessInteractor {
                             description = mockedSuccessDescription,
                             relyingPartyData = RelyingPartyDataUi(
                                 logo = URI.create(mockedIssuerLogo),
+                                isVerified = true,
+                                name = mockedIssuerName,
+                                uniqueId = null,
+                                description = null,
+                            )
+                        ),
+                        bannerText = mockedIssuanceSuccessBannerText,
+                    ),
+                    awaitItem()
+                )
+            }
+        }
+    }
+
+    @Test
+    fun `Given the issuer was not trusted, When getUiItems is called, Then the document is marked and the header is not verified`() {
+        coroutineRule.runTest {
+            mockHeaderConfigDescription(isErrorCase = false)
+            mockTransformToDocumentDetailsDomainStrings(resourceProvider)
+            mockIssuerTrustNotConfirmedString()
+
+            val mockedPidWithBasicFields = getMockedPidWithBasicFields()
+            mockGetDocumentByIdCall(response = mockedPidWithBasicFields)
+            mockGetIssuerTrustVerdictCall(response = IssuerTrustVerdictDomain.NOT_TRUSTED)
+
+            interactor.getUiItems(
+                documentIds = listOf(mockedPidId)
+            ).runFlowTest {
+                assertEquals(
+                    DocumentIssuanceSuccessInteractorGetUiItemsPartialState.Success(
+                        documentsUi = listOf(
+                            ExpandableListItemUi.NestedListItem(
+                                header = ListItemDataUi(
+                                    itemId = mockedPidId,
+                                    mainContentData = ListItemMainContentDataUi.Text(text = mockedPidWithBasicFields.name),
+                                    supportingContentData = mockedIssuerTrustNotConfirmedSupportingContent,
+                                    trailingContentData = ListItemTrailingContentDataUi.Icon(
+                                        iconData = AppIcons.KeyboardArrowDown
+                                    )
+                                ),
+                                nestedItems = mockedMdocPidClaims,
+                                isExpanded = false
+                            )
+                        ),
+                        headerConfig = ContentHeaderConfig(
+                            description = mockedSuccessDescription,
+                            relyingPartyData = RelyingPartyDataUi(
+                                logo = null,
                                 isVerified = false,
                                 name = mockedIssuerName,
                                 uniqueId = null,
@@ -579,6 +646,100 @@ class TestDocumentIssuanceSuccessInteractor {
                     ),
                     awaitItem()
                 )
+            }
+        }
+    }
+
+    @Test
+    fun `Given one of two issuers was not trusted, When getUiItems is called, Then only that document is marked and the header is not verified`() {
+        coroutineRule.runTest {
+            mockHeaderConfigDescription(isErrorCase = false)
+            mockTransformToDocumentDetailsDomainStrings(resourceProvider)
+            mockGetUiItemsStrings(
+                resourceProvider = resourceProvider,
+                supportingText = mockedDocumentSuccessCollapsedSupportingText,
+            )
+            mockIssuerTrustNotConfirmedString()
+
+            val mockedPidWithBasicFields = getMockedPidWithBasicFields()
+            mockGetDocumentByIdCall(response = mockedPidWithBasicFields)
+
+            val mockedSdJwtPidWithBasicFields = getMockedSdJwtPidWithBasicFields()
+            mockSdJwtGetDocumentByIdCall(
+                docId = mockedSdJwtPidId,
+                response = mockedSdJwtPidWithBasicFields
+            )
+            mockGetIssuerTrustVerdictCall(
+                documentId = mockedSdJwtPidId,
+                response = IssuerTrustVerdictDomain.NOT_TRUSTED,
+            )
+
+            interactor.getUiItems(
+                documentIds = listOf(mockedPidId, mockedSdJwtPidId)
+            ).runFlowTest {
+                val success =
+                    awaitItem() as DocumentIssuanceSuccessInteractorGetUiItemsPartialState.Success
+
+                assertEquals(
+                    listOf(
+                        mockedDocumentSuccessCollapsedSupportingContent,
+                        mockedIssuerTrustNotConfirmedSupportingContent,
+                    ),
+                    success.documentsUi.map { it.header.supportingContentData }
+                )
+                assertEquals(false, success.headerConfig.relyingPartyData?.isVerified)
+            }
+        }
+    }
+
+    @Test
+    fun `Given documents the issuer did not issue, When getUiItems is called, Then the success state names them in a warning`() {
+        coroutineRule.runTest {
+            mockHeaderConfigDescription(isErrorCase = true)
+            mockTransformToDocumentDetailsDomainStrings(resourceProvider)
+            mockGetUiItemsStrings(
+                resourceProvider = resourceProvider,
+                supportingText = mockedDocumentSuccessCollapsedSupportingText,
+            )
+            mockGetDocumentByIdCall(response = null)
+            whenever(
+                resourceProvider.getString(
+                    R.string.issuance_success_not_issued_text,
+                    "Photo ID, mDL",
+                )
+            ).thenReturn(mockedNotIssuedWarning)
+
+            interactor.getUiItems(
+                documentIds = listOf(),
+                notIssuedDocuments = listOf("Photo ID", "mDL"),
+            ).runFlowTest {
+                val success =
+                    awaitItem() as DocumentIssuanceSuccessInteractorGetUiItemsPartialState.Success
+
+                assertEquals(mockedNotIssuedWarning, success.warningText)
+            }
+        }
+    }
+
+    @Test
+    fun `Given every document was issued, When getUiItems is called, Then the success state has no warning`() {
+        coroutineRule.runTest {
+            mockHeaderConfigDescription(isErrorCase = true)
+            mockTransformToDocumentDetailsDomainStrings(resourceProvider)
+            mockGetUiItemsStrings(
+                resourceProvider = resourceProvider,
+                supportingText = mockedDocumentSuccessCollapsedSupportingText,
+            )
+            mockGetDocumentByIdCall(response = null)
+
+            interactor.getUiItems(
+                documentIds = listOf(),
+                notIssuedDocuments = listOf(),
+            ).runFlowTest {
+                val success =
+                    awaitItem() as DocumentIssuanceSuccessInteractorGetUiItemsPartialState.Success
+
+                assertNull(success.warningText)
             }
         }
     }
@@ -614,12 +775,41 @@ class TestDocumentIssuanceSuccessInteractor {
             .thenReturn(response)
     }
 
+    private suspend fun mockGetIssuerTrustVerdictCall(response: IssuerTrustVerdictDomain?) {
+        whenever(walletCoreDocumentsController.getIssuerTrustVerdict(anyString()))
+            .thenReturn(response)
+    }
+
+    private suspend fun mockGetIssuerTrustVerdictCall(
+        documentId: String,
+        response: IssuerTrustVerdictDomain?,
+    ) {
+        whenever(walletCoreDocumentsController.getIssuerTrustVerdict(documentId))
+            .thenReturn(response)
+    }
+
+    private fun mockIssuerTrustNotConfirmedString() {
+        whenever(resourceProvider.getString(R.string.generic_issuer_trust_not_confirmed))
+            .thenReturn(mockedIssuerTrustNotConfirmedText)
+    }
+
     //endregion
 
     //region Mocked objects needed for tests.
     private val mockedDocumentSuccessCollapsedSupportingContent =
         ListItemSupportingContentDataUi.Text(
             text = mockedDocumentSuccessCollapsedSupportingText,
+        )
+
+    private val mockedIssuerTrustNotConfirmedText = "Issuer trust not confirmed"
+
+    private val mockedNotIssuedWarning =
+        "These documents were not added to your wallet: Photo ID, mDL."
+
+    private val mockedIssuerTrustNotConfirmedSupportingContent =
+        ListItemSupportingContentDataUi.Text(
+            text = mockedIssuerTrustNotConfirmedText,
+            textColorKey = ThemeColorKey.Warning,
         )
     //endregion
 }

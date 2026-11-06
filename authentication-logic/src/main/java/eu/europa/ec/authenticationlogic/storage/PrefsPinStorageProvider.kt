@@ -64,8 +64,13 @@ class PrefsPinStorageProvider(
      * and persists the salt, hash, and iteration count to the preference storage.
      *
      * @param pin The PIN to be stored. The value is consumed and cleared by this method.
+     * @throws IllegalArgumentException for an empty PIN, which is never stored, as on iOS.
      */
     override suspend fun setPin(pin: SecurePin) {
+        if (pin.length == 0) {
+            pin.close()
+            throw IllegalArgumentException("An empty PIN cannot be stored")
+        }
 
         val salt = ByteArray(SALT_SIZE_BYTES).also {
             SecureRandom().nextBytes(it)

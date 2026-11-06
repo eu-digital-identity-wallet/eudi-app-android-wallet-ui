@@ -26,7 +26,7 @@ import eu.europa.ec.corelogic.di.WalletCoreScope
 import eu.europa.ec.corelogic.di.getOrCreateKoinScope
 import eu.europa.ec.corelogic.extension.toClaimPath
 import eu.europa.ec.corelogic.extension.toRegistrationStatusDomain
-import eu.europa.ec.corelogic.model.AuthenticationData
+import eu.europa.ec.corelogic.model.AuthenticationDataDomain
 import eu.europa.ec.corelogic.model.PresentationCombinationDomain
 import eu.europa.ec.corelogic.model.PresentationMatchDomain
 import eu.europa.ec.corelogic.model.PresentationSelectionDomain
@@ -100,7 +100,7 @@ sealed class TransferEventPartialState {
 sealed class CheckKeyUnlockPartialState {
     data class Failure(val error: String) : CheckKeyUnlockPartialState()
     data class UserAuthenticationRequired(
-        val authenticationData: List<AuthenticationData>,
+        val authenticationData: List<AuthenticationDataDomain>,
     ) : CheckKeyUnlockPartialState()
 
     data object RequestIsReadyToBeSent : CheckKeyUnlockPartialState()
@@ -121,7 +121,7 @@ sealed class ResponseReceivedPartialState {
 
 sealed class WalletCorePartialState {
     data class UserAuthenticationRequired(
-        val authenticationData: List<AuthenticationData>,
+        val authenticationData: List<AuthenticationDataDomain>,
     ) : WalletCorePartialState()
 
     data class Failure(val error: String) : WalletCorePartialState()
@@ -392,7 +392,7 @@ class WalletCorePresentationControllerImpl(
                 // fresh per send attempt
                 keyUnlockDataByCredentialId.clear()
 
-                val authenticationData = mutableListOf<AuthenticationData>()
+                val authenticationData = mutableListOf<AuthenticationDataDomain>()
 
                 if (eudiWallet.config.userAuthenticationRequired) {
 
@@ -407,7 +407,7 @@ class WalletCorePresentationControllerImpl(
                         val cryptoObject = kud?.getCryptoObjectForSigning()
 
                         authenticationData.add(
-                            AuthenticationData(
+                            AuthenticationDataDomain(
                                 crypto = BiometricCrypto(cryptoObject),
                                 onAuthenticationSuccess = {
                                     if (kud != null) {

@@ -17,33 +17,32 @@
 package eu.europa.ec.uilogic.di
 
 import eu.europa.ec.analyticslogic.controller.AnalyticsController
-import eu.europa.ec.businesslogic.di.LogicBusinessModule
+import eu.europa.ec.authenticationlogic.controller.session.SessionController
 import eu.europa.ec.uilogic.config.ConfigUILogic
 import eu.europa.ec.uilogic.config.ConfigUILogicImpl
+import eu.europa.ec.uilogic.container.EudiComponentActivityViewModel
 import eu.europa.ec.uilogic.navigation.RouterHost
 import eu.europa.ec.uilogic.navigation.RouterHostImpl
 import eu.europa.ec.uilogic.serializer.UiSerializer
 import eu.europa.ec.uilogic.serializer.UiSerializerImpl
-import org.koin.core.annotation.ComponentScan
-import org.koin.core.annotation.Configuration
-import org.koin.core.annotation.Factory
-import org.koin.core.annotation.Module
-import org.koin.core.annotation.Single
+import org.koin.core.module.dsl.factoryOf
+import org.koin.core.module.dsl.singleOf
+import org.koin.core.module.dsl.viewModelOf
+import org.koin.dsl.module
 
-@Module(includes = [LogicBusinessModule::class])
-@Configuration
-@ComponentScan("eu.europa.ec.uilogic")
-class LogicUiModule
+val logicUiModule = module {
+    viewModelOf(::EudiComponentActivityViewModel)
+    factoryOf(::provideRouterHost)
+    factoryOf(::provideUiSerializer)
+    singleOf(::provideConfigUILogic)
+}
 
-@Factory
 fun provideRouterHost(
     configUILogic: ConfigUILogic,
-    analyticsController: AnalyticsController
-): RouterHost = RouterHostImpl(configUILogic, analyticsController)
+    analyticsController: AnalyticsController,
+    sessionController: SessionController
+): RouterHost = RouterHostImpl(configUILogic, analyticsController, sessionController)
 
-@Factory
 fun provideUiSerializer(): UiSerializer = UiSerializerImpl()
 
-@Single
 fun provideConfigUILogic(): ConfigUILogic = ConfigUILogicImpl()
-

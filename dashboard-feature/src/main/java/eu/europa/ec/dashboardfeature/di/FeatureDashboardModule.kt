@@ -16,6 +16,7 @@
 
 package eu.europa.ec.dashboardfeature.di
 
+import eu.europa.ec.authenticationlogic.controller.session.SessionController
 import eu.europa.ec.businesslogic.config.ConfigLogic
 import eu.europa.ec.businesslogic.controller.log.LogController
 import eu.europa.ec.businesslogic.controller.storage.PrefKeys
@@ -24,9 +25,13 @@ import eu.europa.ec.businesslogic.validator.FilterValidator
 import eu.europa.ec.commonfeature.interactor.BiometricInteractor
 import eu.europa.ec.commonfeature.interactor.DeviceAuthenticationInteractor
 import eu.europa.ec.corelogic.config.WalletCoreConfig
+import eu.europa.ec.corelogic.controller.WalletCoreDCAPIRegistrationController
 import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
+import eu.europa.ec.corelogic.controller.WalletCoreResetController
 import eu.europa.ec.corelogic.controller.WalletCoreTransactionLogController
 import eu.europa.ec.corelogic.controller.WalletCoreTransactionRecordingController
+import eu.europa.ec.corelogic.provider.DCAPISettingProvider
+import eu.europa.ec.corelogic.worker.WalletWorkScheduler
 import eu.europa.ec.dashboardfeature.interactor.DashboardInteractor
 import eu.europa.ec.dashboardfeature.interactor.DashboardInteractorImpl
 import eu.europa.ec.dashboardfeature.interactor.DocumentDetailsInteractor
@@ -37,6 +42,8 @@ import eu.europa.ec.dashboardfeature.interactor.DocumentsInteractor
 import eu.europa.ec.dashboardfeature.interactor.DocumentsInteractorImpl
 import eu.europa.ec.dashboardfeature.interactor.HomeInteractor
 import eu.europa.ec.dashboardfeature.interactor.HomeInteractorImpl
+import eu.europa.ec.dashboardfeature.interactor.ResetWalletInteractor
+import eu.europa.ec.dashboardfeature.interactor.ResetWalletInteractorImpl
 import eu.europa.ec.dashboardfeature.interactor.SettingsInteractor
 import eu.europa.ec.dashboardfeature.interactor.SettingsInteractorImpl
 import eu.europa.ec.dashboardfeature.interactor.TransactionDetailsInteractor
@@ -45,40 +52,95 @@ import eu.europa.ec.dashboardfeature.interactor.TransactionHistoryInteractor
 import eu.europa.ec.dashboardfeature.interactor.TransactionHistoryInteractorImpl
 import eu.europa.ec.dashboardfeature.interactor.TransactionsInteractor
 import eu.europa.ec.dashboardfeature.interactor.TransactionsInteractorImpl
+import eu.europa.ec.dashboardfeature.ui.dashboard.DashboardViewModel
+import eu.europa.ec.dashboardfeature.ui.document_sign.DocumentSignViewModel
+import eu.europa.ec.dashboardfeature.ui.documents.detail.DocumentDetailsViewModel
+import eu.europa.ec.dashboardfeature.ui.documents.list.DocumentsViewModel
+import eu.europa.ec.dashboardfeature.ui.home.HomeViewModel
+import eu.europa.ec.dashboardfeature.ui.reset_wallet.ResetWalletViewModel
+import eu.europa.ec.dashboardfeature.ui.settings.SettingsViewModel
+import eu.europa.ec.dashboardfeature.ui.transactions.data_deletion.DataDeletionRequestViewModel
+import eu.europa.ec.dashboardfeature.ui.transactions.detail.TransactionDetailsViewModel
+import eu.europa.ec.dashboardfeature.ui.transactions.dpa_report.DpaReportViewModel
+import eu.europa.ec.dashboardfeature.ui.transactions.history.TransactionHistoryViewModel
+import eu.europa.ec.dashboardfeature.ui.transactions.list.TransactionsViewModel
+import eu.europa.ec.eudi.wallet.document.DocumentId
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
-import org.koin.core.annotation.ComponentScan
-import org.koin.core.annotation.Configuration
-import org.koin.core.annotation.Factory
-import org.koin.core.annotation.Module
+import org.koin.core.module.dsl.factoryOf
+import org.koin.core.module.dsl.viewModel
+import org.koin.core.module.dsl.viewModelOf
+import org.koin.dsl.module
 
-@Module
-@Configuration
-@ComponentScan("eu.europa.ec.dashboardfeature")
-class FeatureDashboardModule
+val featureDashboardModule = module {
+    factoryOf(::provideDashboardInteractor)
+    factoryOf(::provideSettingsInteractor)
+    factoryOf(::provideResetWalletInteractor)
+    factoryOf(::provideHomeInteractor)
+    factoryOf(::provideDocumentsInteractor)
+    factoryOf(::provideTransactionInteractor)
+    factoryOf(::provideDocumentSignInteractor)
+    factoryOf(::provideDocumentDetailsInteractor)
+    factoryOf(::provideTransactionHistoryInteractor)
+    factoryOf(::provideTransactionDetailsInteractor)
 
-@Factory
+    viewModelOf(::DashboardViewModel)
+    viewModelOf(::DocumentSignViewModel)
+    viewModel { (documentId: DocumentId) ->
+        DocumentDetailsViewModel(get(), get(), get(), get(), documentId)
+    }
+    viewModelOf(::DocumentsViewModel)
+    viewModelOf(::HomeViewModel)
+    viewModelOf(::ResetWalletViewModel)
+    viewModelOf(::SettingsViewModel)
+    viewModel { (transactionId: String) ->
+        DataDeletionRequestViewModel(get(), get(), transactionId)
+    }
+    viewModel { (transactionId: String) ->
+        TransactionDetailsViewModel(get(), get(), transactionId)
+    }
+    viewModel { (transactionId: String) -> DpaReportViewModel(get(), get(), transactionId) }
+    viewModel { (transactionId: String, actionType: String) ->
+        TransactionHistoryViewModel(get(), transactionId, actionType)
+    }
+    viewModelOf(::TransactionsViewModel)
+}
+
 fun provideDashboardInteractor(
     resourceProvider: ResourceProvider,
+    walletWorkScheduler: WalletWorkScheduler,
+    sessionController: SessionController,
 ): DashboardInteractor = DashboardInteractorImpl(
     resourceProvider,
+    walletWorkScheduler,
+    sessionController,
 )
 
-@Factory
 fun provideSettingsInteractor(
     biometricInteractor: BiometricInteractor,
     configLogic: ConfigLogic,
     logController: LogController,
     resourceProvider: ResourceProvider,
     prefKeys: PrefKeys,
+    dcapiSettingProvider: DCAPISettingProvider,
+    walletCoreDCAPIRegistrationController: WalletCoreDCAPIRegistrationController,
 ): SettingsInteractor = SettingsInteractorImpl(
     biometricInteractor,
     configLogic,
     logController,
     resourceProvider,
     prefKeys,
+    dcapiSettingProvider,
+    walletCoreDCAPIRegistrationController,
 )
 
-@Factory
+fun provideResetWalletInteractor(
+    walletCoreResetController: WalletCoreResetController,
+    sessionController: SessionController,
+): ResetWalletInteractor = ResetWalletInteractorImpl(
+    walletCoreResetController,
+    sessionController,
+)
+
 fun provideHomeInteractor(
     resourceProvider: ResourceProvider,
     walletCoreDocumentsController: WalletCoreDocumentsController,
@@ -89,7 +151,6 @@ fun provideHomeInteractor(
     walletCoreConfig,
 )
 
-@Factory
 fun provideDocumentsInteractor(
     resourceProvider: ResourceProvider,
     documentsController: WalletCoreDocumentsController,
@@ -105,7 +166,6 @@ fun provideDocumentsInteractor(
         prefKeys,
     )
 
-@Factory
 fun provideTransactionInteractor(
     resourceProvider: ResourceProvider,
     filterValidator: FilterValidator,
@@ -116,14 +176,12 @@ fun provideTransactionInteractor(
     walletCoreTransactionLogController
 )
 
-@Factory
 fun provideDocumentSignInteractor(
     resourceProvider: ResourceProvider,
 ): DocumentSignInteractor = DocumentSignInteractorImpl(
     resourceProvider,
 )
 
-@Factory
 fun provideDocumentDetailsInteractor(
     walletCoreDocumentsController: WalletCoreDocumentsController,
     deviceAuthenticationInteractor: DeviceAuthenticationInteractor,
@@ -131,6 +189,7 @@ fun provideDocumentDetailsInteractor(
     uuidProvider: UuidProvider,
     configLogic: ConfigLogic,
     prefKeys: PrefKeys,
+    sessionController: SessionController,
 ): DocumentDetailsInteractor =
     DocumentDetailsInteractorImpl(
         walletCoreDocumentsController,
@@ -139,9 +198,9 @@ fun provideDocumentDetailsInteractor(
         uuidProvider,
         configLogic,
         prefKeys,
+        sessionController,
     )
 
-@Factory
 fun provideTransactionHistoryInteractor(
     walletCoreTransactionLogController: WalletCoreTransactionLogController,
     resourceProvider: ResourceProvider,
@@ -150,7 +209,6 @@ fun provideTransactionHistoryInteractor(
     resourceProvider,
 )
 
-@Factory
 fun provideTransactionDetailsInteractor(
     walletCoreTransactionLogController: WalletCoreTransactionLogController,
     walletCoreTransactionRecordingController: WalletCoreTransactionRecordingController,

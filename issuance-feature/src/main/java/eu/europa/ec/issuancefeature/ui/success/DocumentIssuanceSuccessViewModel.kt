@@ -25,14 +25,11 @@ import eu.europa.ec.issuancefeature.interactor.DocumentIssuanceSuccessInteractor
 import eu.europa.ec.uilogic.config.ConfigNavigation
 import eu.europa.ec.uilogic.serializer.UiSerializer
 import kotlinx.coroutines.launch
-import org.koin.core.annotation.InjectedParam
-import org.koin.core.annotation.KoinViewModel
 
-@KoinViewModel
 class DocumentIssuanceSuccessViewModel(
     private val interactor: DocumentIssuanceSuccessInteractor,
     private val uiSerializer: UiSerializer,
-    @InjectedParam private val issuanceSuccessSerializedConfig: String,
+    private val issuanceSuccessSerializedConfig: String,
 ) : DocumentSuccessViewModel() {
 
     override fun getNextScreenConfigNavigation(): ConfigNavigation {
@@ -50,7 +47,8 @@ class DocumentIssuanceSuccessViewModel(
 
         viewModelScope.launch {
             interactor.getUiItems(
-                documentIds = deserializedIssuanceSuccessUiConfig.documentIds
+                documentIds = deserializedIssuanceSuccessUiConfig.documentIds,
+                notIssuedDocuments = deserializedIssuanceSuccessUiConfig.notIssuedDocuments,
             ).collect { response ->
                 when (response) {
                     is DocumentIssuanceSuccessInteractorGetUiItemsPartialState.Failed -> {
@@ -66,6 +64,7 @@ class DocumentIssuanceSuccessViewModel(
                             copy(
                                 headerConfig = response.headerConfig,
                                 bannerText = response.bannerText,
+                                warningText = response.warningText,
                                 items = response.documentsUi,
                                 isLoading = false,
                             )
