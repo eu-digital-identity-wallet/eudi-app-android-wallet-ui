@@ -41,7 +41,7 @@ cameraCore = "1.6.2"
 coil = "3.6.3"
 
 # Ktor (networking)
-ktor = "3.6.0"
+ktor = "3.6.1"
 
 # Koin (dependency injection)
 koin = "4.2.2"
