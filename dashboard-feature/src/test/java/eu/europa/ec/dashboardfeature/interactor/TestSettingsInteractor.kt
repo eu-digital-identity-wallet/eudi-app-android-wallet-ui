@@ -474,7 +474,7 @@ class TestSettingsInteractor {
             val mainContent = dcApiItem.data.mainContentData as ListItemMainContentDataUi.Text
             assertEquals(dcApiText, mainContent.text)
             val leadingIcon = dcApiItem.data.leadingContentData as ListItemLeadingContentDataUi.Icon
-            assertEquals(AppIcons.PresentDocumentOnline, leadingIcon.iconData)
+            assertEquals(AppIcons.Id, leadingIcon.iconData)
             val trailingSwitch =
                 dcApiItem.data.trailingContentData as ListItemTrailingContentDataUi.Switch
             assertEquals(false, trailingSwitch.switchData.isChecked)
