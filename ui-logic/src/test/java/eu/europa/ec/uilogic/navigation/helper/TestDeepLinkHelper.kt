@@ -42,6 +42,19 @@ class TestDeepLinkHelper {
     fun `Given no signing session, When an RQES sign-in callback arrives, Then it is ignored without a crash`() {
         handleDeepLinkAction(
             navController = navController,
+            uri = Uri.parse("rqes://oauth/callback?code=forged-code&state=forged-state"),
+        )
+    }
+
+    /**
+     * Shows only that such a callback ends without a crash: `EudiRQESUi` is an object the test
+     * cannot intercept, so whether the wallet drops the callback or the SDK refuses it is checked on
+     * a device, not here.
+     */
+    @Test
+    fun `Given an RQES sign-in callback without a state, When it arrives, Then it is ignored without a crash`() {
+        handleDeepLinkAction(
+            navController = navController,
             uri = Uri.parse("rqes://oauth/callback?code=forged-code"),
         )
     }
