@@ -1590,7 +1590,11 @@ What the app enforces:
   rule: one that is not `https` is not shown as a link.
 * **RQES callback.** An `rqes` link resumes a signing only when its host and path are those of the
   callback the wallet registered with the QTSP (`BuildConfig.RQES_HOST`, `BuildConfig.RQES_PATH`),
-  as on iOS; any other link in the scheme is ignored.
+  as on iOS; any other link in the scheme is ignored. The wallet passes a callback to the RQES SDK
+  only when it carries both a `code` and a `state`, and ignores one that lacks either. The
+  authorization then fails, on the SDK's error screen, unless the `state` matches the one RQES
+  Core generated for that authorization request: a callback that answers another request does not
+  complete a signing.
 * **RQES document retrieval.** A link with the `eudi-rqes` scheme starts a signing only when its host
   matches `rqesDocRetrievalHost` (`BuildConfig.RQES_DOC_RETRIEVAL_HOST`), compared without regard
   to case. Set an exact host: the manifest's `*.domain` form is not supported by the check, so no

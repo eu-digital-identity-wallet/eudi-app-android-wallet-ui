@@ -106,11 +106,15 @@ fun handleDeepLinkAction(
         }
 
         DeepLinkType.RQES -> {
-            action.link.getQueryParameter("code")?.let { authorizationCode ->
+            safeLet(
+                action.link.getQueryParameter("code"),
+                action.link.getQueryParameter("state")
+            ) { authorizationCode, authorizationState ->
                 ignoreRqesSdkRefusal {
                     EudiRQESUi.resume(
                         context = navController.context,
-                        authorizationCode = authorizationCode
+                        authorizationCode = authorizationCode,
+                        authorizationState = authorizationState
                     )
                 }
             }
