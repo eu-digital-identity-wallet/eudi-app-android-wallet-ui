@@ -55,8 +55,9 @@ The app consumes the EUDI [Wallet Core](https://github.com/eu-digital-identity-w
   trust, reader/verifier authentication, and the registration certificates that establish what an
   issuer or verifier is registered to do. Registration-certificate checking is a runtime setting and
   ships **off**. Credential issuer trust uses `ENFORCE` for the configured PID types and `INFORM`
-  for other classified types in both reference flavors; no other type is classified there, so those
-  documents are not checked (see
+  for other classified types in both reference flavors; no other type is classified there, so the
+  issuer of those documents is not verified against the trusted lists, although its signature is
+  still checked before the document is stored (see
   [wiki/CONFIGURATION.md](wiki/CONFIGURATION.md))
  
 - Issuer functionality, to support development and testing, one can access an OID4VCI test/demo service for issuing at: 
@@ -82,7 +83,8 @@ To support proximity, the EUDI Verifier App is available [here](https://github.c
 The issuer, verifier service, and verifier app authentication are validated against the EUDIW
 development trusted lists (LoTE) in both flavors — see [wiki/CONFIGURATION.md](wiki/CONFIGURATION.md). 
 The `pidissuerca02_*` certificates under [`resources-logic/src/main/res/raw`](https://github.com/eu-digital-identity-wallet/eudi-app-android-wallet-ui/tree/main/resources-logic/src/main/res/raw)
-remain as the RQES document-retrieval trust anchors, not reader/verifier trust anchors.
+remain as the RQES document-retrieval trust anchors, not reader/verifier trust anchors; `pidissuerca02_eu` also
+anchors the signer of the development trusted lists (`loteSignerTrustAnchors`).
 
 ## Important things to know
 

@@ -164,9 +164,11 @@ fun provideWalletCoreTrustMarkController(
 )
 
 fun provideWalletCoreConfig(
-    registrationCheckProvider: RegistrationCheckProvider
+    registrationCheckProvider: RegistrationCheckProvider,
+    resourceProvider: ResourceProvider,
 ): WalletCoreConfig = WalletCoreConfigImpl(
-    registrationCheckProvider = registrationCheckProvider
+    registrationCheckProvider = registrationCheckProvider,
+    resourceProvider = resourceProvider,
 )
 
 fun provideWalletCoreLogController(

@@ -76,7 +76,7 @@ Use this checklist before the first production release.
 | Signing                 | Release keys are generated, stored in HSM/KMS or CI secret storage, rotated according to policy, and never committed.                                                                                                                                                         |
 | Issuers                 | All OpenID4VCI issuer URLs point to production issuer services controlled or approved by the implementer.                                                                                                                                                                     |
 | Wallet provider         | `walletProviderHost` points to the production Wallet Provider service and supports the expected attestation endpoints.                                                                                                                                                        |
-| Trust anchors           | Demo and development certificates are replaced by production IACA/reader/verifier trust anchors, or by a production ETSI trusted-list (LoTE) source with the dev relaxations removed.                                                                                         |
+| Trust anchors           | Demo and development certificates are replaced by production IACA/reader/verifier trust anchors, or by a production ETSI trusted-list (LoTE) source with the dev relaxations removed and the lists' signer anchored to the production list-signing certificate, or a CA that issues only list-signing certificates (`loteSignerTrustAnchors`). |
 | Registration            | Every production issuer and verifier presents a registration certificate that validates against the configured registration trusted list, every issuer is entitled for the provider role of what it offers, and every issuer's registered scope covers the documents it offers. Issuance is refused otherwise.                                  |
 | RQES                    | QTSP, TSA, client ID, redirect URI, and certificate retrieval settings are production values.                                                                                                                                                                                 |
 | Secrets                 | No production secret is hardcoded in Kotlin, Gradle, resources, or `BuildConfig`.                                                                                                                                                                                             |
@@ -477,9 +477,9 @@ Current code:
 
 ```kotlin
 configureDocumentKeyCreation(
-    userAuthenticationRequired = false,
-    userAuthenticationTimeout = 30.seconds,
-    useStrongBoxForKeys = true
+    userAuthentication = KeyProtectionPolicy.Disabled,
+    strongBox = KeyProtectionPolicy.IfSupported,
+    userAuthenticationTimeout = 30.seconds
 )
 ```
 
@@ -490,17 +490,17 @@ Meaning:
 
 | Value | Meaning | Production guidance |
 | --- | --- | --- |
-| `userAuthenticationRequired` | Whether document private keys require device user authentication before use. | For LoA High PID and other high-assurance EAA/QEAA credentials, set this to `true` unless an approved remote high-assurance key protection design replaces local key use. If `false`, the keys can be used without user authentication. The reference app asks for the PIN or a biometric before every credential release, but that prompt is a screen in the app, not a condition on the keys: a route to the send step that skipped the screen would release credentials without it. See [Authentication And Biometrics](#authentication-and-biometrics). |
+| `userAuthentication` | Whether document private keys require device user authentication before use (`KeyProtectionPolicy`). `Required` makes building `EudiWallet` fail with `KeyProtectionUnsupportedException` on a device without a screen lock; `IfSupported` creates the keys without it there; `Disabled` never requires it. `EudiWallet.keyProtectionState` gives the value that applies to the keys this build creates (keys created earlier keep the protection they were created with), which the app reads before a credential release. | For LoA High PID and other high-assurance EAA/QEAA credentials, use `Required`, paired with `AuthenticationConfig.requireDeviceSecure = true` so the wallet is not set up on a device without a screen lock, unless an approved remote high-assurance key protection design replaces local key use. If `Disabled`, the keys can be used without user authentication. The reference app asks for the PIN or a biometric before every credential release, but that prompt is a screen in the app, not a condition on the keys: a route to the send step that skipped the screen would release credentials without it. See [Authentication And Biometrics](#authentication-and-biometrics). |
 | `userAuthenticationTimeout` | Time window after authentication during which key use remains allowed. `0.seconds` means authentication is required for every key use. | Use the shortest approved value that still supports the intended flow. `0.seconds` is appropriate for isolated high-risk operations where one prompt per key use is acceptable. For batch issuing, a very short window such as `10.seconds` may be needed so one strong authentication can cover the batch without repeatedly prompting the user. |
-| `useStrongBoxForKeys` | Requests StrongBox-backed key storage where available. | Keep `true` for supported devices. Define fallback behavior for devices without StrongBox. Decide whether such devices are allowed, restricted, or rejected. |
+| `strongBox` | StrongBox-backed key storage (`KeyProtectionPolicy`). `IfSupported` creates the keys outside StrongBox on a device without it; `Required` makes building `EudiWallet` fail there (`KeyProtectionUnsupportedException`). | Keep `IfSupported` or `Required`. Decide whether devices without StrongBox are allowed (`IfSupported`) or rejected (`Required`). |
 
 Recommended production example for batch issuance:
 
 ```kotlin
 configureDocumentKeyCreation(
-    userAuthenticationRequired = true,
-    userAuthenticationTimeout = 10.seconds,
-    useStrongBoxForKeys = true
+    userAuthentication = KeyProtectionPolicy.Required,
+    strongBox = KeyProtectionPolicy.IfSupported,
+    userAuthenticationTimeout = 10.seconds
 )
 ```
 
@@ -508,9 +508,9 @@ Recommended production example for strict per-use authentication:
 
 ```kotlin
 configureDocumentKeyCreation(
-    userAuthenticationRequired = true,
-    userAuthenticationTimeout = 0.seconds,
-    useStrongBoxForKeys = true
+    userAuthentication = KeyProtectionPolicy.Required,
+    strongBox = KeyProtectionPolicy.IfSupported,
+    userAuthenticationTimeout = 0.seconds
 )
 ```
 
@@ -544,9 +544,9 @@ using:
 
 ```kotlin
 configureDocumentKeyCreation(
-    userAuthenticationRequired = true,
-    userAuthenticationTimeout = 10.seconds,
-    useStrongBoxForKeys = true
+    userAuthentication = KeyProtectionPolicy.Required,
+    strongBox = KeyProtectionPolicy.IfSupported,
+    userAuthenticationTimeout = 10.seconds
 )
 ```
 
@@ -854,7 +854,7 @@ Configure trust for registration certificates separately from reader authenticat
 registration-certificate list in `configureEtsiTrust`, or supply explicit trust through
 `configureWrpRegistrationTrust(...)` and `configureIssuerRegistrationTrust(...)`. Configure these
 trust sources before enabling registration checking: with the check on and nothing vouching for
-registration certificates (for issuers, when signed metadata is required), Wallet Core 0.31.1
+registration certificates (for issuers, when signed metadata is required), Wallet Core 0.32.0
 refuses to build `EudiWallet` (`IllegalArgumentException`).
 
 The repository still ships development/demo trust-anchor resources, although the reference
@@ -910,6 +910,7 @@ configureEtsiTrust {
       /* credential-type → context mapping */
     )
   )
+  loteSignerTrustAnchors(/* the certificate that signs your lists, or a CA that issues only list-signing certificates */)
 }
 configureIssuerTrust {
   policy {
@@ -945,10 +946,8 @@ setting. The wallet refuses an issuer that does not serve signed metadata, or wh
 signing certificate does not validate against the access-certificate list (`wrpacProviders`).
 Wallet Core checks this when an offer is resolved, when wallet-initiated issuance or re-issuance
 starts, and when the app reads an issuer's metadata. Registration checking adds a separate
-requirement for a verified, in-scope issuer registration. With registration checking off,
-wallet-initiated issuance and re-issuance check the signed metadata and then issue from the
-unsigned metadata the issuer also serves; an offer always issues from the signed metadata it was
-resolved with.
+requirement for a verified, in-scope issuer registration. Offers, wallet-initiated issuance and
+re-issuance all issue from the signed metadata, whether registration checking is on or off.
 
 Production requirements for a trusted-list deployment:
 
@@ -959,7 +958,7 @@ Production requirements for a trusted-list deployment:
   The first relaxation removes the end-entity certificate profile checks (ETSI TS 119 412-6 for PID
   and wallet-provider signing certificates, TS 119 411-8 for access certificates) from every list;
   the second turns off CRL and OCSP checking during chain validation. A certificate a list names
-  directly is not checked for revocation in either case. Without the call, Wallet Core 0.31.1 uses
+  directly is not checked for revocation in either case. Without the call, Wallet Core 0.32.0 uses
   `PkixRevocationPolicy.CRLPriority`: the CRL first, OCSP only when the CRL cannot be fetched, and
   the chain fails when neither answers. `SoftFail` checks the CRL only and accepts a chain whose CRL
   cannot be fetched.
@@ -978,7 +977,10 @@ Production requirements for a trusted-list deployment:
   performed".
 * Issuer trust: `ENFORCE` refuses a credential whose issuer is not trusted or cannot be evaluated;
   Wallet Core does not store it and reports `DocumentFailed`. `INFORM` stores the credential and
-  reports the verdict with it (`issuerTrustResult`).
+  reports the verdict with it (`issuerTrustResult`). Under both, Wallet Core refuses a credential
+  whose issuer signature does not verify with the first certificate of its own `x5c` (SD-JWT VC) or
+  x5chain (mdoc), that is not bound to the wallet's key, or, for an mdoc, whose digests or `docType`
+  do not match; an SD-JWT VC without `x5c` is refused.
 * Configure the registration-certificate list (`wrprcProviders`) and enable registration checking
   as described in the next section.
 * Status-list trust: Wallet Core checks a status list's signature against the certificate in the
@@ -1003,11 +1005,15 @@ Production requirements for a trusted-list deployment:
   must be signed, and an untrusted one is rejected when it is resolved. This choice decides whether
   the relying party must be authenticated before attributes are released; record the decision if
   unauthenticated readers are accepted.
-* Trusted-list signatures: the default verifier checks each list's JWS signature with the key of
-  the first certificate in its `x5c` header, without validating that certificate's chain, revocation
-  or profile. Define the trusted-list signature-verification requirements for your ecosystem.
-  Configure `jwtSignatureVerifier(...)` when custom verification is required, and verify rejection
-  of invalid signatures and unapproved signers.
+* Trusted-list signatures: the default verifier accepts a list only when the first certificate of
+  its `x5c` header is valid now, is one of the certificates passed to `loteSignerTrustAnchors(...)`
+  or chains to one of them, and verifies the list's JWS signature. A chain to a CA follows
+  `pkixRevocationPolicy`; a signer passed directly is not checked for revocation.
+  `configureEtsiTrust` fails without `loteSignerTrustAnchors(...)` or `jwtSignatureVerifier(...)`.
+  The reference flavors pass `pidissuerca02_eu`, the CA that issues the development lists' signing
+  certificate. Pass your scheme operator's list-signing certificate or the CA that issues only such
+  certificates, configure `jwtSignatureVerifier(...)` when custom verification is required, and
+  verify rejection of invalid signatures and unapproved signers.
 * Caches: a downloaded list is reused from disk until its own `nextUpdate`; `fileCacheExpiration`
   (24 hours) applies only when the list gives no future `nextUpdate`. Trust anchors are kept in
   memory for 20 minutes (`cacheTtl`), and refreshing them rereads the disk cache, so a removal from
@@ -1081,10 +1087,10 @@ Production requirements:
 * **Turn the registration check on**, and decide whether the switch stays user-visible. Shipping it
   on but toggleable leaves users able to disable a trust check; shipping it on and hidden — or
   fixing both policies to `Enabled` in your production flavor — is the stricter choice.
-* Keep signed metadata required (`requireSignedMetadata()`, the default inside
-  `configureIssuerTrust`). With `preferSignedMetadata()`, `ignoreSignedMetadata()` or no
-  `configureIssuerTrust`, Wallet Core skips issuer registration checking even when the policy is
-  `Enabled`, and only logs it.
+* Keep signed metadata required (`requireSignedMetadata()`, the default, also when
+  `configureIssuerTrust` is omitted and `configureEtsiTrust` provides the trust source). With
+  `preferSignedMetadata()`, `ignoreSignedMetadata()` or `doNotVerify()`, Wallet Core skips issuer
+  registration checking even when the policy is `Enabled`, and only logs it.
 * Configure the registration-certificate trusted list (`wrprcProviders`) alongside the others.
   Without it, registration certificates have no trust source, and issuance is refused rather than
   waved through.
@@ -2309,7 +2315,7 @@ Production decisions:
 | Session duration | The wallet locks after `AuthenticationConfig.backgroundLockTimeout` in the background (default 60 seconds) and after `idleLockTimeout` without interaction on any of the wallet's screens (default 5 minutes). The RQES SDK's signing screens are a separate activity whose interaction the wallet cannot see: while they are in front the idle lock gives way to `protectedFlowLockTimeout`, and returning to the wallet after that long requires login. While an issuance, presentation, signing or factory reset is in progress, the background limit is `protectedFlowLockTimeout` instead (default 10 minutes), because issuance and signing send the user to a website and back, and a reset must not be interrupted. Tune all three for your assurance level; production wallets usually lock sooner. Every credential release already asks for the PIN or a biometric. |
 | PIN length | Current UI defaults to 6 digits. Confirm policy. |
 | PIN strength | A new PIN is refused when it is one digit repeated (`000000`), an ascending or descending run (`123456`, `654321`), or on `AuthenticationConfig.commonPins`, a short list of common PINs. The check applies when the PIN is created and when it is changed. Extend the list to match your policy. |
-| Device screen lock | During setup the PIN screen, and at each login the login screen, check `KeyguardManager.isDeviceSecure()`. On a device without a screen lock they show a warning and the user goes on; with `AuthenticationConfig.requireDeviceSecure = true` setup or login stops until a lock is set, and the check runs again when the user returns from the device settings. A screen lock removed after setup is therefore noticed at the next login. Other uses of these screens (changing the PIN, and the confirmation before a presentation, a reset or the biometric switch) are not affected. Wallet Core does not refuse `userAuthenticationRequired = true` on a device without a screen lock: when `EudiWallet` is built it sets the option to false and creates keys without user authentication (`EudiWallet.Builder.ensureUserAuthIsSupported`), and StrongBox falls back the same way. Where key-level protection is required, also set `requireDeviceSecure = true`. With it, removing the screen lock later stops the next login until a lock is set again; decide what happens to keys bound to user authentication, which Android invalidates when the screen lock is removed. |
+| Device screen lock | During setup the PIN screen, and at each login the login screen, check `KeyguardManager.isDeviceSecure()`. On a device without a screen lock they show a warning and the user goes on; with `AuthenticationConfig.requireDeviceSecure = true` setup or login stops until a lock is set, and the check runs again when the user returns from the device settings. A screen lock removed after setup is therefore noticed at the next login. Other uses of these screens (changing the PIN, and the confirmation before a presentation, a reset or the biometric switch) are not affected. With `userAuthentication = KeyProtectionPolicy.Required`, Wallet Core refuses to build `EudiWallet` on a device without a screen lock (`KeyProtectionUnsupportedException`); with `IfSupported` it creates the keys without user authentication there, and `EudiWallet.keyProtectionState` says so. StrongBox follows its own policy the same way. Where key-level protection is required, use `Required`, also set `requireDeviceSecure = true`, and test how the app behaves when building `EudiWallet` throws that exception. With `requireDeviceSecure = true`, removing the screen lock later stops the next login until a lock is set again; decide what happens to keys bound to user authentication, which Android invalidates when the screen lock is removed. |
 | PIN lockout policy | Defaults to 3 attempts then escalating lockouts of 30s, 90s, 5m (then 5m repeats). Tune via `AuthenticationConfig.maxFailedPinAttempts` and `pinLockoutDurations`. Decide whether the final tier should escalate further (wipe, support flow, device credential step-up). |
 | Recovery | Define what happens if user forgets PIN or changes biometrics. |
 
@@ -2361,10 +2367,10 @@ Session lock:
   asked for, a later visit to the signing service from a screen off the protected list has the
   normal background limit, so a login can come before the signing resumes.
 * The prompt before each credential release is a screen in the app. With
-  `userAuthenticationRequired = false` the keys themselves do not require user authentication, so a route to
-  the send step that skipped that screen would be unprotected. Keep internal screens unexported (see [Deep
-  Links And Redirect URIs](#deep-links-and-redirect-uris)), and use `userAuthenticationRequired = true` where the assurance level requires
-  key-level protection.
+  `userAuthentication = KeyProtectionPolicy.Disabled` the keys themselves do not require user authentication,
+  so a route to the send step that skipped that screen would be unprotected. Keep internal screens unexported
+  (see [Deep Links And Redirect URIs](#deep-links-and-redirect-uris)), and use
+  `userAuthentication = KeyProtectionPolicy.Required` where the assurance level requires key-level protection.
 
 Critical point:
 
@@ -2736,7 +2742,7 @@ Project-specific actions:
 
 * Review the PIN lockout policy (`AuthenticationConfig.maxFailedPinAttempts`, `pinLockoutDurations`).
 * Decide device credential fallback policy.
-* Consider `userAuthenticationRequired = true` for document keys.
+* Consider `userAuthentication = KeyProtectionPolicy.Required` for document keys.
 * Test biometric enrollment changes.
 * Test authentication bypass attempts.
 * Confirm that turning biometric unlock on asks for the PIN.

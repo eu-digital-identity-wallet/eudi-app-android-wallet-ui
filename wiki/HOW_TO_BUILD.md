@@ -220,8 +220,10 @@ by reference unless it is hosted on that issuer's `https` origin.
 
 The reference trust configuration also applies to local services. The issuer's metadata must be
 signed with a certificate on the `wrpacProviders` list, and a PID issuer must be on `pidProviders`.
-The hosted development lists do not contain your services, so point `loteLocations` at lists that do
-(see [CONFIGURATION.md](CONFIGURATION.md#general-configuration)). With *Check Registration
+The hosted development lists do not contain your services, so point `loteLocations` at lists that do,
+and pass the certificate that signs those lists, or a CA that issues only list-signing certificates, to
+`loteSignerTrustAnchors(...)` (see
+[CONFIGURATION.md](CONFIGURATION.md#general-configuration)). With *Check Registration
 Certificates* on, the issuer also needs a registration certificate on `wrprcProviders`.
 
 The wallet opens a verifier's redirect only if it is an `https` URL, and loads issuer logos only over
