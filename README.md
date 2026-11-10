@@ -34,7 +34,7 @@ The EUDI Wallet Reference Implementation is based on a modular architecture comp
 
 The EUDI Wallet Reference Implementation is the application that allows users to:
 
-1. To obtain, store, and present PID and mDL.
+1. Obtain, store, and present PID and mDL.
 2. Verify presentations.
 3. Share data on proximity scenarios.
 4. Support remote QES and more use cases with the modules included.
@@ -43,7 +43,7 @@ The EUDIW project provides, through this repository, an Android app. Please refe
  
 ## Specifications Employed
 
-The app consumes the SDK called EUDIW Wallet core [Wallet core](https://github.com/eu-digital-identity-wallet/eudi-lib-android-wallet-core) and a list of available libraries to facilitate remote presentation, proximity, and issuing test/demo functionality following the specification of the [ARF](https://github.com/eu-digital-identity-wallet/eudi-doc-architecture-and-reference-framework), including:
+The app consumes the EUDI [Wallet Core](https://github.com/eu-digital-identity-wallet/eudi-lib-android-wallet-core) SDK and a list of available libraries to facilitate remote presentation, proximity, and issuing test/demo functionality following the specification of the [ARF](https://github.com/eu-digital-identity-wallet/eudi-doc-architecture-and-reference-framework), including:
  
 - OpenID4VP - v1 (remote presentation), DCQL
  
@@ -55,7 +55,8 @@ The app consumes the SDK called EUDIW Wallet core [Wallet core](https://github.c
   trust, reader/verifier authentication, and the registration certificates that establish what an
   issuer or verifier is registered to do. Registration-certificate checking is a runtime setting and
   ships **off**. Credential issuer trust uses `ENFORCE` for the configured PID types and `INFORM`
-  for other attestations in both reference flavors (see
+  for other classified types in both reference flavors; no other type is classified there, so those
+  documents are not checked (see
   [wiki/CONFIGURATION.md](wiki/CONFIGURATION.md))
  
 - Issuer functionality, to support development and testing, one can access an OID4VCI test/demo service for issuing at: 
@@ -90,10 +91,10 @@ The main purpose of the reference implementation is to showcase the ecosystem an
 If you're planning to use this application in production, we recommend reviewing the following steps:
 - Configure the application properly by following the guide [here](wiki/CONFIGURATION.md)
 - Follow the production go-live guide [here](wiki/GO_LIVE.md) before creating a release candidate.
-- The session lock suits your assurance level: the timeouts in `AuthenticationConfig`, and the screens it
+- Check that the session lock suits your assurance level: the timeouts in `AuthenticationConfig`, and the screens it
   treats as login and protected-flow screens in `ConfigUILogic`. See [wiki/GO_LIVE.md](wiki/GO_LIVE.md#authentication-and-biometrics).
-- The Pin storage configuration matches your security requirements, or provide your own by following this guide [Pin Storage Configuration](wiki/CONFIGURATION.md#pin-storage-configuration)
-- The application meets the OWASP MASVS industry standard. Please refer to the following links for further information on the controls you must implement to ensure maximum compliance:
+- Check that the PIN storage configuration matches your security requirements, or provide your own by following [Pin Storage Configuration](wiki/CONFIGURATION.md#pin-storage-configuration).
+- Make sure your application meets the OWASP MASVS industry standard. The following link describes the controls you must implement:
     - [OWASP MASVS](https://mas.owasp.org/MASVS/)
 - Issuers and verifiers are trusted on two independent layers: an access certificate proves who
   they are, and a registration certificate establishes what they are registered to do. The first is
@@ -126,7 +127,7 @@ You will also need to download the EUDI Verifier app. More information can be fo
 ### App launch
 
 1. Launch the application
-2. You will be presented with a welcome screen where you will be asked to create a PIN for future logins.
+2. You will see the Trust Mark introduction, then a welcome screen where you will be asked to create a PIN for future logins.
    PINs that are easy to guess, such as `000000`, `123456` or `654321`, are refused. If the device has
    no screen lock, the PIN screen suggests setting one, and the login screen repeats it at each login.
 
@@ -156,7 +157,7 @@ for your PIN, then for your biometric. Turning it off asks for the PIN or a biom
 ### Issuance flow (Credential Offer - Issuer-initiated)
 
 1. Go to the "Dashboard" screen, navigate to the "Documents" tab, and tap the "+" icon (top-right of the screen). Select "Scan QR".
-2. Scan the QR code from the issuer's website [EUDI Issuer](https://issuer.eudiw.dev/credential_offer)
+2. Scan the QR code from the issuer's website [EUDI Issuer](https://issuer.eudiw.dev/credential_offer) (demo flavor; for the dev flavor, use the offer page of `ec.dev.issuer.eudiw.dev`)
 3. Review the documents included in the credential offer and tap "Add".
 4. In the web view that appears, select "Country Selection", then "FormEU", and tap "Submit".
 5. Fill in the form. Any data will suffice, but selecting a birth date over 18 is recommended, as it is required for certain app functionalities (e.g., RQES).
@@ -197,7 +198,7 @@ stays blocked even if its status later reads valid; a suspended document is bloc
 re-issued, and is shown as suspended until the issuer reinstates it. If the status could not be
 checked, for example while offline, the document's details say so.
 
-### Presentation (Online authentication/Same device) flow.
+### Presentation (Online authentication/Same device) flow
 
 1. Go to the browser application on your device and enter "https://verifier.eudiw.dev"
 2. Expand the Person Identification Data (PID) card and select:
@@ -270,9 +271,10 @@ Wallet removes its documents from the picker and declines such requests.
    with the Verifier. You must select at least one attribute to proceed. As in the remote flow, and
    only while registration-certificate checking is enabled, a reader whose registration certificate
    is missing or cannot be validated raises a warning that keeps "Share" disabled until you
-   acknowledge it. A reader that sends no reader authentication, or one that cannot be verified,
-   raises a warning in every configuration, and "Share" stays disabled until you acknowledge it. A
-   reader whose authentication fails verification receives no data even if you share.
+   acknowledge it. A reader that sends no reader authentication, or one whose authentication cannot be
+   verified, raises a warning in every configuration, and "Share" stays disabled until you acknowledge
+   it. A reader that sent reader authentication that is not trusted (an invalid signature or an
+   untrusted certificate) receives no data even if you share.
    If the request includes your portrait, a notice says that it can be used as biometric data. The
    portrait is selected like the other attributes; while it stays selected, "Share" first asks you
    to confirm on a "Share your portrait?" sheet.
@@ -302,7 +304,7 @@ See [wiki/GO_LIVE.md](wiki/GO_LIVE.md#data-deletion-and-factory-reset) for what 
 
 ## How to build - Quick start guide
 
-[This document](wiki/HOW_TO_BUILD.md) describes how you can build the application and deploy the issuing and verification services locally.
+[This document](wiki/HOW_TO_BUILD.md) describes how you can build the application and connect it to hosted or locally running issuing and verification services.
 
 ## Application configuration
 
@@ -339,8 +341,6 @@ graph TD;
   test-logic --> business-logic
   test-logic --> ui-logic
   test-logic --> network-logic
-  test-logic --> resources-logic
-  test-logic --> analytics-logic
   test-logic --> authentication-logic
   test-logic --> core-logic
   test-logic --> storage-logic
@@ -358,21 +358,23 @@ graph TD;
   analytics-logic --> common-feature 
   authentication-logic --> common-feature 
   core-logic --> common-feature
-  storage-logic --> common-feature 
 
   business-logic --> core-logic
   resources-logic --> core-logic
   authentication-logic --> core-logic
+  network-logic --> core-logic
+  storage-logic --> core-logic
 
   business-logic --> ui-logic
   resources-logic --> ui-logic
   analytics-logic --> ui-logic
+  core-logic --> ui-logic
+  storage-logic --> ui-logic
+  authentication-logic --> ui-logic
 
   business-logic --> network-logic
   
   business-logic --> storage-logic
-
-  resources-logic --> storage-logic
 
   resources-logic --> business-logic
 

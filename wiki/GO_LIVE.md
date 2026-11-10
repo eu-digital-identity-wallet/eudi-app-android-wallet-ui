@@ -106,6 +106,7 @@ The application is a modular Android project. Important modules for production a
 | `authentication-logic`       | PIN and biometric storage providers and controllers, PIN throttle/lockout, authentication configuration.                               |
 | `storage-logic`              | SQLCipher-backed Room database and local transaction/revocation storage.                                                               |
 | `network-logic`              | Ktor client, its timeouts and response-size limit (`NetworkConfig`), logging level, wallet attestation repository.                     |
+| `ui-logic`                   | Session-lock screen lists, user-image claim keys, screen-capture prevention (`ConfigUILogicImpl`).                                     |
 | `resources-logic`            | Strings, images, raw certificate resources.                                                                                            |
 | `analytics-logic`            | Optional analytics provider integration.                                                                                               |
 | `build-logic`                | Gradle convention plugins, flavors, deep-link constants, lint, dependency check, managed devices.                                      |
@@ -149,7 +150,7 @@ Keep these files under strict review:
 | `business-logic/src/main/res/xml/backup_rules.xml`                                                        | Auto Backup policy for Android 11 and below: every domain excluded.                                  |
 | `business-logic/src/main/res/xml/data_extraction_rules.xml`                                               | Cloud backup and device transfer policy for Android 12 and above: every domain excluded from both.   |
 | `authentication-logic/src/main/java/eu/europa/ec/authenticationlogic/storage/PrefsPinStorageProvider.kt`  | PIN hashing, salt, iteration count, constant-time comparison.                                        |
-| `authentication-logic/src/main/java/eu/europa/ec/authenticationlogic/config/AuthenticationConfig.kt`      | PIN lockout policy, and the session lock timeouts.                                                   |
+| `authentication-logic/src/main/java/eu/europa/ec/authenticationlogic/config/AuthenticationConfig.kt`      | PIN lockout policy, common-PIN list, device screen-lock requirement (`requireDeviceSecure`) and the session lock timeouts. |
 | `network-logic/src/main/java/eu/europa/ec/networklogic/config/NetworkConfig.kt`                         | HTTP client timeouts and the response-size limit.                                                    |
 | `ui-logic/src/main/java/eu/europa/ec/uilogic/config/ConfigUILogicImpl.kt` | Login and protected-flow screen lists used by the session lock, the claims that hold a picture of the holder, and whether screen capture is prevented. |
 | `authentication-logic/src/main/java/eu/europa/ec/authenticationlogic/storage/PrefsPinThrottleProvider.kt` | Persisted PIN failure counter, lockout level, and the lockout on the elapsed real time and boot.     |
@@ -210,6 +211,9 @@ Recommended production behavior:
   distinguish non-production builds from the production wallet.
 * Do not publish a `dev` or `demo` variant to a production distribution channel.
 
+The reference code gives only `Dev` a suffix (`.dev`) and no flavor a name suffix; add them as shown,
+or `demo` and `prod` builds replace each other on a device.
+
 After this change, the expected app identities are:
 
 | Flavor | Example application ID behavior | Example app name behavior |
@@ -228,6 +232,10 @@ business-logic/src/prod/java/eu/europa/ec/businesslogic/config/ConfigLogicImpl.k
 business-logic/src/prod/java/eu/europa/ec/businesslogic/config/RQESConfigImpl.kt
 ```
 
+Also add launcher icons for the flavor under `resources-logic/src/prod/res/mipmap-*/`: `ic_launcher`
+and `ic_launcher_round` exist only in the `dev` and `demo` source sets, so without them `prodRelease`
+fails to link its resources.
+
 In `ConfigLogicImpl`, set the production flavor explicitly:
 
 ```kotlin
@@ -245,13 +253,6 @@ Example:
 enum class AppFlavor {
     DEV, DEMO, PROD
 }
-```
-
-Then in production:
-
-```kotlin
-override val appFlavor: AppFlavor
-    get() = AppFlavor.PROD
 ```
 
 ### 3. Build The Production Variant
@@ -377,7 +378,8 @@ The repository already includes:
 * OWASP Dependency Check plugin.
 * Sonar plugin.
 * Kover test coverage setup.
-* GitHub workflow callers for dependency check, gitleaks, and Sonar.
+* GitHub workflow callers for code coverage (Kover), CodeQL and SonarCloud, and a Dependabot
+  configuration. No workflow runs `dependencyCheckAnalyze` or a secret scan.
 * Fastlane lanes for tests, Firebase distribution, tagging, and GitHub releases.
 
 For production, the minimum release pipeline should run:
@@ -425,7 +427,8 @@ Production rules:
 * Generate and archive an SBOM for every release.
 * Keep `google()` and `mavenCentral()` as primary repositories.
 * Avoid `mavenLocal()` in production CI builds because it can make builds non-reproducible.
-* Only keep JitPack if every dependency from it is approved and pinned.
+* Remove the Sonatype snapshots repository and `mavenLocal()` from `settings.gradle.kts`, and
+  `mavenLocal()` from `build-logic/settings.gradle.kts`, for production builds.
 
 ## WalletCoreConfig Overview
 
@@ -810,8 +813,8 @@ configureDCAPI {
 Production guidance:
 
 * Keep enabled only if your product supports Android Digital Credential API flows.
-* When enabled, at least one supported protocol is mandatory — `DCAPIConfig` fails at build time
-  otherwise. A request for any protocol not listed is rejected.
+* When enabled, at least one supported protocol is mandatory — otherwise `DCAPIConfig` throws
+  `IllegalArgumentException` when the configuration is built, at app start. A request for any protocol not listed is rejected.
 * Enable only the protocols approved by your ecosystem profile. Do not enable
   `OPENID4VP_V1_UNSIGNED` unless unsigned (unauthenticated) OpenID4VP requests over the DC API are
   explicitly acceptable.
@@ -820,9 +823,8 @@ Production guidance:
   Android credential registry and declines any request that still arrives through the API; turning
   it back on registers the documents again. If the system registry cannot be cleared, for example
   on a device without Google Play services, the entries may remain until a later update succeeds,
-  but requests are still declined. The switch is shown only when the build enables the API. HLR.48
-  and IA.30 ask for this control in the user's hands, so keep it in production builds; the build
-  setting alone does not meet them.
+  but requests are still declined. The switch is shown only when the build enables the API. Keep it
+  in production builds: the build setting alone does not give users this choice.
 * A document the revocation check has blocked (revoked, suspended or unrecognised) is left out of
   the registry, so it is not offered to other apps. At the end of each run the revocation check
   updates the registry when the blocked documents differ from those it last left out
@@ -856,7 +858,7 @@ registration certificates (for issuers, when signed metadata is required), Walle
 refuses to build `EudiWallet` (`IllegalArgumentException`).
 
 The repository still ships development/demo trust-anchor resources, although the reference
-flavors no longer load them for reader trust. If your deployment uses the static model, in
+flavors do not load them for reader trust. If your deployment uses the static model, in
 production:
 
 * Remove trust anchors that are not part of the production trust framework.
@@ -889,7 +891,7 @@ Certificate governance:
 
 Both reference flavors (`dev` and `demo`) configure ETSI TS 119 602 trusted lists in
 `WalletCoreConfigImpl.kt`. Their credential issuer-trust policy uses `ENFORCE` for the configured
-mdoc and SD-JWT PID types and defaults to `INFORM` for other attestations. The Wallet classifies
+mdoc and SD-JWT PID types and defaults to `INFORM` for other attestations. The wallet classifies
 only those PID types. See [CONFIGURATION.md](CONFIGURATION.md) for the reference configuration
 and its expected behavior.
 
@@ -986,7 +988,7 @@ Production requirements for a trusted-list deployment:
   blocked, but a suspension can be lifted). Use `ENFORCE` for status-list trust in production, with
   classifications covering every supported type; a rule for one type uses the status context, for
   example `forContext(VerificationContext.PIDStatus, TrustPolicy.Action.ENFORCE)`. This choice
-  answers IA.19 on the authenticity of revocation information, as the audit maps it. A failed
+  decides whether revocation information is authenticated. A failed
   status refresh leaves the document's last known state in place and is shown in document details.
   Verify trusted, untrusted and unavailable status-list cases.
 * Reader authentication: choose the policy explicitly. The reference flavors use
@@ -998,9 +1000,9 @@ Production requirements for a trusted-list deployment:
   reader whose authentication fails verification receives an empty response with status 10, even if
   the user shares. `alwaysRequire()` gives that empty response to both. Remote OpenID4VP behaves
   the same under either setting: with the `X509SanDns` and `X509Hash` client-ID schemes a request
-  must be signed, and an untrusted one is rejected when it is resolved. This choice answers HLR.32
-  and IA.22, which require the relying party to be authenticated before attributes are released;
-  record the decision if unauthenticated readers are accepted.
+  must be signed, and an untrusted one is rejected when it is resolved. This choice decides whether
+  the relying party must be authenticated before attributes are released; record the decision if
+  unauthenticated readers are accepted.
 * Trusted-list signatures: the default verifier checks each list's JWS signature with the key of
   the first certificate in its `x5c` header, without validating that certificate's chain, revocation
   or profile. Define the trusted-list signature-verification requirements for your ecosystem.
@@ -1044,8 +1046,8 @@ setting, which the reference build ships **off**. One setting drives both the is
 While it is off, nothing is evaluated on registration grounds: nothing is refused or warned about
 over a registration, and the verified indicator falls back to the access certificate alone.
 **A production deployment must turn it on** — and should decide whether to keep the switch
-reachable by users at all, since it turns a trust check off. Wallet Core reads the setting when it
-creates its managers, so a change, including the return to off by **Reset wallet**, takes effect
+reachable by users at all, since it turns a trust check off. The app reads the setting once per
+process, when it builds the Wallet Core configuration (`WalletCoreConfigImpl.isRegistrationCheckEnabled`), so a change, including the return to off by **Reset wallet**, takes effect
 at the next app start.
 
 Everything below describes behavior with the setting on, except where noted. The app treats the
@@ -1079,6 +1081,10 @@ Production requirements:
 * **Turn the registration check on**, and decide whether the switch stays user-visible. Shipping it
   on but toggleable leaves users able to disable a trust check; shipping it on and hidden — or
   fixing both policies to `Enabled` in your production flavor — is the stricter choice.
+* Keep signed metadata required (`requireSignedMetadata()`, the default inside
+  `configureIssuerTrust`). With `preferSignedMetadata()`, `ignoreSignedMetadata()` or no
+  `configureIssuerTrust`, Wallet Core skips issuer registration checking even when the policy is
+  `Enabled`, and only logs it.
 * Configure the registration-certificate trusted list (`wrprcProviders`) alongside the others.
   Without it, registration certificates have no trust source, and issuance is refused rather than
   waved through.
@@ -1127,6 +1133,15 @@ override val issuersConfig: List<VciConfig>
                 .withAuthFlowRedirectionURI(BuildConfig.ISSUE_AUTHORIZATION_DEEPLINK)
                 .withParUsage(OpenId4VciManager.Config.ParUsage.IF_SUPPORTED)
                 .withDPopConfig(DPopConfig.Default)
+                .withSupportedCredentialReusePolicies(
+                    CredentialReusePolicies.Supported(
+                        policyTypes = setOf(
+                            EudiReusePolicyType.RotatingBatch,
+                            EudiReusePolicyType.OnceOnly,
+                            EudiReusePolicyType.LimitedTime
+                        )
+                    )
+                )
                 .build(),
             order = 0
         )
@@ -1159,8 +1174,7 @@ settings, which would send that issuer's client identifier and attestation to a 
   A refused offer fails with "This offer comes from an issuer that this wallet is not set up to use",
   and an unusable offer link with "Unable to fetch and process the credential offer".
 * An offer whose transaction code has no length, a length outside 4 to 6 digits, or text input is
-  refused with the transaction-code error (`DocumentOfferInteractor.resolveDocumentOffer`), as on
-  iOS.
+  refused with the transaction-code error (`DocumentOfferInteractor.resolveDocumentOffer`).
 * Re-issuance, deferred issuance and the authorization redirect use the configured issuer that
   issued the document, and fail if there is none.
 * Issuer identifiers are compared exactly. Set `issuerUrl` to the issuer's `credential_issuer` value as
@@ -1294,27 +1308,29 @@ errors are handled by the browser.
 
 `WalletCoreConfig.documentIssuanceConfig` holds the wallet's per-document issuance and re-issuance
 defaults. They apply when the issuer does not advertise a credential reuse policy; when it does, the
-issuer's policy takes precedence and these act as the fallback.
+issuer's policy takes precedence and these act as the fallback, provided the issuer's `VciConfig`
+declares the policy types the wallet supports (`withSupportedCredentialReusePolicies`). Without it,
+no issuer option counts as supported and these defaults always apply.
 
 ```kotlin
 DocumentIssuanceConfig(
   defaultPolicy = CredentialPolicy.RotatingBatch(
     numberOfCredentials = 1,
     reissueTriggerLifetimeLeft = 24.hours
-    ),
+  ),
   documentSpecificPolicies = mapOf(
     DocumentIdentifier.MdocPid to CredentialPolicy.OnceOnly(
       numberOfCredentials = 10,
       reissueTriggerUnused = 2
-        ),
+    ),
     DocumentIdentifier.SdJwtPid to CredentialPolicy.OnceOnly(
       numberOfCredentials = 10,
       reissueTriggerUnused = 2
-        ),
     ),
-    reissuanceRule = ReIssuanceRule(
-      backgroundInterval = 15.minutes
-    )
+  ),
+  reissuanceRule = ReIssuanceRule(
+    backgroundInterval = 15.minutes
+  )
 )
 ```
 
@@ -1334,7 +1350,7 @@ Meaning:
 | `reissueTriggerLifetimeLeft` (`RotatingBatch`/`LimitedTime`) | Reissue when the remaining validity is at or below this.                                  | Set according to credential validity and issuer SLA.                                  |
 | `backgroundInterval` (`ReIssuanceRule`)                      | WorkManager interval for reissuance checks.                                               | Android periodic work minimum is effectively 15 minutes. Avoid excessive issuer load. |
 
-The re-issuance thresholds now travel with each credential's stored policy (`reissueTriggerUnused` /
+The re-issuance thresholds travel with each credential's stored policy (`reissueTriggerUnused` /
 `reissueTriggerLifetimeLeft`); `ReIssuanceRule` only controls how often the background check runs.
 
 Production questions:
@@ -1440,8 +1456,8 @@ The app enqueues `RevocationWorkManager`, which:
   [Data Deletion And Factory Reset](#data-deletion-and-factory-reset) for scheduling and recovery
   details. A periodic run that starts as the process starts, or one already running when the user
   opens the wallet, reads the previous run's session id and opens a second Wallet Core instance on the
-  same storage, as in earlier releases. Removing that needs one
-  session id shared by the process's workers and screens. To run no check before login, make the
+  same storage. To avoid this, share one session id between the process's workers and
+  screens. To run no check before login, make the
   workers skip while the session is locked; they then run only while the wallet is in use.
 * Records no refresh failure when the status-resolution result indicates that the document has
   no supported status reference.
@@ -1478,7 +1494,7 @@ Production RQES config lives in:
 business-logic/src/prod/java/eu/europa/ec/businesslogic/config/RQESConfigImpl.kt
 ```
 
-Current demo/dev code includes:
+Current demo code includes (the dev flavor uses `https://walletcentric.signer.dev.eudiw.dev/csc/v2`):
 
 ```kotlin
 QtspData(
@@ -1486,7 +1502,7 @@ QtspData(
     endpoint = "https://walletcentric.signer.eudiw.dev/csc/v2".toUriOrEmpty(),
     tsaUrl = "https://timestamp.sectigo.com/qualified",
     clientId = "wallet-client",
-    clientSecret = "demo-secret-placeholder",
+    clientSecret = "somesecret2",
     authFlowRedirectionURI = URI.create(BuildConfig.RQES_DEEPLINK),
     hashAlgorithm = HashAlgorithmOID.SHA_256,
 )
@@ -1589,8 +1605,8 @@ What the app enforces:
 * **Privacy-policy links** from a verifier's or an issuer's registration certificate follow the same
   rule: one that is not `https` is not shown as a link.
 * **RQES callback.** An `rqes` link resumes a signing only when its host and path are those of the
-  callback the wallet registered with the QTSP (`BuildConfig.RQES_HOST`, `BuildConfig.RQES_PATH`),
-  as on iOS; any other link in the scheme is ignored. The wallet passes a callback to the RQES SDK
+  callback the wallet registered with the QTSP (`BuildConfig.RQES_HOST`, `BuildConfig.RQES_PATH`);
+  any other link in the scheme is ignored. The wallet passes a callback to the RQES SDK
   only when it carries both a `code` and a `state`, and ignores one that lacks either. The
   authorization then fails, on the SDK's error screen, unless the `state` matches the one RQES
   Core generated for that authorization request: a callback that answers another request does not
@@ -1680,8 +1696,8 @@ Current notable settings:
 | Setting | Current value | Production guidance |
 | --- | --- | --- |
 | `android:allowBackup` | `false` | Keep false. |
-| `android:dataExtractionRules` | Present | Explicitly exclude sensitive files, not only empty placeholder rules. |
-| `android:fullBackupContent` | Present | Explicitly exclude sensitive files for older Android versions. |
+| `android:dataExtractionRules` | Present: every domain excluded from cloud backup and device transfer | Keep. Check any storage you add against it. |
+| `android:fullBackupContent` | Present: every domain excluded (Android 11 and below) | Keep. |
 | `android:largeHeap` | `true` | Reassess. Remove unless required and justified by profiling. |
 | Main activity | `exported=true` | Required for launcher and external flows. Harden all intent handling. |
 | NFC service | `exported=true` with `BIND_NFC_SERVICE` | Confirm required for NFC engagement and test exported-service behavior. |
@@ -1697,7 +1713,8 @@ Backup rules:
 
 `business-logic/src/main/res/xml/data_extraction_rules.xml`
 
-The current files are mostly placeholders. Production should explicitly exclude:
+Both files exclude every domain, so none of the following leaves the device. Keep it that way if you
+change the rules:
 
 * Wallet document storage.
 * SQLCipher database.
@@ -1707,24 +1724,7 @@ The current files are mostly placeholders. Production should explicitly exclude:
 * Cache files containing QR, documents, PDFs, or transactions.
 * Any exported or temporary signing documents.
 
-Example shape:
-
-```xml
-<data-extraction-rules>
-    <cloud-backup disableIfNoEncryptionCapabilities="true">
-        <exclude domain="file" path="." />
-        <exclude domain="database" path="." />
-        <exclude domain="sharedpref" path="." />
-    </cloud-backup>
-    <device-transfer>
-        <exclude domain="file" path="." />
-        <exclude domain="database" path="." />
-        <exclude domain="sharedpref" path="." />
-    </device-transfer>
-</data-extraction-rules>
-```
-
-Adapt the exact domains and paths after inspecting final storage locations.
+If you relax the rules, re-check every storage location against this list first.
 
 ## Network Security
 
@@ -1740,8 +1740,8 @@ Keep cleartext traffic disabled.
 
 Production network rules:
 
-* Never use the trust-all self-signed certificate code from the local build documentation in
-  production.
+* Never ship a trust-all trust manager or a disabled hostname verifier, including one added for a
+  local experiment (see [HOW_TO_BUILD.md](HOW_TO_BUILD.md)).
 * All issuer, verifier, wallet provider, QTSP, TSA, status, certificate revocation (CRL and OCSP),
   analytics, and telemetry endpoints must use HTTPS. For CRL and OCSP this binds the certificate
   authorities that publish them; see [ETSI Trusted Lists (LoTE)](#etsi-trusted-lists-lote).
@@ -1806,7 +1806,8 @@ Images from metadata:
 
 ## Local Development With Self-Signed Certificates
 
-The build and configuration docs now recommend debug-only CA trust for local services.
+The build documentation ([HOW_TO_BUILD.md](HOW_TO_BUILD.md)) recommends a debug-only CA trust anchor for local
+services.
 
 Production rule:
 
@@ -1871,7 +1872,7 @@ Production guidance:
 * 210,000 iterations.
 * Constant-time hash comparison.
 * Encrypted preference storage through `PrefsController`.
-* An empty PIN is never stored: `setPin` refuses it, as on iOS.
+* An empty PIN is never stored: `setPin` refuses it.
 
 Production guidance:
 
@@ -1954,10 +1955,12 @@ The database stores:
 * The issuer-trust verdict for each document.
 * The last failed status refresh for each document.
 
-**Transaction log contents.** Wallet Core produces each history entry in the TS10 model, and the
-app stores it as JSON in the `transactionLogs` table. The log records the relying party, the
-attestation types and the identifiers of the attributes requested and presented, never their
-values; this is the rule the ARF and the Implementing Acts set for it. With the integrated Wallet
+**Transaction log contents.** Each history entry uses Wallet Core's TS10 model (`TransactionEntry`).
+Wallet Core writes presentation, issuance and deletion entries, and the app writes signing entries
+from the RQES SDK's record; the app stores each as JSON in the `transactionLogs` table. The log
+records the relying party, the attestation types and the identifiers of the attributes requested and
+presented, never the attributes' values, as the ARF and the Implementing Acts require. Transaction
+data is the exception: it is recorded in full (see below). With the integrated Wallet
 Core version:
 
 * a presentation entry records the requested and presented claims as attestation type (mdoc
@@ -1976,7 +1979,7 @@ Core version:
   document's name and size, and the DTBSR.
 
 Beside each presentation entry, the app records whether the relying party's registration was
-verified (`registrationCheck` and `registrationFailureReason`; see Transaction history). Wallet
+verified (`registrationCheck` and `registrationFailureReason`; see [Transaction history](#transaction-history)). Wallet
 Core does not keep it in the entry.
 
 Entries have no time or count limit, and removing a document leaves them in place (see
@@ -1999,8 +2002,8 @@ Current risk:
 
 Production guidance:
 
-* Replace destructive migration with explicit Room migrations. The transaction history is a legal
-  record and must survive an update.
+* Replace destructive migration with explicit Room migrations, so that the transaction history
+  survives an update.
 * Add migration tests.
 * The transaction history is a legal record, meant to stay until the wallet is reset or
   uninstalled. The reference app therefore sets no retention limit and keeps it when a document is
@@ -2025,7 +2028,7 @@ Room.databaseBuilder(
     DatabaseService.DATABASE_NAME
 )
     .openHelperFactory(SupportOpenHelperFactory(key))
-    .addMigrations(MIGRATION_2_3)
+    .addMigrations(MIGRATION_5_6)
     .build()
 ```
 
@@ -2324,7 +2327,7 @@ Session lock:
   has passed. The PIN or biometric screen is on `protectedFlowScreens` as a flow's confirmation, but the
   login itself does not count: it counts only when the back stack also holds a screen past login
   (`RouterHost.isInProtectedFlow()`). A background from an earlier absence was already cleared when the app
-  came back while locked (`SessionController.onForeground()`). As on iOS.
+  came back while locked (`SessionController.onForeground()`).
 * Touches and screen-reader actions count as interaction for the idle lock, both in the activity's
   window and in bottom sheets built with `WrapModalBottomSheet`, which draw in a window of their own
   (`reportAccessibilityInteraction`, `Window.reportTouchInteraction`). Touch reporting delegates to
@@ -2359,8 +2362,8 @@ Session lock:
   normal background limit, so a login can come before the signing resumes.
 * The prompt before each credential release is a screen in the app. With
   `userAuthenticationRequired = false` the keys themselves do not require user authentication, so a route to
-  the send step that skipped that screen would be unprotected. Keep internal screens unexported (see Deep
-  Links And Redirect URIs), and use `userAuthenticationRequired = true` where the assurance level requires
+  the send step that skipped that screen would be unprotected. Keep internal screens unexported (see [Deep
+  Links And Redirect URIs](#deep-links-and-redirect-uris)), and use `userAuthenticationRequired = true` where the assurance level requires
   key-level protection.
 
 Critical point:
@@ -2370,7 +2373,9 @@ trust decisions must not rely only on UI state.
 
 ## Analytics And Telemetry
 
-`analytics-logic` supports optional providers by implementing `AnalyticsConfigImpl`.
+`analytics-logic` supports optional providers: add a class
+`eu.europa.ec.analyticslogic.config.AnalyticsConfigImpl` that implements `AnalyticsConfig`. `LogicAnalyticsModule`
+loads it by name; without it, no provider is used.
 
 Production telemetry rules:
 
@@ -2406,7 +2411,7 @@ the backend risk signals.
 
 Use one of the following hardening paths, or a layered combination.
 
-## Hardening Path A: Google Play Integrity API
+### Hardening Path A: Google Play Integrity API
 
 Use this path if the production wallet is distributed through Google Play and your policy accepts a
 Google Play services dependency.
@@ -2469,7 +2474,7 @@ Important distribution issue:
 Play Integrity can exclude users on devices without Google Play services or devices that do not
 meet Google integrity labels. For a public-sector wallet, this is a policy decision. Document it.
 
-## Hardening Path B: DexGuard Or Commercial Protection
+### Hardening Path B: DexGuard Or Commercial Protection
 
 Use this path when you need stronger code hardening and runtime protection than standard R8/ProGuard.
 
@@ -2516,14 +2521,14 @@ Do not rely on a commercial tool alone. Pair it with:
 * Secure network policy.
 * MASVS testing.
 
-## Hardening Path C: Manual RASP Controls
+### Hardening Path C: Manual RASP Controls
 
 Use this path when Play Integrity is not acceptable or when commercial tooling is not available.
 
 Manual controls are easier to bypass than mature commercial hardening. Implement them as layered
 signals, obfuscate them, and enforce high-risk outcomes on the backend where possible.
 
-### Manual Control 1: App Signature Verification
+#### Manual Control 1: App Signature Verification
 
 At runtime, verify that the app is signed by the expected production certificate.
 
@@ -2551,7 +2556,7 @@ Production rules:
 * Also validate it server-side through Play Integrity or your own attestation where possible.
 * Treat failure as a high-risk event.
 
-### Manual Control 2: Debugger Detection
+#### Manual Control 2: Debugger Detection
 
 Example shape:
 
@@ -2562,7 +2567,7 @@ fun isDebuggerAttached(): Boolean =
 
 Use it as a signal. Do not put all protection behind one obvious branch.
 
-### Manual Control 3: Root And System Compromise Signals
+#### Manual Control 3: Root And System Compromise Signals
 
 Signals can include:
 
@@ -2594,7 +2599,7 @@ Rules:
 * Combine many weak signals into a risk score.
 * Make policy decisions transparent enough for public-sector accountability.
 
-### Manual Control 4: Emulator Detection
+#### Manual Control 4: Emulator Detection
 
 Signals can include:
 
@@ -2605,7 +2610,7 @@ Signals can include:
 
 Use carefully. Some legitimate users may use unusual devices.
 
-### Manual Control 5: Hooking And Instrumentation Detection
+#### Manual Control 5: Hooking And Instrumentation Detection
 
 Signals can include:
 
@@ -2616,7 +2621,7 @@ Signals can include:
 
 Treat as high-risk for signing, issuance, and presentation.
 
-### Manual Control 6: Anti-Tamper Backend Binding
+#### Manual Control 6: Anti-Tamper Backend Binding
 
 For high-risk operations, send a signed risk envelope to your backend:
 
@@ -2640,7 +2645,7 @@ The backend should:
 * Bind the risk envelope to the user session and action.
 * Treat device-side claims as hints unless backed by hardware or platform attestation.
 
-### Manual Control 7: Obfuscation With R8
+#### Manual Control 7: Obfuscation With R8
 
 Current release builds set:
 
@@ -2660,9 +2665,8 @@ Production rules:
 * Keep only what reflection, serialization, Koin, SDKs, and platform callbacks require.
 * Verify release artifact behavior after minification.
 * Store mapping files securely.
-* Consider enabling R8 full mode after compatibility testing. The repo does not set
-  `android.enableR8.fullMode`, so it uses the Android Gradle Plugin default. Set it explicitly in
-  `gradle.properties` once you have verified compatibility.
+* Release builds already run R8 in full mode, the Android Gradle Plugin default since 8.0. Do not
+  set `android.enableR8.fullMode=false`; fix keep rules instead.
 
 ## OWASP MASVS Production Alignment
 
@@ -2692,7 +2696,7 @@ Controls to evidence:
 Project-specific actions:
 
 * Review Wallet Core document storage location.
-* Exclude SQLCipher DB and DataStore from backup.
+* Keep the SQLCipher DB and DataStore excluded from backup and device transfer.
 * Replace destructive DB migration.
 * Redact or remove file logging.
 * Add tests that inspect app data after flows.

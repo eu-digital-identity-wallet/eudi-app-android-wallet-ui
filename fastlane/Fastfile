@@ -221,7 +221,7 @@ platform :android do
     name
   end
 
-  desc "Get version version From Project"
+  desc "Get full version from project"
   lane :full_version do |values|
     buildType = values[:buildType]
     versionName = get_properties_value(
@@ -241,7 +241,7 @@ platform :android do
     )
   end
 
-  desc "Set versionName back to default yyyy.d.m"
+  desc "Set versionName back to default yyyy.mm.v"
   lane :reset_versionName do
     set_properties_value(
       path: "version.properties",

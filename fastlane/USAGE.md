@@ -17,25 +17,31 @@ Run lanes through Bundler:
 bundle exec fastlane android tests
 ```
 
-The Android build still uses the Gradle wrapper and project configuration described in
+The lanes build with the Gradle wrapper and the project configuration described in
 [../wiki/HOW_TO_BUILD.md](../wiki/HOW_TO_BUILD.md).
 
 ## Common lanes
 
 | Lane | Purpose |
 | --- | --- |
-| `android tests` | Cleans the project and runs the Kover HTML report task for the selected app build type's debug variant. |
+| `android tests` | Cleans the project and runs the Kover HTML report task for the debug variant of the flavor in `APP_BUILD_TYPE` (for example `koverHtmlReportDevDebug`). |
 | `android deploy` | Stops unless every tracked file is committed, then pulls the latest Git state, calculates a build number from Firebase App Distribution, sets version values, builds a release APK, uploads it to Firebase, tags the release, and optionally creates a GitHub release. |
 | `android prepare_binary` | Renames the generated release APK to the computed version name. |
 | `android upload_firebase` | Uploads the APK to Firebase App Distribution. |
 | `android github_release` | Creates a GitHub release and uploads the APK and optional extra attachments. |
+| `android upload_tag` | Sets the URL of the `origin` remote to the given remote and pushes a Git tag to it. The previous URL is not restored. |
 | `android set_version` | Writes a CalVer-style `VERSION_NAME` into `version.properties`. |
 | `android reset_versioncode` | Resets `versionCode` in `app/build.gradle.kts` to `1`. |
 | `android reset_versionName` | Resets `VERSION_NAME` in `version.properties` to `yyyy.mm.v`. |
 
-## Required environment variables
+## Environment variables
 
-The `deploy` lane expects these values:
+Set the variables in the environment or in an env file: `--env <name>` loads `fastlane/.env.<name>`
+(for example `bundle exec fastlane android deploy --env dev`). `.gitignore` covers `.env.dev` and
+`.env.demo` only; add any other env file (for example `.env.prod`) to `.gitignore` before writing
+tokens into it.
+
+The lanes read these values:
 
 | Variable | Required for | Meaning |
 | --- | --- | --- |
@@ -44,18 +50,22 @@ The `deploy` lane expects these values:
 | `FIREBASE_APP_ID` | Firebase upload and build-number lookup | Firebase App Distribution app ID. |
 | `FIREBASE_TOKEN` | Firebase upload and build-number lookup | Firebase CLI token or CI secret accepted by the Fastlane Firebase plugin. |
 | `FIREBASE_GROUPS` | Firebase upload | Comma-separated Firebase tester groups. |
-| `PROD_REMOTE_REPO` | Optional tag upload | Remote URL to push tags to a production mirror. |
-| `DEV_REMOTE_REPO` | Optional tag upload | Remote URL to push tags to a development mirror. |
+| `PROD_REMOTE_REPO` | Optional tag upload | Remote URL to push tags to a production mirror. `upload_tag` sets `origin` to this URL. |
+| `DEV_REMOTE_REPO` | Optional tag upload | Remote URL to push tags to a development mirror, after the production one. `upload_tag` sets `origin` to this URL. |
 | `GITHUB_RELEASE_REPO` | Optional GitHub release | Repository name for GitHub releases, for example `owner/repo`. |
 | `GITHUB_RELEASE_TOKEN` | Optional GitHub release | Token used by Fastlane to create the release. |
 | `GITHUB_EXTRA_ATTACHMENTS` | Optional GitHub release | Comma-separated paths to additional release assets. |
 
-Release signing is configured by Gradle, not Fastlane. Current Gradle signing reads:
+Release signing is configured by Gradle, not Fastlane. Current Gradle signing reads the property from
+the root `local.properties` first, else the environment variable:
 
-| Variable/property | Meaning |
+| Property, else variable | Meaning |
 | --- | --- |
-| `ANDROID_KEY_ALIAS` or `androidKeyAlias` | Release key alias. |
-| `ANDROID_KEY_PASSWORD` or `androidKeyPassword` | Release key password. |
+| `androidKeyAlias`, else `ANDROID_KEY_ALIAS` | Release key alias. |
+| `androidKeyPassword`, else `ANDROID_KEY_PASSWORD` | Release key password. |
+
+The keystore is read from the file `sign` at the repository root, which `.gitignore` excludes. A
+Gradle `-P` property is not read.
 
 The current `app/build.gradle.kts` also uses `ANDROID_KEY_PASSWORD` / `androidKeyPassword` for the
 keystore `storePassword`. If your release keystore uses a separate store password, update the Gradle
@@ -97,8 +107,15 @@ bundle exec fastlane android deploy
 ## Release cautions
 
 The current `deploy` lane stops when a tracked file has uncommitted changes, so the build and its
-tag match `HEAD`. It then mutates `version.properties`, temporarily changes `versionCode`, creates a
-Git tag, and may push tags to configured remotes. Run it from a controlled CI environment.
+tag match `HEAD`. It then writes the CalVer `VERSION_NAME` into `version.properties` and the build
+number into `versionCode`, builds and uploads the APK, and resets both (`yyyy.mm.v`, `1`). Only then
+does it create a Git tag and push it to `PROD_REMOTE_REPO` and `DEV_REMOTE_REPO`. To push the tag,
+`upload_tag` sets the URL of the `origin` remote to each of them in turn and does not restore it, so
+after a run `origin` points at the last of them. Run the lane from a controlled CI environment.
+
+If the lane fails before the reset, the version changes stay in the working tree and the next
+`deploy` stops on them; restore them with `git checkout -- version.properties app/build.gradle.kts`
+and do not commit them.
 
 Before using Fastlane for production:
 
