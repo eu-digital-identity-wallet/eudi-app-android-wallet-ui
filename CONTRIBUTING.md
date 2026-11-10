@@ -23,7 +23,7 @@ contributions to this project. This means that:
    ```bash
    git checkout main
    git pull
-   git checkout -b my-branch
+   git checkout -b fix/short-description
    ```
 
 2. Make changes to the code, documentation, or any other relevant files.
@@ -31,8 +31,8 @@ contributions to this project. This means that:
 
    ```bash
    git add .
-   git commit -m "Add a new feature"
-   git push origin my-branch
+   git commit -m "Fix short description"
+   git push origin fix/short-description
    ```
 
 4. Create a pull request from your branch to the `main` branch of this repository.
@@ -42,8 +42,8 @@ contributions to this project. This means that:
 * Branch from the main branch and, if needed, rebase to the current main branch before submitting
   your pull request. If it doesn't merge cleanly with main you may be asked to rebase your changes.
 
-* Commits should be as small as possible while ensuring that each commit is correct independently (
-  i.e., each commit should compile and pass tests).
+* Commits should be as small as possible while ensuring that each commit is correct independently
+  (i.e., each commit should compile and pass tests).
 
 * Test your changes as thoroughly as possible before you commit them. Preferably, automate your test
   by unit/integration tests. If tested manually, provide information about the test scope in the PR
@@ -100,16 +100,12 @@ chore/update-dependencies
 
 * We use GitHub issues to track bugs and enhancement requests.
 
-* Please provide as much context as possible when you open an issue. The information you provide
-  must be comprehensive enough to reproduce that issue for the assignee. Therefore, contributors may
-  use but aren't restricted to the issue template provided by the project maintainers.
+* Please provide as much context as possible when you open an issue: app version and flavor, device
+  and Android version, steps to reproduce, expected and actual behavior. The information you provide
+  must be comprehensive enough to reproduce that issue for the assignee.
 
-* When creating an issue, try using one of our issue templates which already contain some guidelines
-  on which content is expected to process the issue most efficiently. If no template applies, you
-  can of course also create an issue from scratch.
-
-* Please apply one or more applicable [labels](/../../labels) to your issue so that all community
-  members are able to cluster the issues better.
+* Please suggest one or more applicable [labels](/../../labels) in your issue; the maintainers apply
+  them, so that all community members are able to cluster the issues better.
 
 ## Code of Conduct
 

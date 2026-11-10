@@ -21,7 +21,7 @@ versions, patch process, and user update policy.
 ## Production security guidance
 
 The reference application is not production ready as delivered. Before production use, review the
-configuration guide, the production go-live guide in [wiki/GO_LIVE.md](wiki/GO_LIVE.md), and perform
+configuration guide in [wiki/CONFIGURATION.md](wiki/CONFIGURATION.md), the production go-live guide in [wiki/GO_LIVE.md](wiki/GO_LIVE.md), and perform
 a security assessment aligned with OWASP MASVS.
 
 ## If you have identified a vulnerability, please do the following
@@ -57,4 +57,4 @@ a security assessment aligned with OWASP MASVS.
   issue affects reference/demo code or a production deployment.
 - Where possible, we will inform you when the vulnerability has been remedied.
 - We will process the personal data that you provide (such as your e-mail address and name) in accordance with the applicable data protection legislation and will not pass on your personal details to third parties without your permission.
-- In the public information concerning the problem reported, we will publish your name as the discoverer of the problem if you have agreed to this in your initial e-mail
+- In the public information concerning the problem reported, we will publish your name as the discoverer of the problem if you have agreed to this in your initial e-mail.

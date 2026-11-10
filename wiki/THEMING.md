@@ -102,9 +102,9 @@ The minimum set of files to change for a full rebrand. Each row links to its det
 | App display name                   | [`assembly-logic/build.gradle.kts`](../assembly-logic/build.gradle.kts) (`appName`) + [`AppFlavor.kt`](../build-logic/convention/src/main/kotlin/project/convention/logic/AppFlavor.kt) (suffix)                          | See [App name](#app-name-and-package-identity).                                                  |
 | Package / application id           | `app/build.gradle.kts` (`applicationId`) + `AppFlavor.kt` (`.dev` suffix)                                                                                                                                                 | Don't change after public release.                                                               |
 | Splash (OS window)                 | [`res/values-v31/themes.xml`](../resources-logic/src/main/res/values-v31/themes.xml)                                                                                                                                      | See [Splash screen](#splash-screen).                                                             |
-| Brand strings (product name in UI) | [`res/values/strings.xml`](../resources-logic/src/main/res/values/strings.xml) (+ localized variants)                                                                                                                     | Search for `EUDI`/`Wallet`. See [Brand strings](#brand-strings).                                 |
+| Brand strings (product name in UI) | [`res/values/strings.xml`](../resources-logic/src/main/res/values/strings.xml) (and any `values-<lang>` you add)                                                                                                                     | Search for `EUDI`/`Wallet`. See [Brand strings](#brand-strings).                                 |
 | System bars (status/navigation)    | [`MainActivity.kt`](../assembly-logic/src/main/java/eu/europa/ec/assemblylogic/ui/MainActivity.kt) (`enableEdgeToEdge`)                                                                                                   | Edge-to-edge — **not** the XML theme. See [Window chrome](#window-chrome-and-system-bars).       |
-| Host XML theme                     | [`res/values/themes.xml`](../resources-logic/src/main/res/values/themes.xml) (`Theme.EUDIWallet`)                                                                                                                         | Cold-start window background only (Compose app, no action bar).                                  |
+| Host XML theme                     | [`res/values/themes.xml`](../resources-logic/src/main/res/values/themes.xml) (`Theme.EUDIWallet`)                                                                                                                         | Cold-start window background, and `?colorOnSurface` for the logo text (Compose app, no action bar). |
 | RQES signing UI                    | Optional `themeManager` override in [`RQESConfigImpl`](../business-logic/src/demo/java/eu/europa/ec/businesslogic/config/RQESConfigImpl.kt) (+ `dev`)                                                                     | Separate SDK theme; **not** overridden by default. See [Sub-SDK theming](#sub-sdk-theming-rqes). |
 
 ## Colors
@@ -118,7 +118,7 @@ The minimum set of files to change for a full rebrand. Each row links to its det
   `toColorScheme()`.
 * **Values:**
   [`ThemeColors`](../resources-logic/src/main/java/eu/europa/ec/resourceslogic/theme/values/ThemeColors.kt)
-  holds the EUDI reference palette as private `0xAARRGGBB` constants and assembles them into two
+  holds the EUDI reference palette as `0xAARRGGBB` constants and assembles them into two
   `ThemeColorsTemplate` instances: `lightColors` and `darkColors`.
 
 ### How to change a brand color
@@ -251,9 +251,12 @@ The simplest path is to **replace the contents of the two `ic_logo_*.xml`** draw
 own vectors (keep the file names so the `AppIcons` mapping and all call sites keep working).
 
 > **Gotcha — logo colors are baked in.** The reference logos hardcode their brand colors inside the
-> `<path android:fillColor="...">` entries (e.g. `#0048D2`). They do **not** follow the color theme.
-> If you want a logo that adapts to light/dark or to `colorPrimary`, author a single-color vector and
-> tint it (e.g. `android:tint="?attr/colorPrimary"` or `fillColor="@android:color/white"` combined
+> `<path android:fillColor="...">` entries (e.g. `#0048D2`). They do **not** follow the Compose color
+> theme. One exception: the text in `ic_logo_icon_and_text.xml` uses `?colorOnSurface` from the host
+> XML theme `Theme.EUDIWallet`, so it switches with the system dark mode but ignores `ThemeColors.kt`;
+> set `colorOnSurface` in `Theme.Base` (`values-v31/themes.xml` redefines `Theme.EUDIWallet` for
+> Android 12 and later), or fix the color in the vector. If you want a logo that adapts to light/dark
+> or to `colorPrimary`, author a single-color vector and tint it (e.g. `android:tint="?attr/colorPrimary"` or `fillColor="@android:color/white"` combined
 > with a Compose tint at the call site).
 
 The `drawable/` folder also contains ~50 functional UI icons (`ic_*.xml`). These are generally not
@@ -310,8 +313,8 @@ separate app. See the production table in
 ## Brand strings
 
 The product name appears in user-facing copy as well as the launcher label. These live in
-[`strings.xml`](../resources-logic/src/main/res/values/strings.xml) (and any localized
-`values-<lang>/strings.xml`), **not** in the theme. If you rename the product, search the string
+[`strings.xml`](../resources-logic/src/main/res/values/strings.xml) (and any
+`values-<lang>/strings.xml` you add), **not** in the theme. If you rename the product, search the string
 resources for `EUDI`/`Wallet` and review at least:
 
 * Onboarding/login copy — e.g. `quick_pin_create_title` ("Welcome to your Wallet") and
@@ -421,6 +424,10 @@ ThemeManager.Builder()
 
 `build()` throws if `lightColors`, `typography`, `shapes`, or `dimensions` are missing; `darkColors`
 is the only optional input. After `build()`, `ThemeManager.instance` returns your configured manager.
+
+The extra roles `success`, `warning`, `pending`, `divider` and `surfaceAtElevation1` are not part of
+`ThemeColorsTemplate`. They always come from the constants in `ThemeColors.kt`, so edit those even on
+this path.
 
 ## Verifying your rebrand
 

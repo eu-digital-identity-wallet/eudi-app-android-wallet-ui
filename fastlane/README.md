@@ -93,7 +93,7 @@ Build Tag Name
 [bundle exec] fastlane android full_version
 ```
 
-Get version version From Project
+Get full version from project
 
 ### android reset_versioncode
 
@@ -109,7 +109,7 @@ Set versionCode back to default 1
 [bundle exec] fastlane android reset_versionName
 ```
 
-Set versionName back to default yyyy.d.m
+Set versionName back to default yyyy.mm.v
 
 ### android set_version
 

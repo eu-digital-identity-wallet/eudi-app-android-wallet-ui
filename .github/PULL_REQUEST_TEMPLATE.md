@@ -9,16 +9,16 @@ Please delete options that are not relevant.
 
 ## How Has This Been Tested?
 
-Please describe the tests that you ran to verify your changes. Provide instructions so we can reproduce. Please also list any relevant details for your test configuration
+Please describe the tests that you ran to verify your changes. Provide instructions so we can reproduce. Please also list any relevant details for your test configuration.
 
 - [ ] Test suite run successfully
-- [ ] Added Tests ()
+- [ ] Added tests (list them)
 
 ## Checklist
 
 - [ ] I have performed a self-review of my own code
 - [ ] I have commented my code, particularly in hard-to-understand areas
-- [ ] I have made corresponding changes to the readme
+- [ ] I have made corresponding changes to the documentation (README, `wiki/`, `fastlane/USAGE.md`)
 - [ ] My changes generate no new warnings
 - [ ] I have added unit tests that prove my fix is effective or that my feature works
 - [ ] New and existing unit tests pass locally with my changes
