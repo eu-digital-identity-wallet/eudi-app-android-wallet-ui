@@ -120,7 +120,7 @@ platform :android do
   desc "Rename apk before release"
   lane :prepare_binary do |values|
     app_version = values[:appVersion]
-    build_type  = values[:buildType]
+    build_type  = values[:buildType].to_s.downcase
 
     project_root = File.expand_path("..", __dir__)
     base_dir = File.join(
