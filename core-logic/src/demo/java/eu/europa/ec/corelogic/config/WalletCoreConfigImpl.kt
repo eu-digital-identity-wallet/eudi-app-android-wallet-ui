@@ -17,6 +17,7 @@
 package eu.europa.ec.corelogic.config
 
 import eu.europa.ec.corelogic.BuildConfig
+import eu.europa.ec.corelogic.extension.getX509CertificateFromRaw
 import eu.europa.ec.corelogic.model.DocumentIdentifier
 import eu.europa.ec.corelogic.provider.RegistrationCheckProvider
 import eu.europa.ec.eudi.etsi119602.datamodel.Uri
@@ -30,6 +31,7 @@ import eu.europa.ec.eudi.openid4vci.EudiReusePolicyType
 import eu.europa.ec.eudi.wallet.EudiWalletConfig
 import eu.europa.ec.eudi.wallet.dcapi.DCAPIProtocol
 import eu.europa.ec.eudi.wallet.document.CreateDocumentSettings.CredentialPolicy
+import eu.europa.ec.eudi.wallet.document.KeyProtectionPolicy
 import eu.europa.ec.eudi.wallet.issue.openid4vci.OpenId4VciManager
 import eu.europa.ec.eudi.wallet.issue.openid4vci.dpop.DPopConfig
 import eu.europa.ec.eudi.wallet.logging.Logger
@@ -40,6 +42,8 @@ import eu.europa.ec.eudi.wallet.transfer.openId4vp.Format
 import eu.europa.ec.eudi.wallet.transfer.openId4vp.TransactionDataType
 import eu.europa.ec.eudi.wallet.trust.PkixRevocationPolicy
 import eu.europa.ec.eudi.wallet.trust.TrustPolicy
+import eu.europa.ec.resourceslogic.R
+import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import kotlinx.coroutines.runBlocking
 import kotlin.time.Duration.Companion.hours
 import kotlin.time.Duration.Companion.minutes
@@ -47,6 +51,7 @@ import kotlin.time.Duration.Companion.seconds
 
 internal class WalletCoreConfigImpl(
     private val registrationCheckProvider: RegistrationCheckProvider,
+    private val resourceProvider: ResourceProvider,
 ) : WalletCoreConfig {
 
     private var _config: EudiWalletConfig? = null
@@ -63,9 +68,9 @@ internal class WalletCoreConfigImpl(
                         level = if (BuildConfig.DEBUG) Logger.LEVEL_DEBUG else Logger.LEVEL_INFO
                     )
                     configureDocumentKeyCreation(
-                        userAuthenticationRequired = false,
-                        userAuthenticationTimeout = 30.seconds,
-                        useStrongBoxForKeys = true
+                        userAuthentication = KeyProtectionPolicy.Disabled,
+                        strongBox = KeyProtectionPolicy.IfSupported,
+                        userAuthenticationTimeout = 30.seconds
                     )
                     configureOpenId4Vp {
                         withClientIdSchemes(
@@ -122,6 +127,10 @@ internal class WalletCoreConfigImpl(
                                     )
                                 )
                             )
+                        )
+
+                        loteSignerTrustAnchors(
+                            resourceProvider.getX509CertificateFromRaw(R.raw.pidissuerca02_eu)
                         )
 
                         relaxCertificateProfiles()

@@ -394,7 +394,7 @@ class WalletCorePresentationControllerImpl(
 
                 val authenticationData = mutableListOf<AuthenticationDataDomain>()
 
-                if (eudiWallet.config.userAuthenticationRequired) {
+                if (eudiWallet.keyProtectionState.userAuthenticationRequired) {
 
                     // one prompt per credential, not per selection: a multi-query request can
                     // disclose the same credential under several queryIds and its key unlocks
