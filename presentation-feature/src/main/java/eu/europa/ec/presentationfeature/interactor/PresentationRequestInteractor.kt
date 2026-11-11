@@ -205,10 +205,10 @@ class PresentationRequestInteractorImpl(
     }
 
     override fun updateRequestedDocuments(selectedCombination: RequestCombinationUi?) {
-        val selections = selectedCombination?.let { safeSelectedCombinationUi ->
+        val selections = selectedCombination?.takeIf { it.canShareDocuments }?.let { combination ->
             RequestTransformer.createSelectionsDomain(
-                documentItemsUi = safeSelectedCombinationUi.documents,
-                matchesDomain = safeSelectedCombinationUi.matches,
+                documentItemsUi = combination.documentsForSharing,
+                matchesDomain = combination.matches,
                 claimsAreSelectable = claimsAreSelectable,
             )
         }.orEmpty()

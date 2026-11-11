@@ -693,4 +693,5 @@
     <string name="privacy_history_method_email">Email</string>
     <string name="privacy_history_method_phone">Phone call</string>
 
+    <string name="request_share_credential">Share %1$s</string>
 </resources>

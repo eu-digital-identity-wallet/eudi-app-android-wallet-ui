@@ -78,12 +78,23 @@ object RequestTransformer {
                 val documentsDomain =
                     representedMatches.map { (_, documentDomain) -> documentDomain }
 
+                // Wallet Core puts the candidates for a multiple:true query in one selection.
+                // Single-valued queries already produce separate combination options in the SDK.
+                val selectableQueryIds = documentsDomain.groupBy { it.queryId }
+                    .filter { (queryId, candidates) -> queryId != null && candidates.size > 1 }
+                    .keys
                 val documentsUi = transformToUiItems(
                     documentsDomain = documentsDomain,
                     resourceProvider = resourceProvider,
                     claimsAreSelectable = claimsAreSelectable,
                     userImageClaimKeys = userImageClaimKeys,
-                )
+                ).map { document ->
+                    if (document.domainPayload.queryId in selectableQueryIds) {
+                        document.copy(isSelectedForSharing = false)
+                    } else {
+                        document
+                    }
+                }
                 val representedDomainMatches = representedMatches.map { (match, _) -> match }
                 val hasTransactionData = representedDomainMatches.any { match ->
                     match.transactionData.isNotEmpty()

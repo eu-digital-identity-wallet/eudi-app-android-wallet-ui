@@ -113,6 +113,58 @@ class TestRequestTransformer {
         closeable.close()
     }
 
+    @Test
+    fun `Given a multi-credential SDK bundle, Then users must choose the credentials to share`() = coroutineRule.runTest {
+        val documents = pickerDocuments()
+        val matches = documents.map { doc ->
+            pidMatch("family_name").copy(documentId = doc.id, credentialId = "${doc.id}-cred", queryId = "pid")
+        }
+        val ui = transform(documents, listOf(PresentationCombinationDomain(matches)), false).single()
+        assertEquals(listOf(false, false, false), ui.documents.map { it.isSelectedForSharing })
+        assertFalse(ui.canShareDocuments)
+    }
+
+    @Test
+    fun `Given single-valued SDK alternatives, Then each option retains one fixed credential`() = coroutineRule.runTest {
+        val documents = pickerDocuments()
+        val alternatives = documents.map { doc ->
+            PresentationCombinationDomain(listOf(
+                pidMatch("family_name").copy(documentId = doc.id, credentialId = "${doc.id}-cred", queryId = "pid")
+            ))
+        }
+        val options = transform(documents, alternatives, false)
+        assertEquals(3, options.size)
+        options.forEach { option ->
+            assertNull(option.documents.single().isSelectedForSharing)
+            assertTrue(option.canShareDocuments)
+            assertEquals(1, option.documentsForSharing.size)
+        }
+    }
+
+    @Test
+    fun `Given non-DCQL matches without query identifiers, Then credential picking is unchanged`() = coroutineRule.runTest {
+        val documents = pickerDocuments()
+        val matches = documents.map { doc ->
+            pidMatch("family_name").copy(documentId = doc.id, credentialId = "${doc.id}-cred")
+        }
+        val ui = transform(documents, listOf(PresentationCombinationDomain(matches)), true).single()
+        assertEquals(listOf(null, null, null), ui.documents.map { it.isSelectedForSharing })
+    }
+
+    private suspend fun pickerDocuments(): List<IssuedDocument> {
+        val source = getMockedPidWithBasicFields()
+        val data = source.data
+        val format = source.format
+        return (1..3).map { index ->
+            mock<IssuedDocument>().also { document ->
+                whenever(document.id).thenReturn("pid-$index")
+                whenever(document.name).thenReturn("PID $index")
+                whenever(document.data).thenReturn(data)
+                whenever(document.format).thenReturn(format)
+            }
+        }
+    }
+
     //region transformToCombinationsUi
 
     // Case 1:

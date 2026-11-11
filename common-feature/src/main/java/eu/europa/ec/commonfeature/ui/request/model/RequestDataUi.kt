@@ -78,7 +78,8 @@ sealed interface RequestDataUi {
 
     /** True if Share would disclose a picture of the holder from the selected combination. */
     val sharesUserImage: Boolean
-        get() = selectedDocuments.any { document -> document.sharesUserImage }
+        get() = selectedCombination?.documentsForSharing.orEmpty()
+            .any { document -> document.sharesUserImage }
 
     /**
      * Returns a copy with the selected combination's items replaced by [documents] — the

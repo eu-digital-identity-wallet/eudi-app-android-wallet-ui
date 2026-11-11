@@ -24,14 +24,17 @@ import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SheetState
+import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -42,6 +45,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.compose.ui.unit.Dp
@@ -90,6 +94,7 @@ import eu.europa.ec.uilogic.component.wrap.SimpleBottomSheet
 import eu.europa.ec.uilogic.component.wrap.TextConfig
 import eu.europa.ec.uilogic.component.wrap.TextStyleKey
 import eu.europa.ec.uilogic.component.wrap.WrapCard
+import eu.europa.ec.uilogic.component.wrap.WrapCheckbox
 import eu.europa.ec.uilogic.component.wrap.WrapExpandableListItem
 import eu.europa.ec.uilogic.component.wrap.WrapIcon
 import eu.europa.ec.uilogic.component.wrap.WrapModalBottomSheet
@@ -292,6 +297,9 @@ private fun Content(
             onCombinationSelected = { index ->
                 onEventSend(Event.CombinationSelected(index = index))
             },
+            onCredentialSelectionChange = { itemId, isSelected ->
+                onEventSend(Event.CredentialSelectionChanged(itemId, isSelected))
+            },
             onClaimClick = { itemId ->
                 onEventSend(Event.UserIdentificationClicked(itemId = itemId))
             },
@@ -418,6 +426,7 @@ private fun DisplayRequestContent(
     requestDataUi: RequestDataUi,
     claimsAreSelectable: Boolean,
     onCombinationSelected: (Int) -> Unit,
+    onCredentialSelectionChange: (String, Boolean) -> Unit,
     onClaimClick: (String) -> Unit,
     onCredentialExpansionChange: (String) -> Unit,
     onTransactionExpansionChange: (String, String) -> Unit,
@@ -449,6 +458,7 @@ private fun DisplayRequestContent(
                 combination = requestDataUi.combination,
                 claimsAreSelectable = claimsAreSelectable,
                 transactionTitleStartPadding = 0.dp,
+                onCredentialSelectionChange = onCredentialSelectionChange,
                 onClaimClick = onClaimClick,
                 onCredentialExpansionChange = onCredentialExpansionChange,
                 onTransactionExpansionChange = onTransactionExpansionChange,
@@ -469,6 +479,7 @@ private fun DisplayRequestContent(
                 requestDataUi = requestDataUi,
                 claimsAreSelectable = claimsAreSelectable,
                 onCombinationSelected = onCombinationSelected,
+                onCredentialSelectionChange = onCredentialSelectionChange,
                 onClaimClick = onClaimClick,
                 onCredentialExpansionChange = onCredentialExpansionChange,
                 onTransactionExpansionChange = onTransactionExpansionChange,
@@ -499,6 +510,7 @@ private fun DisplayCombinationCards(
     requestDataUi: RequestDataUi.Multiple,
     claimsAreSelectable: Boolean,
     onCombinationSelected: (Int) -> Unit,
+    onCredentialSelectionChange: (String, Boolean) -> Unit,
     onClaimClick: (String) -> Unit,
     onCredentialExpansionChange: (String) -> Unit,
     onTransactionExpansionChange: (String, String) -> Unit,
@@ -524,6 +536,8 @@ private fun DisplayCombinationCards(
                     combination = combination,
                     claimsAreSelectable = claimsAreSelectable,
                     transactionTitleStartPadding = SPACING_SMALL.dp,
+                    onCredentialSelectionChange = onCredentialSelectionChange
+                        .takeIf { index == requestDataUi.selectedIndex },
                     onClaimClick = onClaimClick,
                     onCredentialExpansionChange = onCredentialExpansionChange,
                     onTransactionExpansionChange = onTransactionExpansionChange,
@@ -540,6 +554,7 @@ private fun CombinationContent(
     combination: RequestCombinationUi,
     claimsAreSelectable: Boolean,
     transactionTitleStartPadding: Dp,
+    onCredentialSelectionChange: ((String, Boolean) -> Unit)?,
     onClaimClick: (String) -> Unit,
     onCredentialExpansionChange: (String) -> Unit,
     onTransactionExpansionChange: (String, String) -> Unit,
@@ -553,6 +568,7 @@ private fun CombinationContent(
             modifier = Modifier.fillMaxWidth(),
             requestDocuments = combination.documents,
             claimsAreSelectable = claimsAreSelectable,
+            onCredentialSelectionChange = onCredentialSelectionChange,
             onClaimClick = onClaimClick,
             onExpansionChange = onCredentialExpansionChange,
         )
@@ -577,6 +593,7 @@ private fun DisplayRequestItems(
     modifier: Modifier,
     requestDocuments: List<RequestDocumentItemUi>,
     claimsAreSelectable: Boolean,
+    onCredentialSelectionChange: ((String, Boolean) -> Unit)?,
     onClaimClick: (String) -> Unit,
     onExpansionChange: (String) -> Unit,
 ) {
@@ -585,31 +602,67 @@ private fun DisplayRequestItems(
         verticalArrangement = Arrangement.spacedBy(SPACING_MEDIUM.dp)
     ) {
         requestDocuments.forEachIndexed { index, requestDocument ->
-            WrapExpandableListItem(
-                modifier = Modifier
-                    .applyTestTag(TestTag.RequestScreen.requestedDocument(index = index))
-                    .fillMaxWidth(),
-                header = requestDocument.headerUi.header,
-                data = requestDocument.headerUi.nestedItems,
-                isItemClickable = { true },
-                onItemClick = if (claimsAreSelectable) {
-                    { item -> onClaimClick(item.itemId) }
-                } else {
-                    null
-                },
-                onExpandedChange = { expandedItem ->
-                    onExpansionChange(expandedItem.itemId)
-                },
-                isExpanded = requestDocument.headerUi.isExpanded,
-                throttleClicks = false,
-                hideSensitiveContent = false,
-                collapsedMainContentVerticalPadding = SPACING_MEDIUM.dp,
-                expandedMainContentVerticalPadding = SPACING_MEDIUM.dp,
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceDim,
-                ),
-                shouldBringOpenedIntoView = true,
-            )
+            Column {
+                requestDocument.isSelectedForSharing?.let { isSelected ->
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .heightIn(min = 48.dp)
+                            .toggleable(
+                                value = isSelected,
+                                enabled = onCredentialSelectionChange != null,
+                                role = Role.Checkbox,
+                                onValueChange = { checked ->
+                                    onCredentialSelectionChange?.invoke(
+                                        requestDocument.headerUi.header.itemId,
+                                        checked,
+                                    )
+                                },
+                            )
+                            .padding(horizontal = SPACING_SMALL.dp),
+                        horizontalArrangement = Arrangement.spacedBy(SPACING_SMALL.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        WrapCheckbox(
+                            checkboxData = CheckboxDataUi(
+                                isChecked = isSelected,
+                                enabled = onCredentialSelectionChange != null,
+                            ),
+                        )
+                        Text(
+                            text = stringResource(
+                                R.string.request_share_credential,
+                                requestDocument.domainPayload.docName,
+                            ),
+                        )
+                    }
+                }
+                WrapExpandableListItem(
+                    modifier = Modifier
+                        .applyTestTag(TestTag.RequestScreen.requestedDocument(index = index))
+                        .fillMaxWidth(),
+                    header = requestDocument.headerUi.header,
+                    data = requestDocument.headerUi.nestedItems,
+                    isItemClickable = { true },
+                    onItemClick = if (claimsAreSelectable) {
+                        { item -> onClaimClick(item.itemId) }
+                    } else {
+                        null
+                    },
+                    onExpandedChange = { expandedItem ->
+                        onExpansionChange(expandedItem.itemId)
+                    },
+                    isExpanded = requestDocument.headerUi.isExpanded,
+                    throttleClicks = false,
+                    hideSensitiveContent = false,
+                    collapsedMainContentVerticalPadding = SPACING_MEDIUM.dp,
+                    expandedMainContentVerticalPadding = SPACING_MEDIUM.dp,
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.surfaceDim,
+                    ),
+                    shouldBringOpenedIntoView = true,
+                )
+            }
         }
     }
 }
@@ -979,6 +1032,7 @@ private fun RequestScreenTransactionDataMixedCombinationsPreview() {
             ),
             claimsAreSelectable = false,
             onCombinationSelected = {},
+            onCredentialSelectionChange = { _, _ -> },
             onClaimClick = {},
             onCredentialExpansionChange = {},
             onTransactionExpansionChange = { _, _ -> },
@@ -1016,6 +1070,7 @@ private fun CombinationContentWithExpandedTransactionDataPreview() {
                     ),
                     claimsAreSelectable = false,
                     transactionTitleStartPadding = SPACING_SMALL.dp,
+                    onCredentialSelectionChange = null,
                     onClaimClick = {},
                     onCredentialExpansionChange = {},
                     onTransactionExpansionChange = { _, _ -> },

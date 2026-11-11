@@ -59,7 +59,7 @@ data class State(
             val claimsSatisfied = if (claimsAreSelectable) {
                 requestDataUi.selectedDocuments.anyClaimChecked()
             } else {
-                requestDataUi.selectedDocuments.isNotEmpty()
+                requestDataUi.selectedCombination?.canShareDocuments == true
             }
 
             // a shown warning banner gates Share until its switch is flipped
@@ -82,6 +82,7 @@ sealed class Event : ViewEvent {
     data class TransactionDocumentClicked(val sectionId: String, val itemId: String) : Event()
 
     data class CombinationSelected(val index: Int) : Event()
+    data class CredentialSelectionChanged(val itemId: String, val isSelected: Boolean) : Event()
 
     data object PrivacyPolicyLinkClicked : Event()
 
@@ -223,6 +224,20 @@ abstract class RequestViewModel : MviViewModel<Event, State, Effect>() {
 
             is Event.CombinationSelected -> {
                 selectCombination(index = event.index)
+            }
+
+            is Event.CredentialSelectionChanged -> {
+                updateData(
+                    updatedItems = viewState.value.requestDataUi.selectedDocuments.map { document ->
+                        if (document.isSelectedForSharing != null &&
+                            document.headerUi.header.itemId == event.itemId
+                        ) {
+                            document.copy(isSelectedForSharing = event.isSelected)
+                        } else {
+                            document
+                        }
+                    }
+                )
             }
 
             is Event.PrivacyPolicyLinkClicked -> {

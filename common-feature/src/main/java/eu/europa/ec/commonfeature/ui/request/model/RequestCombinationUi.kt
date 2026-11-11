@@ -33,7 +33,18 @@ data class RequestCombinationUi(
     val documents: List<RequestDocumentItemUi>,
     val matches: List<PresentationMatchDomain>,
     val transactionData: RequestTransactionDataUi?,
-)
+) {
+    val documentsForSharing: List<RequestDocumentItemUi>
+        get() = documents.filter { it.isSelectedForSharing != false }
+
+    /** Keep at least one credential for every query in this SDK combination. */
+    val canShareDocuments: Boolean
+        get() {
+            val selectedQueryIds = documentsForSharing.map { it.domainPayload.queryId }.toSet()
+            return selectedQueryIds.isNotEmpty() &&
+                    documents.all { it.domainPayload.queryId in selectedQueryIds }
+        }
+}
 
 /**
  * One document card on the request screen. [userImageItemIds] are the ids of its rows that hold a
@@ -44,6 +55,8 @@ data class RequestDocumentItemUi(
     val domainPayload: DocumentPayloadDomain,
     val headerUi: ExpandableListItemUi.NestedListItem,
     val userImageItemIds: Set<String>,
+    /** Checkbox state for a multi-credential query, or null for a fixed SDK match. */
+    val isSelectedForSharing: Boolean? = null,
 )
 
 /** True if the request asks this document for a picture of the holder, such as the portrait. */

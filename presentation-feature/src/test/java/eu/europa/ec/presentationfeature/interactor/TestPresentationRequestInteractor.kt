@@ -26,6 +26,7 @@ import eu.europa.ec.corelogic.controller.TransferEventPartialState
 import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
 import eu.europa.ec.corelogic.controller.WalletCorePresentationController
 import eu.europa.ec.corelogic.model.PresentationCombinationDomain
+import eu.europa.ec.corelogic.model.PresentationSelectionDomain
 import eu.europa.ec.corelogic.model.PresentationTransactionDataDomain
 import eu.europa.ec.eudi.wallet.document.IssuedDocument
 import eu.europa.ec.resourceslogic.R
@@ -65,6 +66,7 @@ import org.junit.Test
 import org.mockito.Mock
 import org.mockito.MockitoAnnotations
 import org.mockito.kotlin.any
+import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
@@ -891,6 +893,55 @@ class TestPresentationRequestInteractor {
         }
 
     //endregion
+
+    @Test
+    fun `Given three candidates, When two are checked, Then only their credentials reach Wallet Core`() =
+        coroutineRule.runTest {
+            mockRequestAllowsClaimSelection(false)
+            mockTransformToUiItemsStrings(resourceProvider)
+            val matches = (1..3).map { index ->
+                mockedValidMdlWithBasicFieldsRequestMatch.copy(
+                    documentId = "mdl-$index", credentialId = "credential-$index", queryId = "mdl",
+                )
+            }
+            val payload = RequestTransformer.transformToDomainItems(
+                storageDocuments = listOf(getMockedMdlWithBasicFields()),
+                resourceProvider = resourceProvider, uuidProvider = uuidProvider,
+                requestMatchesDomain = listOf(mockedValidMdlWithBasicFieldsRequestMatch),
+            ).getOrThrow().single()
+            val documents = RequestTransformer.transformToUiItems(
+                documentsDomain = matches.map { payload.copy(docId = it.documentId, queryId = it.queryId) },
+                resourceProvider = resourceProvider, claimsAreSelectable = false,
+                userImageClaimKeys = mockedUserImageClaimKeys,
+            ).mapIndexed { index, document -> document.copy(isSelectedForSharing = index != 1) }
+
+            interactor.updateRequestedDocuments(RequestCombinationUi(documents, matches, null))
+
+            val captured = argumentCaptor<List<PresentationSelectionDomain>>()
+            verify(walletCorePresentationController).updateRequestedDocuments(captured.capture())
+            assertEquals(listOf("mdl-1", "mdl-3"), captured.firstValue.map { it.documentId })
+            assertEquals(listOf("credential-1", "credential-3"), captured.firstValue.map { it.credentialId })
+            assertEquals(listOf("mdl", "mdl"), captured.firstValue.map { it.queryId })
+        }
+
+    @Test
+    fun `Given a required query with no checked credential, Then no selection is sent`() =
+        coroutineRule.runTest {
+            mockRequestAllowsClaimSelection(false)
+            mockTransformToUiItemsStrings(resourceProvider)
+            val match = mockedValidMdlWithBasicFieldsRequestMatch.copy(queryId = "mdl")
+            val payloads = RequestTransformer.transformToDomainItems(
+                storageDocuments = listOf(getMockedMdlWithBasicFields()),
+                resourceProvider = resourceProvider, uuidProvider = uuidProvider,
+                requestMatchesDomain = listOf(match),
+            ).getOrThrow()
+            val documents = RequestTransformer.transformToUiItems(
+                documentsDomain = payloads, resourceProvider = resourceProvider,
+                claimsAreSelectable = false, userImageClaimKeys = mockedUserImageClaimKeys,
+            ).map { it.copy(isSelectedForSharing = false) }
+            interactor.updateRequestedDocuments(RequestCombinationUi(documents, listOf(match), null))
+            verify(walletCorePresentationController).updateRequestedDocuments(emptyList())
+        }
 
     //region updateRequestedDocuments
 
