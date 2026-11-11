@@ -61,7 +61,12 @@ import eu.europa.ec.uilogic.serializer.UiSerializer
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.minutes
+import kotlin.time.Duration.Companion.seconds
+
+private val MIN_DEFERRED_DOCS_RETRY_DELAY = 5.seconds
+private val MAX_DEFERRED_DOCS_RETRY_DELAY = 5.minutes
 
 data class State(
     val isLoading: Boolean,
@@ -167,6 +172,7 @@ class DocumentsViewModel(
 
     private var retryDeferredDocsJob: Job? = null
     private var fetchDocumentsJob: Job? = null
+    private var nextDeferredDocsRetryDelay: Duration? = null
 
     override fun setInitialState(): State {
         return State(
@@ -421,10 +427,16 @@ class DocumentsViewModel(
         stopDeferredIssuing()
         retryDeferredDocsJob = viewModelScope.launch {
             if (deferredDocs.isEmpty()) {
+                nextDeferredDocsRetryDelay = null
                 return@launch
             }
 
-            delay(5000L.milliseconds)
+            val deferredDocsRetryDelay = nextDeferredDocsRetryDelay?.coerceIn(
+                MIN_DEFERRED_DOCS_RETRY_DELAY,
+                MAX_DEFERRED_DOCS_RETRY_DELAY,
+            )
+
+            delay(deferredDocsRetryDelay ?: MIN_DEFERRED_DOCS_RETRY_DELAY)
 
             interactor.tryIssuingDeferredDocumentsFlow(deferredDocs).collect { response ->
                 when (response) {
@@ -444,6 +456,7 @@ class DocumentsViewModel(
                     }
 
                     is DocumentInteractorRetryIssuingDeferredDocumentsPartialState.Result -> {
+                        nextDeferredDocsRetryDelay = response.nextRetryDelay
                         val successDocs = response.successfullyIssuedDeferredDocuments
                         if (successDocs.isNotEmpty()
                             && (!viewState.value.isBottomSheetOpen

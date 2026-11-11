@@ -89,6 +89,7 @@ import org.mockito.kotlin.whenever
 import java.time.Instant
 import java.time.temporal.ChronoUnit
 import kotlin.test.assertTrue
+import kotlin.time.Duration.Companion.seconds
 
 class TestDocumentsInteractor {
 
@@ -558,6 +559,59 @@ class TestDocumentsInteractor {
                     verify(walletCoreDocumentsController)
                         .deleteDocument(mockDeferredUntrustedDocId)
                 }
+        }
+
+    @Test
+    fun `Given two deferred documents not ready with different intervals, When tryIssuingDeferredDocumentsFlow is called, Then the longest interval is returned`() =
+        coroutineRule.runTest {
+            // Given
+            val mockDeferredPendingDocId1 = mockedPendingPidUi.documentId
+            val mockDeferredPendingType1 = mockedPendingPidUi.documentIdentifier.formatType
+            val mockDeferredPendingName1 = mockedPendingPidUi.documentName
+
+            val mockDeferredPendingDocId2 = mockedPendingMdlUi.documentId
+            val mockDeferredPendingType2 = mockedPendingMdlUi.documentIdentifier.formatType
+            val mockDeferredPendingName2 = mockedPendingMdlUi.documentName
+
+            val deferredDocuments: Map<DocumentId, FormatType> = mapOf(
+                mockDeferredPendingDocId1 to mockDeferredPendingType1,
+                mockDeferredPendingDocId2 to mockDeferredPendingType2
+            )
+
+            mockIssueDeferredDocumentCall(
+                docId = mockDeferredPendingDocId1,
+                response = IssueDeferredDocumentPartialState.NotReady(
+                    deferredDocumentData = DeferredDocumentDataDomain(
+                        documentId = mockDeferredPendingDocId1,
+                        formatType = mockDeferredPendingType1,
+                        docName = mockDeferredPendingName1
+                    ),
+                    interval = 10.seconds
+                )
+            )
+            mockIssueDeferredDocumentCall(
+                docId = mockDeferredPendingDocId2,
+                response = IssueDeferredDocumentPartialState.NotReady(
+                    deferredDocumentData = DeferredDocumentDataDomain(
+                        documentId = mockDeferredPendingDocId2,
+                        formatType = mockDeferredPendingType2,
+                        docName = mockDeferredPendingName2
+                    ),
+                    interval = 48.seconds
+                )
+            )
+
+            // When
+            interactor.tryIssuingDeferredDocumentsFlow(deferredDocuments).runFlowTest {
+                // Then
+                val expectedResult =
+                    DocumentInteractorRetryIssuingDeferredDocumentsPartialState.Result(
+                        successfullyIssuedDeferredDocuments = emptyList(),
+                        failedIssuedDeferredDocuments = emptyList(),
+                        nextRetryDelay = 48.seconds
+                    )
+                assertEquals(expectedResult, awaitItem())
+            }
         }
 
     // Case 7:

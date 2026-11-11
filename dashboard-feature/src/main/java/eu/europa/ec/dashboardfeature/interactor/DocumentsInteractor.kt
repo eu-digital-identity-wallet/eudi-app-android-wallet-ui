@@ -133,6 +133,7 @@ sealed class DocumentInteractorRetryIssuingDeferredDocumentsPartialState {
     data class Result(
         val successfullyIssuedDeferredDocuments: List<DeferredDocumentDataDomain>,
         val failedIssuedDeferredDocuments: List<DocumentId>,
+        val nextRetryDelay: Duration? = null,
     ) : DocumentInteractorRetryIssuingDeferredDocumentsPartialState()
 
     data class Failure(
@@ -548,6 +549,7 @@ class DocumentsInteractorImpl(
 
         val successResults: MutableList<DeferredDocumentDataDomain> = mutableListOf()
         val failedResults: MutableList<DocumentId> = mutableListOf()
+        val notReadyIntervals: MutableList<Duration> = mutableListOf()
 
         withContext(dispatcher) {
             val allJobs = deferredDocuments.keys.map { deferredDocumentId ->
@@ -566,7 +568,9 @@ class DocumentsInteractorImpl(
                         successResults.add(result.deferredDocumentData)
                     }
 
-                    is DocumentInteractorRetryIssuingDeferredDocumentPartialState.NotReady -> {}
+                    is DocumentInteractorRetryIssuingDeferredDocumentPartialState.NotReady -> {
+                        result.interval?.let { notReadyIntervals.add(it) }
+                    }
 
                     is DocumentInteractorRetryIssuingDeferredDocumentPartialState.Expired -> {
                         deleteDocument(result.documentId).lastOrNull()
@@ -582,7 +586,8 @@ class DocumentsInteractorImpl(
         emit(
             DocumentInteractorRetryIssuingDeferredDocumentsPartialState.Result(
                 successfullyIssuedDeferredDocuments = successResults,
-                failedIssuedDeferredDocuments = failedResults
+                failedIssuedDeferredDocuments = failedResults,
+                nextRetryDelay = notReadyIntervals.maxOrNull(),
             )
         )
 
