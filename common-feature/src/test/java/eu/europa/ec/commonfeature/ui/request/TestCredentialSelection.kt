@@ -18,6 +18,8 @@ package eu.europa.ec.commonfeature.ui.request
 
 import eu.europa.ec.commonfeature.ui.request.model.DocumentFormatDomain
 import eu.europa.ec.commonfeature.ui.request.model.DocumentPayloadDomain
+import eu.europa.ec.commonfeature.ui.request.model.RegistrationWarningUi
+import eu.europa.ec.commonfeature.ui.request.model.RegistrationWarningVariantUi
 import eu.europa.ec.commonfeature.ui.request.model.RequestCombinationUi
 import eu.europa.ec.commonfeature.ui.request.model.RequestDataUi
 import eu.europa.ec.commonfeature.ui.request.model.RequestDocumentItemUi
@@ -44,7 +46,7 @@ class TestCredentialSelection {
             copy(
                 isLoading = false,
                 claimsAreSelectable = false,
-                requestDataUi = RequestDataUi.Multiple(combinations, selectedIndex = 0),
+                requestDataUi = RequestDataUi.of(combinations),
             )
         }
     }
@@ -93,6 +95,53 @@ class TestCredentialSelection {
         }
 
     @Test
+    fun `Given one document matching two queries, Then selection is independent per query`() =
+        coroutineRule.runTest {
+            val viewModel = PickerViewModel()
+            val documents = listOf(
+                document("shared", "first", false),
+                document("first-alternative", "first", false),
+                document("shared", "second", false),
+                document("second-alternative", "second", false),
+            )
+            viewModel.show(listOf(combination(documents)))
+
+            viewModel.handleEvents(Event.CredentialSelectionChanged("shared:first", true))
+
+            assertEquals(
+                listOf(true, false, false, false),
+                viewModel.viewState.value.requestDataUi.selectedDocuments
+                    .map { it.isSelectedForSharing },
+            )
+            assertFalse(viewModel.viewState.value.allowShare)
+
+            viewModel.handleEvents(Event.CredentialSelectionChanged("shared:second", true))
+            assertTrue(viewModel.viewState.value.allowShare)
+        }
+
+    @Test
+    fun `Given selected credentials and a registration warning, Then Share requires acknowledgement`() {
+        val state = State(
+            isLoading = false,
+            claimsAreSelectable = false,
+            requestDataUi = RequestDataUi.Single(
+                combination(listOf(document("pid", "pid", true))),
+            ),
+            registrationWarning = RegistrationWarningUi(
+                variant = RegistrationWarningVariantUi.OVERASKED,
+                riskAccepted = false,
+            ),
+        )
+
+        assertFalse(state.allowShare)
+        assertTrue(
+            state.copy(
+                registrationWarning = state.registrationWarning!!.copy(riskAccepted = true),
+            ).allowShare,
+        )
+    }
+
+    @Test
     fun `When switching combination options, Then each option retains its selection`() =
         coroutineRule.runTest {
             val viewModel = PickerViewModel()
@@ -115,10 +164,26 @@ class TestCredentialSelection {
         }
 
     @Test
-    fun `Given an optional set skipped by the SDK option, Then its absent query does not block Share`() {
-        val selected = combination(listOf(document("pid", "pid", null)))
-        assertTrue(selected.canShareDocuments)
-    }
+    fun `Given an optional set, Then switching to the SDK option that skips it allows Share`() =
+        coroutineRule.runTest {
+            val viewModel = PickerViewModel()
+            val requiredDocument = document("pid", "pid", null)
+            val combinations = listOf(
+                combination(listOf(requiredDocument, document("optional", "optional", false))),
+                combination(listOf(requiredDocument)),
+            )
+            viewModel.show(combinations)
+            assertFalse(viewModel.viewState.value.allowShare)
+
+            viewModel.handleEvents(Event.CombinationSelected(1))
+
+            assertTrue(viewModel.viewState.value.allowShare)
+            assertEquals(
+                listOf("pid"),
+                viewModel.viewState.value.requestDataUi.selectedCombination!!.documentsForSharing
+                    .map { it.domainPayload.queryId },
+            )
+        }
 
     @Test
     fun `Given a fixed single credential, Then a checkbox event cannot deselect it`() =

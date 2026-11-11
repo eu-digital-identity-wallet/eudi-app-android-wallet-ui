@@ -211,6 +211,7 @@
     <string name="request_registration_acknowledge_text">I understand the risks and agree to share my data</string>
     <string name="request_claim_not_registered_supporting_text">Not registered data</string>
     <string name="request_collapsed_supporting_text">@string/generic_view_details</string>
+    <string name="request_share_credential">Share %1$s</string>
     <string name="request_transaction_section_title">Data to be signed</string>
     <string name="request_transaction_details_title">Signature details</string>
     <string name="request_transaction_trust_framework">Trust framework</string>
@@ -693,5 +694,4 @@
     <string name="privacy_history_method_email">Email</string>
     <string name="privacy_history_method_phone">Phone call</string>
 
-    <string name="request_share_credential">Share %1$s</string>
 </resources>
