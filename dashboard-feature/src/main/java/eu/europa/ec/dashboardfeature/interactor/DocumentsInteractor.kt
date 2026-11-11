@@ -75,6 +75,7 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.lastOrNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
+import kotlin.time.Duration
 
 sealed class DocumentInteractorFilterPartialState {
     data class FilterApplyResult(
@@ -111,6 +112,7 @@ sealed class DocumentInteractorRetryIssuingDeferredDocumentPartialState {
 
     data class NotReady(
         val deferredDocumentData: DeferredDocumentDataDomain,
+        val interval: Duration? = null,
     ) : DocumentInteractorRetryIssuingDeferredDocumentPartialState()
 
     data class Failure(
@@ -613,7 +615,8 @@ class DocumentsInteractorImpl(
 
                         is IssueDeferredDocumentPartialState.NotReady -> {
                             DocumentInteractorRetryIssuingDeferredDocumentPartialState.NotReady(
-                                deferredDocumentData = result.deferredDocumentData
+                                deferredDocumentData = result.deferredDocumentData,
+                                interval = result.interval,
                             )
                         }
 

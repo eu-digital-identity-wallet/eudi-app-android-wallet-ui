@@ -101,6 +101,7 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import java.net.URI
 import java.util.Locale
+import kotlin.time.Duration
 
 enum class IssuanceMethod {
     OPENID4VCI
@@ -189,6 +190,7 @@ sealed class IssueDeferredDocumentPartialState {
 
     data class NotReady(
         val deferredDocumentData: DeferredDocumentDataDomain,
+        val interval: Duration? = null,
     ) : IssueDeferredDocumentPartialState()
 
     data class Failed(
@@ -913,11 +915,12 @@ class WalletCoreDocumentsControllerImpl(
                             is DeferredIssueResult.DocumentNotReady -> {
                                 trySendBlocking(
                                     IssueDeferredDocumentPartialState.NotReady(
-                                        DeferredDocumentDataDomain(
+                                        deferredDocumentData = DeferredDocumentDataDomain(
                                             documentId = deferredIssuanceResult.documentId,
                                             formatType = deferredIssuanceResult.docType,
                                             docName = deferredIssuanceResult.name
-                                        )
+                                        ),
+                                        interval = deferredIssuanceResult.interval,
                                     )
                                 )
                             }
