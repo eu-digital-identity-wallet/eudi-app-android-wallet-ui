@@ -854,7 +854,7 @@ Configure trust for registration certificates separately from reader authenticat
 registration-certificate list in `configureEtsiTrust`, or supply explicit trust through
 `configureWrpRegistrationTrust(...)` and `configureIssuerRegistrationTrust(...)`. Configure these
 trust sources before enabling registration checking: with the check on and nothing vouching for
-registration certificates (for issuers, when signed metadata is required), Wallet Core 0.32.0
+registration certificates (for issuers, when signed metadata is required), Wallet Core
 refuses to build `EudiWallet` (`IllegalArgumentException`).
 
 The repository still ships development/demo trust-anchor resources, although the reference
@@ -954,14 +954,13 @@ Production requirements for a trusted-list deployment:
 * Use production LoTE URLs from the approved trust framework, over HTTPS.
 * Remove the development relaxations `relaxCertificateProfiles()` and
   `pkixRevocationPolicy(PkixRevocationPolicy.Disabled)`. Select an explicit production revocation
-  policy; do not use `SoftFail`. Verify certificate-profile and revocation failures with your PKI.
+  policy, so that a library default does not change it; do not use `SoftFail`. Verify certificate-profile and revocation failures with your PKI.
   The first relaxation removes the end-entity certificate profile checks (ETSI TS 119 412-6 for PID
   and wallet-provider signing certificates, TS 119 411-8 for access certificates) from every list;
   the second turns off CRL and OCSP checking during chain validation. A certificate a list names
-  directly is not checked for revocation in either case. Without the call, Wallet Core 0.32.0 uses
-  `PkixRevocationPolicy.CRLPriority`: the CRL first, OCSP only when the CRL cannot be fetched, and
-  the chain fails when neither answers. `SoftFail` checks the CRL only and accepts a chain whose CRL
-  cannot be fetched.
+  directly is not checked for revocation in either case. `PkixRevocationPolicy.CRLPriority` checks
+  the CRL first, OCSP only when the CRL cannot be fetched, and fails the chain when neither answers;
+  `SoftFail` checks the CRL only and accepts a chain whose CRL cannot be fetched.
 * Provide HTTPS endpoints for the revocation information required by your certificates, in line
   with the app's network-security policy. CRL and OCSP downloads over `http://` are refused like any
   other cleartext request, so every certificate below a list entry, in every chain the wallet
