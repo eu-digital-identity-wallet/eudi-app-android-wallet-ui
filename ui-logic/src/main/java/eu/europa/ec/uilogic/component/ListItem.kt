@@ -25,6 +25,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentWidth
+import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.selection.toggleable
 import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -34,6 +36,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.BlurredEdgeTreatment
 import androidx.compose.ui.draw.blur
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.disabled
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.selected
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.toggleableState
+import androidx.compose.ui.state.ToggleableState
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
@@ -235,6 +244,11 @@ enum class ClickableArea {
  *   This allows you to handle item clicks and perform actions based on the selected item.
  * - `clickableAreas` defines which areas of the list item are clickable. By default, only the trailing content is clickable.
  *    You can set it to [ClickableArea.ENTIRE_ROW] to make the entire row clickable, or provide a custom list of clickable areas.
+ * - A trailing checkbox, radio button or switch that takes no clicks of its own
+ *   ([ClickableArea.TRAILING_CONTENT] is not in `clickableAreas`) reports neither its role nor
+ *   its state, so the row reports both to accessibility services: it acts as that control when it
+ *   takes the click, and otherwise reports the control's state read-only, as disabled when the
+ *   control is disabled. Touch input is the same as on a plain clickable row.
  *
  * @param item The [ListItemDataUi] object containing the data to display in the list item.
  * @param onItemClick An optional lambda function that is invoked when a clickable area of the item is clicked.
@@ -290,16 +304,19 @@ fun ListItem(
         is ListItemTrailingContentDataUi.TextWithIcon -> onItemClick
         null -> onItemClick
     }
+    val onRowClick = if (clickableAreas.contains(ENTIRE_ROW) && handleRowItemClick != null) {
+        { handleRowItemClick(item) }
+    } else {
+        null
+    }
 
     with(item) {
         Row(
-            modifier = if (clickableAreas.contains(ENTIRE_ROW) && handleRowItemClick != null) {
-                Modifier.clickable {
-                    handleRowItemClick(item)
-                }
-            } else {
-                Modifier
-            }.then(
+            modifier = Modifier.applyRowSemantics(
+                trailingContentData = trailingContentData
+                    .takeUnless { clickableAreas.contains(TRAILING_CONTENT) },
+                onRowClick = onRowClick,
+            ).then(
                 other = modifier.padding(horizontal = contentHorizontalPadding ?: SPACING_MEDIUM.dp)
             ),
             horizontalArrangement = Arrangement.Start,
@@ -480,6 +497,107 @@ fun ListItem(
                 }
             }
         }
+    }
+}
+
+/**
+ * Makes a [ListItem] row take its clicks and describes the row to accessibility services.
+ *
+ * A trailing checkbox, radio button or switch whose own click handler is null reports neither
+ * its role nor its state, so the row reports both. When the row takes the click, it acts as that
+ * control and its click runs [onRowClick]. Otherwise it reports the control's state with no click
+ * action, and as disabled when the control is disabled. Any other row is a plain clickable row
+ * when it takes the click. Touch input is the same as on a plain clickable row in every case.
+ *
+ * @param trailingContentData The row's trailing content; null when the row has none, or when its
+ * trailing control takes its own clicks and reports its own state.
+ * @param onRowClick The row's click handler, or null when the row takes no clicks.
+ * @return This modifier with the row's click handling and semantics.
+ */
+private fun Modifier.applyRowSemantics(
+    trailingContentData: ListItemTrailingContentDataUi?,
+    onRowClick: (() -> Unit)?,
+): Modifier = when (trailingContentData) {
+    is ListItemTrailingContentDataUi.Checkbox -> applyToggleableRowSemantics(
+        isChecked = trailingContentData.checkboxData.isChecked,
+        isEnabled = trailingContentData.checkboxData.enabled,
+        role = Role.Checkbox,
+        onRowClick = onRowClick,
+    )
+
+    is ListItemTrailingContentDataUi.Switch -> applyToggleableRowSemantics(
+        isChecked = trailingContentData.switchData.isChecked,
+        isEnabled = trailingContentData.switchData.enabled,
+        role = Role.Switch,
+        onRowClick = onRowClick,
+    )
+
+    is ListItemTrailingContentDataUi.RadioButton -> applySelectableRowSemantics(
+        isSelected = trailingContentData.radioButtonData.isSelected,
+        isEnabled = trailingContentData.radioButtonData.enabled,
+        onRowClick = onRowClick,
+    )
+
+    is ListItemTrailingContentDataUi.Icon,
+    is ListItemTrailingContentDataUi.TextWithIcon,
+    null -> if (onRowClick != null) clickable(onClick = onRowClick) else this
+}
+
+/**
+ * Makes a [ListItem] row report the checked state of its trailing checkbox or switch, as
+ * described in [applyRowSemantics].
+ *
+ * @param isChecked Whether the checkbox is checked or the switch is on.
+ * @param isEnabled Whether the control is enabled.
+ * @param role [Role.Checkbox] or [Role.Switch].
+ * @param onRowClick The row's click handler, or null when the row takes no clicks.
+ * @return This modifier with the row's click handling and semantics.
+ */
+private fun Modifier.applyToggleableRowSemantics(
+    isChecked: Boolean,
+    isEnabled: Boolean,
+    role: Role,
+    onRowClick: (() -> Unit)?,
+): Modifier = if (onRowClick != null) {
+    toggleable(
+        value = isChecked,
+        enabled = isEnabled,
+        role = role,
+        onValueChange = { onRowClick() },
+    )
+} else {
+    semantics(mergeDescendants = true) {
+        this.role = role
+        toggleableState = ToggleableState(isChecked)
+        if (!isEnabled) disabled()
+    }
+}
+
+/**
+ * Makes a [ListItem] row report whether its trailing radio button is selected, as described in
+ * [applyRowSemantics].
+ *
+ * @param isSelected Whether the radio button is selected.
+ * @param isEnabled Whether the radio button is enabled.
+ * @param onRowClick The row's click handler, or null when the row takes no clicks.
+ * @return This modifier with the row's click handling and semantics.
+ */
+private fun Modifier.applySelectableRowSemantics(
+    isSelected: Boolean,
+    isEnabled: Boolean,
+    onRowClick: (() -> Unit)?,
+): Modifier = if (onRowClick != null) {
+    selectable(
+        selected = isSelected,
+        enabled = isEnabled,
+        role = Role.RadioButton,
+        onClick = onRowClick,
+    )
+} else {
+    semantics(mergeDescendants = true) {
+        role = Role.RadioButton
+        selected = isSelected
+        if (!isEnabled) disabled()
     }
 }
 

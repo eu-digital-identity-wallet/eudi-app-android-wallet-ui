@@ -18,8 +18,14 @@ package eu.europa.ec.commonfeature.ui.request
 
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.SemanticsProperties
+import androidx.compose.ui.test.SemanticsMatcher
+import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.assertHasClickAction
 import androidx.compose.ui.test.assertHasNoClickAction
+import androidx.compose.ui.test.assertIsOff
+import androidx.compose.ui.test.assertIsOn
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import eu.europa.ec.commonfeature.ui.request.model.DocumentFormatDomain
@@ -30,6 +36,8 @@ import eu.europa.ec.commonfeature.ui.request.model.RequestDocumentItemUi
 import eu.europa.ec.commonfeature.ui.request.model.RequestTransactionDataUi
 import eu.europa.ec.uilogic.component.ListItemDataUi
 import eu.europa.ec.uilogic.component.ListItemMainContentDataUi
+import eu.europa.ec.uilogic.component.ListItemTrailingContentDataUi
+import eu.europa.ec.uilogic.component.wrap.CheckboxDataUi
 import eu.europa.ec.uilogic.component.wrap.ExpandableListItemUi
 import org.junit.Rule
 import org.junit.Test
@@ -40,7 +48,8 @@ import org.robolectric.annotation.Config
 /**
  * Tests that only the selected option of a request takes clicks on its content
  * ([DisplayCombinationCards]): an option that is not selected is read-only, so accessibility
- * services cannot act on what its card keeps from touch.
+ * services cannot act on what its card keeps from touch. Also tests that a claim the user can
+ * select reads as a checkbox with its checked or unchecked state.
  */
 @RunWith(RobolectricTestRunner::class)
 @Config(qualifiers = "w400dp-h1600dp")
@@ -85,6 +94,23 @@ class TestRequestScreen {
     }
 
     /**
+     * Claims the user can select, with both documents open and the first option selected: the
+     * selected option's claim is unchecked and the other option's checked, so the state each row
+     * reports comes from its claim, not from whether its option is selected.
+     */
+    @Test
+    fun `Given selectable claims in two open options, Then each claim reads its checked state`() {
+        setCards(selectedIndex = 0, claimsAreSelectable = true, isExpanded = true)
+
+        composeRule.onNodeWithText(claimValue(0))
+            .assert(SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.Checkbox))
+            .assertIsOff()
+        composeRule.onNodeWithText(claimValue(1))
+            .assert(SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.Checkbox))
+            .assertIsOn()
+    }
+
+    /**
      * Each option carries open transaction data with a document link: only the selected option's
      * transaction-data card and link take a click.
      */
@@ -107,7 +133,7 @@ class TestRequestScreen {
         val requestDataUi = RequestDataUi.Multiple(
             combinations = List(2) { index ->
                 RequestCombinationUi(
-                    documents = listOf(documentItem(index, isExpanded)),
+                    documents = listOf(documentItem(index, isExpanded, claimsAreSelectable)),
                     matches = emptyList(),
                     transactionData = if (hasTransactionData) transactionData(index) else null,
                 )
@@ -130,7 +156,11 @@ class TestRequestScreen {
         }
     }
 
-    private fun documentItem(index: Int, isExpanded: Boolean): RequestDocumentItemUi =
+    private fun documentItem(
+        index: Int,
+        isExpanded: Boolean,
+        claimsAreSelectable: Boolean,
+    ): RequestDocumentItemUi =
         RequestDocumentItemUi(
             domainPayload = DocumentPayloadDomain(
                 docName = documentName(index),
@@ -150,6 +180,13 @@ class TestRequestScreen {
                             mainContentData = ListItemMainContentDataUi.Text(
                                 text = claimValue(index),
                             ),
+                            trailingContentData = if (claimsAreSelectable) {
+                                ListItemTrailingContentDataUi.Checkbox(
+                                    checkboxData = CheckboxDataUi(isChecked = index == 1),
+                                )
+                            } else {
+                                null
+                            },
                         )
                     )
                 ),
