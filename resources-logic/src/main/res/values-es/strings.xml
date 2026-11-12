@@ -1,0 +1,642 @@
+<!--
+  ~ Copyright (c) 2026 European Commission
+  ~
+  ~ Licensed under the EUPL, Version 1.2 or - as soon they will be approved by the European
+  ~ Commission - subsequent versions of the EUPL (the "Licence"); You may not use this work
+  ~ except in compliance with the Licence.
+  ~
+  ~ You may obtain a copy of the Licence at:
+  ~ https://joinup.ec.europa.eu/software/page/eupl
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software distributed under
+  ~ the Licence is distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF
+  ~ ANY KIND, either express or implied. See the Licence for the specific language
+  ~ governing permissions and limitations under the Licence.
+  -->
+
+<resources xmlns:tools="http://schemas.android.com/tools">
+
+    <!-- region Generic-->
+    <string name="generic_error_message">¡Vaya! Algo ha salido mal</string>
+    <string name="generic_error_description">Si el problema persiste, ponte en contacto con el servicio de asistencia</string>
+    <string name="generic_error_button_retry">REINTENTAR</string>
+    <string name="generic_network_error_message">No tienes conexión a internet</string>
+    <string name="generic_error_retry">Inténtalo de nuevo</string>
+    <string name="generic_cancel">Cancelar</string>
+    <string name="generic_cancel_capitalized">CANCELAR</string>
+    <string name="generic_continue">Continuar</string>
+    <string name="generic_continue_capitalized">CONTINUAR</string>
+    <string name="generic_enable_capitalized">ACTIVAR</string>
+    <string name="generic_success">Correcto</string>
+    <string name="generic_close">Cerrar</string>
+    <string name="generic_ok">Aceptar</string>
+    <string name="generic_dash">-</string>
+    <string name="generic_default_relying_party_name">Parte usuaria desconocida</string>
+    <string name="generic_default_issuer_name">Emisor</string>
+    <string name="generic_view_details">Ver detalles</string>
+    <string name="generic_hide_details">Ocultar detalles</string>
+    <string name="generic_deferred_success_text">¡En curso!</string>
+    <string name="generic_bottom_sheet_delete_title">¿Eliminar el documento?</string>
+    <string name="generic_bottom_sheet_delete_subtitle">Este documento se eliminará de tu cartera y puede afectar al acceso a los servicios.</string>
+    <string name="generic_bottom_sheet_delete_primary_button_text">Eliminar</string>
+    <string name="generic_bottom_sheet_delete_secondary_button_text">Cancelar</string>
+    <string name="generic_scan_qr">Escanear QR</string>
+    <string name="generic_or">O</string>
+    <string name="generic_filters_apply">Aplicar</string>
+    <string name="generic_filters_reset">Restablecer todo</string>
+    <string name="generic_filters_title">Filtrar por</string>
+    <string name="generic_filters_sort_by">Ordenar por</string>
+    <string name="generic_search">Buscar</string>
+    <string name="generic_unknown_issuer">Desconocido</string>
+    <string name="generic_issuer_verified">Emisor verificado</string>
+    <string name="generic_issuer_trust_not_confirmed">Confianza del emisor no confirmada</string>
+    <string name="generic_issuer_verification_not_performed">No se ha verificado al emisor</string>
+    <string name="generic_issuer_verification_unavailable">Verificación del emisor no disponible</string>
+    <!--endregion-->
+    <!-- region Trust Mark-->
+    <string name="trust_mark_about_title">Acerca de la Cartera EUDI</string>
+    <string name="trust_mark_welcome_title">Te damos la bienvenida a la</string>
+    <string name="trust_mark_wallet_name">Cartera Europea de Identidad Digital</string>
+    <string name="trust_mark_image_description">Marca de confianza de la cartera europea de identidad digital</string>
+    <string name="trust_mark_certification_description">Esta aplicación de cartera ha sido certificada conforme a los requisitos de seguridad y privacidad de la cartera europea de identidad digital y forma parte del %1$s.</string>
+    <string name="trust_mark_certified_wallets_link">Lista de confianza de proveedores de carteras EUDI</string>
+    <string name="trust_mark_certification_information_description">Consulta la %1$s para obtener información detallada sobre la certificación de esta cartera.</string>
+    <string name="trust_mark_certification_information_link">página de información de certificación</string>
+    <string name="trust_mark_loading">Cargando la información de la marca de confianza…</string>
+    <string name="trust_mark_load_error">No se ha podido cargar la información de la marca de confianza. Inténtalo de nuevo.</string>
+    <string name="trust_mark_image_error">No se ha podido cargar la imagen de la marca de confianza.</string>
+    <string name="trust_mark_browser_error">No se ha podido abrir este enlace.</string>
+    <!--endregion-->
+    <!-- region Content Description-->
+    <string name="content_description_image_or_placeholder_icon">Imagen o icono de marcador de posición</string>
+    <string name="content_description_user_signature_icon">Firma del usuario</string>
+    <string name="content_description_qr_code_icon">Código QR</string>
+    <string name="content_description_more_vert_icon">Más opciones</string>
+    <string name="content_description_arrow_back_icon">Volver</string>
+    <string name="content_description_close_icon">Cerrar</string>
+    <string name="content_description_warning_icon">Advertencia</string>
+    <string name="content_description_error_icon">Error</string>
+    <string name="content_description_error_filled_icon">Error</string>
+    <string name="content_description_delete_icon">Eliminar</string>
+    <string name="content_description_delete_filled_icon">Eliminar</string>
+    <string name="content_description_touch_id_icon">Touch ID</string>
+    <string name="content_description_qr_icon">QR</string>
+    <string name="content_description_qr_scanner_icon">Escáner de QR</string>
+    <string name="content_description_nfc_icon">NFC</string>
+    <string name="content_description_user_icon">Usuario</string>
+    <string name="content_description_id_icon">Identificación</string>
+    <string name="content_description_id_stroke_icon">Identificación (contorno)</string>
+    <string name="content_description_logo_icon">Logotipo</string>
+    <string name="content_description_logo_icon_and_text">Logotipo y texto</string>
+    <string name="content_description_arrow_up_icon">Flecha hacia arriba</string>
+    <string name="content_description_arrow_down_icon">Flecha hacia abajo</string>
+    <string name="content_description_visibility_icon">Mostrar</string>
+    <string name="content_description_visibility_off_icon">Ocultar</string>
+    <string name="content_description_add_icon">Añadir</string>
+    <string name="content_description_edit_icon">Editar</string>
+    <string name="content_description_verified_icon">Verificado</string>
+    <string name="content_description_message_icon">Mensaje</string>
+    <string name="content_description_success_icon">Correcto</string>
+    <string name="content_description_clock_timer_icon">Temporizador</string>
+    <string name="content_description_arrow_right_icon">Flecha hacia la derecha</string>
+    <string name="content_description_open_new_icon">Abrir en una ventana nueva</string>
+    <string name="content_description_handle_bar_icon">Barra de arrastre</string>
+    <string name="content_description_search_icon">Buscar</string>
+    <string name="content_description_present_document_same_device_icon">Presentar el documento en persona</string>
+    <string name="content_description_present_document_cross_device_icon">Presentar el documento en línea</string>
+    <string name="content_description_add_document_from_list_icon">Añadir un documento de la lista</string>
+    <string name="content_description_add_document_from_qr_icon">Añadir un documento desde un QR</string>
+    <string name="content_description_authenticate_in_person_icon">Autenticarse en persona</string>
+    <string name="content_description_authenticate_online_icon">Autenticarse en línea</string>
+    <string name="content_description_sign_document_from_device_icon">Firmar un documento desde el dispositivo</string>
+    <string name="content_description_sign_document_from_qr_icon">Firmar un documento desde un QR</string>
+    <string name="content_description_bookmark_icon">Marcador</string>
+    <string name="content_description_bookmark_filled_icon">Marcador guardado</string>
+    <string name="content_description_certified_icon">Certificado</string>
+    <string name="content_description_documents_icon">Documentos</string>
+    <string name="content_description_download_icon">Descargar</string>
+    <string name="content_description_filters_icon">Filtros</string>
+    <string name="content_description_home_icon">Inicio</string>
+    <string name="content_description_in_progress_icon">En curso</string>
+    <string name="content_description_notifications_icon">Notificaciones</string>
+    <string name="content_description_transactions_icon">Historial</string>
+    <string name="content_description_wallet_activated_icon">Cartera activada</string>
+    <string name="content_description_wallet_secured_icon">Cartera protegida</string>
+    <string name="content_description_info_icon">Información</string>
+    <string name="content_description_issuer_icon">Emisor</string>
+    <string name="content_description_issuer_logo_icon">Logotipo del emisor</string>
+    <string name="content_description_menu_icon">Menú</string>
+    <string name="content_description_signature_icon">Firma</string>
+    <string name="content_description_authenticate_icon">Tarjetas de identidad para autenticarse</string>
+    <string name="content_description_change_pin_icon">Cambiar el PIN</string>
+    <string name="content_description_check_icon">Comprobar</string>
+    <string name="content_description_open_in_browser_icon">Abrir en el navegador</string>
+    <string name="content_description_date_range_icon">Seleccionar el intervalo de fechas del filtro</string>
+    <string name="content_description_settings_icon">Ajustes</string>
+    <string name="content_description_batch_issuance_counter_icon">Contador de emisión por lotes</string>
+    <!--endregion-->
+    <!-- region Biometric prompt-->
+    <string name="biometric_prompt_title">Autenticación biométrica</string>
+    <string name="biometric_prompt_subtitle">Autentícate con tus datos biométricos</string>
+    <string name="biometric_login_title">Hola de nuevo</string>
+    <string name="biometric_login_biometrics_enabled_subtitle">Usa tus datos biométricos para acceder a la Cartera EUDI.</string>
+    <string name="biometric_login_biometrics_not_enabled_subtitle">Para acceder a la Cartera EUDI tienes que introducir tu PIN.</string>
+    <!--endregion-->
+    <!-- region Biometrics-->
+    <string name="biometric_no_hardware">Tu dispositivo no admite la autenticación biométrica</string>
+    <string name="biometric_unknown_error">Algo ha fallado al iniciar la autenticación biométrica. Inténtalo de nuevo</string>
+    <string name="biometric_strong_required">Tu método biométrico actual no cumple los requisitos de seguridad para esta acción. Configura un método admitido, como la huella dactilar, en los ajustes del dispositivo</string>
+    <string name="biometric_authentication_error">La autenticación biométrica ha fallado. Inténtalo de nuevo</string>
+    <string name="biometric_default_mode_text_above_pin_field">PIN</string>
+    <!--endregion-->
+    <!-- region Document Success-->
+    <string name="document_success_banner_text">Autenticación correcta</string>
+    <string name="document_success_header_description">Has compartido correctamente la siguiente información con</string>
+    <string name="document_success_header_description_when_error">Has compartido correctamente la información con</string>
+    <string name="document_success_relying_party_default_name">@string/generic_default_relying_party_name</string>
+    <string name="document_success_collapsed_supporting_text">@string/generic_view_details</string>
+    <string name="document_success_sticky_button_text">@string/generic_close</string>
+    <!--endregion-->
+    <!-- region Quick Pin-->
+    <string name="quick_pin_invalid_error">PIN no válido</string>
+    <string name="quick_pin_non_match">Los PIN no coinciden</string>
+    <string name="quick_pin_weak">Este PIN es demasiado fácil de adivinar. Evita repetir un mismo dígito, secuencias como 123456 y los PIN más habituales.</string>
+    <string name="quick_pin_device_lock_missing">Este dispositivo no tiene bloqueo de pantalla. Configura uno en los ajustes del dispositivo para proteger mejor tu cartera.</string>
+    <string name="quick_pin_device_lock_required">Configura un bloqueo de pantalla en los ajustes del dispositivo para usar la cartera.</string>
+    <string name="quick_pin_locked_out">Has introducido un PIN incorrecto %1$d veces seguidas.\nEspera %2$s antes de volver a intentarlo.</string>
+    <string name="quick_pin_create_title">Te damos la bienvenida a tu cartera</string>
+    <string name="quick_pin_create_subtitle">Protege tu cartera con un código PIN y conéctala a tu sistema nacional.</string>
+    <string name="quick_pin_create_enter_pin_input_label">Introduce un PIN</string>
+    <string name="quick_pin_create_reenter_pin_input_label">Confirma el PIN</string>
+    <string name="quick_pin_change_title">Cambiar el PIN</string>
+    <string name="quick_pin_change_validate_current_subtitle">Introduce tu PIN actual</string>
+    <string name="quick_pin_change_enter_new_subtitle">Elige un PIN para los próximos inicios de sesión</string>
+    <string name="quick_pin_change_reenter_new_subtitle">Vuelve a introducir el nuevo PIN</string>
+    <string name="quick_pin_create_success_text">¡Tu cartera está protegida!</string>
+    <string name="quick_pin_create_success_description">Para activar tu cartera, conéctala a tu sistema nacional y añade tu identidad digital.</string>
+    <string name="quick_pin_create_success_no_activation_description">Tu cartera está lista para usarse.</string>
+    <string name="quick_pin_create_success_btn">Añadir mi identidad digital</string>
+    <string name="quick_pin_create_success_no_activation_btn">IR AL INICIO</string>
+    <string name="quick_pin_change_success_text">@string/generic_success</string>
+    <string name="quick_pin_change_success_description">Has cambiado el PIN correctamente</string>
+    <string name="quick_pin_change_success_btn">VOLVER AL INICIO</string>
+    <string name="quick_pin_bottom_sheet_cancel_title">¿Cancelar el cambio de PIN?</string>
+    <string name="quick_pin_bottom_sheet_cancel_subtitle">Si cancelas, volverás al inicio sin cambiar el PIN</string>
+    <string name="quick_pin_bottom_sheet_cancel_primary_button_text">@string/generic_continue_capitalized</string>
+    <string name="quick_pin_bottom_sheet_cancel_secondary_button_text">@string/generic_cancel_capitalized</string>
+    <!--endregion-->
+    <!-- region Request Screen-->
+    <string name="request_screen_title">Solicitud de datos</string>
+    <string name="request_relying_party_default_name">@string/generic_default_relying_party_name</string>
+    <string name="request_relying_party_id_format">(ID: %1$s)</string>
+    <string name="request_privacy_policy_section_title">Política de privacidad</string>
+    <string name="request_intended_use_section_title">Uso previsto</string>
+    <string name="request_requested_data_section_title">Datos solicitados</string>
+    <string name="request_cancel_button_text">@string/generic_cancel</string>
+    <string name="request_access_certificate_not_trusted_warning_text">Advertencia: no se ha podido verificar la identidad de esta parte usuaria. Revísalo con atención antes de compartir tus datos.</string>
+    <string name="request_registration_not_verified_warning_text">Advertencia: no se ha podido obtener la información registrada sobre la entidad. Revísalo con atención antes de compartir tus datos.</string>
+    <string name="request_registration_overasked_warning_text">Advertencia: algunos de los datos solicitados no están registrados para esta parte usuaria. Revísalo con atención antes de compartir tus datos.</string>
+    <string name="request_registration_acknowledge_text">Entiendo los riesgos y acepto compartir mis datos</string>
+    <string name="request_claim_not_registered_supporting_text">Datos no registrados</string>
+    <string name="request_collapsed_supporting_text">@string/generic_view_details</string>
+    <string name="request_transaction_section_title">Datos que se van a firmar</string>
+    <string name="request_transaction_details_title">Detalles de la firma</string>
+    <string name="request_transaction_trust_framework">Marco de confianza</string>
+    <string name="request_transaction_trust_framework_value">eIDAS</string>
+    <string name="request_transaction_numbered">Transacción %1$d</string>
+    <string name="request_transaction_type">Tipo de transacción</string>
+    <string name="request_transaction_signature_type">Tipo de firma</string>
+    <string name="request_transaction_requested_credentials">Credenciales solicitadas</string>
+    <string name="request_transaction_signing_credential_id">ID de la credencial de firma</string>
+    <string name="request_transaction_signature_count">Número de firmas</string>
+    <string name="request_transaction_document">Documento</string>
+    <string name="request_transaction_document_numbered">Documento %1$d</string>
+    <string name="request_transaction_document_location">Ubicación del documento</string>
+    <string name="request_transaction_open_document">Abrir el documento</string>
+    <string name="request_transaction_expected_checksum">Suma de comprobación esperada del documento</string>
+    <string name="request_transaction_checksum_algorithm">Algoritmo de suma de comprobación</string>
+    <string name="request_transaction_hash_representation">Representación del hash</string>
+    <string name="request_transaction_dtbsr_hash">Hash DTBSR</string>
+    <string name="request_transaction_dtbsr_algorithm">Algoritmo de hash DTBSR</string>
+    <string name="request_transaction_sdr_hash">Hash SDR</string>
+    <string name="request_transaction_sdr_algorithm">Algoritmo de hash SDR</string>
+    <string name="request_transaction_sodr_hash">Hash SODR</string>
+    <string name="request_transaction_sodr_algorithm">Algoritmo de hash SODR</string>
+    <string name="request_transaction_document_hash">Hash del documento</string>
+    <string name="request_transaction_document_hash_algorithm">Algoritmo de hash del documento</string>
+    <string name="request_transaction_signature_format">Formato de firma</string>
+    <string name="request_transaction_conformance_level">Nivel de conformidad</string>
+    <string name="request_transaction_signed_attributes">Atributos firmados</string>
+    <string name="request_transaction_relying_party_attribute">Elegido por la parte usuaria; la cartera no lo comprueba</string>
+    <string name="request_transaction_otp">Contraseña de un solo uso (OTP)</string>
+    <string name="request_transaction_response_uri">URI de respuesta</string>
+    <string name="request_transaction_location">Ubicación</string>
+    <string name="request_transaction_data_hash_algorithm">Algoritmo de hash de los datos de la transacción</string>
+    <string name="request_transaction_circumstantial_data">Datos circunstanciales</string>
+    <string name="request_transaction_signed_envelope_property">Propiedad del sobre firmado</string>
+    <string name="request_transaction_reference_uri">URI de referencia</string>
+    <string name="request_transaction_signature_algorithm">Algoritmo de firma</string>
+    <string name="request_transaction_signature_algorithm_parameters">Parámetros del algoritmo de firma</string>
+    <string name="request_transaction_document_access">Acceso al documento</string>
+    <string name="request_transaction_document_access_public">Público</string>
+    <string name="request_transaction_document_access_otp">Contraseña de un solo uso</string>
+    <string name="request_transaction_document_access_basic">Autenticación básica</string>
+    <string name="request_transaction_document_access_digest">Autenticación digest</string>
+    <string name="request_transaction_document_access_oauth">OAuth 2.0</string>
+    <string name="request_transaction_document_content">Contenido del documento</string>
+    <string name="request_transaction_document_content_inline">Incluido en la solicitud</string>
+    <string name="request_transaction_document_type">Tipo de documento</string>
+    <string name="request_transaction_document_type_original">Documento original</string>
+    <string name="request_transaction_document_type_formatted">Documento con formato</string>
+    <string name="request_transaction_document_size">Tamaño del documento</string>
+    <plurals name="request_transaction_document_size_value">
+        <item quantity="one">%d byte</item>
+        <item quantity="other">%d bytes</item>
+    </plurals>
+    <string name="request_transaction_unavailable">Los detalles de esta transacción no están disponibles.</string>
+    <string name="request_transaction_data_not_shown_error">Esta solicitud te pide firmar datos que la cartera no puede mostrar por completo, así que se ha rechazado.</string>
+    <string name="request_transaction_qes">Firma electrónica cualificada (QES)</string>
+    <string name="request_transaction_qeseal">Sello electrónico cualificado</string>
+    <string name="request_transaction_aes">Firma electrónica avanzada</string>
+    <string name="request_transaction_aeseal">Sello electrónico avanzado</string>
+    <string name="request_transaction_aesqc">Firma electrónica avanzada con certificado cualificado</string>
+    <string name="request_transaction_aesealqc">Sello electrónico avanzado con certificado cualificado</string>
+    <string name="request_combination_option_title">Opción %1$d de %2$d</string>
+    <string name="request_no_data">El documento solicitado no está disponible en tu Cartera EUDI.\nPonte en contacto con el emisor autorizado para obtener más información.</string>
+    <string name="request_sticky_button_text">Compartir</string>
+    <string name="request_bottom_sheet_warning_title">Advertencia</string>
+    <string name="request_bottom_sheet_warning_subtitle">Si decides no compartir determinados datos, puede que no se emita el documento solicitado.</string>
+    <string name="request_blocked_bottom_sheet_title">Presentación bloqueada</string>
+    <string name="request_blocked_bottom_sheet_message">Esta solicitud de presentación se ha bloqueado porque tu cartera no ha podido verificar a la parte usuaria.\n\nNo se ha compartido tu información personal ni otros datos con esta parte usuaria.</string>
+    <string name="request_blocked_bottom_sheet_primary_button_text">@string/generic_close</string>
+    <string name="request_user_image_notice">Esta solicitud incluye tu retrato, que puede usarse como dato biométrico para identificarte por la cara.</string>
+    <string name="request_bottom_sheet_user_image_title">¿Compartir tu retrato?</string>
+    <string name="request_bottom_sheet_user_image_message">Tu retrato se enviará a esta parte usuaria. Compártelo solo si confías en ella y la solicitud lo necesita.</string>
+    <string name="request_bottom_sheet_user_image_primary_button_text">@string/request_sticky_button_text</string>
+    <string name="request_bottom_sheet_user_image_secondary_button_text">@string/generic_cancel</string>
+    <string name="request_gender_male">Hombre</string>
+    <string name="request_gender_female">Mujer</string>
+    <string name="request_gender_not_known">Desconocido</string>
+    <string name="request_gender_not_applicable">No procede</string>
+    <!--endregion-->
+    <!-- region Loading Screen-->
+    <string name="loading_header_description">Espera un momento…</string>
+    <string name="loading_rejection_description">Se ha enviado tu respuesta a la parte usuaria, que la ha rechazado.</string>
+    <string name="loading_biometry_biometrics_enabled_description">Usa tus datos biométricos para aprobar la transacción.</string>
+    <string name="loading_biometry_biometrics_not_enabled_description">Para aprobar la transacción tienes que verificar tu identidad.</string>
+    <!--endregion-->
+    <!-- region Dashboard-->
+    <string name="dashboard_document_has_not_expired">Válido hasta: %1$s</string>
+    <string name="dashboard_document_has_expired">Caducado</string>
+    <string name="dashboard_document_deferred_pending">Pendiente</string>
+    <string name="dashboard_document_deferred_failed">Error de emisión</string>
+    <string name="dashboard_document_revoked">Revocado</string>
+    <string name="dashboard_document_suspended">Suspendido</string>
+    <string name="dashboard_document_credentials_info_text" formatted="false">%d/%d</string>
+    <string name="dashboard_bottom_sheet_bluetooth_title">¿Activar el Bluetooth?</string>
+    <string name="dashboard_bottom_sheet_bluetooth_subtitle">Activa el Bluetooth para compartir tu información con la opción de autenticación en persona o en línea</string>
+    <string name="dashboard_bottom_sheet_bluetooth_primary_button_text">@string/generic_enable_capitalized</string>
+    <string name="dashboard_bottom_sheet_bluetooth_secondary_button_text">@string/generic_cancel_capitalized</string>
+    <string name="dashboard_bottom_sheet_deferred_document_pressed_title">@string/generic_bottom_sheet_delete_title</string>
+    <string name="dashboard_bottom_sheet_deferred_document_pressed_subtitle">@string/generic_bottom_sheet_delete_subtitle</string>
+    <string name="dashboard_bottom_sheet_deferred_document_pressed_primary_button_text">@string/generic_bottom_sheet_delete_primary_button_text</string>
+    <string name="dashboard_bottom_sheet_deferred_document_pressed_secondary_button_text">@string/generic_bottom_sheet_delete_secondary_button_text</string>
+    <string name="dashboard_bottom_sheet_deferred_documents_ready_title">Documentos emitidos</string>
+    <string name="dashboard_bottom_sheet_deferred_documents_ready_subtitle">Se han añadido nuevos documentos a tu cartera.</string>
+    <string name="dashboard_bottom_sheet_revoked_document_dialog_title">Documentos revocados o suspendidos</string>
+    <string name="dashboard_bottom_sheet_revoked_document_dialog_subtitle">Los emisores de los siguientes documentos los han revocado o suspendido, por lo que no se pueden usar.</string>
+    <!--endregion-->
+    <!-- region Dashboard Side Menu-->
+    <string name="dashboard_side_menu_title">Mi cartera UE</string>
+    <string name="dashboard_side_menu_option_change_pin">Cambiar el PIN</string>
+    <string name="dashboard_side_menu_option_settings">Ajustes</string>
+    <!--endregion-->
+    <!-- region Settings Screen-->
+    <string name="settings_screen_title">Ajustes</string>
+    <string name="settings_screen_option_biometrics_authentication">Autenticarse con datos biométricos</string>
+    <string name="settings_screen_option_show_batch_issuance_counter">Contador de emisión por lotes</string>
+    <string name="settings_screen_option_retrieve_logs">Obtener registros</string>
+    <string name="settings_screen_option_changelog">Novedades</string>
+    <string name="settings_screen_option_registration_check">Comprobar certificados de registro</string>
+    <string name="settings_screen_option_dc_api">Permitir solicitudes de documentos desde aplicaciones y sitios web (DC API)</string>
+    <string name="settings_screen_option_registration_check_restart">Reinicia la aplicación para aplicar este cambio</string>
+    <string name="settings_intent_chooser_logs_share_title">Compartir registros</string>
+    <string name="settings_screen_option_reset_wallet">Restablecer la cartera</string>
+    <string name="settings_bottom_sheet_reset_wallet_title">¿Restablecer la cartera?</string>
+    <string name="settings_bottom_sheet_reset_wallet_message">Esto elimina de forma permanente de este dispositivo:\n• tus documentos y sus claves\n• tu historial de transacciones\n• tu PIN, tus ajustes y tus registros\n\nDespués, la cartera se inicia de nuevo como en el primer uso.</string>
+    <string name="settings_bottom_sheet_reset_wallet_primary_button_text">Restablecer</string>
+    <string name="settings_bottom_sheet_reset_wallet_secondary_button_text">@string/generic_cancel</string>
+    <string name="settings_reset_wallet_biometrics_enabled_description">Usa tus datos biométricos para restablecer la cartera.</string>
+    <string name="settings_reset_wallet_biometrics_not_enabled_description">Para restablecer la cartera tienes que verificar tu identidad.</string>
+    <string name="settings_biometrics_switch_enabled_description">Usa tus datos biométricos o tu PIN para desactivar la autenticación con datos biométricos.</string>
+    <string name="settings_biometrics_switch_not_enabled_description">Introduce tu PIN para activar la autenticación con datos biométricos.</string>
+    <!--endregion-->
+    <!-- region Reset Wallet Screen-->
+    <string name="reset_wallet_screen_title">Restableciendo la cartera</string>
+    <string name="reset_wallet_screen_subtitle">Se están eliminando tus documentos y datos. Después, la cartera se inicia de nuevo como en el primer uso.</string>
+    <!--endregion-->
+    <!-- region Home Screen-->
+    <string name="home_screen_title">Inicio</string>
+    <string name="home_screen_welcome">Bienvenido</string>
+    <string name="home_screen_welcome_user_message">Bienvenido, %1$s</string>
+    <string name="home_screen_authentication_card_title">Autentícate, autoriza transacciones y comparte tus documentos digitales en persona o en línea.</string>
+    <string name="home_screen_sign_card_title">Firma electrónicamente documentos digitales con tu cartera eligiendo un archivo de tu dispositivo.</string>
+    <string name="home_screen_authenticate">Autenticarse</string>
+    <string name="home_screen_authenticate_description">Autentícate compartiendo tus datos en persona (cerca) o en línea (sitio web o servicio).</string>
+    <string name="home_screen_sign">Firmar</string>
+    <string name="home_screen_learn_more">Más información</string>
+    <string name="home_screen_authenticate_option_in_person">En persona</string>
+    <string name="home_screen_add_document_option_online">En línea</string>
+    <string name="home_screen_sign_document">Firmar documento</string>
+    <string name="home_screen_sign_document_description">Firma un documento digitalmente eligiendo un archivo de tu dispositivo o escaneando un código QR.</string>
+    <string name="home_screen_sign_document_option_from_device">Desde el dispositivo</string>
+    <string name="home_screen_sign_document_option_scan_qr">Escanear QR</string>
+    <!--endregion-->
+    <!-- region Home Screen Learn More Popups content-->
+    <string name="home_screen_authenticate_learn_more_inner_title">Firma documentos de forma segura</string>
+    <string name="home_screen_authenticate_learn_more_description">Firma documentos solo con tu cartera. Una firma electrónica jurídicamente vinculante será más rápida y sencilla que nunca y te permitirá hacer trámites estés donde estés.</string>
+    <string name="home_screen_sign_learn_more_inner_title">Accede a servicios en línea</string>
+    <string name="home_screen_sign_learn_more_description">Identifícate ante una amplia gama de servicios públicos y privados en línea protegiendo tu privacidad. Demuestra quién eres con solo unos toques, sin tener que gestionar innumerables contraseñas.</string>
+    <!--endregion-->
+    <!-- region Documents Screen-->
+    <string name="documents_screen_title">Documentos</string>
+    <string name="documents_screen_search_label">@string/generic_search</string>
+    <string name="documents_screen_search_no_results">Ningún documento coincide con tu búsqueda. Prueba a cambiar la consulta o los filtros.</string>
+    <string name="documents_screen_add_document_title">Añadir documento</string>
+    <string name="documents_screen_add_document_description">Añade documentos a tu cartera eligiéndolos de una lista o escaneando un código QR.</string>
+    <string name="documents_screen_add_document_fab">Añadir documento</string>
+    <string name="documents_screen_add_document_option_list">Desde una lista</string>
+    <string name="documents_screen_add_document_option_qr">@string/generic_scan_qr</string>
+    <string name="documents_screen_add_document_option_or">@string/generic_or</string>
+    <string name="documents_screen_filters_title">@string/generic_filters_title</string>
+    <string name="documents_screen_filters_sort_by">@string/generic_filters_sort_by</string>
+    <string name="documents_screen_filters_sort_default">Predeterminado</string>
+    <string name="documents_screen_filters_filter_by_issuer">Emisor</string>
+    <string name="documents_screen_filters_filter_by_category">Categoría</string>
+    <string name="documents_screen_filters_filter_by_state">Estado</string>
+    <string name="documents_screen_filters_filter_by_state_revoked">Revocado</string>
+    <string name="documents_screen_filters_filter_by_state_valid">Válido</string>
+    <string name="documents_screen_filters_filter_by_state_expired">Caducado</string>
+    <string name="documents_screen_filters_filter_by_expiry_period">Periodo de caducidad</string>
+    <string name="documents_screen_filters_filter_by_expiry_period_1">Próximos 7 días</string>
+    <string name="documents_screen_filters_filter_by_expiry_period_2">Próximos 30 días</string>
+    <string name="documents_screen_filters_filter_by_expiry_period_3">Más de 30 días</string>
+    <string name="documents_screen_filters_filter_by_expiry_period_4">Antes de hoy (caducado)</string>
+    <string name="documents_screen_filters_apply">@string/generic_filters_apply</string>
+    <string name="documents_screen_filters_reset">@string/generic_filters_reset</string>
+    <string name="documents_screen_filters_unknown_issuer">@string/generic_unknown_issuer</string>
+    <!--endregion-->
+    <!-- region Transactions Screen-->
+    <string name="transactions_screen_title">Historial</string>
+    <string name="transactions_screen_search_label">@string/generic_search</string>
+    <string name="transactions_screen_search_no_results">No se han encontrado transacciones. Prueba a cambiar la consulta o los filtros.</string>
+    <string name="transactions_screen_0_minutes_ago_message">Ahora mismo</string>
+    <plurals name="transactions_screen_some_minutes_ago_message">
+        <item quantity="one">hace %d minuto</item>
+        <item quantity="other">hace %d minutos</item>
+    </plurals>
+    <string name="transactions_screen_text_field_date_pattern">dd/mm/aaaa</string>
+    <!--endregion-->
+    <!-- region Transactions Screen, Filter labels-->
+    <string name="transactions_screen_filters_title">@string/generic_filters_title</string>
+    <string name="transactions_screen_filters_sort_by">@string/generic_filters_sort_by</string>
+    <string name="transactions_screen_filters_sort_transaction_date">Fecha de la transacción</string>
+    <string name="transactions_screen_filter_by_date_period">Fecha</string>
+    <string name="transactions_screen_filter_by_status">Estado</string>
+    <string name="transactions_screen_filters_filter_by_relying_party">Parte usuaria</string>
+    <string name="transactions_screen_filters_filter_by_transaction_type">Tipo de transacción</string>
+    <string name="transactions_screen_filters_filter_by_transaction_type_presentation">Presentación</string>
+    <string name="transactions_screen_filters_filter_by_transaction_type_issuance">Emisión</string>
+    <string name="transactions_screen_filters_filter_by_transaction_type_reissuance">Reemisión</string>
+    <string name="transactions_screen_filters_filter_by_transaction_type_deletion">Eliminación</string>
+    <string name="transaction_type_data_deletion_request">Solicitudes de eliminación de datos</string>
+    <string name="transaction_type_dpa_report">Informes de transacciones sospechosas</string>
+    <string name="transactions_screen_filters_filter_by_transaction_type_signing">Firma</string>
+    <string name="transactions_screen_filters_date_from">Fecha desde</string>
+    <string name="transactions_screen_filters_date_to">Fecha hasta</string>
+    <string name="transactions_filter_item_status_completed">Completada</string>
+    <string name="transactions_filter_item_status_not_completed">No completada</string>
+    <string name="transactions_filter_item_no_relying_party_transactions">Sin parte usuaria</string>
+    <string name="transactions_screen_filters_apply">@string/generic_filters_apply</string>
+    <string name="transactions_screen_filters_reset">@string/generic_filters_reset</string>
+    <!--endregion-->
+    <!-- region Document Sign-->
+    <string name="document_sign_title">Firmar documento</string>
+    <string name="document_sign_subtitle">Selecciona un documento de tu dispositivo para firmarlo electrónicamente.</string>
+    <string name="document_sign_select_document">Seleccionar documento</string>
+    <!--endregion-->
+    <!-- region Qr Scan-->
+    <string name="qr_scan_permission_not_granted">No se ha concedido permiso para usar la cámara\nAbrir los ajustes de la aplicación</string>
+    <string name="qr_scan_informative_text_presentation_flow">¿Tienes problemas para escanear el código QR?\nPrueba otra forma</string>
+    <string name="qr_scan_informative_text_issuance_flow">¿Tienes problemas para escanear el código QR?\nPrueba otra forma</string>
+    <string name="qr_scan_informative_text_signature_flow">¿Tienes problemas para escanear el código QR?\nPrueba otra forma</string>
+    <!--endregion-->
+    <!-- region Document Details-->
+    <string name="document_details_boolean_item_true_readable_value">sí</string>
+    <string name="document_details_boolean_item_false_readable_value">no</string>
+    <string name="document_details_bottom_sheet_delete_title">@string/generic_bottom_sheet_delete_title</string>
+    <string name="document_details_bottom_sheet_delete_subtitle">@string/generic_bottom_sheet_delete_subtitle</string>
+    <string name="document_details_bottom_sheet_delete_primary_button_text">@string/generic_bottom_sheet_delete_primary_button_text</string>
+    <string name="document_details_bottom_sheet_delete_secondary_button_text">@string/generic_bottom_sheet_delete_secondary_button_text</string>
+    <string name="document_details_toolbar_action_reissue">Reemitir</string>
+    <string name="document_details_toolbar_action_remove">Eliminar</string>
+    <string name="document_details_document_credentials_info_text" formatted="false">Instancias restantes %d/%d</string>
+    <string name="document_details_main_section_text">DATOS DEL DOCUMENTO</string>
+    <string name="document_details_issuer_section_text">DATOS DEL EMISOR</string>
+    <string name="document_details_issuer_card_unknown_issuer">@string/generic_unknown_issuer</string>
+    <string name="document_details_issuer_card_reissuance_failed_text">La cartera no ha podido renovar este documento automáticamente. Usa Reemitir documento para volver a intentarlo.</string>
+    <string name="document_details_issuer_card_status_refresh_failed_text">No se ha podido actualizar el estado del documento. El estado que se muestra es el de la última comprobación correcta.</string>
+    <string name="document_details_issuer_card_expires_on_text">Caduca el: %1$s</string>
+    <string name="document_details_issuer_card_revoked_text">Documento revocado</string>
+    <string name="document_details_issuer_card_suspended_text">Documento suspendido</string>
+    <string name="document_details_issuer_card_issued_on_text">Emitido el: %1$s</string>
+    <string name="document_details_issuer_card_issued_message_text">Puedes reemitir este documento en cualquier momento.</string>
+    <string name="document_details_issuer_card_issued_action_btn_text">Reemitir documento</string>
+    <string name="document_details_issuer_card_revoked_message_text">Este documento no se puede usar para verificaciones.</string>
+    <string name="document_details_issuer_card_suspended_message_text">El emisor ha suspendido este documento. No se puede usar para verificaciones a menos que el emisor lo reactive.</string>
+    <string name="document_details_issuer_card_expired_action_btn_text">@string/document_details_issuer_card_issued_action_btn_text</string>
+    <string name="document_details_issuer_card_expired_on_text">Caducó el: %1$s</string>
+    <string name="document_details_issuer_card_expired_text">Caducado</string>
+    <string name="document_details_issuer_card_expired_message_text">Este documento ha caducado. Puedes reemitirlo.</string>
+    <string name="document_details_reissue_blocked_text">El emisor ha revocado o suspendido este documento, por lo que no se puede reemitir.</string>
+    <string name="document_details_secondary_button_text">Eliminar de la cartera</string>
+    <string name="document_details_bottom_sheet_bookmark_info_title">Guardado en favoritos</string>
+    <string name="document_details_bottom_sheet_bookmark_info_message">El documento se ha añadido correctamente a tu lista de favoritos.</string>
+    <string name="document_details_bottom_sheet_bookmark_removed_info_title">Eliminado de favoritos</string>
+    <string name="document_details_bottom_sheet_bookmark_removed_info_message">El documento se ha eliminado correctamente de tu lista de favoritos.</string>
+    <string name="document_details_bottom_sheet_badge_title">Parte usuaria de confianza</string>
+    <string name="document_details_bottom_sheet_badge_subtitle">Una parte usuaria se considera de confianza cuando cumple los criterios predefinidos de seguridad, protección de datos, cumplimiento normativo y tratamiento responsable de los datos.</string>
+    <!--endregion-->
+    <!-- region Transaction Details-->
+    <string name="transaction_details_screen_title">Información de la transacción</string>
+    <string name="transaction_details_delete_button">Eliminar</string>
+    <string name="transaction_details_bottom_sheet_delete_title">¿Eliminar la transacción?</string>
+    <string name="transaction_details_bottom_sheet_delete_subtitle">Este registro de transacción se eliminará de forma permanente de tu cartera. Perderlo puede dificultar el ejercicio de tus derechos de protección de datos, incluida la solicitud de eliminación de datos o la denuncia de un uso indebido.</string>
+    <string name="transaction_details_screen_card_date_label">Fecha</string>
+    <string name="transaction_details_request_deletion_section_title">SOLICITAR LA ELIMINACIÓN DE DATOS</string>
+    <string name="transaction_details_report_transaction_section_title">DENUNCIAR ESTA TRANSACCIÓN</string>
+    <string name="transaction_details_request_deletion_message">Puedes pedir que esta parte usuaria deje de tratar los datos personales vinculados a esta transacción. No obstante, esto puede afectar a tu acceso a los servicios.</string>
+    <string name="transaction_details_report_transaction_message">Si consideras que esta parte usuaria ha solicitado tus datos personales de forma ilícita, puedes denunciarlo ante la autoridad de protección de datos del Estado miembro correspondiente.</string>
+    <string name="transaction_details_request_deletion_button">Iniciar la solicitud de eliminación</string>
+    <string name="transaction_details_report_transaction_button">Iniciar la denuncia de la transacción</string>
+    <string name="transaction_details_registration_not_verified">No se verificó el registro de la parte usuaria cuando se compartieron los datos, por lo que los datos de contacto que se muestran pueden no ser suyos.</string>
+    <string name="transaction_details_registration_not_bound">El registro que se muestra aquí se emitió a una parte distinta de la que solicitó los datos, por lo que sus datos de contacto no son los de esa parte. No se ofrece solicitud de eliminación.</string>
+    <string name="transaction_details_action_unavailable">Esta acción no está disponible. No se ha registrado ningún contacto adecuado ni datos compartidos para ella.</string>
+    <string name="transaction_details_action_open_failed">No se ha podido abrir este contacto. No se ha registrado ningún intento. Vuelve a intentarlo para abrirlo o cancela para volver a la transacción.</string>
+    <string name="transaction_details_action_save_failed">Se ha abierto la aplicación externa, pero este intento no se ha podido guardar en tu historial. Vuelve a intentarlo para guardarlo sin abrir de nuevo la aplicación.</string>
+    <string name="transaction_details_deletion_email_subject">Solicitud de supresión de datos personales en virtud del artículo 17 — %1$s</string>
+    <string name="transaction_details_deletion_email_body">Solicito la supresión de todos los datos personales compartidos con la parte usuaria en la transacción que figura a continuación, en virtud del artículo 17 del RGPD.\n\nParte usuaria:\n%1$s\n\nFecha de la transacción: %2$s\n\nTe agradecería que me indicaras cómo completar esta solicitud.</string>
+    <string name="transaction_details_report_email_subject">Denuncia de una solicitud de datos potencialmente ilícita o sospechosa — %1$s</string>
+    <string name="transaction_details_report_email_body">Deseo denunciar una solicitud de datos personales potencialmente ilícita o sospechosa por parte de la parte usuaria que se identifica a continuación.\n\nParte usuaria:\n%1$s\n\nFecha de la transacción: %2$s\n\nTe ruego que investigues esta solicitud. Puedo facilitar más detalles sobre mis motivos.</string>
+    <string name="transaction_details_data_shared_section_title">DATOS COMPARTIDOS</string>
+    <string name="transaction_details_data_signed_section_title">DATOS FIRMADOS</string>
+    <string name="transaction_details_signing_request_title">SOLICITUD DE FIRMA</string>
+    <string name="transaction_details_collapsed_supporting_text">@string/generic_view_details</string>
+    <string name="transaction_details_data_requested_section_title">DATOS SOLICITADOS</string>
+    <string name="transaction_details_relying_party_section_title">PARTE USUARIA</string>
+    <string name="transaction_details_authority_section_title">AUTORIDAD DE PROTECCIÓN DE DATOS</string>
+    <string name="transaction_details_credentials_section_title">CREDENCIALES</string>
+    <string name="transaction_details_credentials_issued_section_title">CREDENCIALES EMITIDAS</string>
+    <string name="transaction_details_data_deletion_section_title">DATOS CUYA ELIMINACIÓN SE SOLICITA</string>
+    <string name="transaction_details_no_data_requested">No se han solicitado datos</string>
+    <string name="transaction_details_no_data_shared">No se han compartido datos</string>
+    <string name="transaction_details_no_claims">No se han registrado atributos</string>
+    <string name="transaction_details_no_information">No se ha registrado información</string>
+    <string name="transaction_details_unknown_claim">Identificador de atributo no disponible</string>
+    <string name="transaction_details_name_label">Nombre</string>
+    <string name="transaction_details_intermediary_name_label">Nombre del intermediario</string>
+    <string name="transaction_details_identifier_label">Identificador</string>
+    <string name="transaction_details_identifier_scheme_label">Esquema de identificador</string>
+    <string name="transaction_details_contact_label">Contacto</string>
+    <string name="transaction_details_intermediary_contact_label">Contacto del intermediario</string>
+    <string name="transaction_details_country_label">País</string>
+    <string name="transaction_details_purpose_label">Uso previsto</string>
+    <string name="transaction_details_privacy_policy_label">Política de privacidad</string>
+    <string name="transaction_details_requested_count_label">Credenciales solicitadas</string>
+    <string name="transaction_details_issued_count_label">Credenciales emitidas</string>
+    <string name="transaction_details_trigger_label">Iniciada por</string>
+    <string name="transaction_details_requested_by_you">Titular de la cartera</string>
+    <string name="transaction_details_renewed_by_wallet">La cartera</string>
+    <string name="transaction_details_filename_label">Nombre del archivo</string>
+    <string name="transaction_details_signing_identifier_label">Identificador de la transacción de firma</string>
+    <!--endregion-->
+    <!-- region Proximity QR-->
+    <string name="proximity_qr_title">Autenticar mi identidad</string>
+    <string name="proximity_qr_subtitle">Muestra este código QR a una parte usuaria que esté cerca para autenticar tu identidad.</string>
+    <string name="proximity_qr_use_nfc">Conectar por NFC</string>
+    <string name="proximity_qr_hold_near_reader">Acerca el teléfono al lector para escanear.</string>
+    <!--endregion-->
+    <!-- region Presentation Qr Scan-->
+    <string name="presentation_qr_scan_title">Autenticar mi identidad</string>
+    <string name="presentation_qr_scan_subtitle">Escanea un código QR facilitado por una parte usuaria para autenticar tu identidad.</string>
+    <!--endregion-->
+    <!-- region Signature Qr Scan-->
+    <string name="signature_qr_scan_title">Firmar documento</string>
+    <string name="signature_qr_scan_subtitle">Escanea un código QR para firmar un documento electrónicamente.</string>
+    <!--endregion-->
+    <!-- region Issuance Add Document Screen-->
+    <string name="issuance_add_document_title">Añadir documento desde una lista</string>
+    <string name="issuance_add_document_subtitle">Elige un documento digital de la lista siguiente para añadirlo a tu cartera. Puedes añadir más documentos escaneando el código QR que te facilite un servicio de emisión autorizado.</string>
+    <string name="issuance_add_document_no_options">No hay documentos disponibles</string>
+    <string name="issuance_add_document_deferred_success_text">@string/generic_deferred_success_text</string>
+    <string name="issuance_add_document_deferred_success_description">Se ha solicitado tu documento. Te avisaremos cuando se haya emitido en tu cartera.</string>
+    <string name="issuance_add_document_deferred_success_primary_button_text">@string/generic_ok</string>
+    <string name="issuance_add_document_pid_combined">PID combinado</string>
+    <!--endregion-->
+    <!-- region Issuance Success Screen-->
+    <string name="issuance_success_banner_text">Documento emitido</string>
+    <string name="issuance_success_header_description">Has añadido correctamente lo siguiente a tu cartera</string>
+    <string name="issuance_success_not_issued_text">Estos documentos no se han añadido a tu cartera: %1$s.</string>
+    <string name="issuance_success_header_description_when_error">Has añadido correctamente el documento o los documentos a tu cartera</string>
+    <string name="issuance_success_header_issuer_default_name">@string/generic_default_issuer_name</string>
+    <!--endregion-->
+    <!-- region Issuance Qr Scan-->
+    <string name="issuance_qr_scan_title">Añadir documento desde un QR</string>
+    <string name="issuance_qr_scan_subtitle">Escanea un código QR facilitado por un emisor para añadir un documento digital a tu cartera.</string>
+    <!--endregion-->
+    <!-- region Issuance Document Offer-->
+    <string name="issuance_document_offer_screen_title">Solicitud de emisión</string>
+    <string name="issuance_document_offer_accept_button_text">Aceptar</string>
+    <string name="issuance_document_offer_cancel_button_text">@string/generic_cancel</string>
+    <string name="issuance_document_offer_deferred_success_text">@string/generic_deferred_success_text</string>
+    <string name="issuance_document_offer_deferred_success_description">Se han solicitado tus documentos de %1$s. Te avisaremos cuando se hayan emitido en tu cartera.</string>
+    <string name="issuance_document_offer_deferred_success_primary_button_text">@string/generic_ok</string>
+    <string name="issuance_document_offer_error_missing_pid_text">Primero hay que activar la cartera con un documento de identidad nacional</string>
+    <string name="issuance_document_offer_error_invalid_txcode_format">El formato del código de transacción no es válido. Debe tener entre %1$d y %2$d dígitos y solo puede contener números.</string>
+    <string name="issuance_document_offer_error_no_document">No se ha podido obtener y procesar la oferta de credenciales</string>
+    <string name="issuance_document_offer_error_issuer_not_configured">Esta oferta procede de un emisor que esta cartera no tiene configurado</string>
+    <string name="issuance_document_offer_relying_party_default_name">@string/generic_default_issuer_name</string>
+    <!--endregion-->
+    <!-- region Issuance Document Offer Code-->
+    <string name="issuance_code_title">%1$s requiere verificación</string>
+    <string name="issuance_code_caption">Introduce el código de transacción de %1$d dígitos que has recibido.</string>
+    <!--endregion-->
+    <!-- region Issuance Document Errors-->
+    <string name="issuance_generic_error">Algo ha fallado al emitir el documento o los documentos</string>
+    <string name="issuance_blocked_bottom_sheet_title">Emisión bloqueada</string>
+    <string name="issuance_blocked_bottom_sheet_message">Esta solicitud de emisión se ha bloqueado porque tu cartera no ha podido verificar al proveedor.\n\nNo se ha compartido tu información personal ni otros datos con este proveedor.</string>
+    <string name="issuance_blocked_bottom_sheet_primary_button_text">@string/generic_close</string>
+    <string name="issuance_partially_blocked_bottom_sheet_title">No se han añadido todos los documentos</string>
+    <string name="issuance_partially_blocked_bottom_sheet_message">Algunos documentos se han añadido a tu cartera. El resto se han bloqueado porque no se ha podido verificar a su proveedor y no se han compartido datos para ellos.</string>
+    <string name="issuance_partially_blocked_bottom_sheet_primary_button_text">@string/generic_continue</string>
+    <!--endregion-->
+    <!-- region Document Categories-->
+    <string name="document_category_government">ADMINISTRACIÓN</string>
+    <string name="document_category_travel">VIAJES</string>
+    <string name="document_category_finance">FINANZAS</string>
+    <string name="document_category_education">EDUCACIÓN</string>
+    <string name="document_category_health">SALUD</string>
+    <string name="document_category_social_security">SEGURIDAD SOCIAL</string>
+    <string name="document_category_retail">COMERCIO</string>
+    <string name="document_category_other">OTROS</string>
+    <!--endregion-->
+    <!-- region Transaction Categories-->
+    <string name="transaction_category_today">HOY</string>
+    <string name="transaction_category_this_week">ESTA SEMANA</string>
+    <string name="transaction_category_month_year">MES</string>
+    <!--endregion-->
+    <!-- Data deletion request -->
+    <string name="data_deletion_screen_title">Antes de continuar</string>
+    <string name="data_deletion_relying_party_default_name">Parte usuaria</string>
+    <string name="data_deletion_website_description">Vas a salir de la cartera e ir al sitio web de %1$s, donde podrás rellenar un formulario para solicitar la eliminación de los datos que compartiste.</string>
+    <string name="data_deletion_email_description">Se abrirá tu aplicación de correo con un mensaje listo para enviar a %1$s, para que puedas solicitar la eliminación de los datos que compartiste.</string>
+    <string name="data_deletion_phone_description">Se llamará directamente a %1$s para que puedas solicitar la eliminación de los datos que compartiste.</string>
+    <string name="data_deletion_website_responsibility">&lt;b&gt;La cartera no envía ni gestiona esta solicitud por ti.&lt;/b&gt; Una vez que estés en el formulario, eres tú quien debe completarlo y enviarlo.</string>
+    <string name="data_deletion_email_responsibility">&lt;b&gt;La cartera no envía este correo ni gestiona la solicitud por ti.&lt;/b&gt; Tendrás que revisarlo, completarlo y enviarlo tú.</string>
+    <string name="data_deletion_phone_responsibility">&lt;b&gt;La cartera no realiza esta solicitud por ti.&lt;/b&gt; Tendrás que explicar tú mismo qué solicitas durante la llamada.</string>
+    <string name="data_deletion_retention_notice">Es posible que %1$s siga obligada a conservar algunos de tus datos por motivos legales, incluso después de tu solicitud. Cualquier novedad sobre el resultado te llegará directamente de %1$s, no de la cartera.</string>
+    <string name="data_deletion_website_button">Ir al sitio web de %1$s</string>
+    <string name="data_deletion_email_button">Abrir un correo a %1$s</string>
+    <string name="data_deletion_phone_button">Llamar a %1$s</string>
+    <!-- DPA report -->
+    <string name="dpa_report_screen_title">Iniciar la denuncia de la transacción</string>
+    <string name="dpa_report_authority_label">Autoridad de protección de datos competente</string>
+    <string name="dpa_report_responsibility">&lt;b&gt;La cartera no presenta ni hace seguimiento de esta denuncia.&lt;/b&gt; Para denunciar esta transacción, ponte en contacto directamente con la autoridad de protección de datos competente por el medio que te resulte más cómodo de los que se indican a continuación.</string>
+    <string name="dpa_report_follow_up">Tendrás que describir tú mismo la transacción. Cualquier seguimiento del resultado te llegará directamente de la autoridad de protección de datos, no de la cartera.</string>
+    <string name="dpa_report_call_button">Llamar</string>
+    <string name="dpa_report_email_button">Abrir correo</string>
+    <string name="dpa_report_website_button">Visitar el sitio web</string>
+    <string name="transaction_details_report_email_intermediary">\n\nIntermediario:\n%1$s</string>
+    <string name="content_description_call_icon">Teléfono</string>
+    <string name="content_description_email_icon">Correo electrónico</string>
+    <string name="content_description_link_icon">Sitio web</string>
+    <!-- Transaction attempt history -->
+    <string name="privacy_history_deletion_link">Ver solicitudes anteriores de eliminación de datos (%1$d)</string>
+    <string name="privacy_history_report_link">Ver denuncias anteriores de transacciones (%1$d)</string>
+    <string name="privacy_history_loading">Cargando intentos anteriores…</string>
+    <string name="privacy_history_retry">Reintentar la carga de intentos anteriores</string>
+    <string name="privacy_history_deletion_title">Solicitudes anteriores de eliminación de datos para %1$s</string>
+    <string name="privacy_history_report_title">Denuncias anteriores de transacciones para %1$s</string>
+    <string name="privacy_history_relying_party_default_name">Parte usuaria</string>
+    <string name="privacy_history_deletion_disclaimer">Las solicitudes de eliminación de datos se completan fuera de la cartera, por lo que no se puede hacer seguimiento de su resultado final.</string>
+    <string name="privacy_history_report_disclaimer">Las denuncias de transacciones se completan fuera de la cartera, por lo que no se puede hacer seguimiento de su resultado final.</string>
+    <string name="privacy_history_deletion_intro">Anteriormente has intentado iniciar una solicitud de eliminación de datos con esta parte usuaria mediante los siguientes métodos:</string>
+    <string name="privacy_history_report_intro">Anteriormente has intentado iniciar una denuncia de transacción ante la autoridad de protección de datos competente mediante los siguientes métodos:</string>
+    <string name="privacy_history_deletion_empty">No hay intentos anteriores de solicitud de eliminación de datos para esta transacción.</string>
+    <string name="privacy_history_report_empty">No hay intentos anteriores de denuncia de transacción para esta transacción.</string>
+    <string name="privacy_history_method_web_form">Formulario web</string>
+    <string name="privacy_history_method_website">Sitio web</string>
+    <string name="privacy_history_method_email">Correo electrónico</string>
+    <string name="privacy_history_method_phone">Llamada telefónica</string>
+
+</resources>
