@@ -24,6 +24,12 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 /**
  * Configure Compose-specific options
+ *
+ * Local unit tests get the Compose UI test library, its test manifest in every variant (not only
+ * debug) and the catalog's Espresso, which replaces the older Espresso the test library brings in;
+ * that older one fails under Robolectric (`NoSuchMethodException: InputManager.getInstance`).
+ *
+ * @param commonExtension the Android extension of the module that applies Compose.
  */
 internal fun Project.configureAndroidCompose(
     commonExtension: CommonExtension,
@@ -60,6 +66,9 @@ internal fun Project.configureAndroidCompose(
             add("debugImplementation", libs.findLibrary("androidx.compose.ui.testManifest").get())
             add("debugImplementation", libs.findLibrary("androidx.compose.ui.tooling").get())
             add("testImplementation", libs.findLibrary("robolectric").get())
+            add("testImplementation", libs.findLibrary("androidx.compose.ui.test").get())
+            add("testImplementation", libs.findLibrary("androidx.compose.ui.testManifest").get())
+            add("testImplementation", libs.findLibrary("androidx.test.espresso.core").get())
         }
     }
 
