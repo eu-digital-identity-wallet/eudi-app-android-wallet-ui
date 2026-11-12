@@ -36,11 +36,8 @@ moduleConfig {
 dependencies {
     implementation(project(LibraryModule.ResourcesLogic.path))
     implementation(project(LibraryModule.BusinessLogic.path))
-    implementation(project(LibraryModule.StorageLogic.path))
     implementation(project(LibraryModule.AuthenticationLogic.path))
     implementation(project(LibraryModule.NetworkLogic.path))
-
-    implementation(libs.androidx.biometric)
 
     testImplementation(project(LibraryModule.TestLogic.path))
 }

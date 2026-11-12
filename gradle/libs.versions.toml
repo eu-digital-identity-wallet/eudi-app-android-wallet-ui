@@ -8,7 +8,6 @@ ksp = "2.3.10"
 
 # AndroidX
 androidxActivity = "1.13.0"
-androidxAppAuth = "1.0.0"
 androidxAppCompat = "1.8.0"
 androidxBiometric = "1.4.0-beta01"
 androidxBrowser = "1.10.0"
@@ -103,7 +102,6 @@ kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-
 
 # AndroidX
 androidx-activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "androidxActivity" }
-androidx-appAuth = { group = "androidx.security", name = "security-app-authenticator", version.ref = "androidxAppAuth" }
 androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "androidxAppCompat" }
 androidx-biometric = { group = "androidx.biometric", name = "biometric", version.ref = "androidxBiometric" }
 androidx-browser = { group = "androidx.browser", name = "browser", version.ref = "androidxBrowser" }

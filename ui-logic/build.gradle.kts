@@ -41,8 +41,6 @@ dependencies {
     implementation(project(LibraryModule.StorageLogic.path))
     implementation(project(LibraryModule.AuthenticationLogic.path))
 
-    implementation(libs.zxing)
-    implementation(libs.gson)
     implementation(libs.androidx.lifecycle.process)
 
     testImplementation(project(LibraryModule.TestLogic.path))
