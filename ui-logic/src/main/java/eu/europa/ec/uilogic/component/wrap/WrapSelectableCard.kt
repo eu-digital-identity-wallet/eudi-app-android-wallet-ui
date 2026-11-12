@@ -38,6 +38,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.hideFromAccessibility
+import androidx.compose.ui.semantics.onClick
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.selected
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import eu.europa.ec.uilogic.component.ListItemDataUi
 import eu.europa.ec.uilogic.component.ListItemLeadingContentDataUi
@@ -67,6 +73,12 @@ object WrapSelectableCardDefaults {
  * that layer drops its click handler and taps fall through to the content. The layer is always
  * composed (only its click handler is gated) so the selecting tap's ripple animates to completion
  * instead of being disposed mid-frame.
+ *
+ * Accessibility: the title row is a radio button that carries the card's selected state; while the
+ * card is unselected, its click action invokes [onSelected]. The select layer is hidden from
+ * accessibility services, so it neither shows as an unlabelled control nor hides the card's
+ * content from them. While the card is unselected, the caller must give [content] no click
+ * handlers, so that accessibility services cannot act on what the layer keeps from touch.
  */
 @Composable
 fun WrapSelectableCard(
@@ -107,6 +119,16 @@ fun WrapSelectableCard(
                 verticalArrangement = Arrangement.spacedBy(SPACING_EXTRA_SMALL.dp),
             ) {
                 WrapListItem(
+                    modifier = Modifier.semantics(mergeDescendants = true) {
+                        role = Role.RadioButton
+                        selected = isSelected
+                        if (!isSelected) {
+                            onClick {
+                                onSelected()
+                                true
+                            }
+                        }
+                    },
                     item = ListItemDataUi(
                         itemId = title,
                         mainContentData = ListItemMainContentDataUi.Text(text = title),
@@ -127,6 +149,7 @@ fun WrapSelectableCard(
             Box(
                 modifier = Modifier
                     .matchParentSize()
+                    .semantics { hideFromAccessibility() }
                     .clip(RoundedCornerShape(WrapSelectableCardDefaults.CORNER_RADIUS))
                     .indication(
                         interactionSource = selectInteractionSource,
