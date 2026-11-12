@@ -371,7 +371,6 @@ graph TD;
   resources-logic --> ui-logic
   analytics-logic --> ui-logic
   core-logic --> ui-logic
-  storage-logic --> ui-logic
   authentication-logic --> ui-logic
 
   business-logic --> network-logic

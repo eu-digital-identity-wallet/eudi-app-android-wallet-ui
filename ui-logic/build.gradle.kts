@@ -38,7 +38,6 @@ dependencies {
     implementation(project(LibraryModule.BusinessLogic.path))
     implementation(project(LibraryModule.AnalyticsLogic.path))
     implementation(project(LibraryModule.CoreLogic.path))
-    implementation(project(LibraryModule.StorageLogic.path))
     implementation(project(LibraryModule.AuthenticationLogic.path))
 
     implementation(libs.androidx.lifecycle.process)
