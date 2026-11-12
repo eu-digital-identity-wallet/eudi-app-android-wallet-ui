@@ -14,4 +14,8 @@
   ~ governing permissions and limitations under the Licence.
   -->
 
-<manifest />
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <application android:localeConfig="@xml/locales_config" />
+
+</manifest>
