@@ -307,7 +307,7 @@
     <string name="dashboard_document_deferred_failed">Issuance failed</string>
     <string name="dashboard_document_revoked">Revoked</string>
     <string name="dashboard_document_suspended">Suspended</string>
-    <string name="dashboard_document_credentials_info_text">%d/%d</string>
+    <string name="dashboard_document_credentials_info_text">%1$d/%2$d</string>
 
     <string name="dashboard_bottom_sheet_bluetooth_title">Enable bluetooth?</string>
     <string name="dashboard_bottom_sheet_bluetooth_subtitle">Enable bluetooth to share your information using the Authenticate in person or online option</string>
@@ -474,7 +474,7 @@
     <string name="document_details_toolbar_action_reissue">Re-issue</string>
     <string name="document_details_toolbar_action_remove">Remove</string>
 
-    <string name="document_details_document_credentials_info_text">Instances remaining %d/%d</string>
+    <string name="document_details_document_credentials_info_text">Instances remaining %1$d/%2$d</string>
     <string name="document_details_main_section_text">DOCUMENT DATA</string>
     <string name="document_details_issuer_section_text">ISSUER DETAILS</string>
     <string name="document_details_issuer_card_unknown_issuer">@string/generic_unknown_issuer</string>
@@ -641,9 +641,9 @@
     <!--endregion-->
 
     <!-- region Transaction Categories -->
-    <string name="transaction_category_today">TODAY</string>">
-    <string name="transaction_category_this_week">THIS WEEK</string>">
-    <string name="transaction_category_month_year">MONTH</string>">
+    <string name="transaction_category_today">TODAY</string>
+    <string name="transaction_category_this_week">THIS WEEK</string>
+    <string name="transaction_category_month_year">MONTH</string>
     <!--endregion-->
 
 
