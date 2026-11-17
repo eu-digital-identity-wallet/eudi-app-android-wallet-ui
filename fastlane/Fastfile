@@ -75,9 +75,14 @@ platform :android do
     reset_versioncode
     reset_versionName
 
+    apkPath = prepare_binary(
+      appVersion: fullVersion,
+      buildType: ENV["APP_BUILD_TYPE"]
+    )
+
     if browserstackEnabled
       upload_browserstack(
-        filePath: release_apk_path(buildType: ENV["APP_BUILD_TYPE"]),
+        filePath: apkPath,
       )
     else
       UI.important("BrowserStack upload skipped: BROWSERSTACK_USERNAME and BROWSERSTACK_ACCESS_KEY are not set.")
@@ -104,11 +109,6 @@ platform :android do
     end
 
     if ENV['GITHUB_RELEASE_REPO'] && ENV['GITHUB_RELEASE_TOKEN']
-      apkPath = prepare_binary(
-        appVersion: fullVersion,
-        buildType: ENV["APP_BUILD_TYPE"]
-      )
-
       extraAttachments = ENV['GITHUB_EXTRA_ATTACHMENTS']
       attachments = [apkPath]
     

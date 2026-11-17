@@ -25,11 +25,11 @@ The lanes build with the Gradle wrapper and the project configuration described 
 | Lane | Purpose |
 | --- | --- |
 | `android tests` | Cleans the project and runs the Kover HTML report task for the debug variant of the flavor in `APP_BUILD_TYPE` (for example `koverHtmlReportDevDebug`). |
-| `android deploy` | Stops unless every tracked file is committed and unless the BrowserStack settings are complete or absent (`check_browserstack`), then pulls the latest Git state, calculates a build number from Firebase App Distribution, sets version values, builds a release APK, uploads it to Firebase, resets the version values, uploads the APK to BrowserStack App Automate when BrowserStack credentials are set, tags the release, and optionally creates a GitHub release. |
-| `android prepare_binary` | Renames the generated release APK to the computed version name. |
+| `android deploy` | Stops unless every tracked file is committed and unless the BrowserStack settings are complete or absent (`check_browserstack`), then pulls the latest Git state, calculates a build number from Firebase App Distribution, sets version values, builds a release APK, uploads it to Firebase, resets the version values, renames the APK to the full version name (for example `2026.11.167-Dev.apk`), uploads it to BrowserStack App Automate when BrowserStack credentials are set, tags the release, and optionally creates a GitHub release with it. |
+| `android prepare_binary` | Renames the generated release APK to the computed version name. `deploy` runs it after the Firebase upload, before the BrowserStack upload and the GitHub release. |
 | `android upload_firebase` | Uploads the APK to Firebase App Distribution. |
 | `android check_browserstack` | Returns `false` when `BROWSERSTACK_USERNAME` and `BROWSERSTACK_ACCESS_KEY` are both empty. Otherwise it stops unless both are set together with `BROWSERSTACK_CUSTOM_ID`, and returns `true`. |
-| `android upload_browserstack` | Runs `check_browserstack` and stops when the upload is not configured, then uploads an APK to BrowserStack App Automate with the BrowserStack plugin and the `BROWSERSTACK_` variables: the APK given as `filePath:`, otherwise the release APK of the flavor in `APP_BUILD_TYPE`. Run it on its own to retry an upload that failed in `deploy`. |
+| `android upload_browserstack` | Runs `check_browserstack` and stops when the upload is not configured, then uploads an APK to BrowserStack App Automate with the BrowserStack plugin and the `BROWSERSTACK_` variables: the APK given as `filePath:`, otherwise the release APK of the flavor in `APP_BUILD_TYPE` under its original name. Run it on its own to retry an upload that failed in `deploy`, passing the renamed APK as `filePath:`. |
 | `android release_apk_path` | Returns the path of the release APK of the given flavor, which `upload_browserstack` and `prepare_binary` use. |
 | `android github_release` | Creates a GitHub release and uploads the APK and optional extra attachments. |
 | `android upload_tag` | Sets the URL of the `origin` remote to the given remote and pushes a Git tag to it. The previous URL is not restored. |
@@ -99,10 +99,10 @@ FIREBASE_GROUPS=<tester-groups> \
 bundle exec fastlane android deploy
 ```
 
-Retry a BrowserStack upload that failed in `deploy`, while the APK is still in place:
+Retry a BrowserStack upload that failed in `deploy`, while the renamed APK is still in place:
 
 ```bash
-bundle exec fastlane android upload_browserstack --env dev
+bundle exec fastlane android upload_browserstack filePath:app/build/outputs/apk/dev/release/2026.11.167-Dev.apk --env dev
 ```
 
 On Windows PowerShell:
@@ -121,10 +121,11 @@ bundle exec fastlane android deploy
 The current `deploy` lane stops when a tracked file has uncommitted changes, so the build and its
 tag match `HEAD`, and when the BrowserStack settings are only partly set (`check_browserstack`), before
 it pulls or builds anything. It then writes the CalVer `VERSION_NAME` into `version.properties` and the build
-number into `versionCode`, builds and uploads the APK to Firebase, and resets both (`yyyy.mm.v`, `1`). When
-BrowserStack credentials are set, it then uploads the APK to BrowserStack App Automate; if that
-upload fails, the lane stops there: the Firebase release stays without a tag (the next run takes the
-next build number), and the APK is kept, so `upload_browserstack` can retry it. Only then does it
+number into `versionCode`, builds and uploads the APK to Firebase, and resets both (`yyyy.mm.v`, `1`), and renames the APK to the full version
+name (`prepare_binary`). When BrowserStack credentials are set, it then uploads that file to
+BrowserStack App Automate; if that upload fails, the lane stops there: the Firebase release stays
+without a tag (the next run takes the next build number), and the renamed APK is kept, so
+`upload_browserstack` can retry it. Only then does it
 create a Git tag and push it to `PROD_REMOTE_REPO` and `DEV_REMOTE_REPO`. To push the tag,
 `upload_tag` sets the URL of the `origin` remote to each of them in turn and does not restore it, so
 after a run `origin` points at the last of them. Run the lane from a controlled CI environment.
