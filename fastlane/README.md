@@ -31,6 +31,14 @@ Runs all the unit tests
 
 Build & Deploy Wallet
 
+### android release_apk_path
+
+```sh
+[bundle exec] fastlane android release_apk_path
+```
+
+Path of the release APK for the given build type
+
 ### android prepare_binary
 
 ```sh
@@ -62,6 +70,22 @@ Upload tag to remote repo
 ```
 
 Distribute to Firebase
+
+### android check_browserstack
+
+```sh
+[bundle exec] fastlane android check_browserstack
+```
+
+Check the BrowserStack settings: false when the upload is not configured, an error when it is only partly configured
+
+### android upload_browserstack
+
+```sh
+[bundle exec] fastlane android upload_browserstack
+```
+
+Upload APK to BrowserStack App Automate
 
 ### android latest_firebase_release
 
