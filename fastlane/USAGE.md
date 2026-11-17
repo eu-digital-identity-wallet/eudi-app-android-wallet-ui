@@ -25,10 +25,11 @@ The lanes build with the Gradle wrapper and the project configuration described 
 | Lane | Purpose |
 | --- | --- |
 | `android tests` | Cleans the project and runs the Kover HTML report task for the debug variant of the flavor in `APP_BUILD_TYPE` (for example `koverHtmlReportDevDebug`). |
-| `android deploy` | Stops unless every tracked file is committed, then pulls the latest Git state, calculates a build number from Firebase App Distribution, sets version values, builds a release APK, uploads it to Firebase, resets the version values, uploads the APK to BrowserStack App Automate when BrowserStack credentials are set, tags the release, and optionally creates a GitHub release. |
+| `android deploy` | Stops unless every tracked file is committed and unless the BrowserStack settings are complete or absent (`check_browserstack`), then pulls the latest Git state, calculates a build number from Firebase App Distribution, sets version values, builds a release APK, uploads it to Firebase, resets the version values, uploads the APK to BrowserStack App Automate when BrowserStack credentials are set, tags the release, and optionally creates a GitHub release. |
 | `android prepare_binary` | Renames the generated release APK to the computed version name. |
 | `android upload_firebase` | Uploads the APK to Firebase App Distribution. |
-| `android upload_browserstack` | Uploads an APK to BrowserStack App Automate with the BrowserStack plugin and the `BROWSERSTACK_` variables: the APK given as `filePath:`, otherwise the release APK of the flavor in `APP_BUILD_TYPE`. Run it on its own to retry an upload that failed in `deploy`. |
+| `android check_browserstack` | Returns `false` when `BROWSERSTACK_USERNAME` and `BROWSERSTACK_ACCESS_KEY` are both empty. Otherwise it stops unless both are set together with `BROWSERSTACK_CUSTOM_ID`, and returns `true`. |
+| `android upload_browserstack` | Runs `check_browserstack` and stops when the upload is not configured, then uploads an APK to BrowserStack App Automate with the BrowserStack plugin and the `BROWSERSTACK_` variables: the APK given as `filePath:`, otherwise the release APK of the flavor in `APP_BUILD_TYPE`. Run it on its own to retry an upload that failed in `deploy`. |
 | `android release_apk_path` | Returns the path of the release APK of the given flavor, which `upload_browserstack` and `prepare_binary` use. |
 | `android github_release` | Creates a GitHub release and uploads the APK and optional extra attachments. |
 | `android upload_tag` | Sets the URL of the `origin` remote to the given remote and pushes a Git tag to it. The previous URL is not restored. |
@@ -57,9 +58,9 @@ The lanes read these values:
 | `GITHUB_RELEASE_REPO` | Optional GitHub release | Repository name for GitHub releases, for example `owner/repo`. |
 | `GITHUB_RELEASE_TOKEN` | Optional GitHub release | Token used by Fastlane to create the release. |
 | `GITHUB_EXTRA_ATTACHMENTS` | Optional GitHub release | Comma-separated paths to additional release assets. |
-| `BROWSERSTACK_USERNAME` | Optional BrowserStack upload | BrowserStack user name. `deploy` uploads the APK only when this and `BROWSERSTACK_ACCESS_KEY` are both set, and skips the step otherwise. |
+| `BROWSERSTACK_USERNAME` | Optional BrowserStack upload | BrowserStack user name. `deploy` skips the BrowserStack upload when this and `BROWSERSTACK_ACCESS_KEY` are both empty. When either is set, `deploy` checks before it builds anything that both are set, with `BROWSERSTACK_CUSTOM_ID`, and stops if one is missing. |
 | `BROWSERSTACK_ACCESS_KEY` | Optional BrowserStack upload | BrowserStack access key. Keep it in an env file or CI secret storage, never in Git. With `--env`, an empty line for a key in the env file overrides the value set in the environment; leave the key out of the file when CI provides it. |
-| `BROWSERSTACK_CUSTOM_ID` | Optional BrowserStack upload | Custom ID given to the upload, for example `eudi-wallet-android`. Tests can name the app by it; it refers to the latest upload with that ID. |
+| `BROWSERSTACK_CUSTOM_ID` | BrowserStack upload | Required with the credentials. Custom ID given to the upload, for example `eudi-wallet-android`. Tests can name the app by it; it refers to the latest upload with that ID. |
 
 Release signing is configured by Gradle, not Fastlane. Current Gradle signing reads the property from
 the root `local.properties` first, else the environment variable:
@@ -118,7 +119,8 @@ bundle exec fastlane android deploy
 ## Release cautions
 
 The current `deploy` lane stops when a tracked file has uncommitted changes, so the build and its
-tag match `HEAD`. It then writes the CalVer `VERSION_NAME` into `version.properties` and the build
+tag match `HEAD`, and when the BrowserStack settings are only partly set (`check_browserstack`), before
+it pulls or builds anything. It then writes the CalVer `VERSION_NAME` into `version.properties` and the build
 number into `versionCode`, builds and uploads the APK to Firebase, and resets both (`yyyy.mm.v`, `1`). When
 BrowserStack credentials are set, it then uploads the APK to BrowserStack App Automate; if that
 upload fails, the lane stops there: the Firebase release stays without a tag (the next run takes the

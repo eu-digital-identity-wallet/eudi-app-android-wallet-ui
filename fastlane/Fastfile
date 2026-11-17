@@ -37,6 +37,8 @@ platform :android do
       UI.user_error!("Commit or stash the changes to tracked files first: deploy builds and tags HEAD.")
     end
 
+    browserstackEnabled = check_browserstack
+
     git_pull
 
     firebase_release = latest_firebase_release(
@@ -73,12 +75,12 @@ platform :android do
     reset_versioncode
     reset_versionName
 
-    if ENV['BROWSERSTACK_USERNAME'].to_s.strip.empty? || ENV['BROWSERSTACK_ACCESS_KEY'].to_s.strip.empty?
-      UI.important("BrowserStack upload skipped: BROWSERSTACK_USERNAME and BROWSERSTACK_ACCESS_KEY are not both set.")
-    else
+    if browserstackEnabled
       upload_browserstack(
         filePath: release_apk_path(buildType: ENV["APP_BUILD_TYPE"]),
       )
+    else
+      UI.important("BrowserStack upload skipped: BROWSERSTACK_USERNAME and BROWSERSTACK_ACCESS_KEY are not set.")
     end
 
     clean_build_artifacts
@@ -205,14 +207,35 @@ platform :android do
     )
   end
 
+  desc "Check the BrowserStack settings: false when the upload is not configured, an error when it is only partly configured"
+  lane :check_browserstack do
+    username = ENV["BROWSERSTACK_USERNAME"].to_s.strip
+    accessKey = ENV["BROWSERSTACK_ACCESS_KEY"].to_s.strip
+    if username.empty? && accessKey.empty?
+      false
+    else
+      missing = []
+      missing << "BROWSERSTACK_USERNAME" if username.empty?
+      missing << "BROWSERSTACK_ACCESS_KEY" if accessKey.empty?
+      missing << "BROWSERSTACK_CUSTOM_ID" if ENV["BROWSERSTACK_CUSTOM_ID"].to_s.strip.empty?
+      unless missing.empty?
+        UI.user_error!("The BrowserStack upload is only partly configured. Set #{missing.join(", ")}, or leave BROWSERSTACK_USERNAME and BROWSERSTACK_ACCESS_KEY empty to skip it.")
+      end
+      true
+    end
+  end
+
   desc "Upload APK to BrowserStack App Automate"
   lane :upload_browserstack do |values|
+    unless check_browserstack
+      UI.user_error!("Set BROWSERSTACK_USERNAME, BROWSERSTACK_ACCESS_KEY and BROWSERSTACK_CUSTOM_ID to upload to BrowserStack.")
+    end
     filePath = values[:filePath] || release_apk_path(buildType: ENV["APP_BUILD_TYPE"])
     upload_to_browserstack_app_automate(
-      browserstack_username: ENV["BROWSERSTACK_USERNAME"],
-      browserstack_access_key: ENV["BROWSERSTACK_ACCESS_KEY"],
+      browserstack_username: ENV["BROWSERSTACK_USERNAME"].to_s.strip,
+      browserstack_access_key: ENV["BROWSERSTACK_ACCESS_KEY"].to_s.strip,
       file_path: filePath,
-      custom_id: ENV["BROWSERSTACK_CUSTOM_ID"].to_s.strip.empty? ? nil : ENV["BROWSERSTACK_CUSTOM_ID"]
+      custom_id: ENV["BROWSERSTACK_CUSTOM_ID"].to_s.strip
     )
   end
 
