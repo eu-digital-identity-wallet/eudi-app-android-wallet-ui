@@ -71,7 +71,7 @@ gmsPlugin = "4.5.0"
 kover = "0.9.11"
 owaspDependencyCheck = "13.0.0"
 secrets = "2.0.1"
-sonar = "7.5.0.8588"
+sonar = "7.6.0.18749"
 
 [libraries]
 # Kotlin
