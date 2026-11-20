@@ -80,8 +80,9 @@ To support development and testing, one can access a test/demo service for remot
 
 To support proximity, the EUDI Verifier App is available [here](https://github.com/eu-digital-identity-wallet/eudi-app-multiplatform-verifier-ui) and can request PID and mDL. It sends no reader authentication, so the wallet shows the warning that the requester's identity could not be verified.
 
-The issuer, verifier service, and verifier app authentication are validated against the EUDIW
-development trusted lists (LoTE) in both flavors — see [wiki/CONFIGURATION.md](wiki/CONFIGURATION.md). 
+The issuer and verifier service authentication are validated against the EUDIW development trusted
+lists (LoTE) in both flavors, as is a proximity reader's reader authentication when it sends one —
+see [wiki/CONFIGURATION.md](wiki/CONFIGURATION.md). 
 The `pidissuerca02_*` certificates under [`resources-logic/src/main/res/raw`](https://github.com/eu-digital-identity-wallet/eudi-app-android-wallet-ui/tree/main/resources-logic/src/main/res/raw)
 remain as the RQES document-retrieval trust anchors, not reader/verifier trust anchors; `pidissuerca02_eu` also
 anchors the signer of the development trusted lists (`loteSignerTrustAnchors`).
