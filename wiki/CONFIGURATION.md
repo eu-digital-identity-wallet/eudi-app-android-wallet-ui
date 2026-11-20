@@ -1064,10 +1064,12 @@ and the change-PIN validation step (`PinViewModel`, via `QuickPinInteractor`).
 The PIN input is disabled while
 locked, and the existing inline error slot of the PIN composable
 displays a countdown message formatted from the
-`quick_pin_locked_out` string resource. The message takes two format
-arguments — the configured `maxFailedPinAttempts` and the remaining
-time as `mm:ss` — so changing the config values updates the
-user-facing message automatically.
+`quick_pin_locked_out` plurals resource. The configured
+`maxFailedPinAttempts` selects the plural form and is also the first
+format argument; the second is the remaining time as `mm:ss`. Changing
+the config values updates the user-facing message automatically. An
+override or translation must be a `<plurals>` resource too: a
+`<string>` with that name is not read.
 
 ## Analytics configuration
 

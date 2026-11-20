@@ -154,7 +154,7 @@ Each has a light and a dark value in `ThemeColors.kt` (e.g. `eudiw_theme_light_s
 
 1. Drop your font files into
    [`resources-logic/src/main/res/font/`](../resources-logic/src/main/res/font) (the project
-   currently ships `roboto_regular.ttf`, `roboto_medium.ttf`, `roboto_light.ttf`).
+   currently ships `roboto_regular.ttf` and `roboto_medium.ttf`).
 2. Declare a `ThemeFont` for each weight/style in
    [`ThemeTypography.kt`](../resources-logic/src/main/java/eu/europa/ec/resourceslogic/theme/values/ThemeTypography.kt):
 

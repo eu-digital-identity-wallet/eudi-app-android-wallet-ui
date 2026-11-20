@@ -189,8 +189,9 @@ class DocumentOfferInteractorImpl(
                                     txCodeSpec.inputMode == TxCodeInputMode.TEXT
                                 ) {
                                     return@map ResolveDocumentOfferInteractorPartialState.Failure(
-                                        errorMessage = resourceProvider.getString(
-                                            R.string.issuance_document_offer_error_invalid_txcode_format,
+                                        errorMessage = resourceProvider.getQuantityString(
+                                            R.plurals.issuance_document_offer_error_invalid_txcode_format,
+                                            codeMaxLength,
                                             codeMinLength,
                                             codeMaxLength
                                         )
