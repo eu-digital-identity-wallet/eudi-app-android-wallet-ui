@@ -224,7 +224,9 @@ The hosted development lists do not contain your services, so point `loteLocatio
 and pass the certificate that signs those lists, or a CA that issues only list-signing certificates, to
 `loteSignerTrustAnchors(...)` (see
 [CONFIGURATION.md](CONFIGURATION.md#general-configuration)). With *Check Registration
-Certificates* on, the issuer also needs a registration certificate on `wrprcProviders`.
+Certificates* on, the issuer also needs a registration certificate on `wrprcProviders`. A local
+verifier's access certificate, and a proximity reader's reader-authentication certificate, must
+chain to an entry on `wrpacProviders`; otherwise the wallet shows "Presentation blocked".
 
 The wallet opens a verifier's redirect only if it is an `https` URL, and loads issuer logos only over
 `https`. A local verifier UI served over `http` is not returned to after a presentation.

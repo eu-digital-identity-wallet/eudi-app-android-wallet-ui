@@ -46,7 +46,11 @@ interface WalletCoreConfig {
     // 8. Registration-certificate checking, read once per process from the Settings switch.
     val isRegistrationCheckEnabled: Boolean
 
-    // 9. How long a factory reset waits for the background workers; default 30.seconds.
+    // 9. Reader authentication enforcement, passed to Wallet Core and read by the presentation
+    //    flow to block, before consent, a request Wallet Core would answer with no data.
+    val readerAuthenticationEnforcement: ReaderAuthenticationEnforcement
+
+    // 10. How long a factory reset waits for the background workers; default 30.seconds.
     val workerStopTimeout: Duration
 
 }
@@ -198,9 +202,11 @@ overridden by a flavor when needed.
             }
         }
         configureReaderAuthentication {
-            // Admit readers that send no reader auth,
-            // but refuse a reader that presents an untrusted chain.
-            enforceIfPresent()
+            // readerAuthenticationEnforcement (ENFORCE_IF_PRESENT in both flavors) admits readers
+            // that send no reader auth but refuses one whose reader auth does not verify (an
+            // untrusted chain or an invalid signature); the presentation flow reads the same value
+            // to block that reader before consent.
+            setEnforcement(readerAuthenticationEnforcement)
         }
         // the verifier half of the same switch
         configureWrpRegistrationPolicy(
@@ -258,7 +264,7 @@ overridden by a flavor when needed.
     _config = EudiWalletConfig {
         configureReaderAuthentication {
             trustedCertificates(context, R.raw.your_reader_ca)
-            enforceIfPresent()
+            setEnforcement(readerAuthenticationEnforcement)
         }
     }
     ```
@@ -511,7 +517,7 @@ complete production process, see [GO_LIVE.md](GO_LIVE.md).
 | Wallet Provider host                       | `walletProviderHost` in `WalletCoreConfigImpl.kt`                                                                                         | HTTPS base URL for the production wallet provider/attestation service.                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
 | OpenID4VCI redirect URI                    | `BuildConfig.ISSUE_AUTHORIZATION_DEEPLINK` from build-logic placeholders                                                                  | A registered URI accepted by the issuer and handled only by the wallet app.                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
 | OpenID4VP schemes                          | `AndroidLibraryConventionPlugin.kt` and `EudiWalletConfig.configureOpenId4Vp`                                                             | Schemes and client ID schemes approved for the ecosystem. Keep the manifest, `BuildConfig`, and Wallet Core config aligned.                                                                                                                                                                                                                                                                                                                                                                                                          |
-| Reader/verifier trust anchors              | `configureReaderAuthentication { ... }` in `WalletCoreConfigImpl.kt`                                                                      | Use the central ETSI trust source or explicitly supply approved reader trust anchors. The reference flavors configure `enforceIfPresent()`, which admits readers that send no reader authentication once the user accepts the warning; `alwaysRequire()` refuses them. Choose the authentication policy for your deployment and verify missing, invalid and trusted reader-authentication cases; see [GO_LIVE.md](GO_LIVE.md#etsi-trusted-lists-lote). |
+| Reader/verifier trust anchors              | `configureReaderAuthentication { ... }` and `readerAuthenticationEnforcement` in `WalletCoreConfigImpl.kt`                                | Use the central ETSI trust source or explicitly supply approved reader trust anchors. `readerAuthenticationEnforcement` sets the policy for Wallet Core and the presentation flow alike: the reference flavors use `ENFORCE_IF_PRESENT`, which admits readers that send no reader authentication once the user accepts the warning and blocks a reader whose authentication is not trusted before the consent screen; `ALWAYS_REQUIRE` blocks both. Choose the authentication policy for your deployment and verify missing, invalid and trusted reader-authentication cases; see [GO_LIVE.md](GO_LIVE.md#etsi-trusted-lists-lote). |
 | ETSI trusted lists (LoTE)                  | `configureEtsiTrust { ... }` in `WalletCoreConfigImpl.kt`                                                                                 | Use production LoTE URLs, including the registration-certificate list (`wrprcProviders`). Remove `relaxCertificateProfiles()` and `pkixRevocationPolicy(PkixRevocationPolicy.Disabled)`; select an explicit production revocation policy, for example `PkixRevocationPolicy.CRLPriority` (CRL first, OCSP as fallback), so that a library default does not change it, and do not use `SoftFail`, which accepts a chain whose CRL cannot be fetched. Provide HTTPS revocation endpoints: every certificate below its list entry must give its CRL distribution points and OCSP address as `https://` URLs, since the wallet refuses cleartext and a certificate that gives only `http://` addresses always fails. Review credential classifications, issuer and status-list trust policies (the reference flavors use `INFORM` for status lists; use `ENFORCE` in production), the list signer (`loteSignerTrustAnchors`: your scheme operator's list-signing certificate, or a CA that issues only list-signing certificates) and cache settings. See [GO_LIVE.md](GO_LIVE.md#etsi-trusted-lists-lote). |
 | Registration-certificate checking          | The *Check Registration Certificates* setting, feeding `configureIssuerRegistrationPolicy(...)` and `configureWrpRegistrationPolicy(...)` | **Ships off; turn it on for production.** One setting drives both policies. On, a verified in-scope registration certificate becomes a precondition for storing any document, and verifiers' registrations are shown and warned about — so confirm every production issuer and verifier is on the `wrprcProviders` list before release. Decide too whether the switch should remain user-visible in a production build.                                                                                                              |
 | Document key settings                      | `configureDocumentKeyCreation(...)`                                                                                                       | For LoA High PID and other high-assurance EAA/QEAA credentials, require strong user authentication and hardware-backed key protection unless an approved remote high-assurance key protection design replaces local key use. Use `0.seconds` only when one prompt per key use is acceptable; for batch issuing, a short approved window such as `10.seconds` may be needed.                                                                                                                                                          |
@@ -1058,10 +1064,12 @@ and the change-PIN validation step (`PinViewModel`, via `QuickPinInteractor`).
 The PIN input is disabled while
 locked, and the existing inline error slot of the PIN composable
 displays a countdown message formatted from the
-`quick_pin_locked_out` string resource. The message takes two format
-arguments — the configured `maxFailedPinAttempts` and the remaining
-time as `mm:ss` — so changing the config values updates the
-user-facing message automatically.
+`quick_pin_locked_out` plurals resource. The configured
+`maxFailedPinAttempts` selects the plural form and is also the first
+format argument; the second is the remaining time as `mm:ss`. Changing
+the config values updates the user-facing message automatically. An
+override or translation must be a `<plurals>` resource too: a
+`<string>` with that name is not read.
 
 ## Analytics configuration
 

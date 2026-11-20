@@ -21,6 +21,7 @@ import eu.europa.ec.authenticationlogic.secure.SecurePinImpl
 import eu.europa.ec.commonfeature.interactor.DeviceLockNotice
 import eu.europa.ec.commonfeature.interactor.QuickPinInteractor
 import eu.europa.ec.commonfeature.model.PinFlow
+import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.testlogic.extension.runTest
 import eu.europa.ec.testlogic.rule.CoroutineTestRule
@@ -36,6 +37,7 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.mockito.kotlin.any
+import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
 import org.mockito.kotlin.times
@@ -176,6 +178,32 @@ class TestPinViewModel {
             verify(interactor, times(3)).getPinLockoutState()
         }
 
+    @Test
+    fun `Given a lockout on the change-PIN screen, When it starts, Then its message is the plural for the configured attempts`() =
+        coroutineRule.runTest {
+            whenever(interactor.maxFailedPinAttempts).thenReturn(MAX_ATTEMPTS)
+            whenever(
+                resourceProvider.getQuantityString(
+                    eq(R.plurals.quick_pin_locked_out),
+                    eq(MAX_ATTEMPTS),
+                    eq(MAX_ATTEMPTS),
+                    eq("00:30")
+                )
+            ).thenReturn(LOCKED_OUT)
+            whenever(interactor.getPinLockoutState()).thenReturn(
+                PinLockoutState.Active(remaining = 30.seconds, total = 30.seconds),
+                PinLockoutState.Idle,
+            )
+            val viewModel = viewModel(PinFlow.UPDATE)
+
+            viewModel.handleEvents(Event.Init)
+            coroutineRule.testScope.runCurrent()
+
+            assertEquals(LOCKED_OUT, viewModel.viewState.value.lockoutMessage)
+
+            coroutineRule.testScope.advanceUntilIdle()
+        }
+
     private fun viewModel(pinFlow: PinFlow) = PinViewModel(
         interactor = interactor,
         resourceProvider = resourceProvider,
@@ -187,5 +215,7 @@ class TestPinViewModel {
         const val WEAK = "This PIN is too easy to guess"
         const val NO_LOCK = "This device has no screen lock"
         const val LOCK_REQUIRED = "Set a screen lock"
+        const val LOCKED_OUT = "Locked out"
+        const val MAX_ATTEMPTS = 3
     }
 }

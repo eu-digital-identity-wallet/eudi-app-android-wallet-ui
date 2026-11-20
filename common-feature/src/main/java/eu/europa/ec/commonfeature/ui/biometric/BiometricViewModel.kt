@@ -407,8 +407,9 @@ class BiometricViewModel(
         val minutes = totalSeconds / 60L
         val seconds = totalSeconds % 60L
         val mmss = "%02d:%02d".format(minutes, seconds)
-        return resourceProvider.getString(
-            R.string.quick_pin_locked_out,
+        return resourceProvider.getQuantityString(
+            R.plurals.quick_pin_locked_out,
+            biometricInteractor.maxFailedPinAttempts,
             biometricInteractor.maxFailedPinAttempts,
             mmss
         )

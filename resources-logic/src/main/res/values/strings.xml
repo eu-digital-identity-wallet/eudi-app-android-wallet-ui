@@ -30,7 +30,6 @@
     <string name="generic_success">Success</string>
     <string name="generic_close">Close</string>
     <string name="generic_ok">OK</string>
-    <string name="generic_dash">-</string>
     <string name="generic_default_relying_party_name">Unknown Relying Party</string>
     <string name="generic_default_issuer_name">Issuer</string>
     <string name="generic_view_details">View details</string>
@@ -71,7 +70,6 @@
 
     <!-- region Content Description -->
     <string name="content_description_image_or_placeholder_icon">Image or placeholder icon</string>
-    <string name="content_description_user_signature_icon">User signature</string>
     <string name="content_description_qr_code_icon">QR Code</string>
     <string name="content_description_more_vert_icon">More Items</string>
     <string name="content_description_arrow_back_icon">Go Back</string>
@@ -108,10 +106,6 @@
     <string name="content_description_present_document_cross_device_icon">Present document online</string>
     <string name="content_description_add_document_from_list_icon">Add document from list</string>
     <string name="content_description_add_document_from_qr_icon">Add document from QR</string>
-    <string name="content_description_authenticate_in_person_icon">Authenticate in person</string>
-    <string name="content_description_authenticate_online_icon">Authenticate online</string>
-    <string name="content_description_sign_document_from_device_icon">Sign document from device</string>
-    <string name="content_description_sign_document_from_qr_icon">Sign document from QR</string>
 
     <string name="content_description_bookmark_icon">Bookmark</string>
     <string name="content_description_bookmark_filled_icon">Bookmark filled</string>
@@ -130,7 +124,6 @@
     <string name="content_description_issuer_logo_icon">Issuer logo</string>
     <string name="content_description_menu_icon">Menu</string>
     <string name="content_description_signature_icon">Signature</string>
-    <string name="content_description_authenticate_icon">Authentication ID cards</string>
     <string name="content_description_change_pin_icon">Change PIN</string>
     <string name="content_description_check_icon">Check</string>
     <string name="content_description_open_in_browser_icon">Open in browser</string>
@@ -170,7 +163,10 @@
     <string name="quick_pin_weak">This PIN is too easy to guess. Avoid one digit repeated, sequences such as 123456, and common PINs.</string>
     <string name="quick_pin_device_lock_missing">This device has no screen lock. Set one in the device settings to better protect your wallet.</string>
     <string name="quick_pin_device_lock_required">Set a screen lock in the device settings to use the wallet.</string>
-    <string name="quick_pin_locked_out">You have entered the wrong PIN %1$d times in a row.\nPlease wait %2$s before trying again.</string>
+    <plurals name="quick_pin_locked_out">
+        <item quantity="one">You have entered the wrong PIN %1$d time in a row.\nPlease wait %2$s before trying again.</item>
+        <item quantity="other">You have entered the wrong PIN %1$d times in a row.\nPlease wait %2$s before trying again.</item>
+    </plurals>
 
     <string name="quick_pin_create_title">Welcome to your Wallet</string>
     <string name="quick_pin_create_subtitle">Secure your wallet with a PIN code and connect to your National System.</string>
@@ -607,7 +603,10 @@
     <string name="issuance_document_offer_deferred_success_description">Your documents from %1$s have been requested. You will be notified when they have been issued to your wallet.</string>
     <string name="issuance_document_offer_deferred_success_primary_button_text">@string/generic_ok</string>
     <string name="issuance_document_offer_error_missing_pid_text">Wallet needs to be activated first with a National ID</string>
-    <string name="issuance_document_offer_error_invalid_txcode_format">Invalid transaction code format. Length should be between %1$d to %2$d digits and only numeric characters are allowed.</string>
+    <plurals name="issuance_document_offer_error_invalid_txcode_format">
+        <item quantity="one">Invalid transaction code format. Length should be between %1$d to %2$d digit and only numeric characters are allowed.</item>
+        <item quantity="other">Invalid transaction code format. Length should be between %1$d to %2$d digits and only numeric characters are allowed.</item>
+    </plurals>
     <string name="issuance_document_offer_error_no_document">Unable to fetch and process the credential offer</string>
     <string name="issuance_document_offer_error_issuer_not_configured">This offer comes from an issuer that this wallet is not set up to use</string>
 

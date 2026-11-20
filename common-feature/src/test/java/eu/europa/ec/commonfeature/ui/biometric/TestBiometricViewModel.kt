@@ -115,9 +115,16 @@ class TestBiometricViewModel {
         whenever(interactor.getBiometricsAvailability())
             .thenReturn(BiometricsAvailability.CanAuthenticate)
         whenever(interactor.maxFailedPinAttempts).thenReturn(MAX_ATTEMPTS)
-        whenever(resources.getString(eq(R.string.quick_pin_locked_out), any(), any()))
+        whenever(
+            resources.getQuantityString(
+                eq(R.plurals.quick_pin_locked_out),
+                eq(MAX_ATTEMPTS),
+                any(),
+                any()
+            )
+        )
             .thenAnswer { invocation ->
-                val args = invocation.arguments.drop(1).flatMap {
+                val args = invocation.arguments.drop(2).flatMap {
                     if (it is Array<*>) it.toList() else listOf(it)
                 }
                 args.joinToString(separator = ":", prefix = "locked:")

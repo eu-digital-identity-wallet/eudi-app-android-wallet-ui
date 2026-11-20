@@ -240,8 +240,9 @@ class TestDocumentOfferInteractor {
             val codeMinLength = 4
             val codeMaxLength = 6
             whenever(
-                resourceProvider.getString(
-                    R.string.issuance_document_offer_error_invalid_txcode_format,
+                resourceProvider.getQuantityString(
+                    R.plurals.issuance_document_offer_error_invalid_txcode_format,
+                    codeMaxLength,
                     codeMinLength,
                     codeMaxLength
                 )
@@ -280,8 +281,9 @@ class TestDocumentOfferInteractor {
                 )
             )
             whenever(
-                resourceProvider.getString(
-                    R.string.issuance_document_offer_error_invalid_txcode_format,
+                resourceProvider.getQuantityString(
+                    R.plurals.issuance_document_offer_error_invalid_txcode_format,
+                    6,
                     4,
                     6
                 )
@@ -329,8 +331,9 @@ class TestDocumentOfferInteractor {
             val codeMinLength = 4
             val codeMaxLength = 6
             whenever(
-                resourceProvider.getString(
-                    R.string.issuance_document_offer_error_invalid_txcode_format,
+                resourceProvider.getQuantityString(
+                    R.plurals.issuance_document_offer_error_invalid_txcode_format,
+                    codeMaxLength,
                     codeMinLength,
                     codeMaxLength
                 )
@@ -642,8 +645,9 @@ class TestDocumentOfferInteractor {
             )
             mockGetMainPidDocumentCall(mainPid = getMockedMainPid())
             whenever(
-                resourceProvider.getString(
-                    R.string.issuance_document_offer_error_invalid_txcode_format,
+                resourceProvider.getQuantityString(
+                    R.plurals.issuance_document_offer_error_invalid_txcode_format,
+                    6,
                     4,
                     6,
                 )
@@ -684,8 +688,9 @@ class TestDocumentOfferInteractor {
             )
             mockGetMainPidDocumentCall(mainPid = getMockedMainPid())
             whenever(
-                resourceProvider.getString(
-                    R.string.issuance_document_offer_error_invalid_txcode_format,
+                resourceProvider.getQuantityString(
+                    R.plurals.issuance_document_offer_error_invalid_txcode_format,
+                    6,
                     4,
                     6,
                 )

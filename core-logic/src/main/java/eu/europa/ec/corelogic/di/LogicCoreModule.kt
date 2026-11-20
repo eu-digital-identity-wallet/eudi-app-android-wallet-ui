@@ -295,10 +295,12 @@ fun provideWalletWorkScheduler(
 fun provideWalletCorePresentationController(
     resourceProvider: ResourceProvider,
     prefKeys: PrefKeys,
+    walletCoreConfig: WalletCoreConfig,
 ): WalletCorePresentationController =
     WalletCorePresentationControllerImpl(
         resourceProvider = resourceProvider,
         prefKeys = prefKeys,
+        walletCoreConfig = walletCoreConfig,
     )
 
 /**

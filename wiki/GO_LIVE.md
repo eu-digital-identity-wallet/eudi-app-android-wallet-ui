@@ -450,6 +450,7 @@ interface WalletCoreConfig {
     val walletProviderHost: String
     val trustMarkSource: TrustMarkSource
     val isRegistrationCheckEnabled: Boolean
+    val readerAuthenticationEnforcement: ReaderAuthenticationEnforcement
     val workerStopTimeout: Duration
 }
 ```
@@ -876,7 +877,7 @@ configureReaderAuthentication {
         R.raw.ms_iaca_2026,
         R.raw.ms_reader_root_2026
     )
-    enforceIfPresent()
+    setEnforcement(readerAuthenticationEnforcement)
 }
 ```
 
@@ -929,7 +930,9 @@ configureDocumentStatusResolver {
   }
 }
 configureReaderAuthentication {
-  enforceIfPresent()
+  // readerAuthenticationEnforcement: ENFORCE_IF_PRESENT, or ALWAYS_REQUIRE where reader
+  // authentication must be mandatory
+  setEnforcement(readerAuthenticationEnforcement)
 }
 configureWrpRegistrationPolicy(WrpRegistrationPolicy.Enabled)
 ```
@@ -992,16 +995,25 @@ Production requirements for a trusted-list deployment:
   decides whether revocation information is authenticated. A failed
   status refresh leaves the document's last known state in place and is shown in document details.
   Verify trusted, untrusted and unavailable status-list cases.
-* Reader authentication: choose the policy explicitly. The reference flavors use
-  `enforceIfPresent()`; use `alwaysRequire()` when reader authentication must be mandatory for mdoc
-  presentation. Verify missing and failed authentication for proximity, Digital Credential API and
-  remote OpenID4VP flows. A consent warning is not an authentication result. With
-  `enforceIfPresent()`, a proximity or Digital Credential API mdoc reader that sends no reader
-  authentication receives the data once the user accepts the warning on the consent screen; a
-  reader whose authentication fails verification receives an empty response with status 10, even if
-  the user shares. `alwaysRequire()` gives that empty response to both. Remote OpenID4VP behaves
-  the same under either setting: with the `X509SanDns` and `X509Hash` client-ID schemes a request
-  must be signed, and an untrusted one is rejected when it is resolved. This choice decides whether
+* Reader authentication: choose the policy explicitly with
+  `WalletCoreConfigImpl.readerAuthenticationEnforcement`, and change it only there: the wallet's
+  `setEnforcement(...)` extension in `configureReaderAuthentication` maps it to Wallet Core's
+  `doNotEnforce()`, `enforceIfPresent()` or `alwaysRequire()`, and the presentation flow reads the
+  same value, so both apply one rule. The reference flavors use `ENFORCE_IF_PRESENT`; use
+  `ALWAYS_REQUIRE` when reader authentication must be mandatory for mdoc presentation. Do not use
+  `DO_NOT_ENFORCE` in production: it trusts no reader, so every mdoc reader, including one whose
+  authentication fails, receives the data once the user accepts the warning, and every signed
+  OpenID4VP request is rejected when it is resolved. Verify missing and failed authentication for
+  proximity, Digital Credential API and remote OpenID4VP flows. A consent warning is not an
+  authentication result. With `ENFORCE_IF_PRESENT`, a proximity or Digital Credential API mdoc
+  reader that sends no reader authentication receives the data once the user accepts the warning on
+  the consent screen; a reader whose authentication fails verification gets "Presentation blocked"
+  before the consent screen, because Wallet Core would answer it with no data. `ALWAYS_REQUIRE`
+  blocks both. Remote OpenID4VP behaves the same under `ENFORCE_IF_PRESENT` and `ALWAYS_REQUIRE`:
+  with the `X509SanDns` and `X509Hash` client-ID schemes a request must be signed, and an untrusted
+  one is rejected when it is resolved. A `Preregistered` verifier, if you add that scheme, carries
+  no reader authentication: under `ENFORCE_IF_PRESENT` it reaches the consent screen behind the
+  warning, and under `ALWAYS_REQUIRE` it gets "Presentation blocked". This choice decides whether
   the relying party must be authenticated before attributes are released; record the decision if
   unauthenticated readers are accepted.
 * Trusted-list signatures: the default verifier accepts a list only when the first certificate of
@@ -1068,14 +1080,16 @@ two directions differently, and the asymmetry is intentional:
 * **Presentation warns rather than blocks.** A request with a failed registration evaluation still
   reaches the consent screen, shown without the verified indicator and behind a warning the user
   must acknowledge before sharing. A request whose registration *is* verified but that reaches
-  beyond the registered scope keeps the indicator, marks each requested item outside that scope,
-  and gates sharing behind the same acknowledgement. Access-certificate failures continue to block
-  outright where the protocol allows it. Where they do not (an mdoc reader, in proximity or over the
-  DC-API, that sends no reader authentication or one that does not verify), the request reaches the
-  consent screen behind its own warning that the requester's identity could not be verified, with
-  the same acknowledgement before sharing. This warning does not depend on the registration
-  setting. A reader whose authentication fails verification still receives an empty response
-  (status 10) after the user shares; see Reader authentication under
+  beyond the registered scope keeps the indicator, marks each requested item outside that scope, and
+  gates sharing behind the same acknowledgement. Access-certificate failures continue to block
+  outright where the protocol and the reader-authentication policy allow it (under
+  `ENFORCE_IF_PRESENT` or `ALWAYS_REQUIRE`): an untrusted OpenID4VP request is rejected when it is
+  resolved, and a request that the configured `readerAuthenticationEnforcement` would answer with no
+  data, such as an mdoc reader whose authentication fails verification, gets "Presentation blocked"
+  before the consent screen. With `ENFORCE_IF_PRESENT`, an mdoc reader, in proximity or over the
+  DC-API, that sends no reader authentication reaches the consent screen behind its own warning that
+  the requester's identity could not be verified, with the same acknowledgement before sharing. This
+  warning does not depend on the registration setting; see Reader authentication under
   [ETSI Trusted Lists (LoTE)](#etsi-trusted-lists-lote).
 
 The verified indicator requires a trusted access certificate and no failed registration result.
