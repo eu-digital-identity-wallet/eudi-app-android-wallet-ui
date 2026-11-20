@@ -33,7 +33,6 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.InputChipDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -96,6 +95,7 @@ import eu.europa.ec.uilogic.component.wrap.WrapExpandableListItem
 import eu.europa.ec.uilogic.component.wrap.WrapListItem
 import eu.europa.ec.uilogic.component.wrap.WrapModalBottomSheet
 import eu.europa.ec.uilogic.component.wrap.WrapTextButton
+import eu.europa.ec.uilogic.component.wrap.rememberWrapModalBottomSheetState
 import eu.europa.ec.uilogic.extension.openExternalUri
 import eu.europa.ec.uilogic.extension.paddingFrom
 import kotlinx.coroutines.launch
@@ -110,7 +110,7 @@ internal fun TransactionDetailsScreen(
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val scrollState = rememberScrollState()
-    val bottomSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val bottomSheetState = rememberWrapModalBottomSheetState()
     val details = state.transactionDetailsUi
 
     ContentScreen(

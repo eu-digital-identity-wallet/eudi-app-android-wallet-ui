@@ -25,7 +25,9 @@ follow [the go-live guide](GO_LIVE.md).
 Install or prepare:
 
 * Android Studio, preferably the current stable version.
-* Android SDK Platform 37, because the project currently compiles with `compileSdk = 37`.
+* Android SDK Platform 37.1, because the project currently compiles with `compileSdk = 37` and
+  `compileSdkMinor = 1`. The Android Gradle Plugin installs it on the first build if the SDK
+  licenses are accepted.
 * Android SDK Build Tools compatible with Android Gradle Plugin used in `gradle/libs.versions.toml`.
 * JDK 17. The build logic configures Java/Kotlin target 17. Unit tests run on JDK 21, which Gradle
   downloads through the toolchain resolver if it is missing.

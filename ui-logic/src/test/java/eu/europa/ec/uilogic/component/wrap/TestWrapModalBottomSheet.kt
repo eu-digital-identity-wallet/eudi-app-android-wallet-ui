@@ -21,7 +21,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.material3.SheetState
+import androidx.compose.material3.SheetValue
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -70,6 +71,42 @@ class TestWrapModalBottomSheet {
 
     //endregion
 
+    //region opening
+
+    // Case 3:
+    // 1. A bottom sheet taller than half the screen opens.
+    // Case 3 Expected Result:
+    // It settles fully expanded, never partially expanded.
+    @OptIn(ExperimentalMaterial3Api::class)
+    @Test
+    fun `Given a sheet taller than half the screen, When it opens, Then it is fully expanded`() {
+        // Given
+        lateinit var sheetState: SheetState
+        composeRule.setContent {
+            MaterialTheme {
+                sheetState = rememberWrapModalBottomSheetState()
+                WrapModalBottomSheet(
+                    onDismissRequest = {},
+                    sheetState = sheetState,
+                ) {
+                    Box(
+                        Modifier
+                            .fillMaxWidth()
+                            .height(600.dp)
+                    )
+                }
+            }
+        }
+
+        // When
+        composeRule.waitForIdle()
+
+        // Then
+        composeRule.runOnIdle { assertEquals(SheetValue.Expanded, sheetState.currentValue) }
+    }
+
+    //endregion
+
     //region helper functions
 
     @OptIn(ExperimentalMaterial3Api::class)
@@ -85,11 +122,13 @@ class TestWrapModalBottomSheet {
                             dismissals++
                             isOpen = false
                         },
-                        sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
+                        sheetState = rememberWrapModalBottomSheetState(),
                     ) {
-                        Box(Modifier
-                            .fillMaxWidth()
-                            .height(sheetHeight))
+                        Box(
+                            Modifier
+                                .fillMaxWidth()
+                                .height(sheetHeight)
+                        )
                     }
                 }
             }
