@@ -18,6 +18,7 @@ package eu.europa.ec.corelogic.config
 
 import eu.europa.ec.corelogic.BuildConfig
 import eu.europa.ec.corelogic.extension.getX509CertificateFromRaw
+import eu.europa.ec.corelogic.extension.setEnforcement
 import eu.europa.ec.corelogic.model.DocumentIdentifier
 import eu.europa.ec.corelogic.provider.RegistrationCheckProvider
 import eu.europa.ec.eudi.etsi119602.datamodel.Uri
@@ -59,6 +60,9 @@ internal class WalletCoreConfigImpl(
     override val isRegistrationCheckEnabled: Boolean by lazy {
         runBlocking { registrationCheckProvider.isEnabled() }
     }
+
+    override val readerAuthenticationEnforcement: ReaderAuthenticationEnforcement
+        get() = ReaderAuthenticationEnforcement.ENFORCE_IF_PRESENT
 
     override val config: EudiWalletConfig
         get() {
@@ -161,7 +165,7 @@ internal class WalletCoreConfigImpl(
                     }
 
                     configureReaderAuthentication {
-                        enforceIfPresent()
+                        setEnforcement(readerAuthenticationEnforcement)
                     }
 
                     configureWrpRegistrationPolicy(

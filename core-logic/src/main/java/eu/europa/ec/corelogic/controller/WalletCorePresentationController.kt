@@ -22,8 +22,10 @@ import eu.europa.ec.authenticationlogic.model.BiometricCrypto
 import eu.europa.ec.businesslogic.controller.storage.PrefKeys
 import eu.europa.ec.businesslogic.extension.safeAsync
 import eu.europa.ec.businesslogic.extension.toUri
+import eu.europa.ec.corelogic.config.WalletCoreConfig
 import eu.europa.ec.corelogic.di.WalletCoreScope
 import eu.europa.ec.corelogic.di.getOrCreateKoinScope
+import eu.europa.ec.corelogic.extension.isRefusedByReaderAuthentication
 import eu.europa.ec.corelogic.extension.toClaimPath
 import eu.europa.ec.corelogic.extension.toRegistrationStatusDomain
 import eu.europa.ec.corelogic.model.AuthenticationDataDomain
@@ -234,6 +236,7 @@ interface WalletCorePresentationController {
 class WalletCorePresentationControllerImpl(
     private val resourceProvider: ResourceProvider,
     private val prefKeys: PrefKeys,
+    private val walletCoreConfig: WalletCoreConfig,
     private val dispatcher: CoroutineDispatcher = Dispatchers.IO,
     walletCore: EudiWallet? = null,
 ) : WalletCorePresentationController {
@@ -277,6 +280,13 @@ class WalletCorePresentationControllerImpl(
     private val keyUnlockDataByCredentialId: MutableMap<String, KeyUnlockData> = mutableMapOf()
 
     override var verifierName: String? = null
+
+    /**
+     * Whether the last request received was refused by the reader authentication enforcement;
+     * [sendRequestedDocuments] then fails, whatever request is still held from earlier in the
+     * session.
+     */
+    private var isRequestRefused: Boolean = false
 
     override var verifierIsFullyVerified: Boolean? = null
 
@@ -438,6 +448,9 @@ class WalletCorePresentationControllerImpl(
     }
 
     override suspend fun sendRequestedDocuments(): SendRequestedDocumentsPartialState {
+        if (isRequestRefused) {
+            return SendRequestedDocumentsPartialState.Failure(error = genericErrorMessage)
+        }
         val selectionsDomain = disclosedDocuments
             ?: return SendRequestedDocumentsPartialState.Failure(error = genericErrorMessage)
         val processed = processedRequest
@@ -592,19 +605,38 @@ class WalletCorePresentationControllerImpl(
      * [TransferEventPartialState.RequestReceived], [TransferEventPartialState.VerifierNotTrusted], or
      * [TransferEventPartialState.Error]. Wrapped in `runCatching` so a throw (ours or the SDK's)
      * becomes an Error state rather than crashing the listener.
+     *
+     * A request that [WalletCoreConfig.readerAuthenticationEnforcement] would answer with no data,
+     * such as an mdoc reader whose authentication fails, is refused here as
+     * [TransferEventPartialState.VerifierNotTrusted] and never reaches the consent screen, where
+     * the user would otherwise accept a warning and share, and the reader would receive nothing. An
+     * mdoc reader that sends no reader authentication, where the enforcement allows it, reaches
+     * consent with no trusted access certificate, behind the warning that its identity could not
+     * be verified. A refused request also marks the session refused, so that a send that has not
+     * started yet fails rather than answering an earlier request of the same session.
      */
     private fun handleRequestReceived(
         result: RequestProcessor.ProcessedRequest,
     ): TransferEventPartialState {
         return runCatching {
             val success = result.getOrThrow()
+
+            if (success.isRefusedByReaderAuthentication(
+                    enforcement = walletCoreConfig.readerAuthenticationEnforcement
+                )
+            ) {
+                isRequestRefused = true
+                verifierName = null
+                verifierIsFullyVerified = false
+                return@runCatching TransferEventPartialState.VerifierNotTrusted
+            }
+
+            isRequestRefused = false
             processedRequest = success
 
-            // mdoc readers that fail or skip reader auth reach consent with no trusted access
-            // certificate; disclosure is refused later by the reader-auth policy. untrusted
-            // OpenID4VP never reaches this success path (rejected at resolution; see getOrElse /
-            // onError). both identity values are taken off the object built here — derived once,
-            // read by every later screen
+            // untrusted OpenID4VP never reaches this success path (rejected at resolution; see
+            // getOrElse / onError). both identity values are taken off the object built here —
+            // derived once, read by every later screen
             val relyingParty = buildRelyingParty(request = success)
             verifierName = relyingParty.name
             verifierIsFullyVerified = relyingParty.isFullyVerified

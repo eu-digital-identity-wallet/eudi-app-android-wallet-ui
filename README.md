@@ -78,7 +78,7 @@ To support development and testing, one can access a test/demo service for remot
 
   - [Verifier restful backend service source](https://github.com/eu-digital-identity-wallet/eudi-srv-web-verifier-endpoint-23220-4-kt)
 
-To support proximity, the EUDI Verifier App is available [here](https://github.com/eu-digital-identity-wallet/eudi-app-multiplatform-verifier-ui) and can request PID and mDL, with reader authentication enabled.
+To support proximity, the EUDI Verifier App is available [here](https://github.com/eu-digital-identity-wallet/eudi-app-multiplatform-verifier-ui) and can request PID and mDL. It sends no reader authentication, so the wallet shows the warning that the requester's identity could not be verified.
 
 The issuer, verifier service, and verifier app authentication are validated against the EUDIW
 development trusted lists (LoTE) in both flavors — see [wiki/CONFIGURATION.md](wiki/CONFIGURATION.md). 
@@ -273,10 +273,11 @@ Wallet removes its documents from the picker and declines such requests.
    with the Verifier. You must select at least one attribute to proceed. As in the remote flow, and
    only while registration-certificate checking is enabled, a reader whose registration certificate
    is missing or cannot be validated raises a warning that keeps "Share" disabled until you
-   acknowledge it. A reader that sends no reader authentication, or one whose authentication cannot be
-   verified, raises a warning in every configuration, and "Share" stays disabled until you acknowledge
+   acknowledge it. A reader that sends no reader authentication raises a warning whether or not
+   registration-certificate checking is enabled, and "Share" stays disabled until you acknowledge
    it. A reader that sent reader authentication that is not trusted (an invalid signature or an
-   untrusted certificate) receives no data even if you share.
+   untrusted certificate) never reaches this screen: the app shows "Presentation blocked" and shares
+   nothing.
    If the request includes your portrait, a notice says that it can be used as biometric data. The
    portrait is selected like the other attributes; while it stays selected, "Share" first asks you
    to confirm on a "Share your portrait?" sheet.

@@ -51,6 +51,14 @@ interface WalletCoreConfig {
     val isRegistrationCheckEnabled: Boolean
 
     /**
+     * How presentation requests are held to reader authentication. [config] passes it to Wallet
+     * Core's reader authentication, and the presentation flow refuses, with the "Presentation
+     * blocked" sheet, a request that this enforcement would answer with no data, so the user is
+     * never asked to share with it.
+     */
+    val readerAuthenticationEnforcement: ReaderAuthenticationEnforcement
+
+    /**
      * A list of configurations for Verifiable Credentials Issuance (VCI) using OpenID4VCI.
      *
      * Each element in the list is an [VciConfig] object, which contains:
