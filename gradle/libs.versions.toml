@@ -2,13 +2,13 @@
 # Kotlin
 kotlin = "2.4.21"
 kotlinxCoroutines = "1.11.0"
-kotlinxSerializationJson = "1.12.0"
-ksp = "2.3.10"
+kotlinxSerializationJson = "1.13.0"
+ksp = "2.3.14"
 
 # AndroidX
-androidxBiometric = "1.4.0-beta01"
+androidxBiometric = "1.4.0-rc01"
 androidxCredentials = "1.0.0-alpha05"
-androidxLifecycle = "2.11.0"
+androidxLifecycle = "2.11.1"
 androidxNavigation = "2.10.2"
 androidxProfileinstaller = "1.4.1"
 androidxRoom = "2.8.5"
@@ -24,7 +24,7 @@ material3 = "1.4.0"
 materialIcons = "1.7.8"
 
 # CameraX
-cameraCore = "1.6.2"
+cameraCore = "1.7.0"
 
 # Coil (image loading)
 coil = "3.6.3"
@@ -45,7 +45,7 @@ timber = "5.0.1"
 
 # Other libraries
 androidDesugarJdkLibs = "2.1.5"
-googlePhoneNumber = "9.0.43"
+googlePhoneNumber = "9.0.44"
 gson = "2.15.0"
 material = "1.14.0"
 sqlcipher = "4.20.0"
@@ -60,18 +60,18 @@ androidxTestRunner = "1.7.0"
 androidxUiAutomator = "2.4.1"
 mockito = "5.24.0"
 mockitoKotlin = "6.4.0"
-robolectric = "4.17"
+robolectric = "4.18.1"
 turbine = "1.2.1"
 
 # Gradle plugins
-androidGradlePlugin = "9.5.1"
+androidGradlePlugin = "9.5.2"
 baselineprofile = "1.5.0"
 dependencyGraphPlugin = "0.15.0"
-gmsPlugin = "4.5.0"
+gmsPlugin = "4.6.0"
 kover = "0.9.11"
 owaspDependencyCheck = "13.0.0"
 secrets = "2.0.1"
-sonar = "7.5.0.8588"
+sonar = "7.6.0.18749"
 
 [libraries]
 # Kotlin
