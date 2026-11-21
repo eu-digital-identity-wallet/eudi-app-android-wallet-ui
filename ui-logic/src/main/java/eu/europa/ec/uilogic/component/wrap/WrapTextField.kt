@@ -36,7 +36,6 @@ import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.input.key.KeyEvent
 import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import eu.europa.ec.uilogic.component.utils.SIZE_LARGE
 import eu.europa.ec.uilogic.extension.clickableNoRipple
@@ -59,7 +58,6 @@ fun WrapTextField(
     trailingIcon: @Composable (() -> Unit)? = null,
     isError: Boolean = false,
     errorMsg: String = "",
-    visualTransformation: VisualTransformation = VisualTransformation.None,
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
     keyboardActions: KeyboardActions = KeyboardActions.Default,
     onKeyEvent: ((KeyEvent) -> Boolean)? = null,
@@ -101,7 +99,6 @@ fun WrapTextField(
             leadingIcon = leadingIcon,
             trailingIcon = trailingIcon?.let { block -> { block() } },
             isError = isError,
-            visualTransformation = visualTransformation,
             keyboardOptions = keyboardOptions,
             keyboardActions = keyboardActions,
             shape = shape,

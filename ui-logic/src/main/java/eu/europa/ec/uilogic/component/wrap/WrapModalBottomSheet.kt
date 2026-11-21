@@ -37,7 +37,9 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.SheetState
+import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.ui.Alignment
@@ -120,6 +122,18 @@ data class BottomSheetTextDataUi(
     val isPositiveButtonWarning: Boolean = false,
     val negativeButtonText: String? = null,
     val isNegativeButtonWarning: Boolean = false,
+)
+
+/**
+ * Remembers the state of a [WrapModalBottomSheet] that starts hidden and opens fully expanded,
+ * never partially expanded. Opts in to Material3's experimental sheet state, as
+ * [WrapModalBottomSheet] does.
+ */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun rememberWrapModalBottomSheetState(): SheetState = rememberBottomSheetState(
+    initialValue = SheetValue.Hidden,
+    enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded),
 )
 
 @OptIn(ExperimentalMaterial3Api::class)

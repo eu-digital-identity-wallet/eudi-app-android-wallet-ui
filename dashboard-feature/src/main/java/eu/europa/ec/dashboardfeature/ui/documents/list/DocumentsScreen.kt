@@ -45,7 +45,6 @@ import androidx.compose.material3.FabPosition
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SheetState
 import androidx.compose.material3.Text
-import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -114,6 +113,7 @@ import eu.europa.ec.uilogic.component.wrap.WrapListItem
 import eu.europa.ec.uilogic.component.wrap.WrapListItemDefaults
 import eu.europa.ec.uilogic.component.wrap.WrapModalBottomSheet
 import eu.europa.ec.uilogic.component.wrap.WrapPrimaryExtendedFab
+import eu.europa.ec.uilogic.component.wrap.rememberWrapModalBottomSheetState
 import eu.europa.ec.uilogic.extension.applyTestTag
 import eu.europa.ec.uilogic.extension.finish
 import eu.europa.ec.uilogic.extension.isScrollingUp
@@ -144,9 +144,7 @@ fun DocumentsScreen(
 
     val isBottomSheetOpen = state.isBottomSheetOpen
     val scope = rememberCoroutineScope()
-    val bottomSheetState = rememberModalBottomSheetState(
-        skipPartiallyExpanded = true
-    )
+    val bottomSheetState = rememberWrapModalBottomSheetState()
 
     val listScrollState = rememberLazyListState()
     var fabVisible by rememberSaveable { mutableStateOf(false) }
@@ -665,9 +663,7 @@ private const val DOCUMENTS_NO_RESULTS_ITEM_ID = "noResultsId"
 private fun DocumentsScreenPreview() {
     PreviewTheme {
         val scope = rememberCoroutineScope()
-        val bottomSheetState = rememberModalBottomSheetState(
-            skipPartiallyExpanded = true
-        )
+        val bottomSheetState = rememberWrapModalBottomSheetState()
         ContentScreen(
             isLoading = false,
             navigatableAction = ScreenNavigateAction.NONE,
