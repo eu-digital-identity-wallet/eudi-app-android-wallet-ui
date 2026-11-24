@@ -36,7 +36,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.BlurredEdgeTreatment
 import androidx.compose.ui.draw.blur
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.semantics.CollectionItemInfo
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.collectionItemInfo
 import androidx.compose.ui.semantics.disabled
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.selected
@@ -256,6 +258,9 @@ enum class ClickableArea {
  * @param hideSensitiveContent A boolean flag indicating whether to hide sensitive content by blurring it. Defaults to false.
  * @param mainContentVerticalPadding An optional value specifying the vertical padding
  * @param contentHorizontalPadding Horizontal row padding; null keeps the default 16.dp.
+ * @param collectionItemIndex The row's index in a group of rows that accessibility services are
+ * told is a list, such as a radio-button group, so that TalkBack reads its position ("1 of 3");
+ * null for a row outside such a group.
  */
 @Composable
 fun ListItem(
@@ -270,6 +275,7 @@ fun ListItem(
         color = MaterialTheme.colorScheme.onSurfaceVariant
     ),
     mainContentTextStyle: TextStyle? = null,
+    collectionItemIndex: Int? = null,
 ) {
     val textOverflow = TextOverflow.Ellipsis
     val mainTextStyle = mainContentTextStyle ?: MaterialTheme.typography.bodyLarge.copy(
@@ -316,6 +322,19 @@ fun ListItem(
                 trailingContentData = trailingContentData
                     .takeUnless { clickableAreas.contains(TRAILING_CONTENT) },
                 onRowClick = onRowClick,
+            ).then(
+                other = if (collectionItemIndex != null) {
+                    Modifier.semantics {
+                        collectionItemInfo = CollectionItemInfo(
+                            rowIndex = collectionItemIndex,
+                            rowSpan = 1,
+                            columnIndex = 0,
+                            columnSpan = 1,
+                        )
+                    }
+                } else {
+                    Modifier
+                }
             ).then(
                 other = modifier.padding(horizontal = contentHorizontalPadding ?: SPACING_MEDIUM.dp)
             ),
