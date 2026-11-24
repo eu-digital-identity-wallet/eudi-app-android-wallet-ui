@@ -692,8 +692,10 @@ that the issuer, relying party, document or signature has been verified.
 The wallet declines a request whose transaction data it cannot show in full
 (`PresentationRequestInteractorImpl.canShowTransactionData`). That covers transaction data the app
 cannot interpret and an entry bound to a match the consent screen does not show, such as one for a
-revoked document. Each offered option is checked against its own transaction data; an option with
-no document that can be shown is not offered and not checked. The request screen then shows "This
+revoked document. Each option with a document that can be shown is checked against its own
+transaction data, even one that is then not offered because one of its queries has no document left
+(see [Revocation And Status Checking](#revocation-and-status-checking)); an option with no document
+that can be shown is not offered and not checked. The request screen then shows "This
 request asks you to sign data that the wallet cannot show in full, so it was declined." in place
 of the documents, with Share disabled and no Retry (`RequestDataUi.Declined`). The verifier receives
 no error response.
@@ -1447,7 +1449,10 @@ The app enqueues `RevocationWorkManager`, which:
 * Resolves document status through Wallet Core.
 * Records a blocked document with the reason: `INVALID`, `SUSPENDED`, or `UNRECOGNISED` for an
   application-specific or reserved status value the wallet cannot interpret. Every record blocks
-  presentation.
+  presentation. A request option in which one of the request's DCQL queries is left with no
+  document to share, because its documents are blocked or cannot be shown, is not offered, since
+  its response would leave that query out (`PresentationRequestInteractorImpl.showsEveryQuery`). A
+  `multiple: true` query that keeps another document keeps the option, without the blocked one.
 * Treats `INVALID` as permanent: a later Valid does not clear it, and a later Suspended does not
   downgrade it. A later Valid clears `SUSPENDED` and `UNRECOGNISED`. The document list and the
   document's details show a `SUSPENDED` document as suspended and the others as revoked; all three

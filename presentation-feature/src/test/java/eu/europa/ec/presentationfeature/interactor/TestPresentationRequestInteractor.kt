@@ -547,6 +547,251 @@ class TestPresentationRequestInteractor {
                 }
         }
 
+    /**
+     * A DCQL request with two queries in one option (PID for `query_0`, mDL for `query_1`) whose
+     * PID is revoked. Dropping it would leave `query_0` with no match, which Wallet Core refuses on
+     * Share, so the option is not offered and, being the only one, the request has no data to show.
+     */
+    @Test
+    fun `Given a revoked document that leaves a query with no match, When getRequestDocuments is called, Then that option is not offered`() =
+        coroutineRule.runTest {
+            // Given
+            val pid = getMockedPidWithBasicFields()
+            val mdl = getMockedMdlWithBasicFields()
+            mockGetAllIssuedDocumentsCall(response = listOf(pid, mdl))
+            mockIsDocumentRevoked(revokedIds = setOf(pid.id))
+            mockTransformToUiItemsStrings(resourceProvider = resourceProvider)
+            mockWalletCorePresentationControllerEventEmission(
+                event = TransferEventPartialState.RequestReceived(
+                    combinationsDomain = listOf(
+                        PresentationCombinationDomain(
+                            matches = listOf(
+                                mockedValidPidWithBasicFieldsRequestMatch.copy(queryId = "query_0"),
+                                mockedValidMdlWithBasicFieldsRequestMatch.copy(queryId = "query_1"),
+                            )
+                        )
+                    ),
+                    relyingParty = mockedRelyingPartyDomain,
+                )
+            )
+
+            // When
+            interactor.getRequestDocuments().runFlowTest {
+                // Then
+                assertEquals(
+                    PresentationRequestInteractorPartialState.NoData(
+                        relyingParty = mockedRelyingPartyDomain,
+                    ),
+                    awaitItem()
+                )
+            }
+        }
+
+    /**
+     * The same option as above, next to the option Wallet Core adds when `query_0`'s credential set
+     * is optional (the mDL alone). The option that lost `query_0` is not offered; the other one is.
+     */
+    @Test
+    fun `Given a revoked document that leaves a query with no match and another option without that query, When getRequestDocuments is called, Then only the other option is offered`() =
+        coroutineRule.runTest {
+            // Given
+            val pid = getMockedPidWithBasicFields()
+            val mdl = getMockedMdlWithBasicFields()
+            val mdlMatch = mockedValidMdlWithBasicFieldsRequestMatch.copy(queryId = "query_1")
+            mockGetAllIssuedDocumentsCall(response = listOf(pid, mdl))
+            mockIsDocumentRevoked(revokedIds = setOf(pid.id))
+            mockTransformToUiItemsStrings(resourceProvider = resourceProvider)
+            mockWalletCorePresentationControllerEventEmission(
+                event = TransferEventPartialState.RequestReceived(
+                    combinationsDomain = listOf(
+                        PresentationCombinationDomain(
+                            matches = listOf(
+                                mockedValidPidWithBasicFieldsRequestMatch.copy(queryId = "query_0"),
+                                mdlMatch,
+                            )
+                        ),
+                        PresentationCombinationDomain(matches = listOf(mdlMatch)),
+                    ),
+                    relyingParty = mockedRelyingPartyDomain,
+                )
+            )
+
+            // When
+            interactor.getRequestDocuments().runFlowTest {
+                val domainItems = RequestTransformer.transformToDomainItems(
+                    storageDocuments = listOf(pid, mdl),
+                    requestMatchesDomain = listOf(mdlMatch),
+                    resourceProvider = resourceProvider,
+                    uuidProvider = uuidProvider
+                )
+                val expectedResult = PresentationRequestInteractorPartialState.Success(
+                    relyingParty = mockedRelyingPartyDomain,
+                    combinationsUi = listOf(
+                        RequestCombinationUi(
+                            transactionData = null,
+                            documents = RequestTransformer.transformToUiItems(
+                                documentsDomain = domainItems.getOrThrow(),
+                                resourceProvider = resourceProvider,
+                                claimsAreSelectable = mockedSelectableClaims,
+                                userImageClaimKeys = mockedUserImageClaimKeys,
+                            ),
+                            matches = listOf(mdlMatch),
+                        )
+                    ),
+                    claimsAreSelectable = mockedSelectableClaims,
+                )
+
+                // Then
+                assertEquals(expectedResult, awaitItem())
+            }
+        }
+
+    /**
+     * Two candidates of one `multiple: true` query (`query_0`), one of them revoked. The query
+     * keeps a match, so the option is offered without the revoked document, as before.
+     */
+    @Test
+    fun `Given a multiple query with one revoked candidate, When getRequestDocuments is called, Then the option is offered without it`() =
+        coroutineRule.runTest {
+            // Given
+            val pid = getMockedPidWithBasicFields()
+            val mdl = getMockedMdlWithBasicFields()
+            val keptMatch = mockedValidMdlWithBasicFieldsRequestMatch.copy(queryId = "query_0")
+            mockGetAllIssuedDocumentsCall(response = listOf(pid, mdl))
+            mockIsDocumentRevoked(revokedIds = setOf(pid.id))
+            mockTransformToUiItemsStrings(resourceProvider = resourceProvider)
+            mockWalletCorePresentationControllerEventEmission(
+                event = TransferEventPartialState.RequestReceived(
+                    combinationsDomain = listOf(
+                        PresentationCombinationDomain(
+                            matches = listOf(
+                                mockedValidPidWithBasicFieldsRequestMatch.copy(queryId = "query_0"),
+                                keptMatch,
+                            )
+                        )
+                    ),
+                    relyingParty = mockedRelyingPartyDomain,
+                )
+            )
+
+            // When
+            interactor.getRequestDocuments().runFlowTest {
+                val domainItems = RequestTransformer.transformToDomainItems(
+                    storageDocuments = listOf(pid, mdl),
+                    requestMatchesDomain = listOf(keptMatch),
+                    resourceProvider = resourceProvider,
+                    uuidProvider = uuidProvider
+                )
+                val expectedResult = PresentationRequestInteractorPartialState.Success(
+                    relyingParty = mockedRelyingPartyDomain,
+                    combinationsUi = listOf(
+                        RequestCombinationUi(
+                            transactionData = null,
+                            documents = RequestTransformer.transformToUiItems(
+                                documentsDomain = domainItems.getOrThrow(),
+                                resourceProvider = resourceProvider,
+                                claimsAreSelectable = mockedSelectableClaims,
+                                userImageClaimKeys = mockedUserImageClaimKeys,
+                            ),
+                            matches = listOf(keptMatch),
+                        )
+                    ),
+                    claimsAreSelectable = mockedSelectableClaims,
+                )
+
+                // Then
+                assertEquals(expectedResult, awaitItem())
+            }
+        }
+
+    /**
+     * A DCQL request with two queries in one option: the PID's claims for `query_0` and an mDL for
+     * `query_1` that asks for no claims. The consent screen cannot show the mDL, so the selection
+     * would leave `query_1` out, which Wallet Core refuses on Share; the option is not offered.
+     */
+    @Test
+    fun `Given a query whose only match cannot be shown, When getRequestDocuments is called, Then that option is not offered`() =
+        coroutineRule.runTest {
+            // Given
+            val pid = getMockedPidWithBasicFields()
+            val mdl = getMockedMdlWithBasicFields()
+            mockGetAllIssuedDocumentsCall(response = listOf(pid, mdl))
+            mockIsDocumentRevoked(isRevoked = false)
+            mockTransformToUiItemsStrings(resourceProvider = resourceProvider)
+            mockWalletCorePresentationControllerEventEmission(
+                event = TransferEventPartialState.RequestReceived(
+                    combinationsDomain = listOf(
+                        PresentationCombinationDomain(
+                            matches = listOf(
+                                mockedValidPidWithBasicFieldsRequestMatch.copy(queryId = "query_0"),
+                                mockedValidMdlWithBasicFieldsRequestMatch.copy(
+                                    queryId = "query_1",
+                                    requestedClaims = emptyList(),
+                                ),
+                            )
+                        )
+                    ),
+                    relyingParty = mockedRelyingPartyDomain,
+                )
+            )
+
+            // When
+            interactor.getRequestDocuments().runFlowTest {
+                // Then
+                assertEquals(
+                    PresentationRequestInteractorPartialState.NoData(
+                        relyingParty = mockedRelyingPartyDomain,
+                    ),
+                    awaitItem()
+                )
+            }
+        }
+
+    /**
+     * A DCQL request with two queries in one option: a PID for `query_0` that carries transaction
+     * data and an mDL for `query_1`. The PID is revoked, so the option loses `query_0` and the
+     * transaction data with it. The transaction-data check runs before such an option is dropped,
+     * so the request is declined, not reported as having no data.
+     */
+    @Test
+    fun `Given transaction data on a revoked document that leaves its query with no match, When getRequestDocuments is called, Then the request is declined`() =
+        coroutineRule.runTest {
+            // Given
+            val pid = getMockedPidWithBasicFields()
+            val mdl = getMockedMdlWithBasicFields()
+            mockTransformToUiItemsStrings(resourceProvider = resourceProvider)
+            mockTransactionDataStrings(resourceProvider = resourceProvider)
+            mockDeclineString()
+            whenever(uuidProvider.provideUuid()).thenReturn(mockedUuid)
+            mockGetAllIssuedDocumentsCall(response = listOf(pid, mdl))
+            mockIsDocumentRevoked(revokedIds = setOf(pid.id))
+            val matches = listOf(
+                mockedValidPidWithBasicFieldsRequestMatch.copy(
+                    queryId = "query_0",
+                    transactionData = listOf(mockedTransactionDataApproval),
+                ),
+                mockedValidMdlWithBasicFieldsRequestMatch.copy(queryId = "query_1"),
+            )
+            mockWalletCorePresentationControllerEventEmission(
+                event = TransferEventPartialState.RequestReceived(
+                    combinationsDomain = listOf(PresentationCombinationDomain(matches = matches)),
+                    relyingParty = mockedRelyingPartyDomain,
+                ),
+            )
+
+            // When
+            interactor.getRequestDocuments().runFlowTest {
+                // Then
+                assertEquals(
+                    PresentationRequestInteractorPartialState.Declined(
+                        relyingParty = mockedRelyingPartyDomain,
+                        reason = mockedDeclineMessage,
+                    ),
+                    awaitItem(),
+                )
+            }
+        }
+
     // Case 13:
     // 1. walletCorePresentationController.events emits RequestReceived with a single PID, and
     //    the controller derives requestAllowsClaimSelection = false (an OpenID4VP request).
@@ -643,7 +888,8 @@ class TestPresentationRequestInteractor {
     }
 
     /**
-     * Case 15: a revoked PID without transaction data, and a valid mDL that carries it. Only the mDL
+     * Case 15: a revoked PID without transaction data, and a valid mDL that carries it, both
+     * candidates of the same query, so the option is still offered without the PID. Only the mDL
      * contributes transaction rows, in an expanded section, without RP origin or identifier.
      */
     @Test
@@ -658,7 +904,7 @@ class TestPresentationRequestInteractor {
             mockGetAllIssuedDocumentsCall(response = listOf(pid, mdl))
             mockIsDocumentRevoked(revokedIds = setOf(pid.id))
             val matches = listOf(
-                mockedValidPidWithBasicFieldsRequestMatch,
+                mockedValidPidWithBasicFieldsRequestMatch.copy(queryId = mockedTransactionQueryId),
                 mockedValidMdlWithBasicFieldsRequestMatch.copy(
                     queryId = mockedTransactionQueryId,
                     transactionData = listOf(mockedTransactionDataApproval),
