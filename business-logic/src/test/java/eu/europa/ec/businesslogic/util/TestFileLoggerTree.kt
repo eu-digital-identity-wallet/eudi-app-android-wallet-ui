@@ -18,7 +18,8 @@ package eu.europa.ec.businesslogic.util
 
 import android.util.Log
 import org.junit.After
-import org.junit.Assert
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -70,76 +71,98 @@ class TestFileLoggerTree {
 
     @Test
     fun `Given a message at minPriority, When logged, Then it is written to the log file`() {
+        // Given
         val logger = plantTree()
 
+        // When
         Timber.tag("TAG").d("hello world")
 
-        Assert.assertTrue(logger.files.single().readText().contains("D/TAG: hello world"))
+        // Then
+        assertTrue(logger.files.single().readText().contains("D/TAG: hello world"))
     }
 
     @Test
     fun `Given a message below minPriority, When logged, Then it is not written`() {
+        // Given
         val logger = plantTree(minPriority = Log.WARN)
 
+        // When
         Timber.tag("TAG").d("should be dropped")
         Timber.tag("TAG").e("should be kept")
 
+        // Then
         val contents = logger.files.single().readText()
-        Assert.assertTrue(contents.contains("E/TAG: should be kept"))
-        Assert.assertTrue(!contents.contains("should be dropped"))
+        assertTrue(contents.contains("E/TAG: should be kept"))
+        assertTrue(!contents.contains("should be dropped"))
     }
 
     @Test
     fun `Given a throwable, When logged, Then its stack trace is appended`() {
+        // Given
         val logger = plantTree()
 
+        // When
         Timber.tag("TAG").e(IllegalStateException("kaboom"), "boom")
 
+        // Then
         val contents = logger.files.single().readText()
-        Assert.assertTrue(contents.contains("E/TAG: boom"))
-        Assert.assertTrue(contents.contains("IllegalStateException"))
-        Assert.assertTrue(contents.contains("kaboom"))
+        assertTrue(contents.contains("E/TAG: boom"))
+        assertTrue(contents.contains("IllegalStateException"))
+        assertTrue(contents.contains("kaboom"))
     }
 
     @Test
     fun `Given no explicit tag, When logged, Then the default tag is used`() {
+        // Given
         val logger = plantTree()
 
+        // When
         Timber.i("untagged")
 
-        Assert.assertTrue(logger.files.single().readText().contains("I/EUDI: untagged"))
+        // Then
+        assertTrue(logger.files.single().readText().contains("I/EUDI: untagged"))
     }
 
     @Test
     fun `Given writes past the size limit, When logging, Then output rotates across files`() {
+        // Given
         val logger = plantTree(sizeLimit = 256, fileLimit = 3)
 
+        // When
         repeat(40) { Timber.tag("TAG").d("message number %s", it) }
 
-        Assert.assertTrue(
+        // Then
+        assertTrue(
             "expected rotation, got ${logger.files.size} file(s)",
             logger.files.size > 1
         )
-        Assert.assertTrue(logger.files.size <= 3)
+        assertTrue(logger.files.size <= 3)
     }
 
     @Test
     fun `Given lock files beside the logs, When files is read, Then only log files are returned`() {
+        // Given
         val logger = plantTree()
+
+        // When
         Timber.tag("TAG").d("hello")
 
-        Assert.assertTrue(logsDir.listFiles().orEmpty().any { it.name.endsWith(".lck") })
-        Assert.assertTrue(logger.files.none { it.name.endsWith(".lck") })
+        // Then
+        assertTrue(logsDir.listFiles().orEmpty().any { it.name.endsWith(".lck") })
+        assertTrue(logger.files.none { it.name.endsWith(".lck") })
     }
 
     @Test
     fun `Given a directory that does not exist yet, When building, Then it is created`() {
+        // Given
         val logger = plantTree()
 
+        // When
         Timber.tag("TAG").d("hello")
 
-        Assert.assertEquals(1, logger.files.size)
-        Assert.assertTrue(logsDir.isDirectory)
+        // Then
+        assertEquals(1, logger.files.size)
+        assertTrue(logsDir.isDirectory)
     }
 
     private companion object {

@@ -17,8 +17,8 @@
 package eu.europa.ec.businesslogic.extension
 
 import eu.europa.ec.businesslogic.validator.util.filterableList
-import junit.framework.TestCase.assertEquals
-import junit.framework.TestCase.assertTrue
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class TestFilterableListExtensions {

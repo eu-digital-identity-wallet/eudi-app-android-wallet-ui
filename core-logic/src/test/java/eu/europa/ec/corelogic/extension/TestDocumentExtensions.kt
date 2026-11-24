@@ -38,10 +38,15 @@ class TestDocumentExtensions {
 
     //region getExpiryDate
 
+    /**
+     * Given the batch's credentials expire on different dates.
+     *
+     * Then the document's expiry is the latest credential's validUntil.
+     */
     @Test
     fun `Given several credentials, When getExpiryDate is called, Then the latest validUntil is returned`() {
         coroutineRule.runTest {
-            // Given the batch's credentials expire on different dates.
+            // Given
             val earlier = Instant.parse("2030-01-01T00:00:00Z")
             val latest = Instant.parse("2035-01-01T00:00:00Z")
             val document = mockDocumentWithCredentials(earlier, latest)
@@ -49,7 +54,7 @@ class TestDocumentExtensions {
             // When
             val result = document.getExpiryDate()
 
-            // Then the document's expiry is the latest credential's validUntil.
+            // Then
             assertEquals(latest.toJavaInstant(), result)
         }
     }
@@ -60,8 +65,11 @@ class TestDocumentExtensions {
             // Given
             val document = mockDocumentWithCredentials()
 
-            // When / Then
-            assertNull(document.getExpiryDate())
+            // When
+            val expiryDate = document.getExpiryDate()
+
+            // Then
+            assertNull(expiryDate)
         }
     }
 
@@ -75,8 +83,11 @@ class TestDocumentExtensions {
             // Given
             val document = mockDocumentWithCredentials(Instant.parse("2020-01-01T00:00:00Z"))
 
-            // When / Then
-            assertTrue(document.isExpired())
+            // When
+            val expired = document.isExpired()
+
+            // Then
+            assertTrue(expired)
         }
     }
 
@@ -86,8 +97,11 @@ class TestDocumentExtensions {
             // Given
             val document = mockDocumentWithCredentials(Instant.parse("2100-01-01T00:00:00Z"))
 
-            // When / Then
-            assertFalse(document.isExpired())
+            // When
+            val expired = document.isExpired()
+
+            // Then
+            assertFalse(expired)
         }
     }
 
@@ -97,8 +111,11 @@ class TestDocumentExtensions {
             // Given
             val document = mockDocumentWithCredentials()
 
-            // When / Then
-            assertFalse(document.isExpired())
+            // When
+            val expired = document.isExpired()
+
+            // Then
+            assertFalse(expired)
         }
     }
 

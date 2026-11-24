@@ -64,8 +64,10 @@ class TestRequestScreen {
      */
     @Test
     fun `Given two options, When the first is selected, Then only its document takes clicks`() {
+        // When
         setCards(selectedIndex = 0)
 
+        // Then
         composeRule.onNodeWithText(documentName(0)).assertHasClickAction()
         composeRule.onNodeWithText(documentName(1)).assertHasNoClickAction()
     }
@@ -75,8 +77,10 @@ class TestRequestScreen {
      */
     @Test
     fun `Given two options, When the second is selected, Then only its document takes clicks`() {
+        // When
         setCards(selectedIndex = 1)
 
+        // Then
         composeRule.onNodeWithText(documentName(0)).assertHasNoClickAction()
         composeRule.onNodeWithText(documentName(1)).assertHasClickAction()
     }
@@ -86,9 +90,11 @@ class TestRequestScreen {
      * selected option's claim row takes a click.
      */
     @Test
-    fun `Given selectable claims in two open options, Then only the selected claim takes clicks`() {
+    fun `Given selectable claims in two open options, When the first is selected, Then only the selected claim takes clicks`() {
+        // When
         setCards(selectedIndex = 0, claimsAreSelectable = true, isExpanded = true)
 
+        // Then
         composeRule.onNodeWithText(claimValue(0)).assertHasClickAction()
         composeRule.onNodeWithText(claimValue(1)).assertHasNoClickAction()
     }
@@ -99,9 +105,11 @@ class TestRequestScreen {
      * reports comes from its claim, not from whether its option is selected.
      */
     @Test
-    fun `Given selectable claims in two open options, Then each claim reads its checked state`() {
+    fun `Given selectable claims in two open options, When the first is selected, Then each claim reads its checked state`() {
+        // When
         setCards(selectedIndex = 0, claimsAreSelectable = true, isExpanded = true)
 
+        // Then
         composeRule.onNodeWithText(claimValue(0))
             .assert(SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.Checkbox))
             .assertIsOff()
@@ -115,9 +123,11 @@ class TestRequestScreen {
      * transaction-data card and link take a click.
      */
     @Test
-    fun `Given transaction data in two options, Then only the selected card takes clicks`() {
+    fun `Given transaction data in two options, When the first is selected, Then only the selected card takes clicks`() {
+        // When
         setCards(selectedIndex = 0, hasTransactionData = true)
 
+        // Then
         composeRule.onNodeWithText(transactionName(0)).assertHasClickAction()
         composeRule.onNodeWithText(transactionDocument(0)).assertHasClickAction()
         composeRule.onNodeWithText(transactionName(1)).assertHasNoClickAction()

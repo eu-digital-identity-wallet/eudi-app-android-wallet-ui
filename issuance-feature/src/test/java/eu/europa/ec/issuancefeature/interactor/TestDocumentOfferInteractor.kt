@@ -82,8 +82,8 @@ import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.ThemeColorKey
 import eu.europa.ec.uilogic.component.utils.PERCENTAGE_25
 import eu.europa.ec.uilogic.serializer.UiSerializer
-import junit.framework.TestCase.assertEquals
 import org.junit.After
+import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -187,6 +187,7 @@ class TestDocumentOfferInteractor {
                     issuerLogo = null,
                     issuerRegistration = mockedVerifiedIssuerRegistration,
                 )
+
                 // Then
                 assertEquals(expectedResult, awaitItem())
             }
@@ -260,6 +261,7 @@ class TestDocumentOfferInteractor {
                 val expectedResult = ResolveDocumentOfferInteractorPartialState.Failure(
                     errorMessage = mockedInvalidCodeFormatMessage
                 )
+
                 // Then
                 assertEquals(expectedResult, awaitItem())
             }
@@ -272,6 +274,7 @@ class TestDocumentOfferInteractor {
     @Test
     fun `Given an offer whose transaction code has no length, When resolveDocumentOffer is called, Then the code format failure is returned`() =
         coroutineRule.runTest {
+            // Given
             val mockedOffer = mockOffer(
                 issuerName = mockedIssuerName,
                 offeredDocuments = mockedOfferedDocumentsList,
@@ -295,7 +298,9 @@ class TestDocumentOfferInteractor {
                 )
             )
 
+            // When
             interactor.resolveDocumentOffer(mockedUriPath1).runFlowTest {
+                // Then
                 assertEquals(
                     ResolveDocumentOfferInteractorPartialState.Failure(
                         errorMessage = mockedInvalidCodeFormatMessage
@@ -351,6 +356,7 @@ class TestDocumentOfferInteractor {
                 val expectedResult = ResolveDocumentOfferInteractorPartialState.Failure(
                     errorMessage = mockedInvalidCodeFormatMessage
                 )
+
                 // Then
                 assertEquals(expectedResult, awaitItem())
             }
@@ -414,6 +420,7 @@ class TestDocumentOfferInteractor {
                     issuerLogo = null,
                     issuerRegistration = mockedVerifiedIssuerRegistration,
                 )
+
                 // Then
                 assertEquals(expectedResult, awaitItem())
             }
@@ -517,6 +524,7 @@ class TestDocumentOfferInteractor {
                 val expectedResult = ResolveDocumentOfferInteractorPartialState.Failure(
                     errorMessage = mockedWalletActivationErrorMessage
                 )
+
                 // Then
                 assertEquals(expectedResult, awaitItem())
             }
@@ -543,7 +551,8 @@ class TestDocumentOfferInteractor {
                 val expectedResult = ResolveDocumentOfferInteractorPartialState.Failure(
                     errorMessage = mockedPlainFailureMessage
                 )
-                //Then
+
+                // Then
                 assertEquals(expectedResult, awaitItem())
             }
         }
@@ -809,6 +818,7 @@ class TestDocumentOfferInteractor {
                 val expectedResult = IssueDocumentsInteractorPartialState.Failure(
                     errorMessage = mockedPlainFailureMessage
                 )
+
                 // Then
                 assertEquals(expectedResult, awaitItem())
             }
@@ -850,7 +860,7 @@ class TestDocumentOfferInteractor {
                     crypto = biometricCrypto,
                     resultHandler = resultHandler
                 )
-                // Then
+
                 assertEquals(expectedResult, awaitItem())
             }
         }
@@ -1127,6 +1137,7 @@ class TestDocumentOfferInteractor {
                 val expectedResult = IssueDocumentsInteractorPartialState.Failure(
                     errorMessage = mockedExceptionWithMessage.localizedMessage!!
                 )
+
                 // Then
                 assertEquals(expectedResult, awaitItem())
             }
@@ -1162,6 +1173,7 @@ class TestDocumentOfferInteractor {
                 val expectedResult = IssueDocumentsInteractorPartialState.Failure(
                     errorMessage = mockedGenericErrorMessage
                 )
+
                 // Then
                 assertEquals(expectedResult, awaitItem())
             }
@@ -1186,6 +1198,7 @@ class TestDocumentOfferInteractor {
                 val expectedResult = IssueDocumentsInteractorPartialState.Failure(
                     errorMessage = mockedGenericErrorMessage
                 )
+
                 // Then
                 assertEquals(expectedResult, awaitItem())
             }
@@ -1402,9 +1415,11 @@ class TestDocumentOfferInteractor {
 
     //region resumeOpenId4VciWithAuthorization
     @Test
-    fun `when interactor resumeOpenId4VciWithAuthorization is called, then resumeOpenId4VciWithAuthorization should be invoked on the controller`() {
+    fun `Given an authorization uri, When resumeOpenId4VciWithAuthorization is called on the interactor, Then it is invoked on the controller`() {
+        // When
         interactor.resumeOpenId4VciWithAuthorization(mockedUriPath1)
 
+        // Then
         verify(walletCoreDocumentsController, times(1))
             .resumeOpenId4VciWithAuthorization(mockedUriPath1)
     }

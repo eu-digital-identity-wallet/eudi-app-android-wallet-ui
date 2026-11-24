@@ -61,7 +61,7 @@ class TestKoinGraphResolution {
     private lateinit var koin: Koin
 
     @Before
-    fun setup() {
+    fun before() {
         application = RuntimeEnvironment.getApplication()
         koin = application.setupKoin().koin
         loadKoinModules(
@@ -75,18 +75,21 @@ class TestKoinGraphResolution {
     }
 
     @After
-    fun tearDown() {
+    fun after() {
         stopKoin()
     }
 
     @Test
-    fun `every definition in the wallet graph resolves`() {
+    fun `Given the wallet graph, When every definition is resolved, Then each definition resolves`() {
+        // Given
         val definitions = flatten(eudiWalletModules)
             .flatMap { it.mappings.values }
             .map { it.beanDefinition }
             .distinct()
 
         val rootScope = koin.scopeRegistry.rootScope
+
+        // When
         definitions.forEach { definition ->
             when {
                 ListenableWorker::class in definition.secondaryTypes -> resolveWorker(definition)
@@ -95,6 +98,7 @@ class TestKoinGraphResolution {
             }
         }
 
+        // Then
         assertEquals(
             "Injected parameter samples for types the graph does not define",
             emptySet<KClass<*>>(),

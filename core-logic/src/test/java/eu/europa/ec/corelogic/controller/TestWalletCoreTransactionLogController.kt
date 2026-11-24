@@ -91,13 +91,16 @@ class TestWalletCoreTransactionLogController {
     @Test
     fun `Given Wallet Core logged a new presentation, When its request arrives, Then the registration check is recorded for that entry`() =
         coroutineRule.runTest {
+            // Given
             val request = processedRequest(registration = notBound)
             val entry = loggedEntryFor(request)
 
+            // When
             controller.log(entry)
             controller.onTransferEvent(TransferEvent.RequestReceived(request, mock()))
             coroutineRule.testScope.advanceUntilIdle()
 
+            // Then
             verify(transactionLogDao).recordRegistrationCheck(
                 identifier = entry.transactionIdentifier,
                 check = "NOT_VERIFIED",
@@ -108,13 +111,16 @@ class TestWalletCoreTransactionLogController {
     @Test
     fun `Given a request without a registration evaluation, When it arrives, Then it is recorded as not evaluated`() =
         coroutineRule.runTest {
+            // Given
             val request = processedRequest(registration = null)
             val entry = loggedEntryFor(request)
 
+            // When
             controller.log(entry)
             controller.onTransferEvent(TransferEvent.RequestReceived(request, mock()))
             coroutineRule.testScope.advanceUntilIdle()
 
+            // Then
             verify(transactionLogDao).recordRegistrationCheck(
                 identifier = entry.transactionIdentifier,
                 check = "NOT_EVALUATED",
@@ -125,39 +131,47 @@ class TestWalletCoreTransactionLogController {
     @Test
     fun `Given the logged entry names another relying party, When the request arrives, Then nothing is recorded`() =
         coroutineRule.runTest {
+            // Given
             val request = processedRequest(registration = notBound)
             val entry = loggedEntryFor(request).copy(
                 interactingPartyName = MultiLangString(lang = "en", content = "Another party"),
             )
 
+            // When
             controller.log(entry)
             controller.onTransferEvent(TransferEvent.RequestReceived(request, mock()))
             coroutineRule.testScope.advanceUntilIdle()
 
+            // Then
             verify(transactionLogDao, never()).recordRegistrationCheck(any(), any(), anyOrNull())
         }
 
     @Test
     fun `Given only a later write of an entry already seen, When a request arrives, Then nothing is recorded for it`() =
         coroutineRule.runTest {
+            // Given
             val first = processedRequest(registration = notBound)
             val entry = loggedEntryFor(first)
             controller.log(entry)
             controller.onTransferEvent(TransferEvent.RequestReceived(first, mock()))
 
+            // When
             controller.log(entry.copy(listOfClaimsPresented = emptyList()))
             controller.onTransferEvent(TransferEvent.RequestReceived(first, mock()))
             coroutineRule.testScope.advanceUntilIdle()
 
+            // Then
             verify(transactionLogDao).recordRegistrationCheck(any(), any(), anyOrNull())
         }
 
     @Test
     fun `Given a request that could not be processed, When it arrives, Then the pending entry is dropped`() =
         coroutineRule.runTest {
+            // Given
             val entry = loggedEntryFor(processedRequest(registration = notBound))
             controller.log(entry)
 
+            // When
             controller.onTransferEvent(
                 TransferEvent.RequestReceived(
                     RequestProcessor.ProcessedRequest.Failure(IllegalStateException("unreadable")),
@@ -169,12 +183,14 @@ class TestWalletCoreTransactionLogController {
             )
             coroutineRule.testScope.advanceUntilIdle()
 
+            // Then
             verify(transactionLogDao, never()).recordRegistrationCheck(any(), any(), anyOrNull())
         }
 
     @Test
     fun `Given Wallet Core's own presentation logger registered first, When a request arrives, Then the check lands on the entry it wrote`() =
         coroutineRule.runTest {
+            // Given
             val listeners = mutableListOf<TransferEvent.Listener>()
             val presentationManager: PresentationManager = mock {
                 on { addTransferEventListener(any()) } doAnswer { invocation ->
@@ -190,9 +206,11 @@ class TestWalletCoreTransactionLogController {
             val event =
                 TransferEvent.RequestReceived(processedRequest(registration = notBound), mock())
 
+            // When
             listeners.forEach { listener -> listener.onTransferEvent(event) }
             coroutineRule.testScope.advanceUntilIdle()
 
+            // Then
             val stored = argumentCaptor<TransactionLog>()
             verify(transactionLogDao, atLeastOnce()).store(stored.capture())
             assertEquals(2, listeners.size)
@@ -206,10 +224,13 @@ class TestWalletCoreTransactionLogController {
     @Test
     fun `Given two new entries written before either request is seen, When the requests arrive, Then neither check is recorded`() =
         coroutineRule.runTest {
+            // Given
             val first = processedRequest(registration = null)
             val second = processedRequest(registration = notBound)
             controller.log(loggedEntryFor(first))
             controller.log(loggedEntryFor(second))
+
+            // When
             controller.onTransferEvent(TransferEvent.RequestReceived(first, mock()))
             controller.onTransferEvent(TransferEvent.RequestReceived(second, mock()))
 
@@ -219,6 +240,7 @@ class TestWalletCoreTransactionLogController {
             controller.onTransferEvent(TransferEvent.RequestReceived(third, mock()))
             coroutineRule.testScope.advanceUntilIdle()
 
+            // Then
             verify(transactionLogDao, times(1)).recordRegistrationCheck(any(), any(), anyOrNull())
             verify(transactionLogDao).recordRegistrationCheck(
                 identifier = entry.transactionIdentifier,
@@ -230,6 +252,7 @@ class TestWalletCoreTransactionLogController {
     @Test
     fun `Given a stored presentation with a recorded check, When the history is read, Then the entry carries that check`() =
         coroutineRule.runTest {
+            // Given
             controller.log(loggedEntryFor(processedRequest(registration = notBound)))
             coroutineRule.testScope.advanceUntilIdle()
             val stored = argumentCaptor<TransactionLog>()
@@ -243,9 +266,11 @@ class TestWalletCoreTransactionLogController {
                 )
             )
 
+            // When
             val presentation =
                 controller.getTransactionLogs().single() as TransactionLogDomain.Presentation
 
+            // Then
             assertEquals(
                 RecordedRegistrationCheckDomain.NotVerified(reason = RegistrationFailureReasonDomain.EXPIRED),
                 presentation.registrationCheck,

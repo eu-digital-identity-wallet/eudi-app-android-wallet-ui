@@ -61,12 +61,15 @@ class TestLoadingViewModel {
     @Test
     fun `Given a rejection with an https redirect, When it is closed, Then the redirect is opened`() {
         coroutineRule.runTest {
+            // Given
             val viewModel = FakeLoadingViewModel()
             viewModel.reject(redirect = "https://verifier.example/rejected")
 
             viewModel.effect.runFlowTest {
+                // When
                 viewModel.setEvent(Event.CloseRejection)
 
+                // Then
                 assertEquals(
                     Effect.Navigation.CloseRejection(
                         initiatorRoute = INITIATOR_ROUTE,
@@ -81,6 +84,7 @@ class TestLoadingViewModel {
     @Test
     fun `Given a rejection with a redirect into one of the wallet's own flows, When it is closed, Then nothing is opened`() {
         coroutineRule.runTest {
+            // Given
             listOf(
                 "openid-credential-offer://?credential_offer_uri=https%3A%2F%2Fattacker.example",
                 "eudi-rqes://sign?request_uri=https%3A%2F%2Fattacker.example%2Fdoc",
@@ -90,8 +94,10 @@ class TestLoadingViewModel {
                 viewModel.reject(redirect = redirect)
 
                 viewModel.effect.runFlowTest {
+                    // When
                     viewModel.setEvent(Event.CloseRejection)
 
+                    // Then
                     assertEquals(
                         Effect.Navigation.CloseRejection(
                             initiatorRoute = INITIATOR_ROUTE,

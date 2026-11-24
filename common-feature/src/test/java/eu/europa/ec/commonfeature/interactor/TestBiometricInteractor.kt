@@ -31,8 +31,8 @@ import eu.europa.ec.testlogic.extension.runFlowTest
 import eu.europa.ec.testlogic.extension.runTest
 import eu.europa.ec.testlogic.extension.toFlow
 import eu.europa.ec.testlogic.rule.CoroutineTestRule
-import junit.framework.TestCase.assertEquals
 import org.junit.After
+import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -92,9 +92,11 @@ class TestBiometricInteractor {
     }
 
     @Test
-    fun `When unlockSession is called, Then the session controller is unlocked`() {
+    fun `Given a session controller, When unlockSession is called, Then the session is unlocked`() {
+        // When
         interactor.unlockSession()
 
+        // Then
         verify(sessionController).unlock()
     }
 
@@ -125,7 +127,7 @@ class TestBiometricInteractor {
 
     // Case: launchBiometricSystemScreen behaviour
     @Test
-    fun `When launchBiometricSystemScreen is called, Then verify function is executed on the controller`() {
+    fun `Given a biometric controller, When launchBiometricSystemScreen is called, Then the controller launches it for strong biometrics`() {
         // When
         interactor.launchBiometricSystemScreen()
 
@@ -134,13 +136,13 @@ class TestBiometricInteractor {
     }
     //endregion
 
-    ///region getBiometricUserSelection
+    //region getBiometricUserSelection
 
     // Case: getBiometricUserSelection behaviour
     // When getUseBiometricsAuth returns true, the expected result of getBiometricUserSelection
     // should be true
     @Test
-    fun `When getBiometricUserSelection is called, Then assert the correct value is returned`() =
+    fun `Given biometrics use is stored as true, When getBiometricUserSelection is called, Then true is returned`() =
         coroutineRule.runTest {
             // Given
             whenever(biometryStorageController.getUseBiometricsAuth()).thenReturn(true)
@@ -158,7 +160,7 @@ class TestBiometricInteractor {
 
     // Case: storeBiometricsUsageDecision behaviour
     @Test
-    fun `When storeBiometricsUsageDecision is called, Then verify setUseBiometricsAuth is executed`() =
+    fun `Given a decision to use biometrics, When storeBiometricsUsageDecision is called, Then setUseBiometricsAuth is executed`() =
         coroutineRule.runTest {
             // Given
             val shouldUseBiometrics = true
@@ -175,7 +177,7 @@ class TestBiometricInteractor {
 
     // Case: getBiometricsAvailability behaviour
     @Test
-    fun `When getBiometricsAvailability is called, Then the controller checks strong biometrics`() {
+    fun `Given a biometric controller, When getBiometricsAvailability is called, Then the controller checks strong biometrics`() {
         // When
         interactor.getBiometricsAvailability()
 
@@ -190,7 +192,7 @@ class TestBiometricInteractor {
     // Defining a mock BiometricsAuthenticate function callback to verify that authenticate function
     // on the biometricAuthenticationController is executed when authenticateWithBiometrics is called
     @Test
-    fun `When authenticateWithBiometrics is called, Then verify authenticate is executed with correct parameters`() {
+    fun `Given a context and a listener, When authenticateWithBiometrics is called, Then authenticate is executed with the same parameters`() {
         // Given
         val mockListener: (BiometricsAuthenticate) -> Unit = mock()
         val context = getMockedContext()
@@ -214,7 +216,7 @@ class TestBiometricInteractor {
     //region pin throttle delegation
 
     @Test
-    fun `When maxFailedPinAttempts is accessed, Then it returns authenticationConfig#maxFailedPinAttempts`() {
+    fun `Given a configured maximum of failed PIN attempts, When maxFailedPinAttempts is read, Then the configured value is returned`() {
         // Given
         whenever(authenticationConfig.maxFailedPinAttempts).thenReturn(5)
 
@@ -226,7 +228,7 @@ class TestBiometricInteractor {
     }
 
     @Test
-    fun `When getPinLockoutState is called, Then pinThrottleController#getState is invoked and its result is returned`() =
+    fun `Given a throttle state, When getPinLockoutState is called, Then the throttle controller state is returned`() =
         coroutineRule.runTest {
             // Given
             val expected = PinLockoutState.Idle
@@ -241,7 +243,7 @@ class TestBiometricInteractor {
         }
 
     @Test
-    fun `When recordPinFailure is called, Then pinThrottleController#recordFailure is invoked and its result is returned`() =
+    fun `Given a throttle controller, When recordPinFailure is called, Then its recorded failure state is returned`() =
         coroutineRule.runTest {
             // Given
             val expected = PinLockoutState.Idle
@@ -256,7 +258,7 @@ class TestBiometricInteractor {
         }
 
     @Test
-    fun `When resetPinThrottle is called, Then pinThrottleController#recordSuccess is invoked`() =
+    fun `Given a throttle controller, When resetPinThrottle is called, Then a success is recorded`() =
         coroutineRule.runTest {
             // When
             interactor.resetPinThrottle()
@@ -268,10 +270,15 @@ class TestBiometricInteractor {
 
     @Test
     fun `Given a device without a screen lock, When the login notice is read, Then it is the notice setup shows`() {
+        // Given
         val notice = DeviceLockNotice.Blocking("Set a screen lock to use the wallet.")
         whenever(quickPinInteractor.getDeviceLockNotice()).thenReturn(notice)
 
-        assertEquals(notice, interactor.getDeviceLockNotice())
+        // When
+        val result = interactor.getDeviceLockNotice()
+
+        // Then
+        assertEquals(notice, result)
     }
 
     //region Mocked objects

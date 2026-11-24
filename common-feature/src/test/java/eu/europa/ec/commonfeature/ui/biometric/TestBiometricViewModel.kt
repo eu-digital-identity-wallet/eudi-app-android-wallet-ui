@@ -154,69 +154,89 @@ class TestBiometricViewModel {
     }
 
     @Test
-    fun `rapid taps open one prompt and cancellation permits retry`() {
+    fun `Given a biometric prompt, When the user taps rapidly and then cancels, Then one prompt opens and a retry is permitted`() {
+        // When
         repeat(30) { viewModel.handleEvents(click) }
 
+        // Then
         assertEquals(1, callbacks.size)
         verify(interactor).authenticateWithBiometrics(eq(context), eq(false), any())
 
+        // When
         completeAuthentication(BiometricsAuthenticate.Cancelled)
 
+        // Then
         assertNull(viewModel.viewState.value.error)
 
+        // When
         viewModel.handleEvents(click)
 
+        // Then
         assertEquals(2, callbacks.size)
     }
 
     @Test
-    fun `failure is visible and dismissible and retry remains available`() {
+    fun `Given a prompt that fails, When the user taps, dismisses the failure and taps again, Then the failure is shown and dismissed and a retry opens a new prompt`() {
+        // When
         viewModel.handleEvents(click)
         completeAuthentication(BiometricsAuthenticate.Failed("Locked sensor"))
 
+        // Then
         assertEquals("Locked sensor", viewModel.viewState.value.error?.errorSubTitle)
 
+        // When
         viewModel.handleEvents(Event.OnErrorDismiss)
 
+        // Then
         assertNull(viewModel.viewState.value.error)
 
+        // When
         viewModel.handleEvents(click)
 
+        // Then
         assertEquals(2, callbacks.size)
     }
 
     @Test
-    fun `unavailable automatic biometrics leaves PIN available without an error overlay`() {
+    fun `Given unavailable biometrics, When an automatic attempt is made, Then the PIN stays available without an error overlay`() {
+        // Given
         whenever(interactor.getBiometricsAvailability())
             .thenReturn(BiometricsAvailability.Failure("Unsupported biometrics"))
 
+        // When
         viewModel.handleEvents(click.copy(shouldThrowErrorIfNotAvailable = false))
 
+        // Then
         assertNull(viewModel.viewState.value.error)
         assertFalse(viewModel.viewState.value.isLoading)
         assertEquals(0, callbacks.size)
     }
 
     @Test
-    fun `manual attempt explains unsupported biometrics`() {
+    fun `Given unavailable biometrics, When a manual attempt is made, Then the unsupported biometrics are explained`() {
+        // Given
         whenever(interactor.getBiometricsAvailability())
             .thenReturn(BiometricsAvailability.Failure("Unsupported biometrics"))
 
+        // When
         viewModel.handleEvents(click)
 
+        // Then
         assertEquals("Unsupported biometrics", viewModel.viewState.value.error?.errorSubTitle)
         assertEquals(0, callbacks.size)
     }
 
     @Test
-    fun `success resets PIN throttle and navigates once despite rapid taps`() =
+    fun `Given a started biometric attempt, When it succeeds despite rapid taps, Then the PIN throttle is reset and navigation happens once`() =
         coroutineRule.runTest {
             viewModel.effect.runFlowTest {
+                // When
                 viewModel.handleEvents(click)
                 completeAuthentication(BiometricsAuthenticate.Success)
                 repeat(30) { viewModel.handleEvents(click) }
                 coroutineRule.testScope.runCurrent()
 
+                // Then
                 assertEquals(1, callbacks.size)
                 assertEquals(Effect.Navigation.Pop, awaitItem())
                 verify(interactor, times(1)).resetPinThrottle()
@@ -225,16 +245,19 @@ class TestBiometricViewModel {
         }
 
     @Test
-    fun `PIN fallback still succeeds after biometric cancellation`() = coroutineRule.runTest {
+    fun `Given a valid PIN, When the biometric prompt is cancelled and the PIN is entered, Then the PIN still succeeds`() = coroutineRule.runTest {
+        // Given
         val pin = SecurePinImpl("123456")
         whenever(interactor.isPinValid(pin))
             .thenReturn(flowOf(QuickPinInteractorPinValidPartialState.Success))
 
         viewModel.effect.runFlowTest {
+            // When
             viewModel.handleEvents(click)
             completeAuthentication(BiometricsAuthenticate.Cancelled)
             viewModel.handleEvents(Event.OnQuickPinEntered(pin))
 
+            // Then
             assertEquals(Effect.Navigation.Pop, awaitItem())
             verify(interactor).resetPinThrottle()
         }
@@ -243,28 +266,34 @@ class TestBiometricViewModel {
     }
 
     @Test
-    fun `a manual attempt without enrollment opens the system setup screen`() =
+    fun `Given no enrolled biometrics, When a manual attempt is made, Then the system setup screen opens`() =
         coroutineRule.runTest {
+            // Given
             whenever(interactor.getBiometricsAvailability())
                 .thenReturn(BiometricsAvailability.NonEnrolled)
 
             viewModel.effect.runFlowTest {
+                // When
                 viewModel.handleEvents(click)
 
+                // Then
                 assertEquals(Effect.Navigation.LaunchBiometricsSystemScreen, awaitItem())
                 assertEquals(0, callbacks.size)
             }
         }
 
     @Test
-    fun `an automatic attempt without enrollment stays silent`() = coroutineRule.runTest {
+    fun `Given no enrolled biometrics, When an automatic attempt is made, Then nothing is shown`() = coroutineRule.runTest {
+        // Given
         whenever(interactor.getBiometricsAvailability())
             .thenReturn(BiometricsAvailability.NonEnrolled)
 
         viewModel.effect.runFlowTest {
+            // When
             viewModel.handleEvents(click.copy(shouldThrowErrorIfNotAvailable = false))
             coroutineRule.testScope.runCurrent()
 
+            // Then
             assertNull(viewModel.viewState.value.error)
             assertEquals(0, callbacks.size)
             expectNoEvents()
@@ -272,74 +301,93 @@ class TestBiometricViewModel {
     }
 
     @Test
-    fun `an unsupported biometrics explanation can be dismissed from its own action`() =
+    fun `Given an unsupported biometrics explanation, When its own action is invoked, Then it is dismissed`() =
         coroutineRule.runTest {
+            // Given
             whenever(interactor.getBiometricsAvailability())
                 .thenReturn(BiometricsAvailability.Failure("Unsupported biometrics"))
 
             viewModel.handleEvents(click)
             assertNotNull(viewModel.viewState.value.error)
 
+            // When
             viewModel.viewState.value.error?.onCancel?.invoke()
             coroutineRule.testScope.runCurrent()
 
+            // Then
             assertNull(viewModel.viewState.value.error)
         }
 
     @Test
-    fun `a new lockout replaces the tick already running`() = coroutineRule.runTest {
+    fun `Given a running lockout, When a new lockout starts, Then it replaces the tick already running`() = coroutineRule.runTest {
+        // When
         lockViewModelOut(30.seconds)
+
+        // Then
         assertEquals("locked:$MAX_ATTEMPTS:00:30", viewModel.viewState.value.lockoutMessage)
 
+        // When
         whenever(interactor.getPinLockoutState())
             .thenReturn(lockout(90.seconds), PinLockoutState.Idle)
         viewModel.handleEvents(Event.Init)
         coroutineRule.testScope.runCurrent()
 
+        // Then
         assertEquals("locked:$MAX_ATTEMPTS:01:30", viewModel.viewState.value.lockoutMessage)
 
+        // When
         coroutineRule.testScope.advanceTimeBy(1_500.milliseconds)
         coroutineRule.testScope.runCurrent()
 
+        // Then
         assertEquals("locked:$MAX_ATTEMPTS:01:29", viewModel.viewState.value.lockoutMessage)
 
+        // When
         coroutineRule.testScope.advanceTimeBy(30_000.milliseconds)
 
+        // Then
         assertTrue(viewModel.viewState.value.isLockedOut)
         assertEquals("locked:$MAX_ATTEMPTS:00:59", viewModel.viewState.value.lockoutMessage)
     }
 
     @Test
-    fun `init publishes the biometric preference and asks for the prompt`() =
+    fun `Given biometrics enabled, When init runs, Then the preference is published and the prompt is requested`() =
         coroutineRule.runTest {
+            // Given
             whenever(interactor.getBiometricUserSelection()).thenReturn(true)
             whenever(interactor.getPinLockoutState()).thenReturn(PinLockoutState.Idle)
 
             viewModel.effect.runFlowTest {
+                // When
                 viewModel.handleEvents(Event.Init)
                 coroutineRule.testScope.runCurrent()
 
+                // Then
                 assertTrue(viewModel.viewState.value.userBiometricsAreEnabled)
                 assertEquals(Effect.InitializeBiometricAuthOnCreate, awaitItem())
             }
         }
 
     @Test
-    fun `init keeps the prompt closed when biometrics are disabled`() = coroutineRule.runTest {
+    fun `Given biometrics disabled, When init runs, Then the prompt stays closed`() = coroutineRule.runTest {
+        // Given
         whenever(interactor.getBiometricUserSelection()).thenReturn(false)
         whenever(interactor.getPinLockoutState()).thenReturn(PinLockoutState.Idle)
 
         viewModel.effect.runFlowTest {
+            // When
             viewModel.handleEvents(Event.Init)
             coroutineRule.testScope.runCurrent()
 
+            // Then
             assertFalse(viewModel.viewState.value.userBiometricsAreEnabled)
             expectNoEvents()
         }
     }
 
     @Test
-    fun `init keeps the prompt closed when the screen opts out`() = coroutineRule.runTest {
+    fun `Given a screen that opts out, When init runs, Then the prompt stays closed`() = coroutineRule.runTest {
+        // Given
         whenever(interactor.getBiometricUserSelection()).thenReturn(true)
         whenever(interactor.getPinLockoutState()).thenReturn(PinLockoutState.Idle)
         val optedOut = newViewModel(
@@ -348,33 +396,42 @@ class TestBiometricViewModel {
         )
 
         optedOut.effect.runFlowTest {
+            // When
             optedOut.handleEvents(Event.Init)
             coroutineRule.testScope.runCurrent()
 
+            // Then
             assertTrue(optedOut.viewState.value.userBiometricsAreEnabled)
             expectNoEvents()
         }
     }
 
     @Test
-    fun `init restores an active lockout and counts it down to release`() = coroutineRule.runTest {
+    fun `Given an active lockout, When init runs, Then it is restored and counted down to release`() = coroutineRule.runTest {
+        // Given
         whenever(interactor.getBiometricUserSelection()).thenReturn(false)
         whenever(interactor.getPinLockoutState())
             .thenReturn(lockout(3.seconds), PinLockoutState.Idle)
 
+        // When
         viewModel.handleEvents(Event.Init)
         coroutineRule.testScope.runCurrent()
 
+        // Then
         assertTrue(viewModel.viewState.value.isLockedOut)
         assertEquals("locked:$MAX_ATTEMPTS:00:03", viewModel.viewState.value.lockoutMessage)
 
+        // When
         coroutineRule.testScope.advanceTimeBy(1_500.milliseconds)
         coroutineRule.testScope.runCurrent()
 
+        // Then
         assertEquals("locked:$MAX_ATTEMPTS:00:02", viewModel.viewState.value.lockoutMessage)
 
+        // When
         coroutineRule.testScope.advanceUntilIdle()
 
+        // Then
         assertFalse(viewModel.viewState.value.isLockedOut)
         assertNull(viewModel.viewState.value.lockoutMessage)
     }
@@ -386,50 +443,62 @@ class TestBiometricViewModel {
     @Test
     fun `Given a countdown that reaches zero, When the lockout still runs, Then it goes on until the state is idle`() =
         coroutineRule.runTest {
+            // Given
             whenever(interactor.getBiometricUserSelection()).thenReturn(false)
             whenever(interactor.getPinLockoutState())
                 .thenReturn(lockout(1.seconds), lockout(2.seconds), PinLockoutState.Idle)
 
+            // When
             viewModel.handleEvents(Event.Init)
             coroutineRule.testScope.advanceTimeBy(1_500.milliseconds)
             coroutineRule.testScope.runCurrent()
 
+            // Then
             assertTrue(viewModel.viewState.value.isLockedOut)
             assertEquals("locked:$MAX_ATTEMPTS:00:02", viewModel.viewState.value.lockoutMessage)
 
+            // When
             coroutineRule.testScope.advanceUntilIdle()
 
+            // Then
             assertFalse(viewModel.viewState.value.isLockedOut)
             verify(interactor, times(3)).getPinLockoutState()
         }
 
     @Test
-    fun `init releases a lockout that has already expired`() = coroutineRule.runTest {
+    fun `Given an expired lockout, When init runs, Then it is released`() = coroutineRule.runTest {
+        // Given
         whenever(interactor.getBiometricUserSelection()).thenReturn(false)
         whenever(interactor.getPinLockoutState()).thenReturn(lockout(Duration.ZERO))
 
+        // When
         viewModel.handleEvents(Event.Init)
         coroutineRule.testScope.runCurrent()
 
+        // Then
         assertFalse(viewModel.viewState.value.isLockedOut)
         assertNull(viewModel.viewState.value.lockoutMessage)
     }
 
     @Test
-    fun `launching the system screen clears the error and delegates to the interactor`() =
+    fun `Given a shown error, When the system screen is launched, Then the error is cleared and the interactor is called`() =
         coroutineRule.runTest {
+            // Given
             viewModel.handleEvents(click)
             completeAuthentication(BiometricsAuthenticate.Failed("Locked sensor"))
             assertNotNull(viewModel.viewState.value.error)
 
+            // When
             viewModel.handleEvents(Event.LaunchBiometricSystemScreen)
 
+            // Then
             assertNull(viewModel.viewState.value.error)
             verify(interactor).launchBiometricSystemScreen()
         }
 
     @Test
-    fun `back navigation reports the flow as cancelled`() = coroutineRule.runTest {
+    fun `Given a back navigation that indicates cancellation, When back is pressed, Then the flow is reported as cancelled`() = coroutineRule.runTest {
+        // Given
         val backable = newViewModel(
             "backable",
             config(
@@ -441,8 +510,10 @@ class TestBiometricViewModel {
         )
 
         backable.effect.runFlowTest {
+            // When
             backable.handleEvents(Event.OnNavigateBack)
 
+            // Then
             assertEquals(
                 Effect.Navigation.PopBackStackUpTo(
                     screenRoute = DashboardScreens.Dashboard.screenRoute,
@@ -455,8 +526,9 @@ class TestBiometricViewModel {
     }
 
     @Test
-    fun `back navigation does not report success completion for a cancelled flow`() =
+    fun `Given a back navigation that indicates success, When back is pressed, Then no success completion is reported`() =
         coroutineRule.runTest {
+            // Given
             val backable = newViewModel(
                 "backableSuccess",
                 config(
@@ -468,8 +540,10 @@ class TestBiometricViewModel {
             )
 
             backable.effect.runFlowTest {
+                // When
                 backable.handleEvents(Event.OnNavigateBack)
 
+                // Then
                 assertEquals(
                     Effect.Navigation.PopBackStackUpTo(
                         screenRoute = DashboardScreens.Dashboard.screenRoute,
@@ -482,11 +556,13 @@ class TestBiometricViewModel {
         }
 
     @Test
-    fun `back navigation emits nothing when no route is configured`() = coroutineRule.runTest {
+    fun `Given no back route, When back is pressed, Then nothing is emitted`() = coroutineRule.runTest {
         viewModel.effect.runFlowTest {
+            // When
             viewModel.handleEvents(Event.OnNavigateBack)
             coroutineRule.testScope.runCurrent()
 
+            // Then
             assertNull(viewModel.viewState.value.error)
             expectNoEvents()
         }
@@ -494,35 +570,47 @@ class TestBiometricViewModel {
 
     @Test
     @Suppress("UnusedFlow")
-    fun `pin entry is discarded while locked out`() = coroutineRule.runTest {
+    fun `Given a lockout, When a PIN is entered, Then it is discarded`() = coroutineRule.runTest {
+        // Given
         lockViewModelOut()
         val pin = SecurePinImpl("123456")
 
+        // When
         viewModel.handleEvents(Event.OnQuickPinEntered(pin))
 
+        // Then
         assertTrue(pin.isCleared)
         verify(interactor, never()).isPinValid(any())
     }
 
     @Test
-    fun `pin length changes are ignored while locked out`() = coroutineRule.runTest {
+    fun `Given a lockout, When the PIN length changes, Then the change is ignored`() = coroutineRule.runTest {
+        // Given
         lockViewModelOut()
 
+        // When
         viewModel.handleEvents(Event.OnQuickPinLengthChanged(3))
 
+        // Then
         assertTrue(viewModel.viewState.value.isLockedOut)
         assertEquals("locked:$MAX_ATTEMPTS:00:30", viewModel.viewState.value.lockoutMessage)
     }
 
     @Test
-    fun `changing the pin length clears the previous pin error`() = coroutineRule.runTest {
+    fun `Given a wrong PIN error, When the PIN length changes, Then the error is cleared`() = coroutineRule.runTest {
+        // Given
         whenever(interactor.recordPinFailure()).thenReturn(PinLockoutState.Idle)
 
+        // When
         val pin = enterPin("123456", QuickPinInteractorPinValidPartialState.Failed("Wrong PIN"))
+
+        // Then
         assertEquals("Wrong PIN", viewModel.viewState.value.quickPinError)
 
+        // When
         viewModel.handleEvents(Event.OnQuickPinLengthChanged(3))
 
+        // Then
         assertNull(viewModel.viewState.value.quickPinError)
 
         pin.close()
@@ -530,22 +618,28 @@ class TestBiometricViewModel {
 
     @Test
     @Suppress("UnusedFlow")
-    fun `an incomplete pin is discarded without validation`() = coroutineRule.runTest {
+    fun `Given an incomplete PIN, When it is entered, Then it is discarded without validation`() = coroutineRule.runTest {
+        // Given
         val pin = SecurePinImpl("123")
 
+        // When
         viewModel.handleEvents(Event.OnQuickPinEntered(pin))
 
+        // Then
         assertTrue(pin.isCleared)
         assertFalse(viewModel.viewState.value.isLoading)
         verify(interactor, never()).isPinValid(any())
     }
 
     @Test
-    fun `a wrong pin surfaces the error while attempts remain`() = coroutineRule.runTest {
+    fun `Given attempts remaining, When a wrong PIN is entered, Then the error is shown`() = coroutineRule.runTest {
+        // Given
         whenever(interactor.recordPinFailure()).thenReturn(PinLockoutState.Idle)
 
+        // When
         val pin = enterPin("123456", QuickPinInteractorPinValidPartialState.Failed("Wrong PIN"))
 
+        // Then
         assertEquals("Wrong PIN", viewModel.viewState.value.quickPinError)
         assertFalse(viewModel.viewState.value.isLoading)
         assertFalse(viewModel.viewState.value.isLockedOut)
@@ -554,12 +648,15 @@ class TestBiometricViewModel {
     }
 
     @Test
-    fun `a wrong pin that exhausts the attempts starts the lockout`() = coroutineRule.runTest {
+    fun `Given one attempt remaining, When a wrong PIN is entered, Then the lockout starts`() = coroutineRule.runTest {
+        // Given
         whenever(interactor.recordPinFailure()).thenReturn(lockout(30.seconds))
         whenever(interactor.getPinLockoutState()).thenReturn(PinLockoutState.Idle)
 
+        // When
         val pin = enterPin("123456", QuickPinInteractorPinValidPartialState.Failed("Wrong PIN"))
 
+        // Then
         assertTrue(viewModel.viewState.value.isLockedOut)
         assertFalse(viewModel.viewState.value.isLoading)
         assertEquals("locked:$MAX_ATTEMPTS:00:30", viewModel.viewState.value.lockoutMessage)
@@ -568,46 +665,57 @@ class TestBiometricViewModel {
     }
 
     @Test
-    fun `clearing the view model freezes the lockout state`() = coroutineRule.runTest {
+    fun `Given a lockout, When the view model is cleared, Then the lockout state is frozen`() = coroutineRule.runTest {
+        // Given
         lockViewModelOut()
 
+        // When
         store.clear()
         coroutineRule.testScope.advanceUntilIdle()
 
+        // Then
         assertTrue(viewModel.viewState.value.isLockedOut)
         assertEquals("locked:$MAX_ATTEMPTS:00:30", viewModel.viewState.value.lockoutMessage)
     }
 
     @Test
-    fun `a successful authentication releases the re-entrancy guard`() = coroutineRule.runTest {
+    fun `Given a successful authentication, When the user taps again, Then the re-entrancy guard is released`() = coroutineRule.runTest {
         viewModel.effect.runFlowTest {
+            // When
             viewModel.handleEvents(click)
             completeAuthentication(BiometricsAuthenticate.Success)
             coroutineRule.testScope.runCurrent()
 
+            // Then
             assertEquals(Effect.Navigation.Pop, awaitItem())
 
+            // When
             viewModel.handleEvents(click)
 
+            // Then
             assertEquals(2, callbacks.size)
         }
     }
 
     @Test
-    fun `a biometric failure can be dismissed from its own action`() = coroutineRule.runTest {
+    fun `Given a biometric failure, When its own action is invoked, Then it is dismissed`() = coroutineRule.runTest {
+        // Given
         viewModel.handleEvents(click)
         completeAuthentication(BiometricsAuthenticate.Failed("Locked sensor"))
 
         assertNotNull(viewModel.viewState.value.error)
 
+        // When
         viewModel.viewState.value.error?.onCancel?.invoke()
         coroutineRule.testScope.runCurrent()
 
+        // Then
         assertNull(viewModel.viewState.value.error)
     }
 
     @Test
-    fun `an invalid configuration is rejected`() {
+    fun `Given an invalid configuration, When the state is read, Then it is rejected`() {
+        // Given
         whenever(
             serializer.fromBase64(
                 "broken",
@@ -622,86 +730,108 @@ class TestBiometricViewModel {
             biometricConfig = "broken"
         ).also { store.put("broken", it) }
 
+        // Then
         assertThrows(RuntimeException::class.java) { broken.viewState.value }
     }
 
     @Test
-    fun `success reports completion for a pop-to route`() = assertSuccessNavigation(
-        key = "popToSuccess",
-        navigation = ConfigNavigation(
-            navigationType = NavigationType.PopTo(DashboardScreens.Dashboard),
-            indicateFlowCompletion = FlowCompletion.SUCCESS
-        ),
-        expected = Effect.Navigation.PopBackStackUpTo(
-            screenRoute = DashboardScreens.Dashboard.screenRoute,
-            inclusive = false,
-            indicateFlowCompletion = FlowCompletion.SUCCESS
-        )
-    )
-
-    @Test
-    fun `success does not report cancellation for a pop-to route`() = assertSuccessNavigation(
-        key = "popToCancel",
-        navigation = ConfigNavigation(
-            navigationType = NavigationType.PopTo(DashboardScreens.Dashboard),
-            indicateFlowCompletion = FlowCompletion.CANCEL
-        ),
-        expected = Effect.Navigation.PopBackStackUpTo(
-            screenRoute = DashboardScreens.Dashboard.screenRoute,
-            inclusive = false,
-            indicateFlowCompletion = FlowCompletion.NONE
-        )
-    )
-
-    @Test
-    fun `success reports no completion when none is configured`() = assertSuccessNavigation(
-        key = "popToNone",
-        navigation = ConfigNavigation(
-            navigationType = NavigationType.PopTo(DashboardScreens.Dashboard),
-            indicateFlowCompletion = FlowCompletion.NONE
-        ),
-        expected = Effect.Navigation.PopBackStackUpTo(
-            screenRoute = DashboardScreens.Dashboard.screenRoute,
-            inclusive = false,
-            indicateFlowCompletion = FlowCompletion.NONE
-        )
-    )
-
-    @Test
-    fun `success pushes the configured screen with its arguments`() = assertSuccessNavigation(
-        key = "pushScreen",
-        navigation = ConfigNavigation(
-            navigationType = NavigationType.PushScreen(
-                screen = CommonScreens.QuickPin,
-                arguments = mapOf("pinFlow" to "UPDATE")
+    fun `Given a pop-to route that indicates success, When the authentication succeeds, Then completion is reported`() {
+        // Then
+        assertSuccessNavigation(
+            key = "popToSuccess",
+            navigation = ConfigNavigation(
+                navigationType = NavigationType.PopTo(DashboardScreens.Dashboard),
+                indicateFlowCompletion = FlowCompletion.SUCCESS
+            ),
+            expected = Effect.Navigation.PopBackStackUpTo(
+                screenRoute = DashboardScreens.Dashboard.screenRoute,
+                inclusive = false,
+                indicateFlowCompletion = FlowCompletion.SUCCESS
             )
-        ),
-        expected = Effect.Navigation.SwitchScreen(
-            screen = "${CommonScreens.QuickPin.screenName}?pinFlow=UPDATE",
-            screenPopUpTo = CommonScreens.Biometric.screenRoute
         )
-    )
+    }
 
     @Test
-    fun `success pushes the configured raw route`() = assertSuccessNavigation(
-        key = "pushRoute",
-        navigation = ConfigNavigation(navigationType = NavigationType.PushRoute(route = "RAW_ROUTE")),
-        expected = Effect.Navigation.SwitchScreen(
-            screen = "RAW_ROUTE",
-            screenPopUpTo = CommonScreens.Biometric.screenRoute
+    fun `Given a pop-to route that indicates cancellation, When the authentication succeeds, Then no cancellation is reported`() {
+        // Then
+        assertSuccessNavigation(
+            key = "popToCancel",
+            navigation = ConfigNavigation(
+                navigationType = NavigationType.PopTo(DashboardScreens.Dashboard),
+                indicateFlowCompletion = FlowCompletion.CANCEL
+            ),
+            expected = Effect.Navigation.PopBackStackUpTo(
+                screenRoute = DashboardScreens.Dashboard.screenRoute,
+                inclusive = false,
+                indicateFlowCompletion = FlowCompletion.NONE
+            )
         )
-    )
+    }
 
     @Test
-    fun `success finishes the host when configured`() = assertSuccessNavigation(
-        key = "finish",
-        navigation = ConfigNavigation(navigationType = NavigationType.Finish),
-        expected = Effect.Navigation.Finish
-    )
+    fun `Given a pop-to route without completion, When the authentication succeeds, Then no completion is reported`() {
+        // Then
+        assertSuccessNavigation(
+            key = "popToNone",
+            navigation = ConfigNavigation(
+                navigationType = NavigationType.PopTo(DashboardScreens.Dashboard),
+                indicateFlowCompletion = FlowCompletion.NONE
+            ),
+            expected = Effect.Navigation.PopBackStackUpTo(
+                screenRoute = DashboardScreens.Dashboard.screenRoute,
+                inclusive = false,
+                indicateFlowCompletion = FlowCompletion.NONE
+            )
+        )
+    }
 
     @Test
-    fun `success forwards a deeplink together with the pre authorization flag`() =
+    fun `Given a push-screen route with arguments, When the authentication succeeds, Then the screen is pushed with its arguments`() {
+        // Then
+        assertSuccessNavigation(
+            key = "pushScreen",
+            navigation = ConfigNavigation(
+                navigationType = NavigationType.PushScreen(
+                    screen = CommonScreens.QuickPin,
+                    arguments = mapOf("pinFlow" to "UPDATE")
+                )
+            ),
+            expected = Effect.Navigation.SwitchScreen(
+                screen = "${CommonScreens.QuickPin.screenName}?pinFlow=UPDATE",
+                screenPopUpTo = CommonScreens.Biometric.screenRoute
+            )
+        )
+    }
+
+    @Test
+    fun `Given a push-route navigation, When the authentication succeeds, Then the raw route is pushed`() {
+        // Then
+        assertSuccessNavigation(
+            key = "pushRoute",
+            navigation = ConfigNavigation(
+                navigationType = NavigationType.PushRoute(route = "RAW_ROUTE")
+            ),
+            expected = Effect.Navigation.SwitchScreen(
+                screen = "RAW_ROUTE",
+                screenPopUpTo = CommonScreens.Biometric.screenRoute
+            )
+        )
+    }
+
+    @Test
+    fun `Given a finish navigation, When the authentication succeeds, Then the host is finished`() {
+        // Then
+        assertSuccessNavigation(
+            key = "finish",
+            navigation = ConfigNavigation(navigationType = NavigationType.Finish),
+            expected = Effect.Navigation.Finish
+        )
+    }
+
+    @Test
+    fun `Given a deeplink navigation in pre-authorization, When the authentication succeeds, Then the deeplink is forwarded with the pre-authorization flag`() =
         coroutineRule.runTest {
+            // Given
             val navigation = ConfigNavigation(
                 navigationType = NavigationType.Deeplink(
                     link = DEEPLINK,
@@ -714,10 +844,12 @@ class TestBiometricViewModel {
             )
 
             vm.effect.runFlowTest {
+                // When
                 vm.handleEvents(Event.OnBiometricsClicked(context, true))
                 callbacks.last().invoke(BiometricsAuthenticate.Success)
                 coroutineRule.testScope.runCurrent()
 
+                // Then
                 assertEquals(
                     Effect.Navigation.Deeplink(
                         link = DEEPLINK.toUri(),
@@ -730,28 +862,34 @@ class TestBiometricViewModel {
         }
 
     @Test
-    fun `a successful login unlocks the session`() = coroutineRule.runTest {
+    fun `Given a pre-authorization check, When the authentication succeeds, Then the session is unlocked`() = coroutineRule.runTest {
+        // Given
         val vm = newViewModel("login", config(isPreAuthorization = true))
 
         vm.effect.runFlowTest {
+            // When
             vm.handleEvents(Event.OnBiometricsClicked(context, true))
             callbacks.last().invoke(BiometricsAuthenticate.Success)
             coroutineRule.testScope.runCurrent()
 
+            // Then
             assertEquals(Effect.Navigation.Pop, awaitItem())
             verify(interactor).unlockSession()
         }
     }
 
     @Test
-    fun `a confirmation before release does not unlock the session`() = coroutineRule.runTest {
+    fun `Given a check that is not a pre-authorization, When the authentication succeeds, Then the session is not unlocked`() = coroutineRule.runTest {
+        // Given
         val vm = newViewModel("confirmation", config(isPreAuthorization = false))
 
         vm.effect.runFlowTest {
+            // When
             vm.handleEvents(Event.OnBiometricsClicked(context, true))
             callbacks.last().invoke(BiometricsAuthenticate.Success)
             coroutineRule.testScope.runCurrent()
 
+            // Then
             assertEquals(Effect.Navigation.Pop, awaitItem())
             verify(interactor, never()).unlockSession()
         }
@@ -760,28 +898,37 @@ class TestBiometricViewModel {
     @Test
     fun `Given a device without a screen lock, When the login screen starts, Then it warns and the PIN still logs in`() =
         coroutineRule.runTest {
+            // Given
             whenever(interactor.getPinLockoutState()).thenReturn(PinLockoutState.Idle)
             whenever(interactor.getBiometricUserSelection()).thenReturn(false)
             whenever(interactor.getDeviceLockNotice())
                 .thenReturn(DeviceLockNotice.Warning(DEVICE_LOCK_WARNING))
 
+            // When
             viewModel.handleEvents(Event.Init)
             coroutineRule.testScope.runCurrent()
 
+            // Then
             assertEquals(DEVICE_LOCK_WARNING, viewModel.viewState.value.deviceLockNotice)
             assertFalse(viewModel.viewState.value.isBlockedByDeviceLock)
+
+            // When
             val pin = enterPin("123456", QuickPinInteractorPinValidPartialState.Success)
+
+            // Then
             verify(interactor).isPinValid(pin)
         }
 
     @Test
     fun `Given a screen lock required and none set, When the login screen starts, Then the PIN and biometrics are refused`() =
         coroutineRule.runTest {
+            // Given
             whenever(interactor.getPinLockoutState()).thenReturn(PinLockoutState.Idle)
             whenever(interactor.getBiometricUserSelection()).thenReturn(false)
             whenever(interactor.getDeviceLockNotice())
                 .thenReturn(DeviceLockNotice.Blocking(DEVICE_LOCK_REQUIRED))
 
+            // When
             viewModel.handleEvents(Event.Init)
             coroutineRule.testScope.runCurrent()
             val pin = SecurePinImpl("123456")
@@ -789,6 +936,7 @@ class TestBiometricViewModel {
             viewModel.handleEvents(click)
             coroutineRule.testScope.runCurrent()
 
+            // Then
             assertEquals(DEVICE_LOCK_REQUIRED, viewModel.viewState.value.deviceLockNotice)
             assertTrue(viewModel.viewState.value.isBlockedByDeviceLock)
             verify(interactor, never()).isPinValid(any())
@@ -798,23 +946,31 @@ class TestBiometricViewModel {
     @Test
     fun `Given a login blocked by the missing screen lock, When the user returns with one set, Then the login opens`() =
         coroutineRule.runTest {
+            // Given
             whenever(interactor.getPinLockoutState()).thenReturn(PinLockoutState.Idle)
             whenever(interactor.getBiometricUserSelection()).thenReturn(false)
             whenever(interactor.getDeviceLockNotice())
                 .thenReturn(DeviceLockNotice.Blocking(DEVICE_LOCK_REQUIRED), null)
 
+            // When
             viewModel.handleEvents(Event.Init)
             coroutineRule.testScope.runCurrent()
             viewModel.handleEvents(Event.OnResume)
 
+            // Then
             assertNull(viewModel.viewState.value.deviceLockNotice)
             assertFalse(viewModel.viewState.value.isBlockedByDeviceLock)
+
+            // When
             val pin = enterPin("123456", QuickPinInteractorPinValidPartialState.Success)
+
+            // Then
             verify(interactor).isPinValid(pin)
         }
 
     @Test
     fun `Given a confirmation before a presentation, When the screen resumes, Then the screen lock is not checked`() {
+        // Given
         val confirmation = newViewModel(
             "confirmation",
             BiometricUiConfig(
@@ -826,8 +982,10 @@ class TestBiometricViewModel {
         whenever(interactor.getDeviceLockNotice())
             .thenReturn(DeviceLockNotice.Blocking(DEVICE_LOCK_REQUIRED))
 
+        // When
         confirmation.handleEvents(Event.OnResume)
 
+        // Then
         verify(interactor, never()).getDeviceLockNotice()
         assertFalse(confirmation.viewState.value.isBlockedByDeviceLock)
     }

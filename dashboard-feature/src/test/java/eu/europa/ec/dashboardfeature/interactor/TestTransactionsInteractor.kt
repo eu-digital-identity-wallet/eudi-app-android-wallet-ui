@@ -80,11 +80,12 @@ import eu.europa.ec.uilogic.component.ListItemDataUi
 import eu.europa.ec.uilogic.component.ListItemMainContentDataUi
 import eu.europa.ec.uilogic.component.ListItemTrailingContentDataUi
 import eu.europa.ec.uilogic.component.wrap.ExpandableListItemUi
-import junit.framework.TestCase.assertEquals
-import junit.framework.TestCase.assertNotNull
-import junit.framework.TestCase.assertTrue
 import kotlinx.coroutines.flow.first
 import org.junit.After
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotEquals
+import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -140,7 +141,7 @@ class TestTransactionsInteractor {
 
     //region revertFilters
     @Test
-    fun `When revertFilters is called, Then filterValidator#revertFilters is invoked`() {
+    fun `Given a filter validator, When revertFilters is called, Then filterValidator#revertFilters is invoked`() {
         // When
         interactor.revertFilters()
 
@@ -151,7 +152,7 @@ class TestTransactionsInteractor {
 
     //region updateLists
     @Test
-    fun `When updateLists is called, Then filterValidator#updateLists is invoked with the same list`() {
+    fun `Given a filterable list, When updateLists is called, Then filterValidator#updateLists is invoked with the same list`() {
         // Given
         val list = FilterableList(items = emptyList())
 
@@ -386,7 +387,7 @@ class TestTransactionsInteractor {
 
     //region applyFilters
     @Test
-    fun `When applyFilters is called, Then filterValidator#applyFilters is invoked`() {
+    fun `Given a filter validator, When applyFilters is called, Then filterValidator#applyFilters is invoked`() {
         // When
         interactor.applyFilters()
 
@@ -397,7 +398,7 @@ class TestTransactionsInteractor {
 
     //region updateFilter
     @Test
-    fun `When updateFilter is called, Then filterValidator#updateFilter is invoked with the same ids`() {
+    fun `Given a group id and a filter id, When updateFilter is called, Then filterValidator#updateFilter is invoked with the same ids`() {
         // Given
         val groupId = "groupId"
         val filterId = "filterId"
@@ -412,7 +413,7 @@ class TestTransactionsInteractor {
 
     //region updateDateFilterById
     @Test
-    fun `When updateDateFilterById is called, Then filterValidator#updateDateFilter is invoked with the same arguments`() {
+    fun `Given a group id, a filter id and date limits, When updateDateFilterById is called, Then filterValidator#updateDateFilter is invoked with the same arguments`() {
         // Given
         val groupId = "groupId"
         val filterId = "filterId"
@@ -435,7 +436,7 @@ class TestTransactionsInteractor {
 
     //region resetFilters
     @Test
-    fun `When resetFilters is called, Then filterValidator#resetFilters is invoked`() {
+    fun `Given a filter validator, When resetFilters is called, Then filterValidator#resetFilters is invoked`() {
         // When
         interactor.resetFilters()
 
@@ -446,7 +447,7 @@ class TestTransactionsInteractor {
 
     //region updateSort
     @Test
-    fun `When updateSort is called, Then filterValidator#updateSort is invoked with the same id`() {
+    fun `Given a sort id, When updateSort is called, Then filterValidator#updateSort is invoked with the same id`() {
         // When
         interactor.updateSort(filterId = "sortId")
 
@@ -456,8 +457,13 @@ class TestTransactionsInteractor {
     //endregion
 
     //region initializeFilters
+    /**
+     * Strict equality on the Filters argument fails because the static filter group definitions
+     * each carry FilterAction lambdas (Sort/Filter/FilterMultipleAction) that are not reference-
+     * equal across two construction calls, so any<Filters>() is used.
+     */
     @Test
-    fun `When initializeFilters is called, Then filterValidator#initializeValidator is invoked with some Filters and the source list`() {
+    fun `Given a filterable list, When initializeFilters is called, Then filterValidator#initializeValidator is invoked with some Filters and the source list`() {
         // Given
         whenever(resourceProvider.getString(R.string.transactions_filter_item_no_relying_party_transactions))
             .thenReturn(mockedNoPartyFilterName)
@@ -468,9 +474,6 @@ class TestTransactionsInteractor {
         interactor.initializeFilters(filterableList = list)
 
         // Then
-        // Strict equality on the Filters argument fails because the static filter group definitions
-        // each carry FilterAction lambdas (Sort/Filter/FilterMultipleAction) that are not
-        // reference-equal across two construction calls, so any<Filters>() is used.
         verify(filterValidator, times(1)).initializeValidator(
             org.mockito.kotlin.any<Filters>(),
             eq(list)
@@ -772,24 +775,26 @@ class TestTransactionsInteractor {
 
     // Case 1 Expected Result:
     // Success state with allTransactions.items.size == 4 and a non-null availableDates pair.
+    /**
+     * "today" needs to be today's date AND more than 60 minutes ago so it doesn't fall into the
+     * WithinLastHour branch. Subtracting 2 hours and floor-rounding to the hour is stable for any
+     * clock-state except the first 2 hours after midnight; the test dispatcher used here is wall-
+     * clock-driven so this picks the Today branch reliably during business-hour CI runs and remains
+     * a documented limitation otherwise.
+     * Fallback: between 12am and 2am the test picks noon of today instead, which is still today but
+     * may be in the future from now(). isToday() compares dates so it still works.
+     */
     @Test
     fun `Given Case 1, When getTransactions is called, Then Case 1 Expected Result is returned`() {
         coroutineRule.runTest {
             // Given
             val justNow = LocalDateTime.now()
             val withinLastHour = LocalDateTime.now().minusMinutes(30)
-            // "today" needs to be today's date AND more than 60 minutes ago so it doesn't fall
-            // into the WithinLastHour branch. Subtracting 2 hours and floor-rounding to the hour
-            // is stable for any clock-state except the first 2 hours after midnight; the test
-            // dispatcher used here is wall-clock-driven so this picks the Today branch reliably
-            // during business-hour CI runs and remains a documented limitation otherwise.
             val nowMinusTwoHours =
                 LocalDateTime.now().minusHours(2).withMinute(0).withSecond(0).withNano(0)
             val today = if (nowMinusTwoHours.toLocalDate() == LocalDateTime.now().toLocalDate()) {
                 nowMinusTwoHours
             } else {
-                // Fallback: between 12am and 2am — pick noon of today instead which is still today
-                // but may be in the future from now(). isToday() compares dates so it still works.
                 LocalDateTime.now().toLocalDate().atTime(12, 0)
             }
             val twoMonthsAgo = LocalDateTime.now().minusMonths(2)
@@ -1389,7 +1394,7 @@ class TestTransactionsInteractor {
 
     //region getFilters
     @Test
-    fun `When getFilters is called, Then the returned Filters contains the expected static filter groups`() {
+    fun `Given the filter strings, When getFilters is called, Then the returned Filters contains the expected static filter groups`() {
         // Given
         mockGetFiltersStrings()
 
@@ -1423,6 +1428,9 @@ class TestTransactionsInteractor {
     // 1. The party filter group is present and the transactions list contains items
     //    with party names; the dynamic party filters are populated, prefixed
     //    by the "no party" filter.
+    /**
+     * The third item repeats the first party name to verify distinctBy.
+     */
     @Test
     fun `Given Case 1, When addDynamicFilters is called, Then the party group is populated with both the no-party filter and one filter per distinct party`() {
         // Given
@@ -1443,7 +1451,7 @@ class TestTransactionsInteractor {
             items = listOf(
                 filterableItemWithParty(name = "Acme"),
                 filterableItemWithParty(name = null),
-                filterableItemWithParty(name = "Acme"), // duplicate to verify distinctBy
+                filterableItemWithParty(name = "Acme"),
             )
         )
 
@@ -1761,7 +1769,7 @@ class TestTransactionsInteractor {
     // the returned Filters but never executed by the interactor itself).
 
     @Test
-    fun `When the sort filter's selector is applied, Then it returns the creationLocalDateTime of the attributes`() {
+    fun `Given the sort filter, When its selector is applied, Then it returns the creationLocalDateTime of the attributes`() {
         // Given
         mockGetFiltersStrings()
         val filters = interactor.getFilters()
@@ -1779,8 +1787,13 @@ class TestTransactionsInteractor {
         assertEquals(attrs.creationLocalDateTime, key)
     }
 
+    /**
+     * Exercises both branches of isDateAttributeWithinFilterRange and both sides of the
+     * ClosedRange.contains comparison (date after the end as well as date before the start, so the
+     * in-operator's two comparisons both flip true to false).
+     */
     @Test
-    fun `When the date-range filter is applied, Then in-range matches, out-of-range fails, and non-DateTimeRangeFilterItem defaults to true`() {
+    fun `Given a date range and attributes in and out of it, When the date-range filter is applied, Then in-range matches, out-of-range fails, and a non-date filter item defaults to true`() {
         // Given
         mockGetFiltersStrings()
         val filters = interactor.getFilters()
@@ -1810,9 +1823,7 @@ class TestTransactionsInteractor {
             isDefault = false,
         )
 
-        // When + Then — exercises both branches of isDateAttributeWithinFilterRange and
-        // both sides of the ClosedRange.contains comparison (date after the end as well as
-        // date before the start, so the in-operator's two comparisons both flip true→false).
+        // Then
         assertTrue(dateAction.predicate(inRange, rangeFilter))
         assertTrue(!dateAction.predicate(outOfRange, rangeFilter))
         assertTrue(!dateAction.predicate(beforeStart, rangeFilter))
@@ -1821,7 +1832,7 @@ class TestTransactionsInteractor {
     }
 
     @Test
-    fun `When the status filter predicate is applied, Then completed-failed-other arms are all evaluated`() {
+    fun `Given completed, not-completed and other filter items, When the status filter predicate is applied, Then the completed, not-completed and other arms are all evaluated`() {
         // Given
         mockGetFiltersStrings()
         val filters = interactor.getFilters()
@@ -1852,7 +1863,7 @@ class TestTransactionsInteractor {
             isDefault = false,
         )
 
-        // When + Then
+        // Then
         assertTrue(
             statusAction.predicate(
                 attributes(status = TransactionStatusUi.Completed),
@@ -1885,8 +1896,16 @@ class TestTransactionsInteractor {
         )
     }
 
+    /**
+     * Branches, in the order of the assertions:
+     * - filter is FILTER_BY_PARTY_WITHOUT_NAME and attrs.name is null: true
+     * - filter is FILTER_BY_PARTY_WITHOUT_NAME and attrs.name is non-null: false
+     * - filter is a name and attrs.name matches: true
+     * - filter is a name and attrs.name does not match: false
+     * - filter is a name and attrs.name is null: default false
+     */
     @Test
-    fun `When the party filter predicate is applied, Then no-name-with-name-and-mismatch arms are all evaluated`() {
+    fun `Given a no-name filter item and a named filter item, When the party filter predicate is applied, Then the no-name, matching-name and mismatching-name arms are all evaluated`() {
         // Given
         mockGetFiltersStrings()
         val filters = interactor.getFilters()
@@ -1911,21 +1930,20 @@ class TestTransactionsInteractor {
             isDefault = true,
         )
 
-        // When + Then
-        // Branch: filter is FILTER_BY_PARTY_WITHOUT_NAME and attrs.name is null → true
+        // Then
         assertTrue(rpAction.predicate(attributes(partyName = null), withoutNameFilter))
-        // Branch: filter is FILTER_BY_PARTY_WITHOUT_NAME and attrs.name is non-null → false
         assertTrue(!rpAction.predicate(attributes(partyName = "Acme"), withoutNameFilter))
-        // Branch: filter is a name and attrs.name matches → true
         assertTrue(rpAction.predicate(attributes(partyName = "Acme"), acmeFilter))
-        // Branch: filter is a name and attrs.name does not match → false
         assertTrue(!rpAction.predicate(attributes(partyName = "Other"), acmeFilter))
-        // Branch: filter is a name and attrs.name is null → default false
         assertTrue(!rpAction.predicate(attributes(partyName = null), acmeFilter))
     }
 
+    /**
+     * Also exercises the `==` false outcomes by mismatching the filter's expected type against the
+     * attribute's type so each arm sees the equality return false.
+     */
     @Test
-    fun `When the transaction-type filter predicate is applied, Then all four arms are evaluated`() {
+    fun `Given presentation, issuance, signing and other filter items, When the transaction-type filter predicate is applied, Then all four arms are evaluated`() {
         // Given
         mockGetFiltersStrings()
         val filters = interactor.getFilters()
@@ -1962,8 +1980,7 @@ class TestTransactionsInteractor {
             isDefault = false,
         )
 
-        // When + Then — also exercise the `==` false outcomes by mismatching the filter's
-        // expected type against the attribute's type so each arm sees the equality return false.
+        // Then
         assertTrue(
             typeAction.predicate(
                 attributes(type = TransactionTypeUi.PRESENTATION),
@@ -2197,14 +2214,19 @@ class TestTransactionsInteractor {
     // The Today/WithinLastHour/etc. arms are produced from clock-driven branches inside
     // getTransactions; exercise the data-class methods directly for stable coverage.
     @Test
-    fun `Given Today partial-state data class, When instantiated, Then equals_hashCode_copy work`() {
+    fun `Given a Today partial-state data class, When it is copied, Then equality, hash code and fields behave as a data class`() {
+        // Given
         val a = TransactionInteractorDateTimeCategoryPartialState.Today(time = "10:30")
+
+        // When
         val b = a.copy(time = "10:30")
+
+        // Then
         val c = TransactionInteractorDateTimeCategoryPartialState.Today(time = "11:30")
         assertEquals(a, b)
         assertEquals(a.hashCode(), b.hashCode())
         assertEquals("10:30", a.time)
-        kotlin.test.assertNotEquals(a, c)
+        assertNotEquals(a, c)
     }
     //endregion
 

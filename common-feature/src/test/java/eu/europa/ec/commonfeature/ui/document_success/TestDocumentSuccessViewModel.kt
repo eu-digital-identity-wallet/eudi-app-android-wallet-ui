@@ -50,12 +50,15 @@ class TestDocumentSuccessViewModel {
     @Test
     fun `Given an https redirect, When the user continues, Then it opens in the browser and the screen returns to its initiator`() {
         coroutineRule.runTest {
+            // Given
             val viewModel =
                 FakeDocumentSuccessViewModel(link = "https://verifier.example/done?state=1")
 
             viewModel.effect.runFlowTest {
+                // When
                 viewModel.setEvent(Event.StickyButtonPressed)
 
+                // Then
                 assertEquals(
                     Effect.Navigation.OpenRedirect(
                         link = Uri.parse("https://verifier.example/done?state=1"),
@@ -70,6 +73,7 @@ class TestDocumentSuccessViewModel {
     @Test
     fun `Given a redirect into one of the wallet's own flows, When the user continues, Then nothing is opened`() {
         coroutineRule.runTest {
+            // Given
             listOf(
                 "eudi-rqes://sign?request_uri=https%3A%2F%2Fattacker.example%2Fdoc",
                 "openid-credential-offer://?credential_offer_uri=https%3A%2F%2Fattacker.example",
@@ -80,8 +84,10 @@ class TestDocumentSuccessViewModel {
                 val viewModel = FakeDocumentSuccessViewModel(link = link)
 
                 viewModel.effect.runFlowTest {
+                    // When
                     viewModel.setEvent(Event.StickyButtonPressed)
 
+                    // Then
                     assertEquals(
                         Effect.Navigation.OpenRedirect(link = null, routeToPop = INITIATOR_ROUTE),
                         awaitItem()

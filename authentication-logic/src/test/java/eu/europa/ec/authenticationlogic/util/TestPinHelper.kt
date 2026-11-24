@@ -27,12 +27,14 @@ class TestPinHelper {
 
     @Test
     fun `Given a PIN of one repeated digit, When it is checked, Then it is weak`() {
+        // Then
         assertTrue(isWeakPin(SecurePinImpl("000000"), commonPins))
         assertTrue(isWeakPin(SecurePinImpl("777777"), commonPins))
     }
 
     @Test
     fun `Given an ascending or descending run, When it is checked, Then it is weak`() {
+        // Then
         assertTrue(isWeakPin(SecurePinImpl("123456"), commonPins))
         assertTrue(isWeakPin(SecurePinImpl("345678"), commonPins))
         assertTrue(isWeakPin(SecurePinImpl("654321"), commonPins))
@@ -41,12 +43,14 @@ class TestPinHelper {
 
     @Test
     fun `Given a PIN on the common list, When it is checked, Then it is weak`() {
+        // Then
         assertTrue(isWeakPin(SecurePinImpl("147258"), commonPins))
         assertTrue(isWeakPin(SecurePinImpl("102030"), commonPins))
     }
 
     @Test
     fun `Given other PINs, When they are checked, Then they are accepted`() {
+        // Then
         assertFalse(isWeakPin(SecurePinImpl("135792"), commonPins))
         assertFalse(isWeakPin(SecurePinImpl("123457"), commonPins))
         assertFalse(isWeakPin(SecurePinImpl("901234"), commonPins))
@@ -55,20 +59,32 @@ class TestPinHelper {
 
     @Test
     fun `Given a common PIN of another length, When it is checked, Then it does not match`() {
-        assertFalse(isWeakPin(SecurePinImpl("1472"), commonPins))
+        // When
+        val weak = isWeakPin(SecurePinImpl("1472"), commonPins)
+
+        // Then
+        assertFalse(weak)
     }
 
     @Test
     fun `Given an empty PIN, When it is checked, Then it is not reported as weak`() {
-        assertFalse(isWeakPin(CharArray(0), commonPins))
+        // When
+        val weak = isWeakPin(CharArray(0), commonPins)
+
+        // Then
+        assertFalse(weak)
+
     }
 
     @Test
     fun `Given a PIN, When it is checked, Then it stays usable`() {
+        // Given
         val pin = SecurePinImpl("135792")
 
+        // When
         isWeakPin(pin, commonPins)
 
+        // Then
         assertFalse(pin.isCleared)
         pin.close()
     }

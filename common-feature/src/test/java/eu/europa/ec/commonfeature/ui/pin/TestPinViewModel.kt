@@ -65,15 +65,22 @@ class TestPinViewModel {
     @Test
     fun `Given wallet setup, When a PIN that is easy to guess is entered, Then it is refused once the field has cleared`() =
         coroutineRule.runTest {
+            // Given
             whenever(interactor.getWeakPinError(any())).thenReturn(WEAK)
             val viewModel = viewModel(PinFlow.CREATE_WITHOUT_ACTIVATION)
             val pin = SecurePinImpl("123456")
 
+            // When
             viewModel.handleEvents(Event.PinEntered(pin))
 
+            // Then
             assertTrue(pin.isCleared)
             assertTrue(viewModel.viewState.value.isLoading)
+
+            // When
             coroutineRule.testScope.advanceUntilIdle()
+
+            // Then
             assertEquals(WEAK, viewModel.viewState.value.quickPinError)
             assertFalse(viewModel.viewState.value.isLoading)
             assertEquals(PinValidationState.ENTER, viewModel.viewState.value.pinState)
@@ -82,12 +89,15 @@ class TestPinViewModel {
     @Test
     fun `Given wallet setup, When a PIN that is not easy to guess is entered, Then the user is asked to enter it again`() =
         coroutineRule.runTest {
+            // Given
             whenever(interactor.getWeakPinError(any())).thenReturn(null)
             val viewModel = viewModel(PinFlow.CREATE_WITHOUT_ACTIVATION)
 
+            // When
             viewModel.handleEvents(Event.PinEntered(SecurePinImpl("135792")))
             coroutineRule.testScope.advanceUntilIdle()
 
+            // Then
             assertNull(viewModel.viewState.value.quickPinError)
             assertEquals(PinValidationState.REENTER, viewModel.viewState.value.pinState)
         }
@@ -95,11 +105,14 @@ class TestPinViewModel {
     @Test
     fun `Given no screen lock and none required, When the setup screen resumes, Then a warning is shown and entry continues`() =
         coroutineRule.runTest {
+            // Given
             whenever(interactor.getDeviceLockNotice()).thenReturn(DeviceLockNotice.Warning(NO_LOCK))
             val viewModel = viewModel(PinFlow.CREATE_WITHOUT_ACTIVATION)
 
+            // When
             viewModel.handleEvents(Event.OnResume)
 
+            // Then
             assertEquals(NO_LOCK, viewModel.viewState.value.deviceLockNotice)
             assertFalse(viewModel.viewState.value.isBlockedByDeviceLock)
         }
@@ -107,6 +120,7 @@ class TestPinViewModel {
     @Test
     fun `Given no screen lock and one required, When the setup screen resumes, Then entered PINs are dropped`() =
         coroutineRule.runTest {
+            // Given
             whenever(interactor.getDeviceLockNotice()).thenReturn(
                 DeviceLockNotice.Blocking(
                     LOCK_REQUIRED
@@ -115,10 +129,12 @@ class TestPinViewModel {
             val viewModel = viewModel(PinFlow.CREATE_WITH_ACTIVATION)
             val pin = SecurePinImpl("135792")
 
+            // When
             viewModel.handleEvents(Event.OnResume)
             viewModel.handleEvents(Event.PinEntered(pin))
             coroutineRule.testScope.advanceUntilIdle()
 
+            // Then
             assertEquals(LOCK_REQUIRED, viewModel.viewState.value.deviceLockNotice)
             assertTrue(viewModel.viewState.value.isBlockedByDeviceLock)
             assertTrue(pin.isCleared)
@@ -129,14 +145,17 @@ class TestPinViewModel {
     @Test
     fun `Given a screen lock is set later, When the setup screen resumes, Then the block is lifted`() =
         coroutineRule.runTest {
+            // Given
             whenever(interactor.getDeviceLockNotice())
                 .thenReturn(DeviceLockNotice.Blocking(LOCK_REQUIRED))
                 .thenReturn(null)
             val viewModel = viewModel(PinFlow.CREATE_WITH_ACTIVATION)
 
+            // When
             viewModel.handleEvents(Event.OnResume)
             viewModel.handleEvents(Event.OnResume)
 
+            // Then
             assertNull(viewModel.viewState.value.deviceLockNotice)
             assertFalse(viewModel.viewState.value.isBlockedByDeviceLock)
         }
@@ -144,10 +163,13 @@ class TestPinViewModel {
     @Test
     fun `Given the PIN of a set-up wallet is changed, When the screen resumes, Then the screen lock is not checked`() =
         coroutineRule.runTest {
+            // Given
             val viewModel = viewModel(PinFlow.UPDATE)
 
+            // When
             viewModel.handleEvents(Event.OnResume)
 
+            // Then
             assertNull(viewModel.viewState.value.deviceLockNotice)
             verify(interactor, never()).getDeviceLockNotice()
         }
@@ -159,6 +181,7 @@ class TestPinViewModel {
     @Test
     fun `Given a lockout on the change-PIN screen, When its countdown reaches zero while it still runs, Then it goes on`() =
         coroutineRule.runTest {
+            // Given
             whenever(interactor.getPinLockoutState()).thenReturn(
                 PinLockoutState.Active(remaining = 1.seconds, total = 30.seconds),
                 PinLockoutState.Active(remaining = 2.seconds, total = 30.seconds),
@@ -166,14 +189,18 @@ class TestPinViewModel {
             )
             val viewModel = viewModel(PinFlow.UPDATE)
 
+            // When
             viewModel.handleEvents(Event.Init)
             coroutineRule.testScope.advanceTimeBy(1_500.milliseconds)
             coroutineRule.testScope.runCurrent()
 
+            // Then
             assertTrue(viewModel.viewState.value.isLockedOut)
 
+            // When
             coroutineRule.testScope.advanceUntilIdle()
 
+            // Then
             assertFalse(viewModel.viewState.value.isLockedOut)
             verify(interactor, times(3)).getPinLockoutState()
         }
@@ -181,6 +208,7 @@ class TestPinViewModel {
     @Test
     fun `Given a lockout on the change-PIN screen, When it starts, Then its message is the plural for the configured attempts`() =
         coroutineRule.runTest {
+            // Given
             whenever(interactor.maxFailedPinAttempts).thenReturn(MAX_ATTEMPTS)
             whenever(
                 resourceProvider.getQuantityString(
@@ -196,9 +224,11 @@ class TestPinViewModel {
             )
             val viewModel = viewModel(PinFlow.UPDATE)
 
+            // When
             viewModel.handleEvents(Event.Init)
             coroutineRule.testScope.runCurrent()
 
+            // Then
             assertEquals(LOCKED_OUT, viewModel.viewState.value.lockoutMessage)
 
             coroutineRule.testScope.advanceUntilIdle()

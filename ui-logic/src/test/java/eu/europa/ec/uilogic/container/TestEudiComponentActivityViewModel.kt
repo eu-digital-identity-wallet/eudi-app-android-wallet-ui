@@ -54,85 +54,131 @@ class TestEudiComponentActivityViewModel {
 
     @Test
     fun `Given the activity is created, When it starts, Then it sets the session id`() {
+        // When
         viewModel.onCreate()
 
+        // Then
         runBlocking { verify(prefKeys).setSessionId("session") }
     }
 
     @Test
     fun `Given a link opened and used, When the system UI restarts the task with it, Then it is not opened again`() {
+        // Given
         storePrefsInMemory()
         whenever(sessionController.isUnlocked).thenReturn(true)
         val tap = linkIntent(CHROME_TAP_FLAGS)
 
-        assertTrue(opens(tap, launchedBy = "com.android.chrome"))
+        // When
+        val tapOpens = opens(tap, launchedBy = "com.android.chrome")
+
+        // Then
+        assertTrue(tapOpens)
+
+        // When
         viewModel.cacheIntent(tap)
+
+        // Then
         assertSame(tap, viewModel.getCachedIntent())
 
-        assertFalse(opens(linkIntent(RESTART_FLAGS), launchedBy = SYSTEM_UI_PACKAGE))
-        assertTrue(
-            opens(
-                linkIntent(RESTART_FLAGS),
-                launchedBy = SYSTEM_UI_PACKAGE,
-                taskId = TASK + 1
-            )
+        // When
+        val restartOpens = opens(linkIntent(RESTART_FLAGS), launchedBy = SYSTEM_UI_PACKAGE)
+        val otherTaskOpens = opens(
+            linkIntent(RESTART_FLAGS),
+            launchedBy = SYSTEM_UI_PACKAGE,
+            taskId = TASK + 1
         )
-        assertTrue(opens(linkIntent(CHROME_TAP_FLAGS), launchedBy = "com.android.chrome"))
-        assertTrue(opens(linkIntent(RESTART_FLAGS), launchedBy = "com.example.relyingparty"))
+        val newTapOpens = opens(linkIntent(CHROME_TAP_FLAGS), launchedBy = "com.android.chrome")
+        val otherAppOpens = opens(
+            linkIntent(RESTART_FLAGS),
+            launchedBy = "com.example.relyingparty"
+        )
+
+        // Then
+        assertFalse(restartOpens)
+        assertTrue(otherTaskOpens)
+        assertTrue(newTapOpens)
+        assertTrue(otherAppOpens)
     }
 
     @Test
     fun `Given a link opened but never used, When the task restarts with it, Then it opens again`() {
+        // Given
         storePrefsInMemory()
         whenever(sessionController.isUnlocked).thenReturn(false)
         val tap = linkIntent(CHROME_TAP_FLAGS)
 
-        assertTrue(opens(tap, launchedBy = "com.android.chrome"))
+        // When
+        val tapOpens = opens(tap, launchedBy = "com.android.chrome")
+
+        // Then
+        assertTrue(tapOpens)
+
+        // When
         viewModel.cacheIntent(tap)
+
+        // Then
         assertNull(viewModel.getCachedIntent())
 
-        assertTrue(opens(linkIntent(RESTART_FLAGS), launchedBy = SYSTEM_UI_PACKAGE))
+        // When
+        val restartOpens = opens(linkIntent(RESTART_FLAGS), launchedBy = SYSTEM_UI_PACKAGE)
+
+        // Then
+        assertTrue(restartOpens)
         runBlocking { verify(prefKeys, never()).setOpenedLaunchLink(any()) }
     }
 
     @Test
     fun `Given a launch link replaced by a newer link before a screen used it, When the task restarts with it, Then it opens again`() {
+        // Given
         storePrefsInMemory()
         whenever(sessionController.isUnlocked).thenReturn(true)
 
-        assertTrue(opens(linkIntent(CHROME_TAP_FLAGS), launchedBy = "com.android.chrome"))
+        // When
+        val tapOpens = opens(linkIntent(CHROME_TAP_FLAGS), launchedBy = "com.android.chrome")
+
+        // Then
+        assertTrue(tapOpens)
+
+        // When
         viewModel.cacheIntent(linkIntent(CHROME_TAP_FLAGS, link = NEWER_LINK))
         viewModel.getCachedIntent()
+        val restartOpens = opens(linkIntent(RESTART_FLAGS), launchedBy = SYSTEM_UI_PACKAGE)
 
-        assertTrue(opens(linkIntent(RESTART_FLAGS), launchedBy = SYSTEM_UI_PACKAGE))
+        // Then
+        assertTrue(restartOpens)
         runBlocking { verify(prefKeys, never()).setOpenedLaunchLink(any()) }
     }
 
     @Test
     fun `Given an activity that is not its task's root or has no link, When it starts, Then it opens and records nothing`() {
+        // Given
         storePrefsInMemory()
         whenever(sessionController.isUnlocked).thenReturn(true)
         val tap = linkIntent(CHROME_TAP_FLAGS)
 
-        assertTrue(
-            viewModel.shouldOpenLaunchLink(
-                tap,
-                TASK,
-                isTaskRoot = false,
-                launchedBy = SYSTEM_UI_PACKAGE
-            )
+        // When
+        val notTaskRoot = viewModel.shouldOpenLaunchLink(
+            tap,
+            TASK,
+            isTaskRoot = false,
+            launchedBy = SYSTEM_UI_PACKAGE
         )
-        assertTrue(
-            viewModel.shouldOpenLaunchLink(
-                mock(),
-                TASK,
-                isTaskRoot = true,
-                launchedBy = null
-            )
+        val noLink = viewModel.shouldOpenLaunchLink(
+            mock(),
+            TASK,
+            isTaskRoot = true,
+            launchedBy = null
         )
+
+        // Then
+        assertTrue(notTaskRoot)
+        assertTrue(noLink)
+
+        // When
         viewModel.cacheIntent(tap)
         viewModel.getCachedIntent()
 
+        // Then
         runBlocking { verify(prefKeys, never()).setOpenedLaunchLink(any()) }
     }
 
@@ -164,35 +210,51 @@ class TestEudiComponentActivityViewModel {
 
     @Test
     fun `Given a locked wallet with a kept link, When it is read or cleared, Then it is withheld and kept until login`() {
+        // Given
         whenever(sessionController.isUnlocked).thenReturn(true)
         viewModel.cacheIntent(link)
         whenever(sessionController.isUnlocked).thenReturn(false)
 
-        assertNull(viewModel.getCachedIntent())
-        viewModel.cacheIntent(null)
+        // When
+        val whileLocked = viewModel.getCachedIntent()
 
+        // Then
+        assertNull(whileLocked)
+
+        // When
+        viewModel.cacheIntent(null)
         whenever(sessionController.isUnlocked).thenReturn(true)
-        assertSame(link, viewModel.getCachedIntent())
+        val afterLogin = viewModel.getCachedIntent()
+
+        // Then
+        assertSame(link, afterLogin)
     }
 
     @Test
     fun `Given an unlocked wallet with a kept link, When it is cleared, Then it is gone`() {
+        // Given
         whenever(sessionController.isUnlocked).thenReturn(true)
         viewModel.cacheIntent(link)
 
+        // When
         viewModel.cacheIntent(null)
 
+        // Then
         assertNull(viewModel.getCachedIntent())
     }
 
     @Test
     fun `Given a locked wallet with a kept link, When a factory reset forgets it, Then it is gone after login too`() {
+        // Given
         whenever(sessionController.isUnlocked).thenReturn(false)
         viewModel.cacheIntent(link)
 
+        // When
         viewModel.clearCachedIntent()
 
         whenever(sessionController.isUnlocked).thenReturn(true)
+
+        // Then
         assertNull(viewModel.getCachedIntent())
     }
 }

@@ -56,10 +56,10 @@ import eu.europa.ec.uilogic.component.ThemeColorKey
 import eu.europa.ec.uilogic.component.content.ContentHeaderConfig
 import eu.europa.ec.uilogic.component.wrap.ExpandableListItemUi
 import eu.europa.ec.uilogic.config.ConfigUILogic
-import junit.framework.TestCase.assertEquals
-import junit.framework.TestCase.assertNull
 import kotlinx.coroutines.runBlocking
 import org.junit.After
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNull
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -117,7 +117,7 @@ class TestDocumentIssuanceSuccessInteractor {
         closeable.close()
     }
 
-    // region getUiItems
+    //region getUiItems
 
     // Case 1:
     // When getUiItems() is called with a list containing one DocumentId (MsoMdoc):
@@ -605,6 +605,7 @@ class TestDocumentIssuanceSuccessInteractor {
     @Test
     fun `Given the issuer was not trusted, When getUiItems is called, Then the document is marked and the header is not verified`() {
         coroutineRule.runTest {
+            // Given
             mockHeaderConfigDescription(isErrorCase = false)
             mockTransformToDocumentDetailsDomainStrings(resourceProvider)
             mockIssuerTrustNotConfirmedString()
@@ -613,9 +614,11 @@ class TestDocumentIssuanceSuccessInteractor {
             mockGetDocumentByIdCall(response = mockedPidWithBasicFields)
             mockGetIssuerTrustVerdictCall(response = IssuerTrustVerdictDomain.NOT_TRUSTED)
 
+            // When
             interactor.getUiItems(
                 documentIds = listOf(mockedPidId)
             ).runFlowTest {
+                // Then
                 assertEquals(
                     DocumentIssuanceSuccessInteractorGetUiItemsPartialState.Success(
                         documentsUi = listOf(
@@ -653,6 +656,7 @@ class TestDocumentIssuanceSuccessInteractor {
     @Test
     fun `Given one of two issuers was not trusted, When getUiItems is called, Then only that document is marked and the header is not verified`() {
         coroutineRule.runTest {
+            // Given
             mockHeaderConfigDescription(isErrorCase = false)
             mockTransformToDocumentDetailsDomainStrings(resourceProvider)
             mockGetUiItemsStrings(
@@ -674,9 +678,11 @@ class TestDocumentIssuanceSuccessInteractor {
                 response = IssuerTrustVerdictDomain.NOT_TRUSTED,
             )
 
+            // When
             interactor.getUiItems(
                 documentIds = listOf(mockedPidId, mockedSdJwtPidId)
             ).runFlowTest {
+                // Then
                 val success =
                     awaitItem() as DocumentIssuanceSuccessInteractorGetUiItemsPartialState.Success
 
@@ -695,6 +701,7 @@ class TestDocumentIssuanceSuccessInteractor {
     @Test
     fun `Given documents the issuer did not issue, When getUiItems is called, Then the success state names them in a warning`() {
         coroutineRule.runTest {
+            // Given
             mockHeaderConfigDescription(isErrorCase = true)
             mockTransformToDocumentDetailsDomainStrings(resourceProvider)
             mockGetUiItemsStrings(
@@ -709,10 +716,12 @@ class TestDocumentIssuanceSuccessInteractor {
                 )
             ).thenReturn(mockedNotIssuedWarning)
 
+            // When
             interactor.getUiItems(
                 documentIds = listOf(),
                 notIssuedDocuments = listOf("Photo ID", "mDL"),
             ).runFlowTest {
+                // Then
                 val success =
                     awaitItem() as DocumentIssuanceSuccessInteractorGetUiItemsPartialState.Success
 
@@ -724,6 +733,7 @@ class TestDocumentIssuanceSuccessInteractor {
     @Test
     fun `Given every document was issued, When getUiItems is called, Then the success state has no warning`() {
         coroutineRule.runTest {
+            // Given
             mockHeaderConfigDescription(isErrorCase = true)
             mockTransformToDocumentDetailsDomainStrings(resourceProvider)
             mockGetUiItemsStrings(
@@ -732,10 +742,12 @@ class TestDocumentIssuanceSuccessInteractor {
             )
             mockGetDocumentByIdCall(response = null)
 
+            // When
             interactor.getUiItems(
                 documentIds = listOf(),
                 notIssuedDocuments = listOf(),
             ).runFlowTest {
+                // Then
                 val success =
                     awaitItem() as DocumentIssuanceSuccessInteractorGetUiItemsPartialState.Success
 
@@ -744,7 +756,7 @@ class TestDocumentIssuanceSuccessInteractor {
         }
     }
 
-    // endregion
+    //endregion
 
     //region Mock Calls
 

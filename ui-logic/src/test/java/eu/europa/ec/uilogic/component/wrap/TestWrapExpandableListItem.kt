@@ -68,10 +68,13 @@ class TestWrapExpandableListItem {
      */
     @Test
     fun `Given a card at the bottom of a scroll area, When it opens with the flag on, Then it is scrolled into view`() {
+        // Given
         val scroll = showCardBelowSpacer(shouldBringOpenedIntoView = true, isInitiallyExpanded = false)
 
+        // When
         openCard()
 
+        // Then
         assertTrue(scroll().value > 0)
     }
 
@@ -80,10 +83,13 @@ class TestWrapExpandableListItem {
      */
     @Test
     fun `Given a card at the bottom of a scroll area, When it opens with the flag off, Then nothing scrolls`() {
+        // Given
         val scroll = showCardBelowSpacer(shouldBringOpenedIntoView = false, isInitiallyExpanded = false)
 
+        // When
         openCard()
 
+        // Then
         assertEquals(0, scroll().value)
     }
 
@@ -92,10 +98,13 @@ class TestWrapExpandableListItem {
      */
     @Test
     fun `Given a card that starts open, When the screen appears, Then nothing scrolls`() {
+        // Given
         val scroll = showCardBelowSpacer(shouldBringOpenedIntoView = true, isInitiallyExpanded = true)
 
+        // When
         composeRule.waitForIdle()
 
+        // Then
         assertEquals(0, scroll().value)
     }
 
@@ -104,6 +113,7 @@ class TestWrapExpandableListItem {
      */
     @Test
     fun `Given a card, When it opens, closes and opens again, Then onExpandFinished runs twice`() {
+        // Given
         var finishedOpenings = 0
         composeRule.setContent {
             MaterialTheme {
@@ -116,11 +126,22 @@ class TestWrapExpandableListItem {
             }
         }
 
+        // When
         openCard()
+
+        // Then
         assertEquals(1, finishedOpenings)
+
+        // When
         closeCard()
+
+        // Then
         assertEquals(1, finishedOpenings)
+
+        // When
         openCard()
+
+        // Then
         assertEquals(2, finishedOpenings)
     }
 

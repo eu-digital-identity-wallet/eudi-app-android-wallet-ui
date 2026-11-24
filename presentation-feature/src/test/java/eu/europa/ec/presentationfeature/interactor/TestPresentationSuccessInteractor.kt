@@ -49,9 +49,9 @@ import eu.europa.ec.uilogic.component.RelyingPartyDataUi
 import eu.europa.ec.uilogic.component.content.ContentHeaderConfig
 import eu.europa.ec.uilogic.component.wrap.ExpandableListItemUi
 import eu.europa.ec.uilogic.config.ConfigUILogic
-import junit.framework.TestCase.assertEquals
-import junit.framework.TestCase.assertTrue
 import org.junit.After
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -112,7 +112,7 @@ class TestPresentationSuccessInteractor {
 
     //region initiatorRoute
     @Test
-    fun `When initiatorRoute is accessed, Then walletCorePresentationController#initiatorRoute is returned`() {
+    fun `Given an initiatorRoute on the controller, When initiatorRoute is accessed, Then walletCorePresentationController#initiatorRoute is returned`() {
         // Given
         whenever(walletCorePresentationController.initiatorRoute).thenReturn(mockedInitiatorRoute)
 
@@ -126,7 +126,7 @@ class TestPresentationSuccessInteractor {
 
     //region redirectUri
     @Test
-    fun `When redirectUri is accessed, Then walletCorePresentationController#redirectUri is returned`() {
+    fun `Given a redirectUri on the controller, When redirectUri is accessed, Then walletCorePresentationController#redirectUri is returned`() {
         // Given
         val expectedUri = URI(mockedRedirectUriString)
         whenever(walletCorePresentationController.redirectUri).thenReturn(expectedUri)
@@ -141,7 +141,7 @@ class TestPresentationSuccessInteractor {
 
     //region getPendingIntent
     @Test
-    fun `When getPendingIntent is called, Then walletCorePresentationController#pendingIntent is returned`() {
+    fun `Given a pendingIntent on the controller, When getPendingIntent is called, Then walletCorePresentationController#pendingIntent is returned`() {
         // Given
         whenever(walletCorePresentationController.pendingIntent).thenReturn(pendingIntent)
 
@@ -155,7 +155,7 @@ class TestPresentationSuccessInteractor {
 
     //region stopPresentation
     @Test
-    fun `When stopPresentation is called, Then walletCorePresentationController#stopPresentation is invoked`() {
+    fun `Given a presentation controller, When stopPresentation is called, Then walletCorePresentationController#stopPresentation is invoked`() {
         // When
         interactor.stopPresentation()
 
@@ -181,7 +181,7 @@ class TestPresentationSuccessInteractor {
     //region constructor default
     // the null-controller default: construction must not trigger the lazy Koin lookup
     @Test
-    fun `When constructed without walletCorePresentationController, Then construction does not throw`() {
+    fun `Given no walletCorePresentationController, When the interactor is constructed, Then the default presentation scope id is used`() {
         // When
         val newInteractor = PresentationSuccessInteractorImpl(
             walletCoreDocumentsController = walletCoreDocumentsController,

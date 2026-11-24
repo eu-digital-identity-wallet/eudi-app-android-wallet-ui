@@ -83,15 +83,15 @@ import eu.europa.ec.uilogic.component.ListItemDataUi
 import eu.europa.ec.uilogic.component.ListItemLeadingContentDataUi
 import eu.europa.ec.uilogic.component.ListItemMainContentDataUi
 import eu.europa.ec.uilogic.component.ListItemTrailingContentDataUi
-import junit.framework.TestCase.assertEquals
-import junit.framework.TestCase.assertNull
-import junit.framework.TestCase.assertTrue
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import org.junit.After
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -436,8 +436,6 @@ class TestTransactionDetailsInteractor {
     @Test
     fun `Given every supported transaction type, When getTransactionDetails is called, Then each card renders`() {
         coroutineRule.runTest {
-            // Given
-
             mockedTransactionLogDomains.forEachIndexed { index, transaction ->
                 mockGetTransactionLogCall(response = transaction)
 
@@ -2361,6 +2359,7 @@ class TestTransactionDetailsInteractor {
             )
             TransactionDataProtectionAction.entries.forEach { action ->
                 contacts.forEach { (url, method) ->
+
                     // When
                     interactor.prepareDataProtectionAction(mockedActionPresentation.id, action, url)
                         .runFlowTest {
@@ -2404,6 +2403,7 @@ class TestTransactionDetailsInteractor {
             )
             mockGetTransactionLogCall(presentation)
             TransactionDataProtectionAction.entries.forEach { action ->
+
                 // When
                 interactor.prepareDataProtectionAction(presentation.id, action, mockedActionMailUrl)
                     .runFlowTest {
@@ -2448,6 +2448,7 @@ class TestTransactionDetailsInteractor {
                     transaction
                 )
                 TransactionDataProtectionAction.entries.forEach { action ->
+
                     // When
                     interactor.prepareDataProtectionAction(
                         mockedTransactionId,
@@ -2489,6 +2490,7 @@ class TestTransactionDetailsInteractor {
             )
             cases.forEach { (presentation, action) ->
                 mockGetTransactionLogCall(presentation)
+
                 // When
                 interactor.prepareDataProtectionAction(presentation.id, action, mockedActionWebUrl)
                     .runFlowTest {
@@ -2518,6 +2520,7 @@ class TestTransactionDetailsInteractor {
                 doThrow(exception).whenever(walletCoreTransactionLogController)
                     .getTransactionLog(mockedTransactionId)
                 TransactionDataProtectionAction.entries.forEach { action ->
+
                     // When
                     interactor.prepareDataProtectionAction(
                         mockedTransactionId,
@@ -2556,6 +2559,7 @@ class TestTransactionDetailsInteractor {
             val ids = listOf(mockedAttemptId, mockedAttemptId + "-next")
             whenever(uuidProvider.provideUuid()).thenReturn(ids[0], ids[1])
             ids.forEach { id ->
+
                 // When
                 interactor.prepareDataProtectionAction(
                     updated.id,
@@ -2594,6 +2598,7 @@ class TestTransactionDetailsInteractor {
                 )
                 mockGetTransactionLogCall(presentation)
                 TransactionDataProtectionAction.entries.forEach { action ->
+
                     // When
                     interactor.prepareDataProtectionAction(
                         presentation.id,
@@ -2651,6 +2656,7 @@ class TestTransactionDetailsInteractor {
             mockGetTransactionLogCall(presentation)
 
             TransactionDataProtectionAction.entries.forEach { action ->
+
                 // When
                 interactor.prepareDataProtectionAction(
                     transactionId = presentation.id,
@@ -2693,6 +2699,7 @@ class TestTransactionDetailsInteractor {
         coroutineRule.runTest {
             // Given
             val pending = mockedPendingAction.copy(launchedAt = null)
+
             // When
             interactor.recordDataProtectionAction(pending).runFlowTest {
                 // Then
@@ -2716,6 +2723,7 @@ class TestTransactionDetailsInteractor {
             // Given
             mockRecordActionCall(RecordTransactionPartialState.Success)
             CommunicationMethodDomain.entries.forEach { method ->
+
                 // When
                 val deletion = mockedPendingAction.copy(communicationMethod = method)
                 val report = deletion.copy(
@@ -2766,6 +2774,7 @@ class TestTransactionDetailsInteractor {
             )
                 .thenReturn(failure, RecordTransactionPartialState.Success)
             listOf(failure, RecordTransactionPartialState.Success).forEach { expected ->
+
                 // When
                 interactor.recordDataProtectionAction(mockedPendingAction).runFlowTest {
                     // Then
@@ -2804,6 +2813,7 @@ class TestTransactionDetailsInteractor {
                 action = TransactionDataProtectionAction.ReportSuspiciousTransaction,
                 authority = authority,
             )
+
             // When
             interactor.recordDataProtectionAction(pending).runFlowTest {
                 // Then
@@ -2838,6 +2848,7 @@ class TestTransactionDetailsInteractor {
                     )
                 )
                     .thenThrow(exception)
+
                 // When
                 interactor.recordDataProtectionAction(mockedPendingAction).runFlowTest {
                     // Then
@@ -2876,9 +2887,11 @@ class TestTransactionDetailsInteractor {
                     finished.await()
                     RecordTransactionPartialState.Success
                 }
+
             // When
             interactor.recordDataProtectionAction(mockedPendingAction).runFlowTest {
                 started.await()
+
                 // Then
                 expectNoEvents()
                 finished.complete(Unit)
@@ -2898,6 +2911,7 @@ class TestTransactionDetailsInteractor {
             // Given
             val pending =
                 mockedPendingAction.copy(action = TransactionDataProtectionAction.ReportSuspiciousTransaction)
+
             // When
             interactor.recordDataProtectionAction(pending).runFlowTest {
                 // Then
@@ -2999,6 +3013,7 @@ class TestTransactionDetailsInteractor {
     fun `Given Case 4, When observePresentationActionCounts is called, Then Case 4 Expected Result is returned`() {
         coroutineRule.runTest {
             listOf(mockedExceptionWithMessage, mockedExceptionWithNoMessage).forEach { exception ->
+
                 // Given
                 val contentReceived = CompletableDeferred<Unit>()
                 mockObservePresentationActionsCall(
@@ -3090,6 +3105,7 @@ class TestTransactionDetailsInteractor {
     @Test
     fun `Given an expired registration, When the deletion request is opened, Then it is offered with a warning`() =
         coroutineRule.runTest {
+            // Given
             mockRegistrationWarnings()
             val presentation = mockedActionPresentation.copy(
                 registrationCheck = RecordedRegistrationCheckDomain.NotVerified(
@@ -3098,7 +3114,9 @@ class TestTransactionDetailsInteractor {
             )
             mockGetTransactionLogCall(presentation)
 
+            // When
             interactor.getDataDeletionRequest(presentation.id).runFlowTest {
+                // Then
                 val request =
                     (awaitItem() as TransactionDetailsInteractorDataDeletionPartialState.Success).request
                 assertEquals(mockedRegistrationNotVerified, request.registrationWarning)
@@ -3109,11 +3127,14 @@ class TestTransactionDetailsInteractor {
     @Test
     fun `Given a registration issued to another party, When the deletion request is opened, Then it is not offered`() =
         coroutineRule.runTest {
+            // Given
             mockRegistrationWarnings()
             val presentation = mockedActionPresentation.copy(registrationCheck = mockedNotBound)
             mockGetTransactionLogCall(presentation)
 
+            // When
             interactor.getDataDeletionRequest(presentation.id).runFlowTest {
+                // Then
                 assertTrue(awaitItem() is TransactionDetailsInteractorDataDeletionPartialState.Failure)
                 awaitComplete()
             }
@@ -3122,11 +3143,14 @@ class TestTransactionDetailsInteractor {
     @Test
     fun `Given a registration issued to another party, When the DPA report is opened, Then it says so`() =
         coroutineRule.runTest {
+            // Given
             mockRegistrationWarnings()
             val presentation = mockedActionPresentation.copy(registrationCheck = mockedNotBound)
             mockGetTransactionLogCall(presentation)
 
+            // When
             interactor.getDpaReport(presentation.id).runFlowTest {
+                // Then
                 val report =
                     (awaitItem() as TransactionDetailsInteractorDpaReportPartialState.Success).report
                 assertEquals(mockedRegistrationNotBound, report.registrationWarning)
@@ -3137,12 +3161,15 @@ class TestTransactionDetailsInteractor {
     @Test
     fun `Given no recorded registration check, When the details are opened, Then the card warns and a verified one does not`() =
         coroutineRule.runTest {
+            // Given
             mockRegistrationWarnings()
             val unknown =
                 mockedActionPresentation.copy(registrationCheck = RecordedRegistrationCheckDomain.Unknown)
             mockGetTransactionLogCall(unknown)
 
+            // When
             interactor.getTransactionDetails(unknown.id).runFlowTest {
+                // Then
                 val card = (awaitItem() as TransactionDetailsInteractorPartialState.Success)
                     .transactionDetailsUi.transactionDetailsCardUi
                 assertEquals(mockedRegistrationNotVerified, card.registrationWarning)

@@ -57,6 +57,7 @@ class TestWrapModalBottomSheet {
     // Tapping near the top of the scrim dismisses the sheet exactly once.
     @Test
     fun `Given a short sheet, When the upper scrim is tapped, Then the sheet is dismissed`() {
+        // Then
         assertUpperScrimDismissesSheet(sheetHeight = 120.dp)
     }
 
@@ -66,6 +67,7 @@ class TestWrapModalBottomSheet {
     // The same upper scrim tap still dismisses the sheet exactly once.
     @Test
     fun `Given a taller sheet, When the upper scrim is tapped, Then the sheet is dismissed`() {
+        // Then
         assertUpperScrimDismissesSheet(sheetHeight = 300.dp)
     }
 

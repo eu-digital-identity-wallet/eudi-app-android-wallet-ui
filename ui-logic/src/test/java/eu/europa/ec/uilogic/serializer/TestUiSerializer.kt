@@ -63,95 +63,143 @@ class TestUiSerializer {
     }
 
     @Test
-    fun `roundtrip preserves the model`() {
+    fun `Given a model, When it is encoded and decoded, Then the decoded model equals the original`() {
+        // Given
         val original = TestModel(value = "hello", count = 42)
 
+        // When
         val encoded = serializer.toBase64(original, TestModel.Parser)
+
+        // Then
         assertNotNull(encoded)
 
+        // When
         val decoded = serializer.fromBase64(encoded, TestModel::class.java, TestModel.Parser)
+
+        // Then
         assertEquals(original, decoded)
     }
 
     @Test
-    fun `fromBase64 with null payload returns null`() {
+    fun `Given a null payload, When it is decoded, Then null is returned`() {
+        // When
         val decoded = serializer.fromBase64(null, TestModel::class.java, TestModel.Parser)
+
+        // Then
         assertNull(decoded)
     }
 
+    /**
+     * '!' and '$' are outside the URL-safe Base64 alphabet → throws inside
+     * decodeFromBase64 → runCatching catches → returns null.
+     */
     @Test
-    fun `fromBase64 with malformed base64 returns null`() {
-        // '!' and '$' are outside the URL-safe Base64 alphabet → throws inside
-        // decodeFromBase64 → runCatching catches → returns null.
+    fun `Given a malformed base64 payload, When it is decoded, Then null is returned`() {
+        // When
         val decoded = serializer.fromBase64(
             "!!not%base64\$\$",
             TestModel::class.java,
             TestModel.Parser
         )
+
+        // Then
         assertNull(decoded)
     }
 
     @Test
-    fun `fromBase64 with valid base64 but invalid JSON returns null`() {
+    fun `Given valid base64 that is not JSON, When it is decoded, Then null is returned`() {
+        // Given
         val notJson = "not a real json document".encodeToBase64()
+
+        // When
         val decoded = serializer.fromBase64(notJson, TestModel::class.java, TestModel.Parser)
+
+        // Then
         assertNull(decoded)
     }
 
+    /**
+     * Encoded JSON is missing the required `value` field.
+     */
     @Test
-    fun `fromBase64 of a payload encoded for a different shape returns null`() {
-        // Encoded JSON is missing the required `value` field.
+    fun `Given a payload missing a required field, When it is decoded, Then null is returned`() {
+        // Given
         val mismatched = "{\"count\":1}".encodeToBase64()
+
+        // When
         val decoded = serializer.fromBase64(mismatched, TestModel::class.java, TestModel.Parser)
+
+        // Then
         assertNull(decoded)
     }
 
+    /**
+     * kotlinx's `serializer(Class)` lookup throws SerializationException for any
+     * class missing @Serializable. UiSerializerImpl wraps it in runCatching and
+     * surfaces null. This is the only realistic toBase64 failure path now that
+     * IconDataUi is type-safe.
+     */
     @Test
-    fun `toBase64 returns null for a UiSerializable that is not Serializable`() {
-        // kotlinx's `serializer(Class)` lookup throws SerializationException for any
-        // class missing @Serializable. UiSerializerImpl wraps it in runCatching and
-        // surfaces null. This is the only realistic toBase64 failure path now that
-        // IconDataUi is type-safe.
+    fun `Given a UiSerializable that is not Serializable, When it is encoded, Then null is returned`() {
+        // When
         val encoded = serializer.toBase64(
             NonSerializableConfig(),
             NonSerializableConfig.Parser,
         )
+
+        // Then
         assertNull(encoded)
     }
 
     @Test
-    fun `roundtrip of a nested AppIcons constant succeeds`() {
+    fun `Given a wrapper with an AppIcons constant, When it is encoded and decoded, Then the wrapper is restored`() {
+        // Given
         val wrapper = IconWrapper(icon = AppIcons.WalletSecured)
 
+        // When
         val encoded = serializer.toBase64(wrapper, IconWrapper.Parser)
+
+        // Then
         assertNotNull(encoded)
 
+        // When
         val decoded = serializer.fromBase64(
             encoded,
             IconWrapper::class.java,
             IconWrapper.Parser
         )
+
+        // Then
         assertEquals(wrapper, decoded)
     }
 
+    /**
+     * Under the original Gson-based design ArrowBack would have lost its
+     * imageVector across the nav boundary. With the AppIconKey enum identity it
+     * round-trips because the wire carries only the key — the imageVector is
+     * looked up locally from the enum on the destination side.
+     */
     @Test
-    fun `roundtrip of a nested imageVector-only AppIcon preserves the imageVector`() {
-        // Under the original Gson-based design ArrowBack would have lost its
-        // imageVector across the nav boundary. With the AppIconKey enum identity it
-        // round-trips because the wire carries only the key — the imageVector is
-        // looked up locally from the enum on the destination side.
+    fun `Given an imageVector-only AppIcon, When it is encoded and decoded, Then the imageVector is preserved`() {
+        // Given
         val wrapper = IconWrapper(icon = AppIcons.ArrowBack)
         assertNotNull(wrapper.icon.imageVector)
         assertNull(wrapper.icon.resourceId)
 
+        // When
         val encoded = serializer.toBase64(wrapper, IconWrapper.Parser)
+
+        // Then
         assertNotNull(encoded)
 
+        // When
         val decoded = serializer.fromBase64(
             encoded,
             IconWrapper::class.java,
             IconWrapper.Parser
         )
+
+        // Then
         assertEquals(wrapper, decoded)
         assertNotNull(decoded?.icon?.imageVector)
         assertTrue(

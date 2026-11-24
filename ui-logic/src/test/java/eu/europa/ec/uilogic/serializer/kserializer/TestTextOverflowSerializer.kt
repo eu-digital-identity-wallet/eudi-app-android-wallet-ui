@@ -26,25 +26,41 @@ class TestTextOverflowSerializer {
     private val json = Json
 
     @Test
-    fun `Clip roundtrips losslessly`() = assertRoundtrip(TextOverflow.Clip, "\"Clip\"")
+    fun `Given TextOverflow Clip, When it is serialized and deserialized, Then it round-trips as its name`() {
+        // Then
+        assertRoundtrip(TextOverflow.Clip, "\"Clip\"")
+    }
 
     @Test
-    fun `Ellipsis roundtrips losslessly`() = assertRoundtrip(TextOverflow.Ellipsis, "\"Ellipsis\"")
+    fun `Given TextOverflow Ellipsis, When it is serialized and deserialized, Then it round-trips as its name`() {
+        // Then
+        assertRoundtrip(TextOverflow.Ellipsis, "\"Ellipsis\"")
+    }
 
     @Test
-    fun `Visible roundtrips losslessly`() = assertRoundtrip(TextOverflow.Visible, "\"Visible\"")
+    fun `Given TextOverflow Visible, When it is serialized and deserialized, Then it round-trips as its name`() {
+        // Then
+        assertRoundtrip(TextOverflow.Visible, "\"Visible\"")
+    }
 
     @Test
-    fun `StartEllipsis roundtrips losslessly`() =
+    fun `Given TextOverflow StartEllipsis, When it is serialized and deserialized, Then it round-trips as its name`() {
+        // Then
         assertRoundtrip(TextOverflow.StartEllipsis, "\"StartEllipsis\"")
+    }
 
     @Test
-    fun `MiddleEllipsis roundtrips losslessly`() =
+    fun `Given TextOverflow MiddleEllipsis, When it is serialized and deserialized, Then it round-trips as its name`() {
+        // Then
         assertRoundtrip(TextOverflow.MiddleEllipsis, "\"MiddleEllipsis\"")
+    }
 
     @Test
-    fun `unknown JSON string falls back to Ellipsis`() {
+    fun `Given an unknown JSON string, When it is decoded, Then it falls back to Ellipsis`() {
+        // When
         val decoded = json.decodeFromString(TextOverflowSerializer, "\"NotARealOverflow\"")
+
+        // Then
         assertEquals(TextOverflow.Ellipsis, decoded)
     }
 
@@ -56,13 +72,17 @@ class TestTextOverflowSerializer {
      * class boxing helper) so the serializer's defensive fallback is still covered.
      */
     @Test
-    fun `unknown value class instance serializes to Ellipsis via else branch`() {
+    fun `Given an unknown value class instance, When it is serialized, Then it is encoded as Ellipsis`() {
+        // Given
         val boxImpl = TextOverflow::class.java.declaredMethods
             .single { it.name == "box-impl" }
             .apply { isAccessible = true }
         val unknown = boxImpl.invoke(null, 9999) as TextOverflow
 
+        // When
         val encoded = json.encodeToString(TextOverflowSerializer, unknown)
+
+        // Then
         assertEquals("\"Ellipsis\"", encoded)
     }
 

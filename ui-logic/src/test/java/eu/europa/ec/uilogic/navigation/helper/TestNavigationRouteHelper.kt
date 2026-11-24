@@ -34,42 +34,62 @@ class TestNavigationRouteHelper {
 
     @Test
     fun `Given only login screens on the back stack, When requiresLogin is checked, Then no login is required`() {
+        // Given
         val backStack = listOf(
             StartupScreens.Splash.screenRoute,
             CommonScreens.Biometric.screenRoute,
         )
 
-        assertFalse(requiresLogin(backStack, config.loginScreens))
+        // When
+        val required = requiresLogin(backStack, config.loginScreens)
+
+        // Then
+        assertFalse(required)
     }
 
     @Test
     fun `Given a login screen opened on top of the dashboard, When requiresLogin is checked, Then login is required`() {
+        // Given
         val backStack = listOf(
             DashboardScreens.Dashboard.screenRoute,
             CommonScreens.TrustMark.screenRoute,
         )
 
-        assertTrue(requiresLogin(backStack, config.loginScreens))
+        // When
+        val required = requiresLogin(backStack, config.loginScreens)
+
+        // Then
+        assertTrue(required)
     }
 
     @Test
     fun `Given the PIN confirmation of a presentation in front, When requiresLogin is checked, Then login is required`() {
+        // Given
         val backStack = listOf(
             DashboardScreens.Dashboard.screenRoute,
             PresentationScreens.PresentationRequest.screenRoute,
             CommonScreens.Biometric.screenRoute,
         )
 
-        assertTrue(requiresLogin(backStack, config.loginScreens))
+        // When
+        val required = requiresLogin(backStack, config.loginScreens)
+
+        // Then
+        assertTrue(required)
     }
 
     @Test
     fun `Given an empty back stack, When requiresLogin is checked, Then no login is required`() {
-        assertFalse(requiresLogin(emptyList(), config.loginScreens))
+        // When
+        val required = requiresLogin(emptyList(), config.loginScreens)
+
+        // Then
+        assertFalse(required)
     }
 
     @Test
     fun `Given the reference configuration, When its protected-flow screens are read, Then they are the issuance, presentation, proximity and signing screens`() {
+        // Then
         assertEquals(
             listOf(
                 IssuanceScreens.AddDocument,
@@ -95,6 +115,7 @@ class TestNavigationRouteHelper {
 
     @Test
     fun `Given the dashboard or document details, When isProtectedRoute is checked, Then neither is protected`() {
+        // Then
         assertFalse(
             isProtectedRoute(
                 DashboardScreens.Dashboard.screenRoute,
@@ -111,6 +132,10 @@ class TestNavigationRouteHelper {
 
     @Test
     fun `Given no destination, When isProtectedRoute is checked, Then it is not protected`() {
-        assertFalse(isProtectedRoute(null, config.protectedFlowScreens))
+        // When
+        val isProtected = isProtectedRoute(null, config.protectedFlowScreens)
+
+        // Then
+        assertFalse(isProtected)
     }
 }

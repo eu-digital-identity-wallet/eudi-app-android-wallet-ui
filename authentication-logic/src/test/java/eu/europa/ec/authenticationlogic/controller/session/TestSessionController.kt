@@ -53,84 +53,123 @@ class TestSessionController {
 
     @Test
     fun `Given a new session, When nothing has happened, Then it is locked`() {
-        assertFalse(controller.isUnlocked)
+        // When
+        val unlocked = controller.isUnlocked
+
+        // Then
+        assertFalse(unlocked)
     }
 
     @Test
     fun `Given a locked session, When it is unlocked and then locked, Then isUnlocked follows each call`() {
+        // When
         controller.unlock()
-        assertTrue(controller.isUnlocked)
-
+        val unlockedAfterUnlock = controller.isUnlocked
         controller.lock()
-        assertFalse(controller.isUnlocked)
+        val unlockedAfterLock = controller.isUnlocked
+
+        // Then
+        assertTrue(unlockedAfterUnlock)
+        assertFalse(unlockedAfterLock)
     }
 
     @Test
     fun `Given an unlocked session in the background, When it returns before the background timeout, Then it stays unlocked`() {
+        // Given
         controller.unlock()
         controller.onBackground()
         advance(59.seconds)
 
-        assertFalse(controller.onForeground())
+        // When
+        val locked = controller.onForeground()
+
+        // Then
+        assertFalse(locked)
         assertTrue(controller.isUnlocked)
     }
 
     @Test
     fun `Given an unlocked session in the background, When it returns at the background timeout, Then it locks`() {
+        // Given
         controller.unlock()
         controller.onBackground()
         advance(60.seconds)
 
-        assertTrue(controller.onForeground())
+        // When
+        val locked = controller.onForeground()
+
+        // Then
+        assertTrue(locked)
         assertFalse(controller.isUnlocked)
     }
 
     @Test
     fun `Given a protected flow in the background, When it returns after the background timeout, Then it stays unlocked`() {
+        // Given
         controller.unlock()
         controller.recordProtectedFlow(inProtectedFlow = true)
         controller.onBackground()
         advance(9.minutes)
 
-        assertFalse(controller.onForeground())
+        // When
+        val locked = controller.onForeground()
+
+        // Then
+        assertFalse(locked)
         assertTrue(controller.isUnlocked)
     }
 
     @Test
     fun `Given a protected flow in the background, When it returns at the protected-flow timeout, Then it locks`() {
+        // Given
         controller.unlock()
         controller.recordProtectedFlow(inProtectedFlow = true)
         controller.onBackground()
         advance(10.minutes)
 
-        assertTrue(controller.onForeground())
+        // When
+        val locked = controller.onForeground()
+
+        // Then
+        assertTrue(locked)
         assertFalse(controller.isUnlocked)
     }
 
     @Test
     fun `Given an external flow on any screen, When it returns before the protected-flow timeout, Then it stays unlocked`() {
+        // Given
         controller.unlock()
         controller.beginExternalFlow()
         controller.onBackground()
         advance(9.minutes)
 
-        assertFalse(controller.onForeground())
+        // When
+        val locked = controller.onForeground()
+
+        // Then
+        assertFalse(locked)
         assertTrue(controller.isUnlocked)
     }
 
     @Test
     fun `Given an ended external flow, When it returns at the background timeout, Then it locks`() {
+        // Given
         controller.unlock()
         controller.beginExternalFlow()
         controller.endExternalFlow()
         controller.onBackground()
         advance(60.seconds)
 
-        assertTrue(controller.onForeground())
+        // When
+        val locked = controller.onForeground()
+
+        // Then
+        assertTrue(locked)
     }
 
     @Test
     fun `Given an external flow, When the session is locked and unlocked again, Then the background timeout applies`() {
+        // Given
         controller.unlock()
         controller.beginExternalFlow()
         controller.lock()
@@ -138,61 +177,90 @@ class TestSessionController {
         controller.onBackground()
         advance(60.seconds)
 
-        assertTrue(controller.onForeground())
+        // When
+        val locked = controller.onForeground()
+
+        // Then
+        assertTrue(locked)
     }
 
     @Test
     fun `Given an unlocked session never in the background, When it comes to the foreground, Then nothing changes`() {
+        // Given
         controller.unlock()
         advance(10.minutes)
 
-        assertFalse(controller.onForeground())
+        // When
+        val locked = controller.onForeground()
+
+        // Then
+        assertFalse(locked)
         assertTrue(controller.isUnlocked)
     }
 
     @Test
     fun `Given an authentication completed after the app left, When the app returns at the background timeout, Then it locks`() {
+        // Given
         controller.onBackground()
         controller.unlock()
         advance(60.seconds)
 
-        assertTrue(controller.onForeground())
+        // When
+        val locked = controller.onForeground()
+
+        // Then
+        assertTrue(locked)
         assertFalse(controller.isUnlocked)
     }
 
     @Test
     fun `Given an authentication completed after the app left, When the app returns before the background timeout, Then it stays unlocked`() {
+        // Given
         controller.onBackground()
         controller.unlock()
         advance(59.seconds)
 
-        assertFalse(controller.onForeground())
+        // When
+        val locked = controller.onForeground()
+
+        // Then
+        assertFalse(locked)
         assertTrue(controller.isUnlocked)
     }
 
     @Test
     fun `Given a locked session that returned before authentication, When it is unlocked, Then the earlier background is forgotten`() {
+        // Given
         controller.onBackground()
         advance(2.minutes)
         assertFalse(controller.onForeground())
 
+        // When
         controller.unlock()
+        val locked = controller.onForeground()
 
-        assertFalse(controller.onForeground())
+        // Then
+        assertFalse(locked)
         assertTrue(controller.isUnlocked)
     }
 
     @Test
     fun `Given a locked session in the background, When it comes to the foreground, Then no new lock is reported`() {
+        // Given
         controller.onBackground()
         advance(10.minutes)
 
-        assertFalse(controller.onForeground())
+        // When
+        val locked = controller.onForeground()
+
+        // Then
+        assertFalse(locked)
         assertFalse(controller.isUnlocked)
     }
 
     @Test
     fun `Given time spent in the background, When the idle timeout is checked, Then that time does not count`() {
+        // Given
         controller.unlock()
         advance(4.minutes)
         controller.onBackground()
@@ -200,135 +268,215 @@ class TestSessionController {
         controller.onForeground()
         advance(4.minutes)
 
-        assertFalse(controller.lockIfIdle())
+        // When
+        val locked = controller.lockIfIdle()
+
+        // Then
+        assertFalse(locked)
         assertTrue(controller.isUnlocked)
     }
 
     @Test
     fun `Given an unlocked session, When it is idle for the idle timeout, Then it locks`() {
+        // Given
         controller.unlock()
         advance(5.minutes)
 
-        assertTrue(controller.lockIfIdle())
+        // When
+        val locked = controller.lockIfIdle()
+
+        // Then
+        assertTrue(locked)
         assertFalse(controller.isUnlocked)
     }
 
     @Test
     fun `Given an unlocked session, When the user interacts before the idle timeout, Then the idle timeout restarts`() {
+        // Given
         controller.unlock()
         advance(4.minutes)
+
+        // When
         controller.onUserInteraction()
         advance(4.minutes)
+        val locked = controller.lockIfIdle()
 
-        assertFalse(controller.lockIfIdle())
+        // Then
+        assertFalse(locked)
         assertTrue(controller.isUnlocked)
     }
 
     @Test
     fun `Given a locked session, When it is idle, Then no new lock is reported`() {
+        // Given
         advance(30.minutes)
 
-        assertFalse(controller.lockIfIdle())
+        // When
+        val locked = controller.lockIfIdle()
+
+        // Then
+        assertFalse(locked)
     }
 
     @Test
     fun `Given an unlocked session, When time passes, Then the time until the idle lock counts down and stops at zero`() {
+        // Given
         controller.unlock()
-        advance(2.minutes)
-        assertEquals(3.minutes, controller.timeUntilIdleLock())
 
+        // When
+        advance(2.minutes)
+        val afterTwoMinutes = controller.timeUntilIdleLock()
+
+        // Then
+        assertEquals(3.minutes, afterTwoMinutes)
+
+        // When
         advance(10.minutes)
-        assertEquals(Duration.ZERO, controller.timeUntilIdleLock())
+        val afterTwelveMinutes = controller.timeUntilIdleLock()
+
+        // Then
+        assertEquals(Duration.ZERO, afterTwelveMinutes)
     }
 
     @Test
     fun `Given a locked session, When the time until the idle lock is read, Then it is the full idle timeout`() {
-        assertEquals(5.minutes, controller.timeUntilIdleLock())
+        // When
+        val remaining = controller.timeUntilIdleLock()
+
+        // Then
+        assertEquals(5.minutes, remaining)
     }
 
     @Test
     fun `Given another screen covering the wallet, When the wallet is shown again before the protected-flow timeout, Then it stays unlocked`() {
+        // Given
         controller.unlock()
         controller.onCoveredByOtherScreen()
         advance(9.minutes)
 
-        assertFalse(controller.onWalletScreenShown())
+        // When
+        val locked = controller.onWalletScreenShown()
+
+        // Then
+        assertFalse(locked)
         assertTrue(controller.isUnlocked)
+
+        // When
         advance(4.minutes)
-        assertFalse(controller.lockIfIdle())
+        val idleLocked = controller.lockIfIdle()
+
+        // Then
+        assertFalse(idleLocked)
     }
 
     @Test
     fun `Given another screen covering the wallet, When the wallet is shown again at the protected-flow timeout, Then it locks`() {
+        // Given
         controller.unlock()
         controller.onCoveredByOtherScreen()
         advance(4.minutes)
         controller.onCoveredByOtherScreen()
         advance(6.minutes)
 
-        assertTrue(controller.onWalletScreenShown())
+        // When
+        val locked = controller.onWalletScreenShown()
+
+        // Then
+        assertTrue(locked)
         assertFalse(controller.isUnlocked)
     }
 
     @Test
     fun `Given another screen covering the wallet, When the app returns from the background before the protected-flow timeout, Then it stays unlocked`() {
+        // Given
         controller.unlock()
         controller.onCoveredByOtherScreen()
         controller.onBackground()
         advance(9.minutes)
 
-        assertFalse(controller.onForeground())
+        // When
+        val locked = controller.onForeground()
+
+        // Then
+        assertFalse(locked)
         assertTrue(controller.isUnlocked)
     }
 
     @Test
     fun `Given the wallet shown again after another screen, When the app returns at the background timeout, Then it locks`() {
+        // Given
         controller.unlock()
         controller.onCoveredByOtherScreen()
         controller.onWalletScreenShown()
         controller.onBackground()
         advance(60.seconds)
 
-        assertTrue(controller.onForeground())
+        // When
+        val locked = controller.onForeground()
+
+        // Then
+        assertTrue(locked)
     }
 
     @Test
     fun `Given no other screen covered the wallet, When the wallet screen is shown, Then the idle timeout keeps running`() {
+        // Given
         controller.unlock()
         advance(5.minutes)
 
-        assertFalse(controller.onWalletScreenShown())
-        assertTrue(controller.lockIfIdle())
+        // When
+        val shownLocked = controller.onWalletScreenShown()
+        val idleLocked = controller.lockIfIdle()
+
+        // Then
+        assertFalse(shownLocked)
+        assertTrue(idleLocked)
     }
 
     @Test
     fun `Given another screen covering the wallet, When the idle timeout passes, Then the session does not lock`() {
+        // Given
         controller.unlock()
         controller.onCoveredByOtherScreen()
         advance(6.minutes)
 
-        assertFalse(controller.lockIfIdle())
-        assertEquals(5.minutes, controller.timeUntilIdleLock())
+        // When
+        val locked = controller.lockIfIdle()
+        val remaining = controller.timeUntilIdleLock()
+
+        // Then
+        assertFalse(locked)
+        assertEquals(5.minutes, remaining)
         assertTrue(controller.isUnlocked)
     }
 
     @Test
     fun `Given a locked session covered by another screen, When the wallet is shown again, Then no new lock is reported`() {
+        // Given
         controller.onCoveredByOtherScreen()
         advance(30.minutes)
 
-        assertFalse(controller.onWalletScreenShown())
+        // When
+        val locked = controller.onWalletScreenShown()
+
+        // Then
+        assertFalse(locked)
         assertFalse(controller.isUnlocked)
     }
 
     @Test
     fun `Given a protected flow recorded and then cleared, When the app returns at the background timeout, Then it locks`() {
+        // Given
         controller.unlock()
         controller.recordProtectedFlow(inProtectedFlow = true)
         controller.recordProtectedFlow(inProtectedFlow = false)
         controller.onBackground()
         advance(60.seconds)
 
-        assertTrue(controller.onForeground())
+        // When
+        val locked = controller.onForeground()
+
+        // Then
+        assertTrue(locked)
     }
 }

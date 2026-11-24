@@ -42,15 +42,15 @@ import eu.europa.ec.businesslogic.validator.util.singleSelectionGroup
 import eu.europa.ec.testlogic.extension.runFlowTest
 import eu.europa.ec.testlogic.extension.runTest
 import eu.europa.ec.testlogic.rule.CoroutineTestRule
-import junit.framework.TestCase.assertTrue
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.test.StandardTestDispatcher
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 import java.time.LocalDateTime
-import kotlin.test.assertEquals
 
 @ExperimentalCoroutinesApi
 class TestFilterValidator {
@@ -80,7 +80,7 @@ class TestFilterValidator {
                 // Then
                 val emittedState = awaitItem()
                 assertTrue(emittedState is FilterValidatorPartialState.FilterListResult.FilterApplyResult)
-                assertEquals(emittedState.updatedFilters, expectedFilters)
+                assertEquals(expectedFilters, emittedState.updatedFilters)
             }
         }
 
@@ -99,7 +99,7 @@ class TestFilterValidator {
                 // Then
                 val emittedState = awaitItem()
                 assertTrue(emittedState is FilterValidatorPartialState.FilterListResult.FilterApplyResult)
-                assertEquals(emittedState.updatedFilters, expectedFilters)
+                assertEquals(expectedFilters, emittedState.updatedFilters)
             }
         }
 
@@ -185,6 +185,9 @@ class TestFilterValidator {
             }
         }
 
+    /**
+     * Confirm we get emission from latest resetFilter execution.
+     */
     @Test
     fun `Given modified filters, When resetFilters is called, Then filters reset to default state`() =
         coroutineRule.runTest {
@@ -194,7 +197,6 @@ class TestFilterValidator {
                 filterValidator.updateFilter(multipleSelectionGroup.id, filterItemsMultiple[2].id)
 
                 // When
-
                 val emittedStates = mutableListOf<FilterValidatorPartialState>()
                 var latestState: FilterValidatorPartialState? = null
                 val times = 3
@@ -214,13 +216,15 @@ class TestFilterValidator {
                         }
                     }
                 }
-                // Confirm we get emission from latest resetFilter execution
                 assertEquals(times, emittedStates.size)
                 assertTrue(latestState is FilterValidatorPartialState.FilterListResult.FilterApplyResult)
                 assertEquals(latestState?.updatedFilters, filtersWithMultipleSelection)
             }
         }
 
+    /**
+     * Confirm we get emission from latest resetFilter execution.
+     */
     @Test
     fun `Given modified snapshot filters, When revertFilter is called, Then filters reset to previous state`() =
         coroutineRule.runTest {
@@ -230,7 +234,6 @@ class TestFilterValidator {
                 filterValidator.updateFilter(multipleSelectionGroup.id, filterItemsMultiple[2].id)
 
                 // When
-
                 val emittedStates = mutableListOf<FilterValidatorPartialState>()
                 var latestState: FilterValidatorPartialState? = null
                 val times = 2
@@ -242,7 +245,6 @@ class TestFilterValidator {
                     latestState = emittedState
                     filterValidator.revertFilters()
                 }
-                // Confirm we get emission from latest resetFilter execution
                 assertEquals(times, emittedStates.size)
                 assertTrue(latestState is FilterValidatorPartialState.FilterUpdateResult)
                 assertEquals(
@@ -378,12 +380,11 @@ class TestFilterValidator {
                     }
                 }
 
-                // Then
                 assertEquals(times, emittedStates.size)
                 assertTrue(latestState is FilterValidatorPartialState.FilterListResult.FilterApplyResult)
                 assertEquals(
-                    (latestState as FilterValidatorPartialState.FilterListResult.FilterApplyResult).filteredList.items.size,
-                    1
+                    1,
+                    (latestState as FilterValidatorPartialState.FilterListResult.FilterApplyResult).filteredList.items.size
                 )
             }
         }
@@ -405,7 +406,7 @@ class TestFilterValidator {
                 val emittedState = awaitItem()
                 assertTrue(emittedState is FilterValidatorPartialState.FilterListResult.FilterApplyResult)
                 emittedState as FilterValidatorPartialState.FilterListResult.FilterApplyResult
-                assertEquals(emittedState.filteredList.items.size, 1)
+                assertEquals(1, emittedState.filteredList.items.size)
             }
         }
 
@@ -464,6 +465,7 @@ class TestFilterValidator {
                     " \tEXAMPLE issuer\n " to singleSpaceItem,
                     " \tExample  ISSUER\n " to doubleSpaceItem,
                 ).forEach { (query, expectedItem) ->
+
                     // When
                     filterValidator.applySearch(query = query)
 
@@ -667,6 +669,7 @@ class TestFilterValidator {
                     "" to listOf(credential, provider, secondary, primary),
                 )
                 queries.forEach { (query, expectedItems) ->
+
                     // When
                     filterValidator.applySearch(query)
 
@@ -1102,6 +1105,9 @@ class TestFilterValidator {
         sortOrder = SortOrder.Descending(),
     )
 
+    /**
+     * Toggle rs1 (was unselected).
+     */
     @Test
     fun `Given a ReversibleSingleSelectionFilterGroup, When updateFilter is called, Then a FilterUpdateResult is emitted with the toggled item`() =
         coroutineRule.runTest {
@@ -1109,7 +1115,7 @@ class TestFilterValidator {
                 // Given
                 filterValidator.initializeValidator(filtersWithReversibleSingle, filterableList)
 
-                // When — toggle rs1 (was unselected)
+                // When
                 filterValidator.updateFilter(
                     filterGroupId = reversibleSingleSelectionGroup.id,
                     filterId = "rs1",
@@ -1124,6 +1130,9 @@ class TestFilterValidator {
             }
         }
 
+    /**
+     * Toggle rm2 (was unselected).
+     */
     @Test
     fun `Given a ReversibleMultipleSelectionFilterGroup, When updateFilter is called, Then a FilterUpdateResult is emitted with the toggled item`() =
         coroutineRule.runTest {
@@ -1131,7 +1140,7 @@ class TestFilterValidator {
                 // Given
                 filterValidator.initializeValidator(filtersWithReversibleMultiple, filterableList)
 
-                // When — toggle rm2 (was unselected)
+                // When
                 filterValidator.updateFilter(
                     filterGroupId = reversibleMultipleSelectionGroup.id,
                     filterId = "rm2",
@@ -1250,8 +1259,12 @@ class TestFilterValidator {
     // copies the existing filter's selection state. Calling it twice with a DateTimeRangeFilterItem
     // exercises the type-mismatch fallback as well as the same-type merge.
 
+    /**
+     * Both initializeValidator calls succeed without throwing; the mergeFilters
+     * DateTimeRangeFilterItem branch is exercised by the second initializeValidator call.
+     */
     @Test
-    fun `Given initializeValidator is called twice with the same DateTimeRangeFilterItem group, Then the merged group preserves the existing date range`() =
+    fun `Given the same DateTimeRangeFilterItem group, When initializeValidator is called twice, Then the merged group preserves the existing date range`() =
         coroutineRule.runTest {
             filterValidator.onFilterStateChange().runFlowTest {
                 // Given
@@ -1269,9 +1282,7 @@ class TestFilterValidator {
                 filterValidator.initializeValidator(second, filterableList)
                 filterValidator.applyFilters()
 
-                // Then — both initializeValidator calls succeed without throwing; the
-                // mergeFilters DateTimeRangeFilterItem branch (line ~765) is exercised by the
-                // second initializeValidator call.
+                // Then
                 val emitted = awaitItem()
                 assertTrue(emitted is FilterValidatorPartialState.FilterListResult)
             }
@@ -1407,7 +1418,7 @@ class TestFilterValidator {
     // These cover the Sort early-return and null-selectedFilter paths.
 
     @Test
-    fun `Given a ReversibleSingleSelectionFilterGroup with a Sort action and applyFilters, Then the apply path returns the original list`() =
+    fun `Given a ReversibleSingleSelectionFilterGroup with a Sort action, When applyFilters is called, Then the apply path returns the original list`() =
         coroutineRule.runTest {
             filterValidator.onFilterStateChange().runFlowTest {
                 // Given
@@ -1439,11 +1450,14 @@ class TestFilterValidator {
             }
         }
 
+    /**
+     * No filter is selected, so selectedFilter is null.
+     */
     @Test
-    fun `Given a ReversibleSingleSelectionFilterGroup with no selected filter and applyFilters, Then the original list is returned`() =
+    fun `Given a ReversibleSingleSelectionFilterGroup with no selected filter, When applyFilters is called, Then the original list is returned`() =
         coroutineRule.runTest {
             filterValidator.onFilterStateChange().runFlowTest {
-                // Given — no filter is selected → selectedFilter is null
+                // Given
                 val group = FilterGroup.ReversibleSingleSelectionFilterGroup(
                     id = "rev_single_empty",
                     name = "Rev Empty",
@@ -1471,11 +1485,14 @@ class TestFilterValidator {
             }
         }
 
+    /**
+     * No filter is selected, so applyReversibleMultipleSelectionFilter returns currentList.
+     */
     @Test
-    fun `Given a ReversibleMultipleSelectionFilterGroup with no selected filter and applyFilters, Then the original list is returned`() =
+    fun `Given a ReversibleMultipleSelectionFilterGroup with no selected filter, When applyFilters is called, Then the original list is returned`() =
         coroutineRule.runTest {
             filterValidator.onFilterStateChange().runFlowTest {
-                // Given — no filter selected → applyReversibleMultipleSelectionFilter returns currentList
+                // Given
                 val group = FilterGroup.ReversibleMultipleSelectionFilterGroup<TestAttributes>(
                     id = "rev_multi_empty",
                     name = "Rev Multi Empty",
@@ -1505,7 +1522,7 @@ class TestFilterValidator {
         }
 
     @Test
-    fun `Given a ReversibleMultipleSelectionFilterGroup with selected filters and applyFilters, Then the filterableAction is applied`() =
+    fun `Given a ReversibleMultipleSelectionFilterGroup with selected filters, When applyFilters is called, Then the filterableAction is applied`() =
         coroutineRule.runTest {
             filterValidator.onFilterStateChange().runFlowTest {
                 // Given
@@ -1592,6 +1609,10 @@ class TestFilterValidator {
             }
         }
 
+    /**
+     * Passing the DateTimeRangeFilterItem id to updateFilter exercises the
+     * `is DateTimeRangeFilterItem ->` arm in updateFilterInGroup.
+     */
     @Test
     fun `Given a DateTimeRangeFilterItem, When updateFilter is called by id, Then the DateTimeRangeFilterItem branch is exercised`() =
         coroutineRule.runTest {
@@ -1599,8 +1620,7 @@ class TestFilterValidator {
                 // Given
                 filterValidator.initializeValidator(filtersWithDateRange, filterableList)
 
-                // When — passing the DateTimeRangeFilterItem id to updateFilter exercises the
-                // `is DateTimeRangeFilterItem ->` arm in updateFilterInGroup.
+                // When
                 filterValidator.updateFilter(
                     filterGroupId = dateRangeGroup.id,
                     filterId = "dr1",

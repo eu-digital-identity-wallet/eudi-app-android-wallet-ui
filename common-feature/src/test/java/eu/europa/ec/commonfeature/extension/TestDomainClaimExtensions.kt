@@ -46,9 +46,11 @@ class TestDomainClaimExtensions {
 
     @Test
     fun `Given the default keys, When portrait is rendered, Then it is shown as the user image`() {
+        // When
         val header =
             primitive(key = "portrait").header(userImageClaimKeys = mockedUserImageClaimKeys)
 
+        // Then
         assertEquals(
             ListItemLeadingContentDataUi.UserImage(userBase64Image = "imageBase64"),
             header.leadingContentData,
@@ -58,8 +60,10 @@ class TestDomainClaimExtensions {
 
     @Test
     fun `Given a configured key, When that claim is rendered, Then it is shown as the user image`() {
+        // When
         val header = primitive(key = "face_image").header(userImageClaimKeys = setOf("face_image"))
 
+        // Then
         assertEquals(
             ListItemLeadingContentDataUi.UserImage(userBase64Image = "imageBase64"),
             header.leadingContentData,
@@ -68,8 +72,10 @@ class TestDomainClaimExtensions {
 
     @Test
     fun `Given portrait is not configured, When portrait is rendered, Then it is shown as text`() {
+        // When
         val header = primitive(key = "portrait").header(userImageClaimKeys = setOf("face_image"))
 
+        // Then
         assertNull(header.leadingContentData)
         assertEquals(ListItemMainContentDataUi.Text(text = "imageBase64"), header.mainContentData)
     }

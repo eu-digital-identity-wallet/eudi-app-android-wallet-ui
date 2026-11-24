@@ -62,102 +62,127 @@ class TestReaderAuthenticationExtensions {
 
     @Test
     fun `Given enforcement if present, When the reader authentication is not trusted, Then the request is refused`() {
-        assertTrue(
-            untrustedReader.isRefusedByReaderAuthentication(
-                enforcement = ReaderAuthenticationEnforcement.ENFORCE_IF_PRESENT
-            )
+        // When
+        val refused = untrustedReader.isRefusedByReaderAuthentication(
+            enforcement = ReaderAuthenticationEnforcement.ENFORCE_IF_PRESENT
         )
+
+        // Then
+        assertTrue(refused)
     }
 
     @Test
     fun `Given enforcement if present, When the reader sends no reader authentication, Then the request is not refused`() {
-        assertFalse(
-            readerWithoutAuthentication.isRefusedByReaderAuthentication(
-                enforcement = ReaderAuthenticationEnforcement.ENFORCE_IF_PRESENT
-            )
+        // When
+        val refused = readerWithoutAuthentication.isRefusedByReaderAuthentication(
+            enforcement = ReaderAuthenticationEnforcement.ENFORCE_IF_PRESENT
         )
+
+        // Then
+        assertFalse(refused)
     }
 
     @Test
     fun `Given enforcement if present, When the reader authentication is trusted, Then the request is not refused`() {
-        assertFalse(
-            trustedReader.isRefusedByReaderAuthentication(
-                enforcement = ReaderAuthenticationEnforcement.ENFORCE_IF_PRESENT
-            )
+        // When
+        val refused = trustedReader.isRefusedByReaderAuthentication(
+            enforcement = ReaderAuthenticationEnforcement.ENFORCE_IF_PRESENT
         )
+
+        // Then
+        assertFalse(refused)
     }
 
     @Test
     fun `Given authentication always required, When the reader sends no reader authentication, Then the request is refused`() {
-        assertTrue(
-            readerWithoutAuthentication.isRefusedByReaderAuthentication(
-                enforcement = ReaderAuthenticationEnforcement.ALWAYS_REQUIRE
-            )
+        // When
+        val refused = readerWithoutAuthentication.isRefusedByReaderAuthentication(
+            enforcement = ReaderAuthenticationEnforcement.ALWAYS_REQUIRE
         )
+
+        // Then
+        assertTrue(refused)
     }
 
     @Test
     fun `Given authentication always required, When the reader authentication is not trusted, Then the request is refused`() {
-        assertTrue(
-            untrustedReader.isRefusedByReaderAuthentication(
-                enforcement = ReaderAuthenticationEnforcement.ALWAYS_REQUIRE
-            )
+        // When
+        val refused = untrustedReader.isRefusedByReaderAuthentication(
+            enforcement = ReaderAuthenticationEnforcement.ALWAYS_REQUIRE
         )
+
+        // Then
+        assertTrue(refused)
     }
 
     @Test
     fun `Given authentication always required, When the reader authentication is trusted, Then the request is not refused`() {
-        assertFalse(
-            trustedReader.isRefusedByReaderAuthentication(
-                enforcement = ReaderAuthenticationEnforcement.ALWAYS_REQUIRE
-            )
+        // When
+        val refused = trustedReader.isRefusedByReaderAuthentication(
+            enforcement = ReaderAuthenticationEnforcement.ALWAYS_REQUIRE
         )
+
+        // Then
+        assertFalse(refused)
     }
 
     @Test
     fun `Given no enforcement, When the reader authentication is not trusted, Then the request is not refused`() {
-        assertFalse(
-            untrustedReader.isRefusedByReaderAuthentication(
-                enforcement = ReaderAuthenticationEnforcement.DO_NOT_ENFORCE
-            )
+        // When
+        val refused = untrustedReader.isRefusedByReaderAuthentication(
+            enforcement = ReaderAuthenticationEnforcement.DO_NOT_ENFORCE
         )
+
+        // Then
+        assertFalse(refused)
     }
 
     @Test
     fun `Given no enforcement, When the reader sends no reader authentication, Then the request is not refused`() {
-        assertFalse(
-            readerWithoutAuthentication.isRefusedByReaderAuthentication(
-                enforcement = ReaderAuthenticationEnforcement.DO_NOT_ENFORCE
-            )
+        // When
+        val refused = readerWithoutAuthentication.isRefusedByReaderAuthentication(
+            enforcement = ReaderAuthenticationEnforcement.DO_NOT_ENFORCE
         )
+
+        // Then
+        assertFalse(refused)
     }
 
     @Test
     fun `Given enforcement if present, When the builder is configured, Then Wallet Core enforces if present`() {
+        // Given
         val builder: ReaderAuthenticationConfigBuilder = mock()
 
+        // When
         builder.setEnforcement(ReaderAuthenticationEnforcement.ENFORCE_IF_PRESENT)
 
+        // Then
         verify(builder).enforceIfPresent()
         verifyNoMoreInteractions(builder)
     }
 
     @Test
     fun `Given authentication always required, When the builder is configured, Then Wallet Core always requires it`() {
+        // Given
         val builder: ReaderAuthenticationConfigBuilder = mock()
 
+        // When
         builder.setEnforcement(ReaderAuthenticationEnforcement.ALWAYS_REQUIRE)
 
+        // Then
         verify(builder).alwaysRequire()
         verifyNoMoreInteractions(builder)
     }
 
     @Test
     fun `Given no enforcement, When the builder is configured, Then Wallet Core does not enforce`() {
+        // Given
         val builder: ReaderAuthenticationConfigBuilder = mock()
 
+        // When
         builder.setEnforcement(ReaderAuthenticationEnforcement.DO_NOT_ENFORCE)
 
+        // Then
         verify(builder).doNotEnforce()
         verifyNoMoreInteractions(builder)
     }
@@ -168,11 +193,14 @@ class TestReaderAuthenticationExtensions {
             for (enforcement in ReaderAuthenticationEnforcement.entries) {
                 for (hasReaderAuthentication in listOf(true, false)) {
                     for (isReaderTrusted in listOf(true, false)) {
+                        // Given
                         val request = deviceRequest(
                             enforcement = enforcement,
                             hasReaderAuthentication = hasReaderAuthentication,
                             isReaderTrusted = isReaderTrusted,
                         )
+
+                        // When
                         val response = request
                             .generateResponse(
                                 selection = CredentialSelection(matches = emptyList())
@@ -183,6 +211,7 @@ class TestReaderAuthenticationExtensions {
 
                         val status = Cbor.decode(response.deviceResponseBytes)["status"].asNumber
 
+                        // Then
                         assertEquals(
                             "$enforcement, authentication $hasReaderAuthentication, " +
                                     "trusted $isReaderTrusted",

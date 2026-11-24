@@ -126,66 +126,79 @@ class TestDeviceAuthenticationController {
     }
 
     @Test
-    fun `invalid host reports error instead of leaving caller waiting`() {
+    fun `Given a context that is not an activity, When authenticate is called, Then the error callback is invoked`() {
+        // When
         controller.authenticate(context, BiometricCrypto(null), true, result)
 
+        // Then
         assertEquals(listOf("error"), outcomes)
     }
 
     @Test
-    fun `device authentication retains weak biometrics and device credential fallback`() =
+    fun `Given a request without crypto, When it is authenticated, Then weak biometrics and the device credential fallback are retained`() =
         coroutineRule.runTest {
+            // Then
             assertNonCryptoPromptAccepted()
         }
 
     @Test
     @Config(sdk = [29])
-    fun `Android 10 non crypto request retains device credential fallback`() =
+    fun `Given Android 10 and a request without crypto, When it is authenticated, Then the device credential fallback is retained`() =
         coroutineRule.runTest {
+            // Then
             assertNonCryptoPromptAccepted()
         }
 
     @Test
-    fun `terminal errors and rejected scans keep their existing device callbacks`() =
+    fun `Given a terminal error and then a rejected scan, When each is authenticated, Then each invokes its own device callback`() =
         coroutineRule.runTest {
+            // Given
             whenever(biometric.authenticate(any(), any(), any(), any()))
                 .thenReturn(BiometricPromptData(null, BiometricPrompt.ERROR_LOCKOUT, "Locked"))
 
+            // When
             controller.authenticate(host.get(), BiometricCrypto(null), true, result)
             coroutineRule.testScope.runCurrent()
 
+            // Then
             assertEquals(listOf("error"), outcomes)
 
+            // When
             whenever(biometric.authenticate(any(), any(), any(), any()))
                 .thenReturn(BiometricPromptData(null))
 
             controller.authenticate(host.get(), BiometricCrypto(null), true, result)
             coroutineRule.testScope.runCurrent()
 
+            // Then
             assertEquals(listOf("error", "failure"), outcomes)
         }
 
     @Test
     @Config(sdk = [29])
-    fun `Android 10 crypto request uses strong biometrics and a cancel button`() =
+    fun `Given Android 10 and a crypto request, When it is authenticated, Then strong biometrics and a cancel button are used`() =
         coroutineRule.runTest {
+            // Then
             assertCryptoPromptAccepted(BIOMETRIC_STRONG, "Cancel")
         }
 
     @Test
-    fun `crypto request allows strong biometrics or device credentials`() = coroutineRule.runTest {
+    fun `Given a crypto request, When it is authenticated, Then strong biometrics or device credentials are allowed`() = coroutineRule.runTest {
+        // Then
         assertCryptoPromptAccepted(BIOMETRIC_STRONG or DEVICE_CREDENTIAL, "")
     }
 
     @Test
     @Config(sdk = [30])
-    fun `Android 11 crypto request allows strong biometrics or device credentials`() =
+    fun `Given Android 11 and a crypto request, When it is authenticated, Then strong biometrics or device credentials are allowed`() =
         coroutineRule.runTest {
+            // Then
             assertCryptoPromptAccepted(BIOMETRIC_STRONG or DEVICE_CREDENTIAL, "")
         }
 
     @Test
-    fun `device credential alone satisfies crypto availability without enrolled biometrics`() {
+    fun `Given a device credential and no enrolled biometrics, When crypto availability is checked, Then it can authenticate`() {
+        // Given
         whenever(manager.canAuthenticate(BIOMETRIC_STRONG))
             .thenReturn(BiometricManager.BIOMETRIC_ERROR_NONE_ENROLLED)
         whenever(manager.canAuthenticate(BIOMETRIC_WEAK))
@@ -194,38 +207,46 @@ class TestDeviceAuthenticationController {
             .thenReturn(BiometricManager.BIOMETRIC_SUCCESS)
 
         withBiometricManager {
+            // When
             val availability = realDeviceController().deviceSupportsBiometrics(cryptoRequest())
 
+            // Then
             assertEquals(BiometricsAvailability.CanAuthenticate, availability)
         }
     }
 
     @Test
-    fun `device credential alone satisfies non crypto availability`() {
+    fun `Given a device credential and no enrolled biometrics, When availability without crypto is checked, Then it can authenticate`() {
+        // Given
         whenever(manager.canAuthenticate(BIOMETRIC_WEAK))
             .thenReturn(BiometricManager.BIOMETRIC_ERROR_NONE_ENROLLED)
         whenever(manager.canAuthenticate(BIOMETRIC_WEAK or DEVICE_CREDENTIAL))
             .thenReturn(BiometricManager.BIOMETRIC_SUCCESS)
 
         withBiometricManager {
+            // When
             val availability =
                 realDeviceController().deviceSupportsBiometrics(BiometricCrypto(null))
 
+            // Then
             assertEquals(BiometricsAvailability.CanAuthenticate, availability)
         }
     }
 
     @Test
     @Config(sdk = [29])
-    fun `Android 10 crypto availability rejects weak only enrollment`() {
+    fun `Given Android 10 and only weak biometrics enrolled, When crypto availability is checked, Then it fails`() {
+        // Given
         whenever(manager.canAuthenticate(BIOMETRIC_STRONG))
             .thenReturn(BiometricManager.BIOMETRIC_ERROR_NONE_ENROLLED)
         whenever(manager.canAuthenticate(BIOMETRIC_WEAK))
             .thenReturn(BiometricManager.BIOMETRIC_SUCCESS)
 
         withBiometricManager {
+            // When
             val availability = realDeviceController().deviceSupportsBiometrics(cryptoRequest())
 
+            // Then
             assertTrue(availability is BiometricsAvailability.Failure)
             verify(manager).canAuthenticate(BIOMETRIC_STRONG)
         }
@@ -233,26 +254,32 @@ class TestDeviceAuthenticationController {
 
     @Test
     @Config(sdk = [29])
-    fun `Android 10 unknown strong availability permits a crypto authentication attempt`() {
+    fun `Given Android 10 and unknown strong availability, When crypto availability is checked, Then an authentication attempt is permitted`() {
+        // Given
         whenever(manager.canAuthenticate(BIOMETRIC_STRONG))
             .thenReturn(BiometricManager.BIOMETRIC_STATUS_UNKNOWN)
         whenever(manager.canAuthenticate(BIOMETRIC_WEAK))
             .thenReturn(BiometricManager.BIOMETRIC_SUCCESS)
 
         withBiometricManager {
+            // When
             val availability = realDeviceController().deviceSupportsBiometrics(cryptoRequest())
 
+            // Then
             assertEquals(BiometricsAvailability.CanAuthenticate, availability)
         }
     }
 
     @Test
     @Config(sdk = [30])
-    fun `Android 11 enrollment includes the authenticators accepted by each request`() {
+    fun `Given Android 11, When the enrollment screen is launched for a crypto and a plain request, Then each includes its accepted authenticators`() {
+        // Given
         val realController = realDeviceController()
 
+        // When
         realController.launchBiometricSystemScreen(cryptoRequest())
 
+        // Then
         val cryptoIntent = shadowOf(host.get()).nextStartedActivity
         assertEquals(Settings.ACTION_BIOMETRIC_ENROLL, cryptoIntent.action)
         assertEquals(
@@ -260,8 +287,10 @@ class TestDeviceAuthenticationController {
             cryptoIntent.getIntExtra(Settings.EXTRA_BIOMETRIC_AUTHENTICATORS_ALLOWED, 0)
         )
 
+        // When
         realController.launchBiometricSystemScreen(BiometricCrypto(null))
 
+        // Then
         val plainIntent = shadowOf(host.get()).nextStartedActivity
         assertEquals(
             BIOMETRIC_WEAK or DEVICE_CREDENTIAL,
@@ -271,62 +300,78 @@ class TestDeviceAuthenticationController {
 
     @Test
     @Config(sdk = [29])
-    fun `Android 10 enrollment uses the security settings fallback`() {
+    fun `Given Android 10, When the enrollment screen is launched, Then the security settings are opened`() {
+        // When
         realDeviceController().launchBiometricSystemScreen(cryptoRequest())
 
+        // Then
         val intent = shadowOf(host.get()).nextStartedActivity
         assertEquals(Settings.ACTION_SECURITY_SETTINGS, intent.action)
     }
 
     @Test
-    fun `prompt startup exception invokes error once`() = coroutineRule.runTest {
+    fun `Given a prompt that throws on startup, When a request is authenticated, Then the error callback is invoked once`() = coroutineRule.runTest {
+        // Given
         whenever(biometric.authenticate(any(), any(), any(), any()))
             .thenThrow(IllegalArgumentException("Prompt unavailable"))
 
+        // When
         controller.authenticate(host.get(), cryptoRequest(), true, result)
         coroutineRule.testScope.runCurrent()
 
+        // Then
         assertEquals(listOf("error"), outcomes)
     }
 
     @Test
-    fun `coroutine cancellation terminates an unfinished device request`() = coroutineRule.runTest {
+    fun `Given a prompt cancelled by its coroutine, When a request is authenticated, Then the error callback terminates the request`() = coroutineRule.runTest {
+        // Given
         whenever(biometric.authenticate(any(), any(), any(), any()))
             .thenThrow(CancellationException("Activity destroyed"))
 
+        // When
         controller.authenticate(host.get(), cryptoRequest(), true, result)
         coroutineRule.testScope.runCurrent()
 
+        // Then
         assertEquals(listOf("error"), outcomes)
     }
 
     @Test
-    fun `activity destruction terminates a pending device request exactly once`() =
+    fun `Given a pending device request, When the activity is destroyed, Then the error callback is invoked exactly once`() =
         coroutineRule.runTest {
+            // Given
             whenever(biometric.authenticate(any(), any(), any(), any())).doSuspendableAnswer {
                 CompletableDeferred<BiometricPromptData>().await()
             }
 
+            // When
             controller.authenticate(host.get(), cryptoRequest(), false, result)
             coroutineRule.testScope.runCurrent()
 
+            // Then
             assertTrue(outcomes.isEmpty())
 
+            // When
             host.pause().stop().destroy()
             coroutineRule.testScope.runCurrent()
 
+            // Then
             assertEquals(listOf("error"), outcomes)
 
             host = Robolectric.buildActivity(FragmentActivity::class.java).setup()
         }
 
     @Test
-    fun `already destroyed activity still terminates a device request`() = coroutineRule.runTest {
+    fun `Given a destroyed activity, When a request is authenticated, Then the request is terminated with an error`() = coroutineRule.runTest {
+        // Given
         host.pause().stop().destroy()
 
+        // When
         controller.authenticate(host.get(), cryptoRequest(), false, result)
         coroutineRule.testScope.runCurrent()
 
+        // Then
         assertEquals(listOf("error"), outcomes)
         verify(biometric, never()).authenticate(any(), any(), any(), any())
 
@@ -334,8 +379,9 @@ class TestDeviceAuthenticationController {
     }
 
     @Test
-    fun `cancellation after success callback begins does not report a second outcome`() =
+    fun `Given a success callback in progress, When the activity is destroyed, Then no second outcome is reported`() =
         coroutineRule.runTest {
+            // Given
             val completion = CompletableDeferred<Unit>()
             val resultWaitingForCompletion = result.copy(
                 onAuthenticationSuccess = {
@@ -346,6 +392,7 @@ class TestDeviceAuthenticationController {
             whenever(biometric.authenticate(any(), any(), any(), any()))
                 .thenReturn(successfulPromptData())
 
+            // When
             controller.authenticate(
                 host.get(),
                 BiometricCrypto(null),
@@ -354,11 +401,14 @@ class TestDeviceAuthenticationController {
             )
             coroutineRule.testScope.runCurrent()
 
+            // Then
             assertEquals(listOf("success"), outcomes)
 
+            // When
             host.pause().stop().destroy()
             coroutineRule.testScope.runCurrent()
 
+            // Then
             assertEquals(listOf("success"), outcomes)
 
             host = Robolectric.buildActivity(FragmentActivity::class.java).setup()

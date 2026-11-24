@@ -47,9 +47,13 @@ class TestHttpClientConfigExtensions {
     @Test
     fun `Given the limits installed, When a server answers within them, Then the response arrives`() =
         coroutineRule.runTest {
+            // Given
             createClient { respond(ByteArray(LIMIT), HttpStatusCode.OK) }.use { client ->
+
+                // When
                 val body = withContext(Dispatchers.Default) { client.get(URL).bodyAsBytes() }
 
+                // Then
                 assertEquals(LIMIT, body.size)
             }
         }
@@ -57,14 +61,18 @@ class TestHttpClientConfigExtensions {
     @Test
     fun `Given the limits installed, When a server takes longer than the request timeout, Then the request fails`() =
         coroutineRule.runTest {
+            // Given
             createClient(timeout = SHORT_REQUEST_TIMEOUT) {
                 delay(5.seconds)
                 respond(ByteArray(1), HttpStatusCode.OK)
             }.use { client ->
+
+                // When
                 val failure = withContext(Dispatchers.Default) {
                     runCatching { client.get(URL).bodyAsBytes() }.exceptionOrNull()
                 }
 
+                // Then
                 assertTrue(failure is HttpRequestTimeoutException)
             }
         }
@@ -72,11 +80,15 @@ class TestHttpClientConfigExtensions {
     @Test
     fun `Given the limits installed, When a body passes the configured size, Then the request fails`() =
         coroutineRule.runTest {
+            // Given
             createClient { respond(ByteArray(LIMIT + 1), HttpStatusCode.OK) }.use { client ->
+
+                // When
                 val failure = withContext(Dispatchers.Default) {
                     runCatching { client.get(URL).bodyAsBytes() }.exceptionOrNull()
                 }
 
+                // Then
                 assertTrue(
                     generateSequence(failure) { it.cause }.any { it is ResponseTooLargeException }
                 )

@@ -48,7 +48,7 @@ class TestThrowableExtensions {
     }
 
     @Test
-    fun `missing signed metadata is an access-certificate refusal`() {
+    fun `Given missing signed metadata, When toUntrustedIssuerReasonOrNull is called, Then an access-certificate refusal is returned`() {
         // Given
         val failure = CredentialIssuerMetadataError.MissingSignedMetadata()
 
@@ -60,7 +60,7 @@ class TestThrowableExtensions {
     }
 
     @Test
-    fun `invalid signed metadata is an access-certificate refusal`() {
+    fun `Given invalid signed metadata, When toUntrustedIssuerReasonOrNull is called, Then an access-certificate refusal is returned`() {
         // Given
         val failure = CredentialIssuerMetadataError.InvalidSignedMetadata(
             cause = RuntimeException("bad signature")
@@ -74,7 +74,7 @@ class TestThrowableExtensions {
     }
 
     @Test
-    fun `a registration policy failure is a registration-certificate refusal`() {
+    fun `Given a registration policy failure, When toUntrustedIssuerReasonOrNull is called, Then a registration-certificate refusal is returned`() {
         // Given
         val failure = AuthorizationPolicyValidationError.MissingIssuerInfo()
 
@@ -86,7 +86,7 @@ class TestThrowableExtensions {
     }
 
     @Test
-    fun `a missing registration certificate is a registration-certificate refusal`() {
+    fun `Given a missing registration certificate, When toUntrustedIssuerReasonOrNull is called, Then a registration-certificate refusal is returned`() {
         // Given
         val failure = AuthorizationPolicyValidationError.MissingRegistrationCertificate()
 
@@ -123,7 +123,7 @@ class TestThrowableExtensions {
     // A credential-offer failure carries its error in a property rather than in `cause`, so the
     // walk has to descend into the issuer-metadata reason to reach the refusal.
     @Test
-    fun `a refusal behind an offer request error is found through the metadata reason`() {
+    fun `Given a refusal behind an offer request error, When toUntrustedIssuerReasonOrNull is called, Then it is found through the metadata reason`() {
         // Given
         val failure = CredentialOfferRequestException(
             error = CredentialOfferRequestError.UnableToResolveCredentialIssuerMetadata(
@@ -139,7 +139,7 @@ class TestThrowableExtensions {
     }
 
     @Test
-    fun `an offer request error unrelated to trust yields no refusal`() {
+    fun `Given an offer request error unrelated to trust, When toUntrustedIssuerReasonOrNull is called, Then no refusal is returned`() {
         // Given
         val failure = CredentialOfferRequestException(
             error = CredentialOfferRequestError.NonParseableCredentialOffer(
@@ -155,7 +155,7 @@ class TestThrowableExtensions {
     }
 
     @Test
-    fun `an unrelated failure yields no refusal`() {
+    fun `Given an unrelated failure, When toUntrustedIssuerReasonOrNull is called, Then no refusal is returned`() {
         // Given
         val failure = RuntimeException("no network")
 

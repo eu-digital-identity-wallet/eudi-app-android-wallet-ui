@@ -18,8 +18,8 @@ package eu.europa.ec.dashboardfeature.ui.transactions.list.model
 
 import eu.europa.ec.businesslogic.util.localDateToUtcMillis
 import eu.europa.ec.uilogic.component.DatePickerDialogType
-import junit.framework.TestCase.assertEquals
-import junit.framework.TestCase.assertTrue
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.time.LocalDate
 

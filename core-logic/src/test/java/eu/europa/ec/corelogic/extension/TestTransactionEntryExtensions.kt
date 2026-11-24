@@ -844,6 +844,7 @@ class TestTransactionEntryExtensions {
         val parentIds = listOf(mockedTransactionId, "another-presentation")
 
         parentIds.forEach { parentId ->
+
             // When
             val results = entries.map { entry ->
                 entry.toTransactionLogDomain(
@@ -1001,6 +1002,7 @@ class TestTransactionEntryExtensions {
         }
 
         inputs.forEach { (method, entry) ->
+
             // When
             val stored = TransactionLog(
                 identifier = entry.transactionIdentifier,
@@ -1330,6 +1332,7 @@ class TestTransactionEntryExtensions {
 
         entries.forEach { entry ->
             locales.forEach { locale ->
+
                 // When
                 val storedPresentation = TransactionLog(
                     identifier = entry.transactionIdentifier,

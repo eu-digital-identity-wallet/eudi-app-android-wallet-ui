@@ -288,6 +288,7 @@ class TestPresentationTransactionDataExtensions {
     // Order and metadata survive; only referenced documents have href/checksum/OTP.
     @Test
     fun `Given inline documents in either Base64 alphabet, When toPresentationTransactionDataDomain is called, Then their decoded sizes are given`() {
+        // Given
         val documents = listOf(
             "aW5s\naW5l",
             "aW5saW5lIQ",
@@ -312,9 +313,11 @@ class TestPresentationTransactionDataExtensions {
             )
         )
 
+        // When
         val result = transaction.toPresentationTransactionDataDomain()
                 as PresentationTransactionDataDomain.Qes
 
+        // Then
         assertEquals(
             listOf(6, 7, 7, 3, null, null, null),
             result.signatureRequests.map { request -> request.inlineDocument?.sizeInBytes },
@@ -471,6 +474,7 @@ class TestPresentationTransactionDataExtensions {
 
     @Test
     fun `Given every optional field, When toPresentationTransactionDataDomain is called, Then each is carried over`() {
+        // Given
         val transaction = mockedTransaction(
             payload = QesRequest(
                 type = QesRequest.TYPE,
@@ -493,9 +497,11 @@ class TestPresentationTransactionDataExtensions {
             )
         )
 
+        // When
         val result = transaction.toPresentationTransactionDataDomain()
                 as PresentationTransactionDataDomain.Qes
 
+        // Then
         assertEquals(listOf("sha-256", "sha-384"), result.transactionDataHashAlgorithms)
         assertEquals(
             mockedReferenceDomain.copy(
@@ -517,6 +523,7 @@ class TestPresentationTransactionDataExtensions {
 
     @Test
     fun `Given an approval with locations and document circumstances, When toPresentationTransactionDataDomain is called, Then they are carried over`() {
+        // Given
         val transaction = mockedTransaction(
             payload = mockedApproval.copy(
                 locations = listOf("https://qtsp.example/csc/v2"),
@@ -524,9 +531,11 @@ class TestPresentationTransactionDataExtensions {
             )
         )
 
+        // When
         val result = transaction.toPresentationTransactionDataDomain()
                 as PresentationTransactionDataDomain.QesApproval
 
+        // Then
         assertEquals(listOf("https://qtsp.example/csc/v2"), result.locations)
         assertEquals(listOf("sha-256"), result.transactionDataHashAlgorithms)
         assertEquals(

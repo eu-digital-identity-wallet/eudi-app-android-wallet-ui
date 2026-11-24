@@ -36,29 +36,46 @@ class TestDocumentManagerWithoutExcluded {
 
     @Test
     fun `Given an excluded document, When the documents are read, Then it is left out`() {
+        // Given
         val filtered = DocumentManagerWithoutExcluded(documentManager) { setOf("revoked") }
 
-        assertEquals(listOf(valid), filtered.getDocuments(null))
+        // When
+        val documents = filtered.getDocuments(null)
+
+        // Then
+        assertEquals(listOf(valid), documents)
     }
 
     @Test
     fun `Given the excluded documents change, When the documents are read again, Then the new set applies`() {
+        // Given
         var excluded = setOf("revoked")
         val filtered = DocumentManagerWithoutExcluded(documentManager) { excluded }
-        assertEquals(listOf(valid), filtered.getDocuments(null))
 
+        // When
+        val documentsBefore = filtered.getDocuments(null)
+
+        // Then
+        assertEquals(listOf(valid), documentsBefore)
+
+        // When
         excluded = emptySet()
+        val documentsAfter = filtered.getDocuments(null)
 
-        assertEquals(listOf(revoked, valid), filtered.getDocuments(null))
+        // Then
+        assertEquals(listOf(revoked, valid), documentsAfter)
     }
 
     @Test
     fun `Given a predicate, When the documents are read, Then it is passed to the wallet`() {
+        // Given
         val predicate: (Document) -> Boolean = { true }
         val filtered = DocumentManagerWithoutExcluded(documentManager) { emptySet() }
 
+        // When
         filtered.getDocuments(predicate)
 
+        // Then
         verify(documentManager).getDocuments(predicate)
     }
 }

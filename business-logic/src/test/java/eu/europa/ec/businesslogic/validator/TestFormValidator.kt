@@ -19,7 +19,8 @@ package eu.europa.ec.businesslogic.validator
 import eu.europa.ec.businesslogic.controller.log.LogController
 import eu.europa.ec.testlogic.extension.runTest
 import eu.europa.ec.testlogic.rule.CoroutineTestRule
-import junit.framework.TestCase.assertEquals
+import org.junit.After
+import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -47,15 +48,25 @@ class TestFormValidator {
 
     private val validationSuccess = FormValidationResult(true)
 
+    private lateinit var closeable: AutoCloseable
+
     @Before
     fun before() {
-        MockitoAnnotations.openMocks(this)
+        closeable = MockitoAnnotations.openMocks(this)
         formValidation = FormValidatorImpl(logController)
     }
 
+    @After
+    fun after() {
+        closeable.close()
+    }
+
     @Test
-    fun testValidateNotEmptyRule() = coroutineRule.runTest {
+    fun `Given a ValidateNotEmpty rule, When empty and non-empty values are validated, Then only the empty one fails`() = coroutineRule.runTest {
+        // Given
         val rules = listOf(Rule.ValidateNotEmpty(plainErrorMessage))
+
+        // Then
         validateForm(
             rules = rules,
             value = "",
@@ -68,8 +79,12 @@ class TestFormValidator {
         )
     }
 
+    /**
+     * Cases: a valid URL, no schema, no host, no path, no query, an empty URL and two invalid URLs.
+     */
     @Test
-    fun testValidateUrlRule() = coroutineRule.runTest {
+    fun `Given a URL rule that checks schema, host, path and query, When URLs are validated, Then only complete URLs pass`() = coroutineRule.runTest {
+        // Given
         val rules = listOf(
             Rule.ValidateUrl(
                 shouldValidateSchema = true,
@@ -80,56 +95,49 @@ class TestFormValidator {
             )
         )
 
-        // Valid URL
+        // Then
         validateForm(
             rules = rules,
             value = "https://www.example.com/path/to/resource?query=parameter&another=example",
             expectedValidationResult = validationSuccess
         )
 
-        // No schema
         validateForm(
             rules = rules,
             value = "www.example.com/path/to/resource?query=parameter&another=example",
             expectedValidationResult = validationError
         )
 
-        // No host
         validateForm(
             rules = rules,
             value = "https:///path/to/resource?query=parameter&another=example",
             expectedValidationResult = validationError
         )
 
-        // No path
         validateForm(
             rules = rules,
             value = "https://www.example.com?query=parameter&another=example",
             expectedValidationResult = validationError
         )
 
-        // No query
         validateForm(
             rules = rules,
             value = "https://www.example.com/path/to/resource",
             expectedValidationResult = validationError
         )
 
-        // Empty URL
         validateForm(
             rules = rules,
             value = "",
             expectedValidationResult = validationError
         )
 
-        // Invalid URL #1
         validateForm(
             rules = rules,
             value = "invalid-url",
             expectedValidationResult = validationError
         )
 
-        // Invalid URL #2
         validateForm(
             rules = rules,
             value = "123456789",
@@ -137,8 +145,12 @@ class TestFormValidator {
         )
     }
 
+    /**
+     * Invalid URLs are validated first, then valid ones.
+     */
     @Test
-    fun testValidateProjectUrlRule() = coroutineRule.runTest {
+    fun `Given a URL rule that checks schema and query, When custom-scheme and web URLs are validated, Then only custom-scheme links with a query pass`() = coroutineRule.runTest {
+        // Given
         val rules = listOf(
             Rule.ValidateUrl(
                 shouldValidateSchema = true,
@@ -149,7 +161,7 @@ class TestFormValidator {
             )
         )
 
-        // Test with invalid URLs
+        // Then
         validateForm(
             rules = rules,
             value = "",
@@ -186,7 +198,6 @@ class TestFormValidator {
             expectedValidationResult = validationError
         )
 
-        // Test with valid URLs
         validateForm(
             rules = rules,
             value = "mocked_scheme://?mocked_query_param=some_value",
@@ -245,8 +256,11 @@ class TestFormValidator {
     }
 
     @Test
-    fun testValidateEmailRule() = coroutineRule.runTest {
+    fun `Given an email rule, When addresses are validated, Then only a complete address passes`() = coroutineRule.runTest {
+        // Given
         val rules = listOf(Rule.ValidateEmail(plainErrorMessage))
+
+        // Then
         validateForm(
             rules = rules,
             value = "test@test",
@@ -260,9 +274,12 @@ class TestFormValidator {
     }
 
     @Test
-    fun testValidatePhoneNumberRule() = coroutineRule.runTest {
+    fun `Given Greek and US phone rules, When numbers are validated, Then only numbers valid for the region pass`() = coroutineRule.runTest {
+        // Given
         val greekPhoneRule = listOf(Rule.ValidatePhoneNumber(plainErrorMessage, "GR"))
         val usPhoneRule = listOf(Rule.ValidatePhoneNumber(plainErrorMessage, "US"))
+
+        // Then
         validateForm(
             rules = greekPhoneRule,
             value = "1111111111",
@@ -291,8 +308,11 @@ class TestFormValidator {
     }
 
     @Test
-    fun testValidateStringLengthRule() = coroutineRule.runTest {
+    fun `Given a rule for lengths 10 and 12, When strings are validated, Then only those lengths pass`() = coroutineRule.runTest {
+        // Given
         val rules = listOf(Rule.ValidateStringLength(listOf(10, 12), plainErrorMessage))
+
+        // Then
         validateForm(
             rules = rules,
             value = "123456789",
@@ -316,8 +336,11 @@ class TestFormValidator {
     }
 
     @Test
-    fun testValidateStringMaxLengthRule() = coroutineRule.runTest {
+    fun `Given a maximum length of 10, When strings are validated, Then longer strings fail`() = coroutineRule.runTest {
+        // Given
         val rules = listOf(Rule.ValidateStringMaxLength(10, plainErrorMessage))
+
+        // Then
         validateForm(
             rules = rules,
             value = "aaaaaaaaaaa",
@@ -341,8 +364,11 @@ class TestFormValidator {
     }
 
     @Test
-    fun testValidateStringMinLengthRule() = coroutineRule.runTest {
+    fun `Given a minimum length of 5, When strings are validated, Then shorter strings fail`() = coroutineRule.runTest {
+        // Given
         val rules = listOf(Rule.ValidateStringMinLength(5, plainErrorMessage))
+
+        // Then
         validateForm(
             rules = rules,
             value = "",
@@ -366,7 +392,8 @@ class TestFormValidator {
     }
 
     @Test
-    fun testValidateContainsRegexRule() = coroutineRule.runTest {
+    fun `Given contains-regex rules for digits, special characters and capitals, When values are validated, Then only values with enough matches pass`() = coroutineRule.runTest {
+        // Given
         val atLeast2DigitsRule =
             listOf(Rule.ContainsRegex("(.*\\d){2,}".toRegex(), plainErrorMessage))
         val atLeast2SpecialCharsRule =
@@ -374,6 +401,7 @@ class TestFormValidator {
         val atLeast3UppercaseCharactersRule =
             listOf(Rule.ContainsRegex("(.*[A-Z]){3,}".toRegex(), plainErrorMessage))
 
+        // Then
         validateForm(
             rules = atLeast2DigitsRule,
             value = "Test12",
@@ -439,13 +467,16 @@ class TestFormValidator {
     }
 
     @Test
-    fun testValidateRegexRule() = coroutineRule.runTest {
+    fun `Given regex rules for a capital, a digit and a special character, When values are validated, Then only values that match pass`() = coroutineRule.runTest {
+        // Given
         val atLeastOneCapitalLetterRule =
             listOf(Rule.ValidateRegex(".*[A-Z].*".toRegex(), plainErrorMessage))
         val atLeastOneDigitRule =
             listOf(Rule.ValidateRegex(".*(\\d).*".toRegex(), plainErrorMessage))
         val atLeastOneSpecialCharRule =
             listOf(Rule.ValidateRegex(".*[^a-zA-Z0-9].*".toRegex(), plainErrorMessage))
+
+        // Then
         validateForm(
             rules = atLeastOneCapitalLetterRule,
             value = "test",
@@ -479,8 +510,11 @@ class TestFormValidator {
     }
 
     @Test
-    fun testValidateStringRangeRule() = coroutineRule.runTest {
+    fun `Given a string range of 0 to 10, When strings are validated, Then strings beyond 10 characters fail`() = coroutineRule.runTest {
+        // Given
         val rules = listOf(Rule.ValidateStringRange(0..10, plainErrorMessage))
+
+        // Then
         validateForm(
             rules = rules,
             value = "aaaaaaaaaaa",
@@ -499,9 +533,12 @@ class TestFormValidator {
     }
 
     @Test
-    fun testValidateStringMatchRule() = coroutineRule.runTest {
+    fun `Given case-insensitive and case-sensitive match rules, When values are validated, Then only matching values pass`() = coroutineRule.runTest {
+        // Given
         val isNotCaseSensitiveRule = listOf(Rule.ValidateStringMatch("test", plainErrorMessage))
         val isCaseSensitiveRule = listOf(Rule.ValidateStringMatch("test", plainErrorMessage, true))
+
+        // Then
         validateForm(
             rules = isNotCaseSensitiveRule,
             value = "testt",
@@ -540,10 +577,13 @@ class TestFormValidator {
     }
 
     @Test
-    fun testValidateStringNotMatchRule() = coroutineRule.runTest {
+    fun `Given case-insensitive and case-sensitive not-match rules, When values are validated, Then matching values fail`() = coroutineRule.runTest {
+        // Given
         val isNotCaseSensitiveRule = listOf(Rule.ValidateStringNotMatch("test", plainErrorMessage))
         val isCaseSensitiveRule =
             listOf(Rule.ValidateStringNotMatch("test", plainErrorMessage, true))
+
+        // Then
         validateForm(
             rules = isNotCaseSensitiveRule,
             value = "test",
@@ -587,7 +627,8 @@ class TestFormValidator {
     }
 
     @Test
-    fun testValidateDuplicateCharacterNotInConsecutiveOrderRule() = coroutineRule.runTest {
+    fun `Given duplicate-character rules for 2 and 4 repeats, When values are validated, Then values with too many consecutive repeats fail`() = coroutineRule.runTest {
+        // Given
         val maxTimesOfConsecutiveOrder2Rule = listOf(
             Rule.ValidateDuplicateCharacterNotInConsecutiveOrder(
                 2,
@@ -600,6 +641,8 @@ class TestFormValidator {
                 plainErrorMessage
             )
         )
+
+        // Then
         validateForm(
             rules = maxTimesOfConsecutiveOrder2Rule,
             value = "1313",
@@ -658,8 +701,11 @@ class TestFormValidator {
     }
 
     @Test
-    fun testValidateNumericNotInConsecutiveSequenceOrderRule() = coroutineRule.runTest {
+    fun `Given a consecutive-sequence rule of length 4, When values are validated, Then ascending and descending sequences fail`() = coroutineRule.runTest {
+        // Given
         val rules = listOf(Rule.ValidateNumericNotInConsecutiveSequenceOrder(4, plainErrorMessage))
+
+        // Then
         validateForm(
             rules = rules,
             value = "1234",
@@ -723,7 +769,8 @@ class TestFormValidator {
     }
 
     @Test
-    fun validateMultipleForms() = coroutineRule.runTest {
+    fun `Given three forms with several rules, When they are validated together, Then the messages of all failed rules are returned in order`() = coroutineRule.runTest {
+        // Given
         val forms = listOf(
             Form(
                 mapOf(
@@ -813,14 +860,20 @@ class TestFormValidator {
                 "ValidateRegex"
             )
         )
+
+        // When
         val actualValidationResult = formValidation.validateForms(forms)
 
+        // Then
         assertEquals(expectedValidationResult, actualValidationResult)
     }
 
     @Test
-    fun testStringShouldEndWithNumber() = coroutineRule.runTest {
+    fun `Given a rule that a string ends with a number, When values are validated, Then only values ending in a digit pass`() = coroutineRule.runTest {
+        // Given
         val rules = listOf(Rule.StringShouldEndWithNumber(plainErrorMessage))
+
+        // Then
         validateForm(
             rules = rules,
             value = "1.",
@@ -849,7 +902,8 @@ class TestFormValidator {
     }
 
     @Test
-    fun testValidateFileExtension() = coroutineRule.runTest {
+    fun `Given the supported extensions doc and ppt, When file names are validated, Then only supported extensions pass`() = coroutineRule.runTest {
+        // Given
         val validExtensionList = listOf(".doc", ".ppt")
 
         val rules = listOf(
@@ -859,6 +913,7 @@ class TestFormValidator {
             )
         )
 
+        // Then
         validateForm(
             rules = rules,
             value = "fileame.pdf",
@@ -883,8 +938,8 @@ class TestFormValidator {
     }
 
     @Test
-    fun testValidateFileSizeMaxSize() = coroutineRule.runTest {
-
+    fun `Given a maximum file size of 100, When sizes are validated, Then larger sizes fail`() = coroutineRule.runTest {
+        // Given
         val rules = listOf(
             Rule.ValidateFileSizeMaxSize(
                 errorMessage = plainErrorMessage,
@@ -892,6 +947,7 @@ class TestFormValidator {
             )
         )
 
+        // Then
         validateForm(
             rules = rules,
             value = "200",
@@ -911,7 +967,8 @@ class TestFormValidator {
     }
 
     @Test
-    fun testValidateMinimumAmount() = coroutineRule.runTest {
+    fun `Given a minimum amount of 5, When values are validated, Then smaller and non-numeric values fail`() = coroutineRule.runTest {
+        // Given
         val rules = listOf(
             Rule.ValidateMinimumAmount(
                 minimumAmount = 5,
@@ -919,6 +976,7 @@ class TestFormValidator {
             )
         )
 
+        // Then
         validateForm(
             rules = rules,
             value = "test",
@@ -945,7 +1003,8 @@ class TestFormValidator {
     }
 
     @Test
-    fun testValidateMaximumAmount() = coroutineRule.runTest {
+    fun `Given a maximum amount of 5, When values are validated, Then larger and non-numeric values fail`() = coroutineRule.runTest {
+        // Given
         val rules = listOf(
             Rule.ValidateMaximumAmount(
                 maximumAmount = 5,
@@ -953,6 +1012,7 @@ class TestFormValidator {
             )
         )
 
+        // Then
         validateForm(
             rules = rules,
             value = "test",
@@ -978,10 +1038,15 @@ class TestFormValidator {
         )
     }
 
+    /**
+     * An empty value: isNotEmpty() is false, which short-circuits the &&.
+     */
     @Test
-    fun testValidateEmailRule_emptyValueShortCircuits() = coroutineRule.runTest {
+    fun `Given an email rule, When an empty value is validated, Then validation fails`() = coroutineRule.runTest {
+        // Given
         val rules = listOf(Rule.ValidateEmail(plainErrorMessage))
-        // Empty value → isNotEmpty() false → short-circuits the &&
+
+        // Then
         validateForm(
             rules = rules,
             value = "",
@@ -989,11 +1054,14 @@ class TestFormValidator {
         )
     }
 
+    /**
+     * shouldValidateHost = true (only), everything else off — covers the host-guard's `&&
+     * uri.host.isNullOrEmpty()` second-operand-false branch (host non-empty) AND the
+     * `shouldValidatePath/Query = false` short-circuit on the first operand.
+     */
     @Test
-    fun testValidateUrlRule_onlyHostValidated_passesWithHostFailsWithout() = coroutineRule.runTest {
-        // shouldValidateHost = true (only), everything else off — covers the host-guard's
-        // `&& uri.host.isNullOrEmpty()` second-operand-false branch (host non-empty) AND the
-        // `shouldValidatePath/Query = false` short-circuit on the first operand.
+    fun `Given a URL rule that validates only the host, When URLs are validated, Then a URL with a host passes and one without fails`() = coroutineRule.runTest {
+        // Given
         val rules = listOf(
             Rule.ValidateUrl(
                 shouldValidateSchema = false,
@@ -1003,6 +1071,8 @@ class TestFormValidator {
                 errorMessage = plainErrorMessage,
             )
         )
+
+        // Then
         validateForm(
             rules = rules,
             value = "https://www.example.com",
@@ -1015,9 +1085,12 @@ class TestFormValidator {
         )
     }
 
+    /**
+     * Mirrors the host test above for the path guard.
+     */
     @Test
-    fun testValidateUrlRule_onlyPathValidated_passesWithPathFailsWithout() = coroutineRule.runTest {
-        // Mirrors the host test above for the path guard.
+    fun `Given a URL rule that validates only the path, When URLs are validated, Then a URL with a path passes and one without fails`() = coroutineRule.runTest {
+        // Given
         val rules = listOf(
             Rule.ValidateUrl(
                 shouldValidateSchema = false,
@@ -1027,6 +1100,8 @@ class TestFormValidator {
                 errorMessage = plainErrorMessage,
             )
         )
+
+        // Then
         validateForm(
             rules = rules,
             value = "https://www.example.com/some/path",
@@ -1039,9 +1114,15 @@ class TestFormValidator {
         )
     }
 
+    /**
+     * Each `if (shouldValidate* && ...)` short-circuits to false when shouldValidate* is false.
+     * Empty value → early return false (still validationError because isValidUrl returns false)
+     * Non-empty but no components — none of the guards fire because shouldValidate* are all false,
+     * so isValidUrl returns true → validationSuccess.
+     */
     @Test
-    fun testValidateUrlRule_shouldValidateAllDisabled() = coroutineRule.runTest {
-        // Each `if (shouldValidate* && ...)` short-circuits to false when shouldValidate* is false.
+    fun `Given a URL rule that validates nothing, When an empty and a non-empty value are validated, Then the empty one fails and the other passes`() = coroutineRule.runTest {
+        // Given
         val rules = listOf(
             Rule.ValidateUrl(
                 shouldValidateSchema = false,
@@ -1051,14 +1132,13 @@ class TestFormValidator {
                 errorMessage = plainErrorMessage,
             )
         )
-        // Empty value → early return false (still validationError because isValidUrl returns false)
+
+        // Then
         validateForm(
             rules = rules,
             value = "",
             expectedValidationResult = validationError
         )
-        // Non-empty but no components — none of the guards fire because shouldValidate* are all false,
-        // so isValidUrl returns true → validationSuccess.
         validateForm(
             rules = rules,
             value = "abc",
@@ -1067,23 +1147,31 @@ class TestFormValidator {
     }
 
     @Test
-    fun testValidateStringRange_inRangeAndOutOfRange() = coroutineRule.runTest {
+    fun `Given a string range of 2 to 5, When strings are validated, Then only strings inside the range pass`() = coroutineRule.runTest {
+        // Given
         val rules = listOf(Rule.ValidateStringRange(range = 2..5, errorMessage = plainErrorMessage))
+
+        // Then
         validateForm(rules = rules, value = "a", expectedValidationResult = validationError)
         validateForm(rules = rules, value = "ab", expectedValidationResult = validationSuccess)
         validateForm(rules = rules, value = "abcdef", expectedValidationResult = validationError)
     }
 
+    /**
+     * maxTimesOfConsecutiveOrder < 2 → always returns true (always valid).
+     */
     @Test
-    fun testValidateDuplicateCharacterNotInConsecutiveOrder_belowThreshold() =
+    fun `Given a duplicate-character rule below its threshold, When repeated and distinct values are validated, Then both pass`() =
         coroutineRule.runTest {
-            // maxTimesOfConsecutiveOrder < 2 → always returns true (always valid).
+            // Given
             val rules = listOf(
                 Rule.ValidateDuplicateCharacterNotInConsecutiveOrder(
                     maxTimesOfConsecutiveOrder = 1,
                     errorMessage = plainErrorMessage,
                 )
             )
+
+            // Then
             validateForm(
                 rules = rules,
                 value = "aaaa",
@@ -1096,26 +1184,33 @@ class TestFormValidator {
             )
         }
 
+    /**
+     * The guard `value.isEmpty() || minLength < 2 || value.toIntOrNull() == null || value.length !=
+     * minLength` returns true for any of these conditions, so the rule is satisfied.
+     * An empty value makes the first OR-arm true. A non-numeric value makes the third true
+     * (toIntOrNull() == null). A length mismatch makes the fourth true. A minLength below 2 makes
+     * the second true.
+     * A genuinely consecutive sequence at the correct length, also reversed, returns false
+     * (validationError).
+     */
     @Test
-    fun testValidateNumericNotInConsecutiveSequenceOrder_shortCircuitGuards() =
+    fun `Given a consecutive-sequence rule, When empty, non-numeric and wrong-length values and a rule below length 2 are checked, Then they pass and real sequences fail`() =
         coroutineRule.runTest {
-            // The guard `value.isEmpty() || minLength < 2 || value.toIntOrNull() == null || value.length != minLength`
-            // returns true for any of these conditions, so the rule is satisfied.
+            // Given
             val rules = listOf(
                 Rule.ValidateNumericNotInConsecutiveSequenceOrder(
                     minLength = 4,
                     errorMessage = plainErrorMessage,
                 )
             )
-            // Empty value → first OR-arm true
+
+            // Then
             validateForm(rules = rules, value = "", expectedValidationResult = validationSuccess)
-            // Non-numeric → third OR-arm true (toIntOrNull() == null)
             validateForm(
                 rules = rules,
                 value = "abcd",
                 expectedValidationResult = validationSuccess
             )
-            // Length mismatch → fourth OR-arm true
             validateForm(rules = rules, value = "123", expectedValidationResult = validationSuccess)
 
             val tinyMinLengthRule = listOf(
@@ -1124,40 +1219,41 @@ class TestFormValidator {
                     errorMessage = plainErrorMessage,
                 )
             )
-            // minLength < 2 → second OR-arm true
             validateForm(
                 rules = tinyMinLengthRule,
                 value = "1",
                 expectedValidationResult = validationSuccess
             )
 
-            // A genuinely consecutive sequence at the correct length → returns false (validationError)
             validateForm(rules = rules, value = "1234", expectedValidationResult = validationError)
-            // Reversed consecutive
             validateForm(rules = rules, value = "4321", expectedValidationResult = validationError)
         }
 
+    /**
+     * Valid: alphanumerics and the allowed punctuation. Invalid: a character outside the allowed
+     * set (for example a dot for the extension), or an empty value (the regex requires at least one
+     * allowed character).
+     */
     @Test
-    fun testValidateFileName() = coroutineRule.runTest {
+    fun `Given a file-name rule, When names are validated, Then only names of allowed characters pass`() = coroutineRule.runTest {
+        // Given
         val rules = listOf(
             Rule.ValidateFileName(errorMessage = plainErrorMessage)
         )
 
-        // Valid: alphanumerics + the allowed punctuation
+        // Then
         validateForm(
             rules = rules,
             value = "my-file_name 01!",
             expectedValidationResult = validationSuccess
         )
 
-        // Invalid: contains a character outside the allowed set (e.g. a dot for the extension)
         validateForm(
             rules = rules,
             value = "file.txt",
             expectedValidationResult = validationError
         )
 
-        // Invalid: empty value (regex requires at least one allowed char)
         validateForm(
             rules = rules,
             value = "",

@@ -40,6 +40,7 @@ class TestDeepLinkHelper {
 
     @Test
     fun `Given no signing session, When an RQES sign-in callback arrives, Then it is ignored without a crash`() {
+        // Then
         handleDeepLinkAction(
             navController = navController,
             uri = Uri.parse("rqes://oauth/callback?code=forged-code&state=forged-state"),
@@ -53,6 +54,7 @@ class TestDeepLinkHelper {
      */
     @Test
     fun `Given an RQES sign-in callback without a state, When it arrives, Then it is ignored without a crash`() {
+        // Then
         handleDeepLinkAction(
             navController = navController,
             uri = Uri.parse("rqes://oauth/callback?code=forged-code"),
@@ -61,11 +63,13 @@ class TestDeepLinkHelper {
 
     @Test
     fun `Given a link of no known flow in one of the wallet's own schemes, When it is handled, Then nothing is started`() {
+        // Given
         val activity = Robolectric.buildActivity(ComponentActivity::class.java).setup().get()
         val activityNavController: NavController = mock {
             on { context } doReturn activity
         }
 
+        // When
         handleDeepLinkAction(
             navController = activityNavController,
             action = DeepLinkAction(
@@ -74,16 +78,19 @@ class TestDeepLinkHelper {
             ),
         )
 
+        // Then
         assertNull(shadowOf(activity).nextStartedActivity)
     }
 
     @Test
     fun `Given an https link of no known flow, When it is handled, Then it is opened as a browser link`() {
+        // Given
         val activity = Robolectric.buildActivity(ComponentActivity::class.java).setup().get()
         val activityNavController: NavController = mock {
             on { context } doReturn activity
         }
 
+        // When
         handleDeepLinkAction(
             navController = activityNavController,
             action = DeepLinkAction(
@@ -92,6 +99,7 @@ class TestDeepLinkHelper {
             ),
         )
 
+        // Then
         val started = shadowOf(activity).nextStartedActivity
         assertEquals(Intent.ACTION_VIEW, started.action)
         assertEquals(setOf(Intent.CATEGORY_BROWSABLE), started.categories)
@@ -103,6 +111,7 @@ class TestDeepLinkHelper {
      */
     @Test
     fun `Given rqes links with several paths, When they are read, Then only the callback's path starts the signing flow`() {
+        // Then
         assertEquals(
             DeepLinkType.RQES,
             hasDeepLink(Uri.parse("rqes://oauth/callback?code=1"))?.type

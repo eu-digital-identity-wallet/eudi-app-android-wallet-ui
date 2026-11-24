@@ -32,18 +32,23 @@ class TestPrefKeys {
     @Test
     fun `Given a factory reset, When the preferences are cleared, Then only the session id and the database key are kept`() =
         runBlocking {
+            // When
             prefKeys.clearAllExceptSessionIdAndDbKey()
 
+            // Then
             verify(prefsController).clearExcept(keys = setOf("SessionId", "dbKey"))
         }
 
     @Test
     fun `Given an opened launch link, When it is recorded and read, Then the same preference holds it`() =
         runBlocking {
+            // Given
             whenever(prefsController.getString("OpenedLaunchLink", "")).thenReturn("12:abc")
 
+            // When
             prefKeys.setOpenedLaunchLink("12:abc")
 
+            // Then
             verify(prefsController).setString("OpenedLaunchLink", "12:abc")
             assertEquals("12:abc", prefKeys.getOpenedLaunchLink())
         }

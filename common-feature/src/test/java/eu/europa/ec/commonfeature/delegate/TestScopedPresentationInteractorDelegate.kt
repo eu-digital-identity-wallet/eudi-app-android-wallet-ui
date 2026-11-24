@@ -18,8 +18,8 @@ package eu.europa.ec.commonfeature.delegate
 
 import eu.europa.ec.commonfeature.interactor.ScopedPresentationInteractorDelegate
 import eu.europa.ec.corelogic.controller.WalletCorePresentationController
-import junit.framework.TestCase
 import org.junit.After
+import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Test
 import org.mockito.Mock
@@ -55,17 +55,17 @@ class TestScopedPresentationInteractorDelegate {
     }
 
     @Test
-    fun `When constructed with a non-null controller, Then presentationScopeId is the default and the controller getter returns the injected instance`() {
+    fun `Given a non-null controller, When the delegate is constructed, Then presentationScopeId is the default and the controller getter returns the injected instance`() {
         // When
         val subject = TestSubject(controller = walletCorePresentationController)
 
         // Then
-        TestCase.assertEquals("DefaultPresentationScopeId", subject.presentationScopeId)
-        TestCase.assertEquals(walletCorePresentationController, subject.exposedController())
+        assertEquals("DefaultPresentationScopeId", subject.presentationScopeId)
+        assertEquals(walletCorePresentationController, subject.exposedController())
     }
 
     @Test
-    fun `When setScopeId is called, Then presentationScopeId is updated`() {
+    fun `Given a delegate, When setScopeId is called, Then presentationScopeId is updated`() {
         // Given
         val subject = TestSubject(controller = walletCorePresentationController)
         val newScopeId = "newScope"
@@ -74,6 +74,6 @@ class TestScopedPresentationInteractorDelegate {
         subject.setScopeId(newScopeId)
 
         // Then
-        TestCase.assertEquals(newScopeId, subject.presentationScopeId)
+        assertEquals(newScopeId, subject.presentationScopeId)
     }
 }

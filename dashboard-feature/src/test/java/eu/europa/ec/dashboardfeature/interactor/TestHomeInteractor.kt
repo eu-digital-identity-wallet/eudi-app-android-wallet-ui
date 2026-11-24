@@ -32,9 +32,9 @@ import eu.europa.ec.testlogic.base.getMockedContext
 import eu.europa.ec.testlogic.extension.runFlowTest
 import eu.europa.ec.testlogic.extension.runTest
 import eu.europa.ec.testlogic.rule.CoroutineTestRule
-import junit.framework.TestCase.assertEquals
-import junit.framework.TestCase.assertTrue
 import org.junit.After
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -122,7 +122,6 @@ class TestHomeInteractor {
         // Then
         assertEquals(expectedBluetoothAdapterEnabled, actual)
     }
-    //endregion
 
     // Case 3:
     // Context.getSystemService(BLUETOOTH_SERVICE) returns null (or non-BluetoothManager) →

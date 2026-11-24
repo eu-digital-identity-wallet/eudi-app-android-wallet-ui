@@ -31,6 +31,7 @@ class TestTransactionLogDomain {
 
     @Test
     fun `Given a registration issued to another party, When canRequestDataDeletion is read, Then it is false`() {
+        // Given
         val presentation = mockedPresentation.copy(
             claimsPresented = listOf(mockedCredentialClaims),
             registrationCheck = RecordedRegistrationCheckDomain.NotVerified(
@@ -38,11 +39,16 @@ class TestTransactionLogDomain {
             ),
         )
 
-        assertFalse(presentation.canRequestDataDeletion)
+        // When
+        val result = presentation.canRequestDataDeletion
+
+        // Then
+        assertFalse(result)
     }
 
     @Test
     fun `Given a registration that expired, When canRequestDataDeletion is read, Then it is still true`() {
+        // Given
         val presentation = mockedPresentation.copy(
             claimsPresented = listOf(mockedCredentialClaims),
             registrationCheck = RecordedRegistrationCheckDomain.NotVerified(
@@ -50,13 +56,19 @@ class TestTransactionLogDomain {
             ),
         )
 
-        assertTrue(presentation.canRequestDataDeletion)
+        // When
+        val result = presentation.canRequestDataDeletion
+
+        // Then
+        assertTrue(result)
     }
 
     @Test
     fun `Given registration details, When hasUnverifiedRegistration is read, Then only a verified check clears it`() {
+        // Given
         val withRegistration = mockedPresentation.copy(registration = mockedRegistration)
 
+        // Then
         assertFalse(withRegistration.hasUnverifiedRegistration)
         assertTrue(
             withRegistration.copy(registrationCheck = RecordedRegistrationCheckDomain.Unknown)
@@ -74,10 +86,12 @@ class TestTransactionLogDomain {
 
     @Test
     fun `Given only party details from a registration certificate, When hasUnverifiedRegistration is read, Then an unverified check sets it`() {
+        // Given
         val withContacts = mockedPresentation.copy(
             party = mockedPresentation.party.copy(contacts = listOf("https://verifier.example/contact")),
         )
 
+        // Then
         assertFalse(withContacts.hasUnverifiedRegistration)
         assertTrue(
             withContacts.copy(registrationCheck = RecordedRegistrationCheckDomain.Unknown)

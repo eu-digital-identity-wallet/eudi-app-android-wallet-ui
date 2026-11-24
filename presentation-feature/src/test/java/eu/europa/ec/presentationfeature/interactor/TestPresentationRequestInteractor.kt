@@ -54,11 +54,11 @@ import eu.europa.ec.testlogic.extension.toFlow
 import eu.europa.ec.testlogic.rule.CoroutineTestRule
 import eu.europa.ec.uilogic.component.ListItemMainContentDataUi
 import eu.europa.ec.uilogic.config.ConfigUILogic
-import junit.framework.TestCase.assertEquals
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.shareIn
 import org.junit.After
+import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -250,7 +250,6 @@ class TestPresentationRequestInteractor {
     fun `Given Case 5, When getRequestDocuments is called, Then Case 5 expected result is returned`() =
         coroutineRule.runTest {
             // Given
-
             val mockedPidWithBasicFields = getMockedPidWithBasicFields()
             val mockedMdlWithBasicFields = getMockedMdlWithBasicFields()
             mockGetAllIssuedDocumentsCall(
@@ -312,6 +311,7 @@ class TestPresentationRequestInteractor {
                         ),
                         claimsAreSelectable = mockedSelectableClaims,
                     )
+
                     // Then
                     assertEquals(
                         expectedResult,
@@ -332,7 +332,7 @@ class TestPresentationRequestInteractor {
     @Test
     fun `Given Case 6, When getRequestDocuments is called, Then Case 6 expected result is returned`() =
         coroutineRule.runTest {
-            // When
+            // Given
             mockWalletCorePresentationControllerEventEmission(
                 event = TransferEventPartialState.RequestReceived(
                     combinationsDomain = listOf(
@@ -346,7 +346,9 @@ class TestPresentationRequestInteractor {
             whenever(walletCoreDocumentsController.getAllIssuedDocuments())
                 .thenThrow(mockedExceptionWithMessage)
 
+            // When
             interactor.getRequestDocuments().runFlowTest {
+                // Then
                 val expectedResult = PresentationRequestInteractorPartialState.Failure(
                     error = mockedExceptionWithMessage.localizedMessage!!
                 )
@@ -372,6 +374,7 @@ class TestPresentationRequestInteractor {
 
             // When
             interactor.getRequestDocuments()
+
                 // Then
                 .expectNoEvents()
         }
@@ -390,10 +393,9 @@ class TestPresentationRequestInteractor {
                 event = TransferEventPartialState.Connecting
             )
 
-            // When
+            // Then
             interactor.getRequestDocuments().expectNoEvents()
         }
-    //endregion
 
     // Case 9:
     // RequestReceived with non-empty combinations, but every issued document is revoked, so all
@@ -539,6 +541,7 @@ class TestPresentationRequestInteractor {
                         ),
                         claimsAreSelectable = mockedSelectableClaims,
                     )
+
                     // Then
                     assertEquals(
                         expectedResult,
@@ -876,7 +879,8 @@ class TestPresentationRequestInteractor {
     // Constructor default
     // the null-controller default: construction must not trigger the lazy Koin lookup
     @Test
-    fun `When constructed without walletCorePresentationController, Then construction does not throw`() {
+    fun `Given no walletCorePresentationController, When the interactor is constructed, Then the default presentation scope id is used`() {
+        // When
         val newInteractor = PresentationRequestInteractorImpl(
             resourceProvider = resourceProvider,
             uuidProvider = uuidProvider,
@@ -884,6 +888,7 @@ class TestPresentationRequestInteractor {
             configUILogic = configUILogic,
         )
 
+        // Then
         assertEquals("DefaultPresentationScopeId", newInteractor.presentationScopeId)
     }
 
@@ -958,6 +963,7 @@ class TestPresentationRequestInteractor {
     @Test
     fun `Given transaction data bound to a revoked document, When getRequestDocuments is called, Then the request is declined`() =
         coroutineRule.runTest {
+            // Given
             val pid = getMockedPidWithBasicFields()
             val mdl = getMockedMdlWithBasicFields()
             mockTransformToUiItemsStrings(resourceProvider = resourceProvider)
@@ -982,7 +988,9 @@ class TestPresentationRequestInteractor {
                 ),
             )
 
+            // When
             interactor.getRequestDocuments().runFlowTest {
+                // Then
                 assertEquals(
                     PresentationRequestInteractorPartialState.Declined(
                         relyingParty = mockedRelyingPartyDomain,
@@ -1000,6 +1008,7 @@ class TestPresentationRequestInteractor {
     @Test
     fun `Given transaction data on a match that is not shown, When getRequestDocuments is called, Then the request is declined`() =
         coroutineRule.runTest {
+            // Given
             mockTransformToUiItemsStrings(resourceProvider = resourceProvider)
             mockTransactionDataStrings(resourceProvider = resourceProvider)
             mockDeclineString()
@@ -1021,7 +1030,9 @@ class TestPresentationRequestInteractor {
                 ),
             )
 
+            // When
             interactor.getRequestDocuments().runFlowTest {
+                // Then
                 assertEquals(
                     PresentationRequestInteractorPartialState.Declined(
                         relyingParty = mockedRelyingPartyDomain,
@@ -1039,6 +1050,7 @@ class TestPresentationRequestInteractor {
     @Test
     fun `Given transaction data that cannot be read, When getRequestDocuments is called, Then the request is declined`() =
         coroutineRule.runTest {
+            // Given
             mockTransformToUiItemsStrings(resourceProvider = resourceProvider)
             mockTransactionDataStrings(resourceProvider = resourceProvider)
             mockDeclineString()
@@ -1057,7 +1069,9 @@ class TestPresentationRequestInteractor {
                 ),
             )
 
+            // When
             interactor.getRequestDocuments().runFlowTest {
+                // Then
                 assertEquals(
                     PresentationRequestInteractorPartialState.Declined(
                         relyingParty = mockedRelyingPartyDomain,
@@ -1147,9 +1161,10 @@ class TestPresentationRequestInteractor {
     // The controller's updateRequestedDocuments is called with an empty selection list.
     @Test
     fun `Given Case 1, When updateRequestedDocuments is called, Then Case 1 expected result is returned`() {
-
+        // When
         interactor.updateRequestedDocuments(selectedCombination = null)
 
+        // Then
         verify(walletCorePresentationController, times(1))
             .updateRequestedDocuments(
                 disclosedDocuments = emptyList()
@@ -1215,6 +1230,7 @@ class TestPresentationRequestInteractor {
         val requestConfig = RequestUriConfig(
             PresentationMode.Ble(initiatorRoute = mockedInitiatorRoute, sessionId = "session-1")
         )
+
         // When
         interactor.setConfig(config = requestConfig, intentAction = null)
 
@@ -1228,7 +1244,7 @@ class TestPresentationRequestInteractor {
 
     //region stopPresentation
     @Test
-    fun `When stopPresentation on the interactor is called, Then stopPresentation should be executed on the controller`() {
+    fun `Given a presentation controller, When stopPresentation on the interactor is called, Then stopPresentation should be executed on the controller`() {
         // When
         interactor.stopPresentation()
 

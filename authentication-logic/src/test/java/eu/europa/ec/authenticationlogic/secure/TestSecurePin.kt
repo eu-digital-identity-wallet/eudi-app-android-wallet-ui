@@ -16,20 +16,18 @@
 
 package eu.europa.ec.authenticationlogic.secure
 
-import org.junit.Assert
 import org.junit.Assert.assertArrayEquals
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertThrows
 import org.junit.Assert.assertTrue
 import org.junit.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertNotEquals
 
 class TestSecurePin {
 
     @Test
-    fun `getAndClear returns characters once`() {
-
+    fun `Given a PIN, When getAndClear is called, Then the characters are returned once`() {
         // Given
         val pin = SecurePinImpl("123456")
 
@@ -48,8 +46,7 @@ class TestSecurePin {
     }
 
     @Test
-    fun `getAndClearAsString returns string once`() {
-
+    fun `Given a PIN, When getAndClearAsString is called, Then the string is returned once`() {
         // Given
         val mockedPin = "123456"
         val pin = SecurePinImpl(mockedPin)
@@ -58,7 +55,7 @@ class TestSecurePin {
         val data = pin.getAndClearAsString()
 
         // Then
-        assertEquals(data, mockedPin)
+        assertEquals(mockedPin, data)
         assertTrue(pin.isCleared)
         assertThrows(IllegalStateException::class.java) {
             pin.getAndClearAsString()
@@ -66,8 +63,7 @@ class TestSecurePin {
     }
 
     @Test
-    fun `close clears sensitive data`() {
-
+    fun `Given a PIN that was read, When the data is closed, Then its length is zero and it cannot be used`() {
         // Given
         val pin = SecurePinImpl("1234")
 
@@ -76,23 +72,26 @@ class TestSecurePin {
         data.close()
 
         // Then
-        Assert.assertEquals(0, data.length)
+        assertEquals(0, data.length)
         assertThrows(IllegalStateException::class.java) {
             data.useChars {}
         }
     }
 
     @Test
-    fun `contentEquals compares without clearing pins`() {
-
+    fun `Given two equal PINs and a different one, When they are compared, Then the result is by content and no PIN is cleared`() {
         // Given
         val pinA = SecurePinImpl("1234")
         val pinB = SecurePinImpl("1234")
         val pinC = SecurePinImpl("4321")
 
+        // When
+        val equalPins = pinA.contentEquals(pinB)
+        val differentPins = pinA.contentEquals(pinC)
+
         // Then
-        assertTrue(pinA.contentEquals(pinB))
-        assertFalse(pinA.contentEquals(pinC))
+        assertTrue(equalPins)
+        assertFalse(differentPins)
         assertFalse(pinA.isCleared)
         assertFalse(pinB.isCleared)
         assertFalse(pinC.isCleared)
@@ -103,21 +102,24 @@ class TestSecurePin {
     }
 
     @Test
-    fun `object methods do not expose pin content`() {
-
+    fun `Given PINs with the same value, When they are printed and compared, Then the content is not exposed`() {
         // Given
         val pin = SecurePinImpl("987654")
         val sameValuePin = SecurePinImpl("987654")
 
+        // When
+        val pinText = pin.toString()
+
         // Then
-        assertFalse(pin.toString().contains("987654"))
+        assertFalse(pinText.contains("987654"))
         assertNotEquals(pin, sameValuePin)
 
-        // Given
+        // When
         val data = pin.getAndClear()
+        val dataText = data.toString()
 
         // Then
-        assertFalse(data.toString().contains("987654"))
+        assertFalse(dataText.contains("987654"))
 
         data.close()
         pin.close()
@@ -125,21 +127,26 @@ class TestSecurePin {
     }
 
     @Test
-    fun `readChars gives the characters without clearing them`() {
+    fun `Given a PIN, When readChars is called, Then the characters are given and the PIN is not cleared`() {
+        // Given
         val pin = SecurePinImpl("135792")
 
+        // When
         val matches = pin.readChars { it.contentEquals("135792".toCharArray()) }
 
+        // Then
         assertTrue(matches)
         assertFalse(pin.isCleared)
         pin.close()
     }
 
     @Test
-    fun `readChars fails once the PIN is cleared`() {
+    fun `Given a cleared PIN, When readChars is called, Then it fails`() {
+        // Given
         val pin = SecurePinImpl("135792")
         pin.close()
 
+        // Then
         assertThrows(IllegalStateException::class.java) {
             pin.readChars { }
         }

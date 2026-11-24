@@ -26,30 +26,53 @@ class TestTextAlignSerializer {
     private val json = Json
 
     @Test
-    fun `Start roundtrips losslessly`() = assertRoundtrip(TextAlign.Start, "\"Start\"")
+    fun `Given TextAlign Start, When it is serialized and deserialized, Then it round-trips as its name`() {
+        // Then
+        assertRoundtrip(TextAlign.Start, "\"Start\"")
+    }
 
     @Test
-    fun `End roundtrips losslessly`() = assertRoundtrip(TextAlign.End, "\"End\"")
+    fun `Given TextAlign End, When it is serialized and deserialized, Then it round-trips as its name`() {
+        // Then
+        assertRoundtrip(TextAlign.End, "\"End\"")
+    }
 
     @Test
-    fun `Left roundtrips losslessly`() = assertRoundtrip(TextAlign.Left, "\"Left\"")
+    fun `Given TextAlign Left, When it is serialized and deserialized, Then it round-trips as its name`() {
+        // Then
+        assertRoundtrip(TextAlign.Left, "\"Left\"")
+    }
 
     @Test
-    fun `Right roundtrips losslessly`() = assertRoundtrip(TextAlign.Right, "\"Right\"")
+    fun `Given TextAlign Right, When it is serialized and deserialized, Then it round-trips as its name`() {
+        // Then
+        assertRoundtrip(TextAlign.Right, "\"Right\"")
+    }
 
     @Test
-    fun `Center roundtrips losslessly`() = assertRoundtrip(TextAlign.Center, "\"Center\"")
+    fun `Given TextAlign Center, When it is serialized and deserialized, Then it round-trips as its name`() {
+        // Then
+        assertRoundtrip(TextAlign.Center, "\"Center\"")
+    }
 
     @Test
-    fun `Justify roundtrips losslessly`() = assertRoundtrip(TextAlign.Justify, "\"Justify\"")
+    fun `Given TextAlign Justify, When it is serialized and deserialized, Then it round-trips as its name`() {
+        // Then
+        assertRoundtrip(TextAlign.Justify, "\"Justify\"")
+    }
 
     @Test
-    fun `Unspecified roundtrips losslessly`() =
+    fun `Given TextAlign Unspecified, When it is serialized and deserialized, Then it round-trips as its name`() {
+        // Then
         assertRoundtrip(TextAlign.Unspecified, "\"Unspecified\"")
+    }
 
     @Test
-    fun `unknown JSON string falls back to Unspecified`() {
+    fun `Given an unknown JSON string, When it is decoded, Then it falls back to Unspecified`() {
+        // When
         val decoded = json.decodeFromString(TextAlignSerializer, "\"NotARealAlignment\"")
+
+        // Then
         assertEquals(TextAlign.Unspecified, decoded)
     }
 

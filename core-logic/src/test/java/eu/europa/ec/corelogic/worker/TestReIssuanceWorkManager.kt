@@ -81,6 +81,7 @@ class TestReIssuanceWorkManager {
     @Test
     fun `Given a revoked document, When the worker runs, Then it is not re-issued`() {
         coroutineRule.runTest {
+            // Given
             whenever(walletCoreDocumentsController.getAllIssuedDocuments()).thenReturn(
                 listOf(
                     document
@@ -88,8 +89,10 @@ class TestReIssuanceWorkManager {
             )
             whenever(walletCoreDocumentsController.isDocumentRevoked(document.id)).thenReturn(true)
 
+            // When
             runWorker()
 
+            // Then
             verify(walletCoreDocumentsController).getAllIssuedDocuments()
             verify(walletCoreDocumentsController).isDocumentRevoked(document.id)
             verifyNoMoreInteractions(walletCoreDocumentsController)
@@ -99,6 +102,7 @@ class TestReIssuanceWorkManager {
     @Test
     fun `Given a re-issuance in progress, When the worker is cancelled, Then it holds its lock until the outcome arrives`() {
         coroutineRule.runTest {
+            // Given
             val dueDocument: IssuedDocument = mock {
                 on { id } doReturn "due-document"
                 on { credentialPolicy } doReturn CredentialPolicy.OnceOnly()
@@ -116,14 +120,20 @@ class TestReIssuanceWorkManager {
             whenever(walletCoreDocumentsController.reIssueDocument(any(), any(), any(), any()))
                 .thenReturn(flow { emit(outcome.await()) })
 
+            // When
             val work = coroutineRule.testScope.launch { runWorker() }
             coroutineRule.testScope.runCurrent()
             work.cancel()
             coroutineRule.testScope.runCurrent()
 
+            // Then
             assertTrue(ReIssuanceWorkManager.runLock.isLocked)
+
+            // When
             outcome.complete(IssueDocumentsPartialState.Failure(errorMessage = "error"))
             work.join()
+
+            // Then
             assertFalse(ReIssuanceWorkManager.runLock.isLocked)
         }
     }

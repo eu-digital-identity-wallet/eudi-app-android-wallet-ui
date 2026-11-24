@@ -55,10 +55,13 @@ class TestPrefsPinStorageProvider {
     @Test
     fun `Given an empty PIN, When it is stored, Then it is refused, cleared and nothing is written`() =
         coroutineRule.runTest {
+            // Given
             val pin = SecurePinImpl("")
 
+            // When
             val error = runCatching { provider.setPin(pin) }.exceptionOrNull()
 
+            // Then
             assertTrue(error is IllegalArgumentException)
             assertTrue(pin.isCleared)
             verifyNoInteractions(prefsController)

@@ -34,11 +34,11 @@ import eu.europa.ec.testlogic.extension.toFlow
 import eu.europa.ec.testlogic.rule.CoroutineTestRule
 import eu.europa.ec.uilogic.container.EudiComponentActivity
 import eu.europa.ec.uilogic.navigation.DashboardScreens
-import junit.framework.TestCase.assertEquals
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.shareIn
 import org.junit.After
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotEquals
 import org.junit.Before
 import org.junit.Rule
@@ -104,6 +104,7 @@ class TestProximityQRInteractor {
 
             // When
             interactor.startQrEngagement()
+
                 // Then
                 .expectNoEvents()
 
@@ -321,7 +322,7 @@ class TestProximityQRInteractor {
     //region constructor default
     // the null-controller default: construction must not trigger the lazy Koin lookup
     @Test
-    fun `When constructed without walletCorePresentationController, Then construction does not throw`() {
+    fun `Given no walletCorePresentationController, When the interactor is constructed, Then the default presentation scope id is used`() {
         // When
         val newInteractor = ProximityQRInteractorImpl(
             resourceProvider = resourceProvider,
@@ -334,9 +335,11 @@ class TestProximityQRInteractor {
 
     //region cancelTransfer
     @Test
-    fun `Verify that cancelTransfer calls walletCorePresentationController#stopPresentation`() {
+    fun `Given a presentation controller, When cancelTransfer is called, Then walletCorePresentationController#stopPresentation is called`() {
+        // When
         interactor.cancelTransfer()
 
+        // Then
         verify(walletCorePresentationController, times(1))
             .stopPresentation()
     }
@@ -353,13 +356,16 @@ class TestProximityQRInteractor {
     // with those exact arguments.
     @Test
     fun `Given Case 1, When toggleNfcEngagement is called, Then Case 1 Expected Result is returned`() {
+        // Given
         val componentActivity = mock<EudiComponentActivity>()
 
+        // When
         interactor.toggleNfcEngagement(
             componentActivity = componentActivity,
             toggle = true
         )
 
+        // Then
         verify(walletCorePresentationController, times(1))
             .toggleNfcEngagement(
                 componentActivity = componentActivity,
@@ -376,13 +382,16 @@ class TestProximityQRInteractor {
     // with those exact arguments.
     @Test
     fun `Given Case 2, When toggleNfcEngagement is called, Then Case 2 Expected Result is returned`() {
+        // Given
         val componentActivity = mock<EudiComponentActivity>()
 
+        // When
         interactor.toggleNfcEngagement(
             componentActivity = componentActivity,
             toggle = false
         )
 
+        // Then
         verify(walletCorePresentationController, times(1))
             .toggleNfcEngagement(
                 componentActivity = componentActivity,
@@ -412,9 +421,11 @@ class TestProximityQRInteractor {
 
     @Test
     fun `Given two proximity sessions, When their scopes are named, Then each has its own`() {
+        // Given
         val first = PresentationMode.Ble(initiatorRoute = DashboardScreens.Dashboard.screenRoute)
         val second = PresentationMode.Ble(initiatorRoute = DashboardScreens.Dashboard.screenRoute)
 
+        // Then
         assertNotEquals(first.scopeId, second.scopeId)
     }
 
@@ -433,7 +444,7 @@ class TestProximityQRInteractor {
         verify(walletCorePresentationController, times(1))
             .setConfig(PresentationControllerConfig.OpenId4VP(uri = "", initiator))
 
-        assertEquals(interactor.presentationScopeId, "vp_presentation_scope_id")
+        assertEquals("vp_presentation_scope_id", interactor.presentationScopeId)
     }
     //endregion
 

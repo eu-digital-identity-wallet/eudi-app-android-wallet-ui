@@ -96,11 +96,14 @@ class TestRevocationWorkManager {
     @Test
     fun `Given a document recorded as Invalid, When its status reads Valid, Then it stays blocked`() {
         coroutineRule.runTest {
+            // Given
             givenStoredStatus(RevocationStatus.INVALID)
             givenObservedStatus(Status.Valid)
 
+            // When
             runWorker()
 
+            // Then
             verify(revokedDocumentDao, never()).delete(documentId)
             verify(revokedDocumentDao, never()).store(any())
         }
@@ -109,6 +112,7 @@ class TestRevocationWorkManager {
     @Test
     fun `Given a document newly revoked, When the check ends, Then the DC-API registry is updated`() {
         coroutineRule.runTest {
+            // Given
             givenStoredStatus(null)
             givenObservedStatus(Status.Invalid)
             whenever(revokedDocumentDao.retrieveAll())
@@ -119,8 +123,10 @@ class TestRevocationWorkManager {
             whenever(walletCoreDCAPIRegistrationController.excludedDocumentIds)
                 .thenReturn(emptySet())
 
+            // When
             runWorker()
 
+            // Then
             verify(walletCoreDCAPIRegistrationController).registerCredentials()
         }
     }
@@ -128,6 +134,7 @@ class TestRevocationWorkManager {
     @Test
     fun `Given a suspended document restored, When the check ends, Then the DC-API registry is updated`() {
         coroutineRule.runTest {
+            // Given
             givenStoredStatus(RevocationStatus.SUSPENDED)
             givenObservedStatus(Status.Valid)
             whenever(revokedDocumentDao.retrieveAll())
@@ -138,8 +145,10 @@ class TestRevocationWorkManager {
             whenever(walletCoreDCAPIRegistrationController.excludedDocumentIds)
                 .thenReturn(setOf(documentId))
 
+            // When
             runWorker()
 
+            // Then
             verify(walletCoreDCAPIRegistrationController).registerCredentials()
         }
     }
@@ -147,13 +156,16 @@ class TestRevocationWorkManager {
     @Test
     fun `Given the registry already leaves out the blocked documents, When the check ends, Then it is not updated`() {
         coroutineRule.runTest {
+            // Given
             givenStoredStatus(RevocationStatus.INVALID)
             givenObservedStatus(Status.Valid)
             whenever(walletCoreDCAPIRegistrationController.excludedDocumentIds)
                 .thenReturn(setOf(documentId))
 
+            // When
             runWorker()
 
+            // Then
             verify(walletCoreDCAPIRegistrationController, never()).registerCredentials()
         }
     }
@@ -161,11 +173,14 @@ class TestRevocationWorkManager {
     @Test
     fun `Given a document recorded as Suspended, When its status reads Valid, Then it is restored`() {
         coroutineRule.runTest {
+            // Given
             givenStoredStatus(RevocationStatus.SUSPENDED)
             givenObservedStatus(Status.Valid)
 
+            // When
             runWorker()
 
+            // Then
             verify(revokedDocumentDao).delete(documentId)
         }
     }
@@ -173,11 +188,14 @@ class TestRevocationWorkManager {
     @Test
     fun `Given a document recorded as unrecognised, When its status reads Valid, Then it is restored`() {
         coroutineRule.runTest {
+            // Given
             givenStoredStatus(RevocationStatus.UNRECOGNISED)
             givenObservedStatus(Status.Valid)
 
+            // When
             runWorker()
 
+            // Then
             verify(revokedDocumentDao).delete(documentId)
         }
     }
@@ -185,11 +203,14 @@ class TestRevocationWorkManager {
     @Test
     fun `Given a document with no record, When its status reads Invalid, Then it is recorded as Invalid`() {
         coroutineRule.runTest {
+            // Given
             givenStoredStatus(null)
             givenObservedStatus(Status.Invalid)
 
+            // When
             runWorker()
 
+            // Then
             verify(revokedDocumentDao).store(RevokedDocument(documentId, RevocationStatus.INVALID))
         }
     }
@@ -197,11 +218,14 @@ class TestRevocationWorkManager {
     @Test
     fun `Given a document with no record, When its status reads Suspended, Then it is recorded as Suspended`() {
         coroutineRule.runTest {
+            // Given
             givenStoredStatus(null)
             givenObservedStatus(Status.Suspended)
 
+            // When
             runWorker()
 
+            // Then
             verify(revokedDocumentDao).store(
                 RevokedDocument(
                     documentId,
@@ -214,11 +238,14 @@ class TestRevocationWorkManager {
     @Test
     fun `Given a suspended document, When its status reads Invalid, Then the record becomes Invalid`() {
         coroutineRule.runTest {
+            // Given
             givenStoredStatus(RevocationStatus.SUSPENDED)
             givenObservedStatus(Status.Invalid)
 
+            // When
             runWorker()
 
+            // Then
             verify(revokedDocumentDao).store(RevokedDocument(documentId, RevocationStatus.INVALID))
         }
     }
@@ -226,11 +253,14 @@ class TestRevocationWorkManager {
     @Test
     fun `Given a document recorded as Invalid, When its status reads Suspended, Then the record stays Invalid`() {
         coroutineRule.runTest {
+            // Given
             givenStoredStatus(RevocationStatus.INVALID)
             givenObservedStatus(Status.Suspended)
 
+            // When
             runWorker()
 
+            // Then
             verify(revokedDocumentDao, never()).store(any())
             verify(revokedDocumentDao, never()).delete(documentId)
         }
@@ -239,11 +269,14 @@ class TestRevocationWorkManager {
     @Test
     fun `Given a document with no record, When its status is application specific, Then it is blocked`() {
         coroutineRule.runTest {
+            // Given
             givenStoredStatus(null)
             givenObservedStatus(Status(0x03u))
 
+            // When
             runWorker()
 
+            // Then
             verify(revokedDocumentDao).store(
                 RevokedDocument(
                     documentId,
@@ -256,11 +289,14 @@ class TestRevocationWorkManager {
     @Test
     fun `Given a document with no record, When its status is a reserved value, Then it is blocked`() {
         coroutineRule.runTest {
+            // Given
             givenStoredStatus(null)
             givenObservedStatus(Status(0x04u))
 
+            // When
             runWorker()
 
+            // Then
             verify(revokedDocumentDao).store(
                 RevokedDocument(
                     documentId,
@@ -273,13 +309,16 @@ class TestRevocationWorkManager {
     @Test
     fun `Given a document with a status reference, When the status cannot be resolved, Then the failure is recorded`() {
         coroutineRule.runTest {
+            // Given
             givenStoredStatus(null)
             whenever(walletCoreDocumentsController.resolveDocumentStatus(document))
                 .thenReturn(Result.failure(IllegalStateException("status list unreachable")))
             whenever(walletCoreDocumentsController.hasStatusReference(document)).thenReturn(true)
 
+            // When
             runWorker()
 
+            // Then
             val captor = argumentCaptor<StatusRefreshFailure>()
             verify(statusRefreshFailureDao).store(captor.capture())
             assertEquals(documentId, captor.firstValue.identifier)
@@ -291,13 +330,16 @@ class TestRevocationWorkManager {
     @Test
     fun `Given a document without a status reference, When the status cannot be resolved, Then no failure is recorded`() {
         coroutineRule.runTest {
+            // Given
             givenStoredStatus(null)
             whenever(walletCoreDocumentsController.resolveDocumentStatus(document))
                 .thenReturn(Result.failure(IllegalStateException("No status list found in SD-JWT VC")))
             whenever(walletCoreDocumentsController.hasStatusReference(document)).thenReturn(false)
 
+            // When
             runWorker()
 
+            // Then
             verify(statusRefreshFailureDao, never()).store(any())
         }
     }
@@ -305,12 +347,15 @@ class TestRevocationWorkManager {
     @Test
     fun `Given an earlier failed refresh, When the status resolves, Then the failure is cleared and details refresh`() {
         coroutineRule.runTest {
+            // Given
             givenStoredStatus(null)
             givenEarlierRefreshFailure()
             givenObservedStatus(Status.Valid)
 
+            // When
             runWorker()
 
+            // Then
             verify(statusRefreshFailureDao).delete(documentId)
             assertEquals(listOf(documentId), detailsRefreshIds())
         }
@@ -319,11 +364,14 @@ class TestRevocationWorkManager {
     @Test
     fun `Given no earlier failed refresh, When the status resolves, Then nothing changes`() {
         coroutineRule.runTest {
+            // Given
             givenStoredStatus(null)
             givenObservedStatus(Status.Valid)
 
+            // When
             runWorker()
 
+            // Then
             verify(statusRefreshFailureDao, never()).delete(documentId)
             assertEquals(emptyList<Intent>(), broadcasts())
         }
@@ -332,13 +380,16 @@ class TestRevocationWorkManager {
     @Test
     fun `Given a first failed refresh, When the worker runs, Then details refresh`() {
         coroutineRule.runTest {
+            // Given
             givenStoredStatus(null)
             whenever(walletCoreDocumentsController.resolveDocumentStatus(document))
                 .thenReturn(Result.failure(IllegalStateException("status list unreachable")))
             whenever(walletCoreDocumentsController.hasStatusReference(document)).thenReturn(true)
 
+            // When
             runWorker()
 
+            // Then
             assertEquals(listOf(documentId), detailsRefreshIds())
         }
     }
@@ -346,11 +397,14 @@ class TestRevocationWorkManager {
     @Test
     fun `Given a document blocked for the first time, When the worker runs, Then the revocation message is sent`() {
         coroutineRule.runTest {
+            // Given
             givenStoredStatus(null)
             givenObservedStatus(Status.Invalid)
 
+            // When
             runWorker()
 
+            // Then
             assertEquals(
                 listOf(
                     CoreActions.REVOCATION_WORK_MESSAGE_ACTION,
@@ -366,11 +420,14 @@ class TestRevocationWorkManager {
     @Test
     fun `Given a suspended document, When it becomes Invalid, Then details refresh without a new revocation message`() {
         coroutineRule.runTest {
+            // Given
             givenStoredStatus(RevocationStatus.SUSPENDED)
             givenObservedStatus(Status.Invalid)
 
+            // When
             runWorker()
 
+            // Then
             assertEquals(
                 listOf(
                     CoreActions.REVOCATION_WORK_REFRESH_DETAILS_ACTION,
@@ -384,13 +441,16 @@ class TestRevocationWorkManager {
     @Test
     fun `Given a cancelled resolution, When the worker runs, Then the cancellation is not recorded as a failure`() {
         coroutineRule.runTest {
+            // Given
             givenStoredStatus(null)
             whenever(walletCoreDocumentsController.hasStatusReference(document)).thenReturn(true)
             whenever(walletCoreDocumentsController.resolveDocumentStatus(document))
                 .thenReturn(Result.failure(CancellationException("stopped")))
 
+            // When
             val thrown = runCatching { runWorker() }.exceptionOrNull()
 
+            // Then
             assertTrue(thrown is CancellationException)
             verify(statusRefreshFailureDao, never()).store(any())
         }
@@ -398,6 +458,7 @@ class TestRevocationWorkManager {
 
     @Test
     fun `Given every stored and observed status, When revocationUpdateFor is called, Then the rules hold`() {
+        // Given
         val applicationSpecific = Status(0x03u)
         val reserved = Status(0x04u)
         val cases = listOf(
@@ -440,6 +501,7 @@ class TestRevocationWorkManager {
             Triple(RevocationStatus.UNRECOGNISED, applicationSpecific, RevocationUpdate.Keep),
         )
 
+        // Then
         cases.forEach { (stored, observed, expected) ->
             assertEquals("$stored then $observed", expected, revocationUpdateFor(stored, observed))
         }
@@ -448,9 +510,11 @@ class TestRevocationWorkManager {
     @Test
     fun `Given a valid document, When the worker runs, Then it reports success`() {
         coroutineRule.runTest {
+            // Given
             givenStoredStatus(null)
             givenObservedStatus(Status.Valid)
 
+            // Then
             assertEquals(ListenableWorker.Result.success(), runWorker())
         }
     }

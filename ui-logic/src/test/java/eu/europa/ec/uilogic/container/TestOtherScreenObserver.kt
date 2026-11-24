@@ -30,15 +30,19 @@ class TestOtherScreenObserver {
 
     @Test
     fun `Given another activity of the app, When it comes to the front, Then the wallet counts as covered`() {
+        // When
         observer.onActivityResumed(mock())
 
+        // Then
         verify(sessionController).onCoveredByOtherScreen()
     }
 
     @Test
     fun `Given the wallet activity, When it comes to the front, Then it does not count as covered`() {
+        // When
         observer.onActivityResumed(mock<EudiComponentActivity>())
 
+        // Then
         verify(sessionController, never()).onCoveredByOtherScreen()
     }
 }

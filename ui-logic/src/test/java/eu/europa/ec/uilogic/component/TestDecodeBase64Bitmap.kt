@@ -23,27 +23,48 @@ import org.junit.Test
 class TestDecodeBase64Bitmap {
 
     @Test
-    fun `Given an image within the maximum dimension, Then it is decoded at full size`() {
-        assertEquals(1, sampleSizeFor(width = 600, height = 800))
-        assertEquals(1, sampleSizeFor(width = MAX_EMBEDDED_IMAGE_DIMENSION, height = 10))
+    fun `Given images within the maximum dimension, When the sample size is computed, Then they are decoded at full size`() {
+        // When
+        val typical = sampleSizeFor(width = 600, height = 800)
+        val atMaximum = sampleSizeFor(width = MAX_EMBEDDED_IMAGE_DIMENSION, height = 10)
+
+        // Then
+        assertEquals(1, typical)
+        assertEquals(1, atMaximum)
     }
 
     @Test
-    fun `Given a larger image, Then it is downsampled by a power of two to fit`() {
-        assertEquals(2, sampleSizeFor(width = MAX_EMBEDDED_IMAGE_DIMENSION + 1, height = 10))
-        assertEquals(4, sampleSizeFor(width = 3000, height = 6000))
-        assertEquals(8, sampleSizeFor(width = 16_000, height = 2_000))
+    fun `Given larger images, When the sample size is computed, Then they are downsampled by a power of two to fit`() {
+        // When
+        val justOver = sampleSizeFor(width = MAX_EMBEDDED_IMAGE_DIMENSION + 1, height = 10)
+        val tall = sampleSizeFor(width = 3000, height = 6000)
+        val wide = sampleSizeFor(width = 16_000, height = 2_000)
+
+        // Then
+        assertEquals(2, justOver)
+        assertEquals(4, tall)
+        assertEquals(8, wide)
     }
 
     @Test
-    fun `Given an image that declares more pixels than the limit, Then it is not decoded`() {
-        assertNull(sampleSizeFor(width = 20_000, height = 20_000))
-        assertNull(sampleSizeFor(width = Int.MAX_VALUE, height = Int.MAX_VALUE))
+    fun `Given images that declare more pixels than the limit, When the sample size is computed, Then they are not decoded`() {
+        // When
+        val tooManyPixels = sampleSizeFor(width = 20_000, height = 20_000)
+        val maxValues = sampleSizeFor(width = Int.MAX_VALUE, height = Int.MAX_VALUE)
+
+        // Then
+        assertNull(tooManyPixels)
+        assertNull(maxValues)
     }
 
     @Test
-    fun `Given an unknown size, Then it is not decoded`() {
-        assertNull(sampleSizeFor(width = -1, height = -1))
-        assertNull(sampleSizeFor(width = 0, height = 100))
+    fun `Given an unknown size, When the sample size is computed, Then it is not decoded`() {
+        // When
+        val negative = sampleSizeFor(width = -1, height = -1)
+        val zeroWidth = sampleSizeFor(width = 0, height = 100)
+
+        // Then
+        assertNull(negative)
+        assertNull(zeroWidth)
     }
 }

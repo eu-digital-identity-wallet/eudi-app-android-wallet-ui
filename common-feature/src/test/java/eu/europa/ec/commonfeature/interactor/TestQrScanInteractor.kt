@@ -24,8 +24,8 @@ import eu.europa.ec.businesslogic.validator.FormValidator
 import eu.europa.ec.businesslogic.validator.FormsValidationResult
 import eu.europa.ec.testlogic.extension.runTest
 import eu.europa.ec.testlogic.rule.CoroutineTestRule
-import junit.framework.TestCase.assertEquals
 import org.junit.After
+import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -85,17 +85,19 @@ class TestQrScanInteractor {
     // (an instance method on a singleton, not a Java static), so Mockito's mockStatic
     // cannot intercept the call. We exercise the line for coverage and tolerate any
     // throwable from the un-initialized SDK.
+    /**
+     * Expected: the SDK throws because setup() has not been called in the unit-test context.
+     */
     @Test
-    fun `When launchRqesSdk is called, Then the call is dispatched to the EudiRQESUi singleton`() {
+    fun `Given the uninitialized EudiRQESUi singleton, When launchRqesSdk is called, Then any throwable from the SDK is tolerated`() {
         // Given
         val context = mock(Context::class.java)
         val uri = mock(Uri::class.java)
 
+        // Then
         try {
-            // When
             interactor.launchRqesSdk(context = context, uri = uri)
         } catch (_: Throwable) {
-            // Expected: SDK throws because setup() has not been called in unit-test context.
         }
     }
 

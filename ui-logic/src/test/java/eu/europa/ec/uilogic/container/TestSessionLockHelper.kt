@@ -33,10 +33,13 @@ class TestSessionLockHelper {
 
     @Test
     fun `Given the observers are registered, When another activity of the app comes to the front, Then the wallet counts as covered`() {
+        // Given
         registerSessionLockObservers(RuntimeEnvironment.getApplication(), sessionController)
 
+        // When
         Robolectric.buildActivity(ComponentActivity::class.java).setup()
 
+        // Then
         verify(sessionController).onCoveredByOtherScreen()
     }
 }

@@ -31,11 +31,15 @@ class TestNetworkModule {
 
     @Test
     fun `Given the reference configuration, When the wallet's client is built, Then it has the timeouts and the size limit`() {
+        // Given
         val configLogic: ConfigLogic = mock {
             on { appBuildType } doReturn AppBuildType.RELEASE
         }
 
+        // When
         provideHttpClient(provideJson(), configLogic, NetworkConfigImpl()).use { client ->
+
+            // Then
             assertNotNull(client.pluginOrNull(HttpTimeout))
             assertNotNull(client.pluginOrNull(ResponseSizeLimit))
         }

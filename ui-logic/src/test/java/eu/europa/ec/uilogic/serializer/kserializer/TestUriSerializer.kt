@@ -26,26 +26,41 @@ class TestUriSerializer {
     private val json = Json
 
     @Test
-    fun `https URI roundtrips losslessly`() {
+    fun `Given an https URI, When it is serialized and deserialized, Then it is unchanged`() {
+        // Given
         val uri = URI("https://example.com/path?query=value#frag")
+
+        // When
         val encoded = json.encodeToString(UriSerializer, uri)
         val decoded = json.decodeFromString(UriSerializer, encoded)
+
+        // Then
         assertEquals(uri, decoded)
     }
 
     @Test
-    fun `opaque URI roundtrips losslessly`() {
+    fun `Given an opaque URI, When it is serialized and deserialized, Then it is unchanged`() {
+        // Given
         val uri = URI("mailto:test@example.com")
+
+        // When
         val encoded = json.encodeToString(UriSerializer, uri)
         val decoded = json.decodeFromString(UriSerializer, encoded)
+
+        // Then
         assertEquals(uri, decoded)
     }
 
     @Test
-    fun `relative URI roundtrips losslessly`() {
+    fun `Given a relative URI, When it is serialized and deserialized, Then it is unchanged`() {
+        // Given
         val uri = URI("relative/path")
+
+        // When
         val encoded = json.encodeToString(UriSerializer, uri)
         val decoded = json.decodeFromString(UriSerializer, encoded)
+
+        // Then
         assertEquals(uri, decoded)
     }
 }

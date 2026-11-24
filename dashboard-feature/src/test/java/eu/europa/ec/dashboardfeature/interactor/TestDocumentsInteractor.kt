@@ -69,11 +69,11 @@ import eu.europa.ec.uilogic.component.ListItemDataUi
 import eu.europa.ec.uilogic.component.ListItemMainContentDataUi
 import eu.europa.ec.uilogic.component.ListItemSupportingContentDataUi
 import eu.europa.ec.uilogic.component.ListItemTrailingContentDataUi
-import junit.framework.TestCase.assertEquals
-import junit.framework.TestCase.assertNotNull
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.flowOf
 import org.junit.After
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotNull
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -159,7 +159,7 @@ class TestDocumentsInteractor {
             isRevoked = isRevoked,
         )
 
-    // region deleteDocument
+    //region deleteDocument
     // Case 1:
     // walletCoreDocumentsController.getAllDocuments() returns a list of Documents
     // with a size of two.
@@ -523,6 +523,10 @@ class TestDocumentsInteractor {
     // A trust-caused deferred failure (IssueDeferredDocumentPartialState.IssuerNotTrusted) is
     // terminal: the pending document is deleted (so the polling loop stops retrying it) and it
     // is never reported as a failed deferred document.
+    /**
+     * The deleteDocument stub returns a completing flow: the shared toFlow()/StateFlow stub never
+     * completes, which would hang the SUT's deleteDocument(...).lastOrNull().
+     */
     @Test
     fun `Given a deferred document from an untrusted issuer, When tryIssuingDeferredDocumentsFlow is called, Then the document is deleted and not reported as failed`() =
         coroutineRule.runTest {
@@ -540,8 +544,6 @@ class TestDocumentsInteractor {
                     documentId = mockDeferredUntrustedDocId
                 )
             )
-            // A completing flow — the shared toFlow()/StateFlow stub never completes, which would
-            // hang the SUT's deleteDocument(...).lastOrNull().
             whenever(walletCoreDocumentsController.deleteDocument(mockDeferredUntrustedDocId))
                 .thenReturn(flowOf(DeleteDocumentPartialState.Success))
 
@@ -568,13 +570,16 @@ class TestDocumentsInteractor {
     @Test
     fun `Given Case 7, When onFilterStateChange is called, Then Case 7 Expected Result is returned`() =
         coroutineRule.runTest {
+            // Given
             mockOnFilterChangedEvent(
                 FilterValidatorPartialState.FilterListResult.FilterListEmptyResult(
                     updatedFilters = Filters.emptyFilters(), allDefaultFiltersAreSelected = false
                 )
             )
 
+            // When
             interactor.onFilterStateChange().runFlowTest {
+                // Then
                 val state = awaitItem()
                 assertTrue(state is DocumentInteractorFilterPartialState.FilterApplyResult)
                 assertTrue(state.documents.isEmpty())
@@ -589,6 +594,7 @@ class TestDocumentsInteractor {
     @Test
     fun `Given Case 8, When onFilterStateChange is called, Then Case 8 Expected Result is returned`() =
         coroutineRule.runTest {
+            // Given
             mockOnFilterChangedEvent(
                 FilterValidatorPartialState.FilterListResult.FilterApplyResult(
                     filteredList = FilterableList(items = listOf(mockFilterableItem)),
@@ -597,13 +603,15 @@ class TestDocumentsInteractor {
                 )
             )
 
+            // When
             interactor.onFilterStateChange().runFlowTest {
+                // Then
                 val state = awaitItem()
                 assertTrue(state is DocumentInteractorFilterPartialState.FilterApplyResult)
-                assertEquals(state.documents.first().second.first().documentCategory.id, 1)
+                assertEquals(1, state.documents.first().second.first().documentCategory.id)
                 assertEquals(
-                    (state.documents.first().second.first().uiData.mainContentData as ListItemMainContentDataUi.Text).text,
-                    "test"
+                    "test",
+                    (state.documents.first().second.first().uiData.mainContentData as ListItemMainContentDataUi.Text).text
                 )
             }
         }
@@ -616,11 +624,14 @@ class TestDocumentsInteractor {
     @Test
     fun `Given Case 9, When onFilterStateChange is called, Then Case 9 Expected Result is returned`() =
         coroutineRule.runTest {
+            // Given
             mockOnFilterChangedEvent(
                 FilterValidatorPartialState.FilterUpdateResult(updatedFilters = mockFilters)
             )
 
+            // When
             interactor.onFilterStateChange().runFlowTest {
+                // Then
                 val state = awaitItem()
                 assertTrue(state is DocumentInteractorFilterPartialState.FilterUpdateResult)
                 assertEquals(state.filters.size, mockFilters.filterGroups.size)
@@ -672,6 +683,7 @@ class TestDocumentsInteractor {
     @Test
     fun `Given a suspended document, When getDocuments is called, Then it is labelled suspended and stays blocked`() {
         coroutineRule.runTest {
+            // Given
             mockShowBatchIssuanceCounterPreference(response = true)
             mockGetDocumentsBaseCalls(
                 documents = getMockedFullDocuments(),
@@ -682,7 +694,9 @@ class TestDocumentsInteractor {
             mockGetDocumentsResourceStrings()
             whenever(resourceProvider.getString(R.string.dashboard_document_suspended)).thenReturn("Suspended")
 
+            // When
             interactor.getDocuments().runFlowTest {
+                // Then
                 val state = awaitItem()
                 assertTrue(state is DocumentInteractorGetDocumentsPartialState.Success)
                 val payload = state.allDocuments.items.first().payload as DocumentUi
@@ -943,7 +957,7 @@ class TestDocumentsInteractor {
     //region initializeFilters
 
     @Test
-    fun `When initializeFilters is called, Then filterValidator#initializeValidator is invoked`() {
+    fun `Given a filterable list, When initializeFilters is called, Then filterValidator#initializeValidator is invoked`() {
         // Given
         whenever(resourceProvider.getString(any())).thenReturn("mocked")
         val list = FilterableList(items = emptyList())
@@ -962,6 +976,10 @@ class TestDocumentsInteractor {
 
     //region getDocuments — UnsignedDocument & expired
 
+    /**
+     * The list is cast to List<Document> since both IssuedDocument and UnsignedDocument implement
+     * Document.
+     */
     @Test
     fun `Given an UnsignedDocument among getAllDocuments, When getDocuments is called, Then it is mapped with Pending state`() {
         coroutineRule.runTest {
@@ -977,7 +995,6 @@ class TestDocumentsInteractor {
 
             whenever(walletCoreDocumentsController.getMainPidDocument())
                 .thenReturn(mockedFullDocuments[0])
-            // Cast to List<Document> since both IssuedDocument and UnsignedDocument implement Document.
             @Suppress("UNCHECKED_CAST")
             whenever(walletCoreDocumentsController.getAllDocuments())
                 .thenReturn(mockedFullDocuments + listOf(unsignedDoc) as List<Document>)
@@ -1018,10 +1035,13 @@ class TestDocumentsInteractor {
         }
     }
 
+    /**
+     * Given a PID whose credential expired in the past.
+     */
     @Test
     fun `Given an expired IssuedDocument, When getDocuments is called, Then documentIssuanceState is Expired`() {
         coroutineRule.runTest {
-            // Given a PID whose credential expired in the past.
+            // Given
             mockShowBatchIssuanceCounterPreference(response = true)
             val expiredPid = getMockedFullPid().copy(
                 validUntil = Result.success(Instant.parse("2020-01-01T00:00:00Z")),
@@ -1081,7 +1101,7 @@ class TestDocumentsInteractor {
     //region getFilters lambdas
 
     @Test
-    fun `When getFilters is called, Then the expected static filter groups are returned`() {
+    fun `Given the filter strings, When getFilters is called, Then the expected static filter groups are returned`() {
         // Given
         whenever(resourceProvider.getString(any())).thenReturn("mocked")
 
@@ -1106,7 +1126,7 @@ class TestDocumentsInteractor {
     }
 
     @Test
-    fun `When the default sort selector is applied, Then it returns the normalized document name`() {
+    fun `Given the default sort filter, When its selector is applied, Then it returns the normalized document name`() {
         // Given
         whenever(resourceProvider.getString(any())).thenReturn("mocked")
         val attrs = documentsAttributes(
@@ -1118,7 +1138,7 @@ class TestDocumentsInteractor {
         val defaultSort =
             sort.filters[0].filterableAction as FilterAction.Sort<DocumentsFilterableAttributes, String>
 
-        // When + Then
+        // Then
         assertEquals(
             listOf(DocumentFilterIds.FILTER_SORT_DEFAULT),
             sort.filters.map { it.id },
@@ -1127,7 +1147,7 @@ class TestDocumentsInteractor {
     }
 
     @Test
-    fun `When the issuer filter predicate is applied, Then it matches by issuer name`() {
+    fun `Given issuer filter items, When the issuer filter predicate is applied, Then it matches by issuer name`() {
         // Given
         whenever(resourceProvider.getString(any())).thenReturn("mocked")
         val group = interactor.getFilters().filterGroups.first {
@@ -1143,14 +1163,14 @@ class TestDocumentsInteractor {
         val otherFilter =
             FilterItem(id = "Other", name = "Other", selected = true, isDefault = false)
 
-        // When + Then
+        // Then
         assertTrue(action.predicate(documentsAttributes(issuer = "Acme"), acmeFilter))
         assertTrue(!action.predicate(documentsAttributes(issuer = "Other"), acmeFilter))
         assertTrue(action.predicate(documentsAttributes(issuer = "Other"), otherFilter))
     }
 
     @Test
-    fun `When the category filter predicate is applied, Then it matches by category id`() {
+    fun `Given category filter items, When the category filter predicate is applied, Then it matches by category id`() {
         // Given
         whenever(resourceProvider.getString(any())).thenReturn("mocked")
         val group = interactor.getFilters().filterGroups.first {
@@ -1175,13 +1195,13 @@ class TestDocumentsInteractor {
             isDefault = false,
         )
 
-        // When + Then
+        // Then
         assertTrue(action.predicate(documentsAttributes(category = category), matchFilter))
         assertTrue(!action.predicate(documentsAttributes(category = category), nonMatchFilter))
     }
 
     @Test
-    fun `When the state filter predicate is applied, Then VALID EXPIRED REVOKED and else arms all evaluate`() {
+    fun `Given valid, expired, revoked and other filter items, When the state filter predicate is applied, Then the valid, expired, revoked and else arms all evaluate`() {
         // Given
         whenever(resourceProvider.getString(any())).thenReturn("mocked")
         val group = interactor.getFilters().filterGroups.first {
@@ -1229,7 +1249,7 @@ class TestDocumentsInteractor {
             )
         val revoked = documentsAttributes(expiryDate = null, isRevoked = true)
 
-        // When + Then
+        // Then
         assertTrue(action.predicate(valid, validFilter))
         assertTrue(action.predicate(nullExpiry, validFilter))
         assertTrue(!action.predicate(revoked, validFilter))
@@ -1247,8 +1267,11 @@ class TestDocumentsInteractor {
     //region addDynamicFilters default parameter
     // The interface declares `filters: Filters = Filters.emptyFilters()`. Calling without
     // the filters argument exercises the default-parameter synthetic.
+    /**
+     * The default filters is Filters.emptyFilters(), which has empty filterGroups.
+     */
     @Test
-    fun `When addDynamicFilters is called without filters, Then the default emptyFilters is used`() {
+    fun `Given documents and no filters argument, When addDynamicFilters is called, Then the default emptyFilters is used`() {
         // Given
         whenever(resourceProvider.getString(any())).thenReturn("mocked")
         val documents = FilterableList(items = emptyList())
@@ -1257,7 +1280,6 @@ class TestDocumentsInteractor {
         val result = interactor.addDynamicFilters(documents = documents)
 
         // Then
-        // Default filters is Filters.emptyFilters() which has empty filterGroups.
         assertEquals(0, result.filterGroups.size)
     }
     //endregion
@@ -1301,7 +1323,7 @@ class TestDocumentsInteractor {
 
     @Test
     @Suppress("UNCHECKED_CAST") // FilterAction.Filter<T> is erased at runtime — the test asserts the predicate type from the filter group definition.
-    fun `When the period filter predicates are applied, Then default issuance and expiry-window predicates evaluate as expected`() {
+    fun `Given documents expiring at different times, When the period filter predicates are applied, Then the default issuance and expiry-window predicates evaluate as expected`() {
         // Given
         whenever(resourceProvider.getString(any())).thenReturn("mocked")
         val periodGroup = interactor.getFilters().filterGroups.first {
@@ -1336,7 +1358,7 @@ class TestDocumentsInteractor {
             expiryDate = Instant.now().plus(365, ChronoUnit.DAYS),
         )
 
-        // When + Then
+        // Then
         assertTrue(defaultPred.predicate(expired, dummyFilter))
         assertTrue(next7Pred.predicate(tomorrow, dummyFilter))
         assertTrue(!next7Pred.predicate(farFuture, dummyFilter))
@@ -1363,7 +1385,7 @@ class TestDocumentsInteractor {
     // These tests verify the simple delegation methods to filterValidator.
 
     @Test
-    fun `When updateLists is called, Then filterValidator#updateLists is invoked`() {
+    fun `Given a filterable list, When updateLists is called, Then filterValidator#updateLists is invoked`() {
         // Given
         val list = FilterableList(items = emptyList())
 
@@ -1375,7 +1397,7 @@ class TestDocumentsInteractor {
     }
 
     @Test
-    fun `When applySearch is called, Then filterValidator#applySearch is invoked`() {
+    fun `Given a search query, When applySearch is called, Then filterValidator#applySearch is invoked`() {
         // When
         interactor.applySearch(query = "abc")
 
@@ -1384,7 +1406,7 @@ class TestDocumentsInteractor {
     }
 
     @Test
-    fun `When revertFilters is called, Then filterValidator#revertFilters is invoked`() {
+    fun `Given a filter validator, When revertFilters is called, Then filterValidator#revertFilters is invoked`() {
         // When
         interactor.revertFilters()
 
@@ -1393,7 +1415,7 @@ class TestDocumentsInteractor {
     }
 
     @Test
-    fun `When updateFilter is called, Then filterValidator#updateFilter is invoked`() {
+    fun `Given a group id and a filter id, When updateFilter is called, Then filterValidator#updateFilter is invoked`() {
         // When
         interactor.updateFilter(filterGroupId = "groupId", filterId = "filterId")
 
@@ -1403,7 +1425,7 @@ class TestDocumentsInteractor {
     }
 
     @Test
-    fun `When updateSort is called, Then filterValidator#updateSort is invoked`() {
+    fun `Given a sort id, When updateSort is called, Then filterValidator#updateSort is invoked`() {
         // When
         interactor.updateSort(filterId = "sortId")
 
@@ -1413,7 +1435,7 @@ class TestDocumentsInteractor {
     }
 
     @Test
-    fun `When applyFilters is called, Then filterValidator#applyFilters is invoked`() {
+    fun `Given a filter validator, When applyFilters is called, Then filterValidator#applyFilters is invoked`() {
         // When
         interactor.applyFilters()
 
@@ -1422,7 +1444,7 @@ class TestDocumentsInteractor {
     }
 
     @Test
-    fun `When resetFilters is called, Then filterValidator#resetFilters is invoked`() {
+    fun `Given a filter validator, When resetFilters is called, Then filterValidator#resetFilters is invoked`() {
         // When
         interactor.resetFilters()
 

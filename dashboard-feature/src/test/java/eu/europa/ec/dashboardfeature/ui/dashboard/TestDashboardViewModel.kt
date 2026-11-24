@@ -80,22 +80,28 @@ class TestDashboardViewModel {
 
     @Test
     fun `Given the dashboard, When Init is handled, Then it schedules the background work`() {
+        // When
         viewModel.handleEvents(Event.Init(intent = null))
 
+        // Then
         verify(interactor, times(1)).scheduleBackgroundWork()
     }
 
     @Test
     fun `Given the dashboard opened by a link, When Init is handled, Then it schedules the background work`() {
+        // When
         viewModel.handleEvents(Event.Init(intent = mock<Intent>()))
 
+        // Then
         verify(interactor, times(1)).scheduleBackgroundWork()
     }
 
     @Test
     fun `Given the dashboard, When Pop is handled, Then no background work is scheduled`() {
+        // When
         viewModel.handleEvents(Event.Pop)
 
+        // Then
         verify(interactor, never()).scheduleBackgroundWork()
     }
 }

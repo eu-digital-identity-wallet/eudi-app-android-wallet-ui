@@ -26,6 +26,7 @@ class TestNetworkConfig {
 
     @Test
     fun `Given the reference configuration, When the limits are read, Then they are the documented defaults`() {
+        // Then
         assertEquals(15.seconds, config.connectTimeout)
         assertEquals(30.seconds, config.socketTimeout)
         assertEquals(60.seconds, config.requestTimeout)

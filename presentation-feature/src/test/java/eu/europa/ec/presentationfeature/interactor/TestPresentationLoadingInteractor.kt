@@ -32,10 +32,9 @@ import eu.europa.ec.testlogic.extension.runFlowTest
 import eu.europa.ec.testlogic.extension.runTest
 import eu.europa.ec.testlogic.extension.toFlow
 import eu.europa.ec.testlogic.rule.CoroutineTestRule
-import junit.framework.TestCase
-import junit.framework.TestCase.assertEquals
 import kotlinx.coroutines.flow.asFlow
 import org.junit.After
+import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -112,7 +111,7 @@ class TestPresentationLoadingInteractor {
             interactor.observeResponse()
                 .runFlowTest {
                     // Then
-                    TestCase.assertEquals(
+                    assertEquals(
                         PresentationLoadingObserveResponsePartialState.Failure(
                             error = mockedPlainFailureMessage
                         ),
@@ -141,7 +140,7 @@ class TestPresentationLoadingInteractor {
             interactor.observeResponse()
                 .runFlowTest {
                     // Then
-                    TestCase.assertEquals(
+                    assertEquals(
                         PresentationLoadingObserveResponsePartialState.Success,
                         awaitItem()
                     )
@@ -168,7 +167,7 @@ class TestPresentationLoadingInteractor {
             interactor.observeResponse()
                 .runFlowTest {
                     // Then
-                    TestCase.assertEquals(
+                    assertEquals(
                         PresentationLoadingObserveResponsePartialState.Redirect(URI("uri")),
                         awaitItem()
                     )
@@ -204,7 +203,7 @@ class TestPresentationLoadingInteractor {
             interactor.observeResponse()
                 .runFlowTest {
                     // Then
-                    TestCase.assertEquals(
+                    assertEquals(
                         PresentationLoadingObserveResponsePartialState.UserAuthenticationRequired(
                             authenticationData = mockedAuthenticationData
                         ),
@@ -430,6 +429,8 @@ class TestPresentationLoadingInteractor {
     }
     //endregion
 
+    //region observeResponse
+
     // Case 5:
     // walletCorePresentationController.events emits:
     // WalletCorePartialState.RequestIsReadyToBeSent.
@@ -448,7 +449,7 @@ class TestPresentationLoadingInteractor {
             interactor.observeResponse()
                 .runFlowTest {
                     // Then
-                    TestCase.assertEquals(
+                    assertEquals(
                         PresentationLoadingObserveResponsePartialState.RequestReadyToBeSent,
                         awaitItem()
                     )
@@ -475,7 +476,7 @@ class TestPresentationLoadingInteractor {
             interactor.observeResponse()
                 .runFlowTest {
                     // Then
-                    TestCase.assertEquals(
+                    assertEquals(
                         PresentationLoadingObserveResponsePartialState.IntentToSend(intent = intent),
                         awaitItem()
                     )
@@ -528,7 +529,7 @@ class TestPresentationLoadingInteractor {
 
     //region constructor default
     @Test
-    fun `When constructed without walletCorePresentationController, Then construction does not throw`() {
+    fun `Given no walletCorePresentationController, When the interactor is constructed, Then the default presentation scope id is used`() {
         // When
         val newInteractor = PresentationLoadingInteractorImpl(
             deviceAuthenticationInteractor = deviceAuthenticationInteractor,

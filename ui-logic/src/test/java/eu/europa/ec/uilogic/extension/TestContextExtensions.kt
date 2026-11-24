@@ -38,8 +38,10 @@ class TestContextExtensions {
 
     @Test
     fun `Given a web link, When it is opened in the browser, Then a browsable view intent with a lower-case scheme is started`() {
+        // When
         context.openInBrowser(Uri.parse("HTTPS://Verifier.Example/done?state=1"))
 
+        // Then
         val started = shadowOf(context).nextStartedActivity
         assertEquals(Intent.ACTION_VIEW, started.action)
         assertEquals(Uri.parse("https://Verifier.Example/done?state=1"), started.data)
@@ -48,6 +50,7 @@ class TestContextExtensions {
 
     @Test
     fun `Given a link that only the wallet itself handles, When it is opened in the browser, Then nothing is started`() {
+        // Given
         val walletActivity = ComponentName(context.packageName, "eu.europa.ec.WalletActivity")
         shadowOf(context.packageManager).apply {
             addActivityIfNotPresent(walletActivity)
@@ -62,13 +65,16 @@ class TestContextExtensions {
             )
         }
 
+        // When
         context.openInBrowser(Uri.parse("https://wallet.example/done"))
 
+        // Then
         assertNull(shadowOf(context).nextStartedActivity)
     }
 
     @Test
     fun `Given an https link that only the wallet handles, When it is opened as an external address, Then nothing is started`() {
+        // Given
         val walletActivity = ComponentName(context.packageName, "eu.europa.ec.WalletActivity")
         shadowOf(context.packageManager).apply {
             addActivityIfNotPresent(walletActivity)
@@ -83,15 +89,19 @@ class TestContextExtensions {
             )
         }
 
+        // When
         context.openExternalUri(Uri.parse("https://wallet.example/privacy"))
 
+        // Then
         assertNull(shadowOf(context).nextStartedActivity)
     }
 
     @Test
     fun `Given a mail address, When it is opened as an external address, Then a view intent for it is started`() {
+        // When
         context.openExternalUri(Uri.parse("mailto:dpo@verifier.example"))
 
+        // Then
         val started = shadowOf(context).nextStartedActivity
         assertEquals(Intent.ACTION_VIEW, started.action)
         assertEquals(Uri.parse("mailto:dpo@verifier.example"), started.data)
@@ -99,8 +109,10 @@ class TestContextExtensions {
 
     @Test
     fun `Given an http contact, When it is opened as an external address, Then it is opened as a browser link`() {
+        // When
         context.openExternalUri(Uri.parse("http://verifier.example/contact"))
 
+        // Then
         val started = shadowOf(context).nextStartedActivity
         assertEquals(Intent.ACTION_VIEW, started.action)
         assertTrue(started.hasCategory(Intent.CATEGORY_BROWSABLE))
@@ -108,9 +120,11 @@ class TestContextExtensions {
 
     @Test
     fun `Given an address with another scheme, When it is opened as an external address, Then nothing is started`() {
+        // When
         context.openExternalUri(Uri.parse("intent://scan/#Intent;scheme=eudi-wallet;end"))
         context.openExternalUri(Uri.parse("file:///sdcard/policy.html"))
 
+        // Then
         assertNull(shadowOf(context).nextStartedActivity)
     }
 }
