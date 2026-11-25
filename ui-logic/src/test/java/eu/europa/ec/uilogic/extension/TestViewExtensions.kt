@@ -42,41 +42,53 @@ class TestViewExtensions {
 
     @Test
     fun `Given the reporting, When a screen reader clicks, moves focus or scrolls, Then each counts as interaction`() {
+        // Given
         root.reportAccessibilityInteraction { interactions++ }
 
+        // When
         send(AccessibilityEvent.TYPE_VIEW_CLICKED)
         send(AccessibilityEvent.TYPE_VIEW_ACCESSIBILITY_FOCUSED)
         send(AccessibilityEvent.TYPE_VIEW_SCROLLED)
 
+        // Then
         assertEquals(3, interactions)
     }
 
     @Test
     fun `Given the reporting, When content changes on its own, Then it does not count as interaction`() {
+        // Given
         root.reportAccessibilityInteraction { interactions++ }
 
+        // When
         send(AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED)
 
+        // Then
         assertEquals(0, interactions)
     }
 
     @Test
     fun `Given the reporting is removed, When a screen reader clicks, Then nothing is reported`() {
+        // Given
         val remove = root.reportAccessibilityInteraction { interactions++ }
 
+        // When
         remove()
         send(AccessibilityEvent.TYPE_VIEW_CLICKED)
 
+        // Then
         assertEquals(0, interactions)
     }
 
     @Test
     fun `Given a view with its own delegate, When the reporting is installed, Then that delegate is kept`() {
+        // Given
         val own = View.AccessibilityDelegate()
         root.accessibilityDelegate = own
 
+        // When
         root.reportAccessibilityInteraction { interactions++ }
 
+        // Then
         assertSame(own, root.accessibilityDelegate)
     }
 }

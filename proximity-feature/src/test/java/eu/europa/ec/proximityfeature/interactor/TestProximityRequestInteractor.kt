@@ -48,11 +48,11 @@ import eu.europa.ec.testlogic.extension.toFlow
 import eu.europa.ec.testlogic.rule.CoroutineTestRule
 import eu.europa.ec.uilogic.component.ListItemMainContentDataUi
 import eu.europa.ec.uilogic.config.ConfigUILogic
-import junit.framework.TestCase.assertEquals
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.shareIn
 import org.junit.After
+import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -131,6 +131,7 @@ class TestProximityRequestInteractor {
 
             // When
             interactor.getRequestDocuments()
+
                 // Then
                 .expectNoEvents()
         }
@@ -269,6 +270,9 @@ class TestProximityRequestInteractor {
     // Case 6 Expected Result:
     // ProximityRequestInteractorPartialState.NoData state, with:
     // 1. the same relying party.
+    /**
+     * The match has no requested claims, so the interactor emits NoData.
+     */
     @Test
     fun `Given Case 6, When getRequestDocuments is called, Then Case 6 Expected Result is returned`() {
         coroutineRule.runTest {
@@ -278,7 +282,6 @@ class TestProximityRequestInteractor {
                     combinationsDomain = listOf(
                         PresentationCombinationDomain(
                             matches = listOf(
-                                // no requested claims → the interactor emits NoData
                                 mockedValidPidWithBasicFieldsRequestMatch.copy(
                                     requestedClaims = emptyList(),
                                 )
@@ -861,7 +864,8 @@ class TestProximityRequestInteractor {
     // Constructor default
     // the null-controller default: construction must not trigger the lazy Koin lookup
     @Test
-    fun `When constructed without walletCorePresentationController, Then construction does not throw`() {
+    fun `Given no walletCorePresentationController, When the interactor is constructed, Then the default presentation scope id is used`() {
+        // When
         val newInteractor = ProximityRequestInteractorImpl(
             resourceProvider = resourceProvider,
             uuidProvider = uuidProvider,
@@ -869,6 +873,7 @@ class TestProximityRequestInteractor {
             configUILogic = configUILogic,
         )
 
+        // Then
         assertEquals("DefaultPresentationScopeId", newInteractor.presentationScopeId)
     }
 
@@ -922,7 +927,7 @@ class TestProximityRequestInteractor {
 
     //region stopPresentation
     @Test
-    fun `When stopPresentation on the interactor is called, Then stopPresentation should be executed on the controller`() {
+    fun `Given a presentation controller, When stopPresentation is called on the interactor, Then stopPresentation is executed on the controller`() {
         // When
         interactor.stopPresentation()
 
@@ -941,9 +946,10 @@ class TestProximityRequestInteractor {
     // The controller's updateRequestedDocuments is called with an empty selection list.
     @Test
     fun `Given Case 1, When updateRequestedDocuments is called, Then Case 1 expected result is returned`() {
-
+        // When
         interactor.updateRequestedDocuments(selectedCombination = null)
 
+        // Then
         verify(walletCorePresentationController, times(1))
             .updateRequestedDocuments(
                 disclosedDocuments = emptyList()

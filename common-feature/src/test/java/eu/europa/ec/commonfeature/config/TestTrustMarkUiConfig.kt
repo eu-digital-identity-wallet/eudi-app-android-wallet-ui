@@ -17,8 +17,8 @@
 package eu.europa.ec.commonfeature.config
 
 import eu.europa.ec.uilogic.serializer.UiSerializerImpl
-import junit.framework.TestCase.assertEquals
-import junit.framework.TestCase.assertNotNull
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotNull
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner

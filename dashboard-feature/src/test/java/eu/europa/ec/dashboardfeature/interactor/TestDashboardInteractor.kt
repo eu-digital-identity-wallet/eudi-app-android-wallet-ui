@@ -26,8 +26,8 @@ import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.ListItemLeadingContentDataUi
 import eu.europa.ec.uilogic.component.ListItemMainContentDataUi
 import eu.europa.ec.uilogic.component.ListItemTrailingContentDataUi
-import junit.framework.TestCase.assertEquals
 import org.junit.After
+import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Test
 import org.mockito.Mock
@@ -70,20 +70,26 @@ class TestDashboardInteractor {
 
     @Test
     fun `Given an unlocked wallet, When scheduleBackgroundWork is called, Then the periodic checks and the start-up check are scheduled`() {
+        // Given
         whenever(sessionController.isUnlocked).thenReturn(true)
 
+        // When
         interactor.scheduleBackgroundWork()
 
+        // Then
         verify(walletWorkScheduler, times(1)).schedule()
         verify(walletWorkScheduler, times(1)).scheduleStartupCheck()
     }
 
     @Test
     fun `Given a locked wallet, When scheduleBackgroundWork is called, Then nothing is scheduled`() {
+        // Given
         whenever(sessionController.isUnlocked).thenReturn(false)
 
+        // When
         interactor.scheduleBackgroundWork()
 
+        // Then
         verifyNoInteractions(walletWorkScheduler)
     }
 
@@ -100,10 +106,13 @@ class TestDashboardInteractor {
      */
     @Test
     fun `Given Case 1, When getSideMenuOptions is called, Then Case 1 Expected Result is returned`() {
+        // Given
         mockStringsNeededForGetSideMenuOptions(resourceProvider)
 
+        // When
         val sideMenuItems = interactor.getSideMenuOptions()
 
+        // Then
         assertEquals(3, sideMenuItems.size)
 
         val firstItem = sideMenuItems[0]

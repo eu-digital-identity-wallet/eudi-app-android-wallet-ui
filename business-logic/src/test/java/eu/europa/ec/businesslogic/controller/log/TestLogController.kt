@@ -57,25 +57,31 @@ class TestLogController {
 
     @Test
     fun `Given logged messages, When the log files are deleted, Then they are gone and later messages go to a new file`() {
+        // Given
         val controller = LogControllerImpl(context = context, tag = "TAG")
         controller.i { "before the reset" }
 
+        // When
         controller.deleteLogFiles()
         controller.i { "after the reset" }
 
+        // Then
         assertFalse(loggedText.contains("before the reset"))
         assertTrue(loggedText.contains("after the reset"))
     }
 
     @Test
     fun `Given the log files were deleted, When they are deleted again, Then logging goes on`() {
+        // Given
         val controller = LogControllerImpl(context = context, tag = "TAG")
         controller.i { "first" }
 
+        // When
         controller.deleteLogFiles()
         controller.deleteLogFiles()
         controller.i { "second" }
 
+        // Then
         assertFalse(loggedText.contains("first"))
         assertTrue(loggedText.contains("second"))
     }
@@ -108,10 +114,12 @@ class TestLogController {
         assertTrue(remainingDirectory.exists())
         assertTrue(loggedText.contains(mockedMessageAfterFailure))
 
+        // When
         assertTrue(remainingDirectory.deleteRecursively())
         controller.deleteLogFiles()
         controller.i { mockedMessageAfterRetry }
 
+        // Then
         assertFalse(loggedText.contains(mockedMessageAfterFailure))
         assertTrue(loggedText.contains(mockedMessageAfterRetry))
     }
@@ -119,6 +127,7 @@ class TestLogController {
 
     @Test
     fun `Given a build that writes no log file, When messages are logged, Then no file is written or offered and old files are deleted`() {
+        // Given
         logsDir.mkdirs()
         File(logsDir, "eudi-android-wallet-logs0.txt").writeText("left by an earlier build")
 
@@ -127,23 +136,29 @@ class TestLogController {
             tag = "TAG",
             shouldWriteLogFile = false,
         )
+
+        // When
         controller.i { "not written" }
 
+        // Then
         assertTrue(logsDir.listFiles().orEmpty().isEmpty())
         assertTrue(controller.retrieveLogFileUris().isEmpty())
     }
 
     @Test
     fun `Given a build that writes no log file, When the log files are deleted, Then none is written afterwards`() {
+        // Given
         val controller = LogControllerImpl(
             context = context,
             tag = "TAG",
             shouldWriteLogFile = false,
         )
 
+        // When
         controller.deleteLogFiles()
         controller.i { "not written" }
 
+        // Then
         assertTrue(logsDir.listFiles().orEmpty().isEmpty())
     }
 }

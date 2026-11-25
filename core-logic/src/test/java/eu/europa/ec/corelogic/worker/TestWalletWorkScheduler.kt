@@ -71,9 +71,14 @@ class TestWalletWorkScheduler {
     @Test
     fun `Given no worker is working, When the work is stopped, Then it returns true`() {
         coroutineRule.testScope.runTest {
+            // Given
             val scheduler = buildScheduler(workerLocks = listOf(Mutex(), Mutex()))
 
-            assertTrue(scheduler.stop())
+            // When
+            val stopped = scheduler.stop()
+
+            // Then
+            assertTrue(stopped)
         }
     }
 
@@ -107,9 +112,14 @@ class TestWalletWorkScheduler {
     @Test
     fun `Given a worker that does not finish, When the work is stopped, Then it returns false when the wait ends`() {
         coroutineRule.testScope.runTest {
+            // Given
             val scheduler = buildScheduler(workerLocks = listOf(Mutex(locked = true)))
 
-            assertFalse(scheduler.stop())
+            // When
+            val stopped = scheduler.stop()
+
+            // Then
+            assertFalse(stopped)
         }
     }
 
@@ -216,32 +226,40 @@ class TestWalletWorkScheduler {
 
     @Test
     fun `Given the periodic work is scheduled, When nothing else is called, Then no start-up check is queued`() {
+        // When
         buildScheduler(workerLocks = emptyList()).schedule()
 
+        // Then
         assertEquals(0, startupCheckCount())
     }
 
     @Test
     fun `Given the start-up check is asked for twice in a process, When it is scheduled, Then it is queued once`() {
+        // Given
         val scheduler = buildScheduler(workerLocks = emptyList())
 
+        // When
         scheduler.scheduleStartupCheck()
         val queued = startupCheckIds()
         scheduler.scheduleStartupCheck()
 
+        // Then
         assertEquals(1, queued.size)
         assertEquals(queued, startupCheckIds())
     }
 
     @Test
     fun `Given the periodic work is scheduled, When it is scheduled again, Then the queued work is kept`() {
+        // Given
         val scheduler = buildScheduler(workerLocks = emptyList())
 
+        // When
         scheduler.schedule()
         val revocation = workIds(RevocationWorkManager.REVOCATION_WORK_NAME)
         val reIssuance = workIds(ReIssuanceWorkManager.RE_ISSUANCE_WORK_NAME)
         scheduler.schedule()
 
+        // Then
         assertEquals(1, revocation.size)
         assertEquals(1, reIssuance.size)
         assertEquals(revocation, workIds(RevocationWorkManager.REVOCATION_WORK_NAME))

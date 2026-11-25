@@ -59,31 +59,46 @@ class TestPrefsPinThrottleProvider {
     @Test
     fun `Given three failed attempts, When the state is read, Then the first lockout runs`() =
         coroutineRule.runTest {
+            // Given
             repeat(2) { assertEquals(PinLockoutState.Idle, provider.recordFailure()) }
 
-            assertEquals(active(30.seconds, 30.seconds), provider.recordFailure())
+            // When
+            val third = provider.recordFailure()
             now += 10.seconds.inWholeMilliseconds
-            assertEquals(active(20.seconds, 30.seconds), provider.getState())
+            val state = provider.getState()
+
+            // Then
+            assertEquals(active(30.seconds, 30.seconds), third)
+            assertEquals(active(20.seconds, 30.seconds), state)
         }
 
     @Test
     fun `Given a lockout, When its time has passed, Then the state is idle`() =
         coroutineRule.runTest {
+            // Given
             lockOut()
-
             now += 30.seconds.inWholeMilliseconds
 
-            assertEquals(PinLockoutState.Idle, provider.getState())
+            // When
+            val state = provider.getState()
+
+            // Then
+            assertEquals(PinLockoutState.Idle, state)
         }
 
     /** A lockout of a build before the elapsed-time one is not read, as on iOS. */
     @Test
     fun `Given only the wall-clock values of an earlier build, When the state is read, Then it is idle`() =
         coroutineRule.runTest {
+            // Given
             prefs.values["PinLockoutStartedAt"] = 1L
             prefs.values["PinLockoutEndsAt"] = Long.MAX_VALUE
 
-            assertEquals(PinLockoutState.Idle, provider.getState())
+            // When
+            val state = provider.getState()
+
+            // Then
+            assertEquals(PinLockoutState.Idle, state)
         }
 
     /**
@@ -93,27 +108,36 @@ class TestPrefsPinThrottleProvider {
     @Test
     fun `Given a lockout, When the device restarts, Then the lockout begins again in full`() =
         coroutineRule.runTest {
+            // Given
             lockOut()
             now += 25.seconds.inWholeMilliseconds
 
+            // When
             boot += 1
-
-            assertEquals(active(30.seconds, 30.seconds), provider.getState())
+            val restarted = provider.getState()
             now += 10.seconds.inWholeMilliseconds
-            assertEquals(active(20.seconds, 30.seconds), provider.getState())
+            val later = provider.getState()
+
+            // Then
+            assertEquals(active(30.seconds, 30.seconds), restarted)
+            assertEquals(active(20.seconds, 30.seconds), later)
         }
 
     @Test
     fun `Given a lockout that has run its course, When the device restarts, Then no lockout begins`() =
         coroutineRule.runTest {
+            // Given
             lockOut()
             now += 30.seconds.inWholeMilliseconds
             assertEquals(PinLockoutState.Idle, provider.getState())
 
+            // When
             boot += 1
             now = 2_000L
+            val state = provider.getState()
 
-            assertEquals(PinLockoutState.Idle, provider.getState())
+            // Then
+            assertEquals(PinLockoutState.Idle, state)
             assertEquals(1, prefs.values["PinLockoutLevel"])
         }
 
@@ -124,11 +148,14 @@ class TestPrefsPinThrottleProvider {
     @Test
     fun `Given a lockout that runs, When a wrong PIN is recorded, Then the lockout keeps running`() =
         coroutineRule.runTest {
+            // Given
             lockOut()
             now += 10.seconds.inWholeMilliseconds
 
+            // When
             provider.recordFailure()
 
+            // Then
             assertEquals(active(20.seconds, 30.seconds), provider.getState())
         }
 
@@ -136,54 +163,78 @@ class TestPrefsPinThrottleProvider {
     @Test
     fun `Given a lockout that ended unseen, When a wrong PIN is recorded and the device restarts, Then no lockout begins`() =
         coroutineRule.runTest {
+            // Given
             lockOut()
             now += 30.seconds.inWholeMilliseconds
 
-            assertEquals(PinLockoutState.Idle, provider.recordFailure())
+            // When
+            val recorded = provider.recordFailure()
             boot += 1
             now = 2_000L
+            val state = provider.getState()
 
-            assertEquals(PinLockoutState.Idle, provider.getState())
+            // Then
+            assertEquals(PinLockoutState.Idle, recorded)
+            assertEquals(PinLockoutState.Idle, state)
         }
 
     @Test
     fun `Given an elapsed time earlier than the lockout's start, When the state is read, Then the lockout begins again in full`() =
         coroutineRule.runTest {
+            // Given
             lockOut()
 
+            // When
             now -= 1L
+            val state = provider.getState()
 
-            assertEquals(active(30.seconds, 30.seconds), provider.getState())
+            // Then
+            assertEquals(active(30.seconds, 30.seconds), state)
         }
 
     @Test
     fun `Given preferences that cannot be read, When the state is read, Then the longest lockout applies`() =
         coroutineRule.runTest {
+            // Given
             prefs.failReads = true
 
-            assertEquals(active(5.minutes, 5.minutes), provider.getState())
+            // When
+            val state = provider.getState()
+
+            // Then
+            assertEquals(active(5.minutes, 5.minutes), state)
         }
 
     @Test
     fun `Given preferences that cannot be read, When a failure is recorded, Then the longest lockout applies and no attempt is counted`() =
         coroutineRule.runTest {
+            // Given
             prefs.failReads = true
 
-            assertEquals(active(5.minutes, 5.minutes), provider.recordFailure())
+            // When
+            val recorded = provider.recordFailure()
             prefs.failReads = false
+
+            // Then
+            assertEquals(active(5.minutes, 5.minutes), recorded)
             assertNull(prefs.values["PinFailedAttempts"])
         }
 
     @Test
     fun `Given a lockout, When a success is recorded, Then the state is idle and the old wall-clock values are gone`() =
         coroutineRule.runTest {
+            // Given
             prefs.values["PinLockoutStartedAt"] = 1L
             prefs.values["PinLockoutEndsAt"] = 2L
+
             lockOut()
 
+            // When
             provider.recordSuccess()
 
+            // Then
             assertEquals(PinLockoutState.Idle, provider.getState())
+
             assertNull(prefs.values["PinLockoutStartedAt"])
             assertNull(prefs.values["PinLockoutEndsAt"])
             assertNull(prefs.values["PinLockoutBootCount"])

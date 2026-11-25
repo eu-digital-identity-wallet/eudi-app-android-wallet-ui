@@ -30,6 +30,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.CollectionInfo
+import androidx.compose.ui.semantics.collectionInfo
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -62,6 +65,10 @@ sealed class ExpandableListItemUi {
 /**
  * An expandable card that lists [data], with nested groups that expand in turn.
  *
+ * When [data] holds two or more rows and every one ends in a radio button, the open card reports
+ * them to accessibility services as one list with each row's position, so that TalkBack reads
+ * "1 of 3". Each row sits in its own card surface, which Compose's `selectableGroup` cannot reach.
+ *
  * @param shouldBringOpenedIntoView when true, a card or nested group that the user opens is brought into view in the
  * enclosing scrollable container once it has opened: scrolled the least that shows it whole when it fits, its top
  * aligned with the container's top when it is taller. The container must not extend under a bar that covers it.
@@ -88,6 +95,7 @@ fun WrapExpandableListItem(
 ) {
     val bringIntoViewRequester = remember { BringIntoViewRequester() }
     val coroutineScope = rememberCoroutineScope()
+    val isRadioGroup = isRadioButtonGroup(data)
 
     WrapExpandableCard(
         modifier = if (shouldBringOpenedIntoView) {
@@ -104,6 +112,13 @@ fun WrapExpandableListItem(
             { coroutineScope.launch { bringIntoViewRequester.bringIntoView() } }
         } else {
             null
+        },
+        expandedContentModifier = if (isRadioGroup) {
+            Modifier.semantics {
+                collectionInfo = CollectionInfo(rowCount = data.size, columnCount = 1)
+            }
+        } else {
+            Modifier
         },
         cardCollapsedContent = {
             ExpandableListItemHeader(
@@ -130,6 +145,7 @@ fun WrapExpandableListItem(
                             clickableAreas = expandedClickableAreas,
                             shape = RectangleShape,
                             colors = colors,
+                            collectionItemIndex = index.takeIf { isRadioGroup },
                         )
                     }
 
@@ -162,6 +178,16 @@ fun WrapExpandableListItem(
         }
     )
 }
+
+/**
+ * True when [items] are two or more rows that all end in a radio button, the rows that
+ * [WrapExpandableListItem] reports to accessibility services as one list.
+ */
+private fun isRadioButtonGroup(items: List<ExpandableListItemUi>): Boolean =
+    items.size > 1 && items.all { item ->
+        item is ExpandableListItemUi.SingleListItem &&
+                item.header.trailingContentData is ListItemTrailingContentDataUi.RadioButton
+    }
 
 @Composable
 private fun ExpandableListItemHeader(

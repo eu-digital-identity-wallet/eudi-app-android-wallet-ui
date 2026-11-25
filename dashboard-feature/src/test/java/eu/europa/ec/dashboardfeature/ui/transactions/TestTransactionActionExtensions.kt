@@ -44,7 +44,12 @@ class TestTransactionActionExtensions {
             "https://verifier.example/deletion",
             "http://verifier.example/deletion",
         ).forEach { url ->
-            assertTrue(url, context.openTransactionAction(url))
+
+            // When
+            val opened = context.openTransactionAction(url)
+
+            // Then
+            assertTrue(url, opened)
 
             val started = shadowOf(context).nextStartedActivity
             assertEquals(url, Intent.ACTION_VIEW, started.action)
@@ -55,6 +60,7 @@ class TestTransactionActionExtensions {
 
     @Test
     fun `Given a web address that only the wallet itself handles, When a transaction action opens it, Then nothing is started`() {
+        // Given
         val walletActivity = ComponentName(context.packageName, "eu.europa.ec.WalletActivity")
         shadowOf(context.packageManager).apply {
             addActivityIfNotPresent(walletActivity)
@@ -69,16 +75,28 @@ class TestTransactionActionExtensions {
             )
         }
 
-        assertFalse(context.openTransactionAction("https://wallet.example/deletion"))
+        // When
+        val walletUrlOpened = context.openTransactionAction("https://wallet.example/deletion")
+
+        // Then
+        assertFalse(walletUrlOpened)
         assertNull(shadowOf(context).nextStartedActivity)
 
-        assertTrue(context.openTransactionAction("https://verifier.example/deletion"))
+        // When
+        val verifierUrlOpened = context.openTransactionAction("https://verifier.example/deletion")
+
+        // Then
+        assertTrue(verifierUrlOpened)
         assertNotNull(shadowOf(context).nextStartedActivity)
     }
 
     @Test
     fun `Given a mail address, When a transaction action opens it, Then a mail app is asked to write to it`() {
-        assertTrue(context.openTransactionAction("mailto:dpo@verifier.example"))
+        // When
+        val opened = context.openTransactionAction("mailto:dpo@verifier.example")
+
+        // Then
+        assertTrue(opened)
 
         val started = shadowOf(context).nextStartedActivity
         assertEquals(Intent.ACTION_SENDTO, started.action)
@@ -87,7 +105,11 @@ class TestTransactionActionExtensions {
 
     @Test
     fun `Given a phone number, When a transaction action opens it, Then the dialler is opened with it`() {
-        assertTrue(context.openTransactionAction("tel:+352123456"))
+        // When
+        val opened = context.openTransactionAction("tel:+352123456")
+
+        // Then
+        assertTrue(opened)
 
         val started = shadowOf(context).nextStartedActivity
         assertEquals(Intent.ACTION_DIAL, started.action)
@@ -102,7 +124,12 @@ class TestTransactionActionExtensions {
             "file:///sdcard/policy.html",
             "javascript:alert(1)",
         ).forEach { url ->
-            assertFalse(url, context.openTransactionAction(url))
+
+            // When
+            val opened = context.openTransactionAction(url)
+
+            // Then
+            assertFalse(url, opened)
         }
         assertNull(shadowOf(context).nextStartedActivity)
     }

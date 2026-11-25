@@ -54,6 +54,7 @@ class TestPrefsController {
 
     @Test
     fun `Given a keyset stored in cleartext, When it is checked, Then it is reported as cleartext`() {
+        // Given
         val bytes = ByteArrayOutputStream()
         LegacyKeysetSerialization.serializeKeyset(
             newKeyset(),
@@ -61,11 +62,16 @@ class TestPrefsController {
             InsecureSecretKeyAccess.get()
         )
 
-        assertTrue(isCleartextKeyset(BinaryKeysetReader.withBytes(bytes.toByteArray())))
+        // When
+        val isCleartext = isCleartextKeyset(BinaryKeysetReader.withBytes(bytes.toByteArray()))
+
+        // Then
+        assertTrue(isCleartext)
     }
 
     @Test
     fun `Given an encrypted keyset, When it is checked, Then it is not reported as cleartext`() {
+        // Given
         val bytes = ByteArrayOutputStream()
         val wrappingKey = newKeyset().getPrimitive(RegistryConfiguration.get(), Aead::class.java)
         LegacyKeysetSerialization.serializeEncryptedKeyset(
@@ -75,13 +81,19 @@ class TestPrefsController {
             ByteArray(0)
         )
 
-        assertFalse(isCleartextKeyset(BinaryKeysetReader.withBytes(bytes.toByteArray())))
+        // When
+        val isCleartext = isCleartextKeyset(BinaryKeysetReader.withBytes(bytes.toByteArray()))
+
+        // Then
+        assertFalse(isCleartext)
     }
 
     @Test
     fun `Given no Android Keystore, When the preferences are opened, Then they are refused and no cleartext keyset is left`() {
+        // Given
         val prefs = PrefsControllerImpl(ResourceProviderImpl(context))
 
+        // Then
         assertThrows(KeystoreUnavailableException::class.java) {
             runBlocking { prefs.getBool("any", false) }
         }

@@ -99,10 +99,13 @@ class TestWalletCoreResetController {
     @Test
     fun `Given documents and a PID, When the wallet is reset, Then every step runs in order and no work is scheduled`() {
         coroutineRule.runTest {
+            // Given
             givenDocuments(listOf(pid, mdl), mainPid = pid)
 
+            // When
             val result = buildController().resetWallet()
 
+            // Then
             assertEquals(ResetWalletPartialState.Success, result)
             assertEquals(
                 listOf(
@@ -126,13 +129,16 @@ class TestWalletCoreResetController {
     @Test
     fun `Given a reset, When it runs, Then the status says so until it ends`() {
         coroutineRule.runTest {
+            // Given
             givenDocuments(emptyList(), mainPid = null)
             val statusDuringReset = mutableListOf<Boolean>()
 
+            // When
             buildController(
                 clearDatabase = { statusDuringReset.add(resetStatus.isResetting.value) },
             ).resetWallet()
 
+            // Then
             assertEquals(listOf(true), statusDuringReset)
             assertFalse(resetStatus.isResetting.value)
         }
@@ -146,12 +152,15 @@ class TestWalletCoreResetController {
     @Test
     fun `Given a step that throws an Error, When the wallet is reset, Then the status no longer says it runs`() {
         coroutineRule.runTest {
+            // Given
             givenDocuments(emptyList(), mainPid = null)
 
+            // When
             runCatching {
                 buildController(clearDatabase = { throw StackOverflowError() }).resetWallet()
             }
 
+            // Then
             assertFalse(resetStatus.isResetting.value)
         }
     }
@@ -159,11 +168,14 @@ class TestWalletCoreResetController {
     @Test
     fun `Given a worker still working, When the wallet is reset, Then nothing is deleted and a failure returned`() {
         coroutineRule.runTest {
+            // Given
             givenDocuments(listOf(mdl), mainPid = null)
 
+            // When
             val result = buildController(stopBackgroundWork = { steps.add("stop work"); false })
                 .resetWallet()
 
+            // Then
             assertEquals(ResetWalletPartialState.Failure(errorMessage = "error"), result)
             assertEquals(listOf("stop work", "schedule work"), steps)
             assertFalse(resetStatus.isResetting.value)
@@ -177,14 +189,17 @@ class TestWalletCoreResetController {
     @Test
     fun `Given a failed reset, When work is scheduled again, Then the reset has already ended`() {
         coroutineRule.runTest {
+            // Given
             givenDocuments(listOf(mdl), mainPid = null)
             val statusWhenScheduled = mutableListOf<Boolean>()
 
+            // When
             buildController(
                 stopBackgroundWork = { false },
                 scheduleBackgroundWork = { statusWhenScheduled.add(resetStatus.isResetting.value) },
             ).resetWallet()
 
+            // Then
             assertEquals(listOf(false), statusWhenScheduled)
         }
     }
@@ -192,10 +207,13 @@ class TestWalletCoreResetController {
     @Test
     fun `Given no PID, When the wallet is reset, Then every document is still deleted`() {
         coroutineRule.runTest {
+            // Given
             givenDocuments(listOf(mdl), mainPid = null)
 
+            // When
             val result = buildController().resetWallet()
 
+            // Then
             assertEquals(ResetWalletPartialState.Success, result)
             assertEquals(true, "delete mdl" in steps)
         }
@@ -204,13 +222,16 @@ class TestWalletCoreResetController {
     @Test
     fun `Given a document that cannot be deleted, When the wallet is reset, Then nothing else is cleared and a failure returned`() {
         coroutineRule.runTest {
+            // Given
             givenDocuments(listOf(mdl), mainPid = null)
             whenever(walletCoreDocumentsController.deleteDocument("mdl")).thenReturn(
                 flow { emit(DeleteDocumentPartialState.Failure(errorMessage = "storage error")) }
             )
 
+            // When
             val result = buildController().resetWallet()
 
+            // Then
             assertEquals(ResetWalletPartialState.Failure(errorMessage = "error"), result)
             assertEquals(
                 listOf("stop work", "hold registry", "clear registry", "schedule work"),
@@ -222,6 +243,7 @@ class TestWalletCoreResetController {
     @Test
     fun `Given a document stored while the reset runs, When the wallet is reset, Then it is deleted on the next pass`() {
         coroutineRule.runTest {
+            // Given
             givenDocuments(listOf(mdl), mainPid = null)
             var lateDocumentStored = false
             whenever(walletCoreDocumentsController.deleteDocument("mdl")).thenReturn(
@@ -236,8 +258,10 @@ class TestWalletCoreResetController {
                 }
             )
 
+            // When
             val result = buildController().resetWallet()
 
+            // Then
             assertEquals(ResetWalletPartialState.Success, result)
             assertEquals(true, "delete pid" in steps)
         }
@@ -246,12 +270,15 @@ class TestWalletCoreResetController {
     @Test
     fun `Given a step that fails, When the wallet is reset, Then a failure is returned and work is scheduled again`() {
         coroutineRule.runTest {
+            // Given
             givenDocuments(emptyList(), mainPid = null)
 
+            // When
             val result =
                 buildController(clearDatabase = { throw IllegalStateException("database error") })
                     .resetWallet()
 
+            // Then
             assertEquals(ResetWalletPartialState.Failure(errorMessage = "error"), result)
             assertEquals(
                 listOf(
@@ -268,12 +295,15 @@ class TestWalletCoreResetController {
     @Test
     fun `Given a step that throws a cancellation, When the wallet is reset, Then a failure is returned`() {
         coroutineRule.runTest {
+            // Given
             givenDocuments(emptyList(), mainPid = null)
 
+            // When
             val result =
                 buildController(deleteCacheFiles = { throw CancellationException("cancelled") })
                     .resetWallet()
 
+            // Then
             assertEquals(ResetWalletPartialState.Failure(errorMessage = "error"), result)
             assertEquals("schedule work", steps.last())
         }
@@ -282,6 +312,7 @@ class TestWalletCoreResetController {
     @Test
     fun `Given a reset that failed after the preferences were cleared, When it is retried, Then it completes`() {
         coroutineRule.runTest {
+            // Given
             givenDocuments(emptyList(), mainPid = null)
             var firstRun = true
             val controller = buildController(
@@ -294,10 +325,12 @@ class TestWalletCoreResetController {
                 },
             )
 
+            // When
             val first = controller.resetWallet()
             steps.clear()
             val second = controller.resetWallet()
 
+            // Then
             assertEquals(ResetWalletPartialState.Failure(errorMessage = "error"), first)
             assertEquals(ResetWalletPartialState.Success, second)
             assertEquals("lock", steps.last())

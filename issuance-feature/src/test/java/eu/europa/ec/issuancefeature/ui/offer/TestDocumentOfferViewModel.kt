@@ -113,8 +113,10 @@ class TestDocumentOfferViewModel {
     @Test
     fun `Given a verified issuer with an https privacy policy, When the offer is resolved, Then the policy link is shown`() =
         coroutineRule.runTest {
+            // When
             resolveOffer(privacyPolicyUrl = "https://issuer.example/privacy")
 
+            // Then
             assertEquals(
                 "https://issuer.example/privacy",
                 viewModel.viewState.value.relyingPartyHeader?.privacyPolicyUrl,
@@ -124,6 +126,7 @@ class TestDocumentOfferViewModel {
     @Test
     fun `Given a verified issuer with a privacy policy that is not an https web address, When the offer is resolved, Then no policy link is shown`() =
         coroutineRule.runTest {
+            // When
             listOf(
                 "http://issuer.example/privacy",
                 "javascript:alert(1)",
@@ -136,6 +139,8 @@ class TestDocumentOfferViewModel {
                 assertEquals(url, ISSUER_NAME, header?.relyingParty?.name)
                 assertNull(url, header?.privacyPolicyUrl)
             }
+
+            // Then
             verify(interactor, times(4)).resolveDocumentOffer(OFFER_URI)
         }
 

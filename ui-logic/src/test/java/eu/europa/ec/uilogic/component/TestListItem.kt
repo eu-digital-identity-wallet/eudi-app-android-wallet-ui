@@ -91,14 +91,18 @@ class TestListItem {
      * and the node information TalkBack reads for it is checkable, checked and clickable.
      */
     @Test
-    fun `Given a checked checkbox row, Then accessibility services read a checked checkbox`() {
+    fun `Given a checked checkbox row, When accessibility services read it, Then they read a checked checkbox`() {
+        // Given
         setCheckboxRow(isChecked = true)
 
         composeRule.onNodeWithText(claimValue)
             .assert(SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.Checkbox))
             .assert(hasText(claimName))
+
+        // When
         val rowInfo = createRowNodeInfo(claimValue)
 
+        // Then
         assertTrue(rowInfo.isCheckable)
         assertEquals(AccessibilityNodeInfoCompat.CHECKED_STATE_TRUE, rowInfo.checked)
         assertTrue(rowInfo.isClickable)
@@ -108,9 +112,11 @@ class TestListItem {
      * An unchecked checkbox row reads as an unchecked checkbox and offers the click action.
      */
     @Test
-    fun `Given an unchecked checkbox row, Then it reads as an unchecked checkbox`() {
+    fun `Given an unchecked checkbox row, When accessibility services read it, Then it reads as an unchecked checkbox`() {
+        // Given
         setCheckboxRow(isChecked = false)
 
+        // Then
         composeRule.onNodeWithText(claimValue)
             .assert(SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.Checkbox))
             .assertIsOff()
@@ -123,11 +129,14 @@ class TestListItem {
      */
     @Test
     fun `Given a checkbox row, When its click action runs, Then its handler runs once`() {
+        // Given
         val clickedIds = mutableListOf<String>()
         setCheckboxRow(isChecked = true, onItemClick = { clickedIds.add(it.itemId) })
 
+        // When
         composeRule.onNodeWithText(claimValue).performSemanticsAction(SemanticsActions.OnClick)
 
+        // Then
         composeRule.runOnIdle { assertEquals(listOf(itemId), clickedIds) }
     }
 
@@ -137,12 +146,15 @@ class TestListItem {
      */
     @Test
     fun `Given a checkbox row, When it is tapped, Then its handler runs once`() {
+        // Given
         val clickedIds = mutableListOf<String>()
         setCheckboxRow(isChecked = true, onItemClick = { clickedIds.add(it.itemId) })
 
+        // When
         composeRule.onNodeWithText(claimName, useUnmergedTree = true)
             .performTouchInput { click() }
 
+        // Then
         composeRule.runOnIdle { assertEquals(listOf(itemId), clickedIds) }
     }
 
@@ -152,6 +164,7 @@ class TestListItem {
      */
     @Test
     fun `Given a checkbox row, When its handler flips the item, Then the reported state follows`() {
+        // Given
         composeRule.setContent {
             var isChecked by remember { mutableStateOf(true) }
             MaterialTheme {
@@ -163,8 +176,18 @@ class TestListItem {
             }
         }
 
-        composeRule.onNodeWithText(claimValue).assertIsOn().performClick()
-        composeRule.onNodeWithText(claimValue).assertIsOff().performClick()
+        composeRule.onNodeWithText(claimValue).assertIsOn()
+
+        // When
+        composeRule.onNodeWithText(claimValue).performClick()
+
+        // Then
+        composeRule.onNodeWithText(claimValue).assertIsOff()
+
+        // When
+        composeRule.onNodeWithText(claimValue).performClick()
+
+        // Then
         composeRule.onNodeWithText(claimValue).assertIsOn()
     }
 
@@ -173,9 +196,11 @@ class TestListItem {
      * second one.
      */
     @Test
-    fun `Given a checkbox row, Then the row is its only checkbox node`() {
+    fun `Given a checkbox row, When accessibility services read it, Then the row is its only checkbox node`() {
+        // Given
         setCheckboxRow(isChecked = true)
 
+        // Then
         composeRule.onAllNodes(isToggleable(), useUnmergedTree = true).assertCountEquals(1)
     }
 
@@ -184,7 +209,8 @@ class TestListItem {
      * checkbox with no click action, and a tap runs nothing.
      */
     @Test
-    fun `Given a disabled checkbox, Then its row reads as a disabled checkbox without action`() {
+    fun `Given a disabled checkbox, When its row is read and tapped, Then it reads as a disabled checkbox without action`() {
+        // Given
         var clicks = 0
         setCheckboxRow(isChecked = true, isEnabled = false, onItemClick = { clicks++ })
 
@@ -193,8 +219,11 @@ class TestListItem {
             .assertIsOn()
             .assertIsNotEnabled()
             .assertHasNoClickAction()
-            .performTouchInput { click() }
 
+        // When
+        composeRule.onNodeWithText(claimValue).performTouchInput { click() }
+
+        // Then
         composeRule.runOnIdle { assertEquals(0, clicks) }
     }
 
@@ -204,9 +233,11 @@ class TestListItem {
      * action.
      */
     @Test
-    fun `Given a checkbox row without a handler, Then it reports its state read-only`() {
+    fun `Given a checkbox row without a handler, When it is read, Then it reports its state read-only`() {
+        // Given
         setCheckboxRow(isChecked = false, onItemClick = null)
 
+        // Then
         composeRule.onNodeWithText(claimValue)
             .assert(SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.Checkbox))
             .assertIsOff()
@@ -219,9 +250,11 @@ class TestListItem {
      * state, so the row adds no checkbox semantics of its own and takes no click itself.
      */
     @Test
-    fun `Given a checkbox that takes its own clicks, Then the row adds no second checkbox`() {
+    fun `Given a checkbox that takes its own clicks, When the row is read, Then the row adds no second checkbox`() {
+        // Given
         setCheckboxRow(isChecked = true, clickableAreas = listOf(ClickableArea.TRAILING_CONTENT))
 
+        // Then
         composeRule.onAllNodes(isToggleable(), useUnmergedTree = true).assertCountEquals(1)
         composeRule.onNodeWithText(claimValue)
             .assert(SemanticsMatcher.keyNotDefined(SemanticsProperties.Role))
@@ -234,14 +267,18 @@ class TestListItem {
      * an already selected radio button as not clickable, since it cannot be selected again.
      */
     @Test
-    fun `Given a selected radio button row, Then accessibility services read it as selected`() {
+    fun `Given a selected radio button row, When accessibility services read it, Then it reads as selected`() {
+        // Given
         setRow(item = createRadioButtonItem(isSelected = true))
 
         composeRule.onNodeWithText(radioButtonText)
             .assert(SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.RadioButton))
             .assertIsSelected()
+
+        // When
         val rowInfo = createRowNodeInfo(radioButtonText)
 
+        // Then
         assertTrue(rowInfo.isCheckable)
         assertEquals(AccessibilityNodeInfoCompat.CHECKED_STATE_TRUE, rowInfo.checked)
         assertEquals("Selected", rowInfo.stateDescription?.toString())
@@ -254,6 +291,7 @@ class TestListItem {
      */
     @Test
     fun `Given an unselected radio button row, When its click action runs, Then it runs once`() {
+        // Given
         val clickedIds = mutableListOf<String>()
         setRow(
             item = createRadioButtonItem(isSelected = false),
@@ -264,9 +302,12 @@ class TestListItem {
             .assert(SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.RadioButton))
             .assertIsNotSelected()
         assertTrue(createRowNodeInfo(radioButtonText).isClickable)
+
+        // When
         composeRule.onNodeWithText(radioButtonText)
             .performSemanticsAction(SemanticsActions.OnClick)
 
+        // Then
         composeRule.runOnIdle { assertEquals(listOf(itemId), clickedIds) }
     }
 
@@ -275,9 +316,11 @@ class TestListItem {
      * selected radio button with no click action.
      */
     @Test
-    fun `Given a radio button row without a handler, Then it reports its selection read-only`() {
+    fun `Given a radio button row without a handler, When it is read, Then it reports its selection read-only`() {
+        // Given
         setRow(item = createRadioButtonItem(isSelected = true), onItemClick = null)
 
+        // Then
         composeRule.onNodeWithText(radioButtonText)
             .assert(SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.RadioButton))
             .assertIsSelected()
@@ -290,7 +333,8 @@ class TestListItem {
      * button with no click action, and a tap runs nothing.
      */
     @Test
-    fun `Given a disabled radio button, Then its row reads as disabled without action`() {
+    fun `Given a disabled radio button, When its row is read and tapped, Then it reads as disabled without action`() {
+        // Given
         var clicks = 0
         setRow(
             item = createRadioButtonItem(isSelected = false, isEnabled = false),
@@ -302,8 +346,11 @@ class TestListItem {
             .assertIsNotSelected()
             .assertIsNotEnabled()
             .assertHasNoClickAction()
-            .performTouchInput { click() }
 
+        // When
+        composeRule.onNodeWithText(radioButtonText).performTouchInput { click() }
+
+        // Then
         composeRule.runOnIdle { assertEquals(0, clicks) }
     }
 
@@ -312,14 +359,18 @@ class TestListItem {
      * TalkBack reads for it is checkable, checked, "On" and clickable.
      */
     @Test
-    fun `Given a switch row that is on, Then accessibility services read a switch that is on`() {
+    fun `Given a switch row that is on, When accessibility services read it, Then they read a switch that is on`() {
+        // Given
         setRow(item = createSwitchItem(isChecked = true))
 
         composeRule.onNodeWithText(switchText)
             .assert(SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.Switch))
             .assertIsOn()
+
+        // When
         val rowInfo = createRowNodeInfo(switchText)
 
+        // Then
         assertTrue(rowInfo.isCheckable)
         assertEquals(AccessibilityNodeInfoCompat.CHECKED_STATE_TRUE, rowInfo.checked)
         assertEquals("On", rowInfo.stateDescription?.toString())
@@ -331,14 +382,17 @@ class TestListItem {
      */
     @Test
     fun `Given a switch row, When it is tapped, Then its handler runs once`() {
+        // Given
         val clickedIds = mutableListOf<String>()
         setRow(
             item = createSwitchItem(isChecked = false),
             onItemClick = { clickedIds.add(it.itemId) },
         )
 
+        // When
         composeRule.onNodeWithText(switchText).performTouchInput { click() }
 
+        // Then
         composeRule.runOnIdle { assertEquals(listOf(itemId), clickedIds) }
     }
 
@@ -347,7 +401,8 @@ class TestListItem {
      * is off, with no click action, and a tap runs nothing.
      */
     @Test
-    fun `Given a disabled switch, Then its row reads as a disabled switch without action`() {
+    fun `Given a disabled switch, When its row is read and tapped, Then it reads as a disabled switch without action`() {
+        // Given
         var clicks = 0
         setRow(
             item = createSwitchItem(isChecked = false, isEnabled = false),
@@ -359,8 +414,11 @@ class TestListItem {
             .assertIsOff()
             .assertIsNotEnabled()
             .assertHasNoClickAction()
-            .performTouchInput { click() }
 
+        // When
+        composeRule.onNodeWithText(switchText).performTouchInput { click() }
+
+        // Then
         composeRule.runOnIdle { assertEquals(0, clicks) }
     }
 
@@ -369,12 +427,14 @@ class TestListItem {
      * so the row adds no switch semantics of its own and takes no click itself.
      */
     @Test
-    fun `Given a switch that takes its own clicks, Then the row adds no second switch`() {
+    fun `Given a switch that takes its own clicks, When the row is read, Then the row adds no second switch`() {
+        // Given
         setRow(
             item = createSwitchItem(isChecked = true),
             clickableAreas = listOf(ClickableArea.TRAILING_CONTENT),
         )
 
+        // Then
         composeRule.onAllNodes(isToggleable(), useUnmergedTree = true).assertCountEquals(1)
         composeRule.onNodeWithText(switchText)
             .assert(SemanticsMatcher.keyNotDefined(SemanticsProperties.Role))
@@ -386,7 +446,8 @@ class TestListItem {
      * state.
      */
     @Test
-    fun `Given a row with a trailing icon, Then it stays a plain clickable row`() {
+    fun `Given a row with a trailing icon, When it is read, Then it stays a plain clickable row`() {
+        // Given
         setRow(
             item = ListItemDataUi(
                 itemId = itemId,
@@ -397,6 +458,7 @@ class TestListItem {
             ),
         )
 
+        // Then
         composeRule.onNodeWithText(claimValue)
             .assertHasClickAction()
             .assert(SemanticsMatcher.keyNotDefined(SemanticsProperties.Role))

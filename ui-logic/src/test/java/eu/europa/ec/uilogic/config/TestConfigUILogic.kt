@@ -26,11 +26,19 @@ class TestConfigUILogic {
 
     @Test
     fun `Given the reference configuration, When userImageClaimKeys is read, Then it lists the portrait and picture claims`() {
-        assertEquals(setOf("portrait", "picture"), config.userImageClaimKeys)
+        // When
+        val keys = config.userImageClaimKeys
+
+        // Then
+        assertEquals(setOf("portrait", "picture"), keys)
     }
 
     @Test
     fun `Given the reference configuration, When shouldPreventScreenCapture is read, Then screen capture is allowed`() {
-        assertFalse(config.shouldPreventScreenCapture)
+        // When
+        val prevented = config.shouldPreventScreenCapture
+
+        // Then
+        assertFalse(prevented)
     }
 }

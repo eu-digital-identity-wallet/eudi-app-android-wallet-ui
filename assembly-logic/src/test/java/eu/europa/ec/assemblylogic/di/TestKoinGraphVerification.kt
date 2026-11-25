@@ -33,10 +33,13 @@ import org.koin.test.verify.ParameterTypeInjection
 @OptIn(KoinExperimentalAPI::class)
 class TestKoinGraphVerification {
 
+    /**
+     * Constructor parameters of library types that provider functions build themselves.
+     */
     @Test
-    fun `every constructor parameter of the wallet modules has a definition`() {
+    fun `Given the wallet modules, When their constructor parameters are verified, Then every parameter has a definition`() {
+        // Then
         module { includes(eudiWalletModules) }.androidVerify(
-            // Constructor parameters of library types that provider functions build themselves.
             extraTypes = listOf(
                 HttpClientEngine::class,
                 HttpClientConfig::class,

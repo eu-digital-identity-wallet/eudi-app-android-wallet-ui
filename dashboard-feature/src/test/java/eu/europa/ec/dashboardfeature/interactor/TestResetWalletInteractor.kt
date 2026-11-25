@@ -60,30 +60,50 @@ class TestResetWalletInteractor {
 
     @Test
     fun `Given the session state, When isSessionUnlocked is called, Then it reports the session`() {
+        // Given
         whenever(sessionController.isUnlocked).thenReturn(true)
-        assertTrue(interactor.isSessionUnlocked())
 
+        // When
+        val unlocked = interactor.isSessionUnlocked()
+
+        // Then
+        assertTrue(unlocked)
+
+        // When
         whenever(sessionController.isUnlocked).thenReturn(false)
-        assertFalse(interactor.isSessionUnlocked())
+        val locked = interactor.isSessionUnlocked()
+
+        // Then
+        assertFalse(locked)
     }
 
     @Test
     fun `Given the reset succeeds, When resetWallet is called, Then Success is returned`() =
         coroutineRule.runTest {
+            // Given
             whenever(walletCoreResetController.resetWallet()).thenReturn(ResetWalletPartialState.Success)
 
-            assertEquals(ResetWalletInteractorPartialState.Success, interactor.resetWallet())
+            // When
+            val result = interactor.resetWallet()
+
+            // Then
+            assertEquals(ResetWalletInteractorPartialState.Success, result)
         }
 
     @Test
     fun `Given the reset fails, When resetWallet is called, Then Failure carries the message`() =
         coroutineRule.runTest {
+            // Given
             whenever(walletCoreResetController.resetWallet())
                 .thenReturn(ResetWalletPartialState.Failure(errorMessage = "error"))
 
+            // When
+            val result = interactor.resetWallet()
+
+            // Then
             assertEquals(
                 ResetWalletInteractorPartialState.Failure(errorMessage = "error"),
-                interactor.resetWallet()
+                result
             )
         }
 }

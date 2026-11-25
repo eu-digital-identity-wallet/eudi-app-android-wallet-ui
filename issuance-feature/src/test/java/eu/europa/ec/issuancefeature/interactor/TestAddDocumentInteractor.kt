@@ -61,8 +61,8 @@ import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.ThemeColorKey
 import eu.europa.ec.uilogic.component.utils.PERCENTAGE_25
 import eu.europa.ec.uilogic.serializer.UiSerializer
-import junit.framework.TestCase.assertEquals
 import org.junit.After
+import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -415,6 +415,9 @@ class TestAddDocumentInteractor {
     // Case 9 Expected Result:
     // AddDocumentInteractorScopedPartialState.Success with one option containing only the mDL,
     // no combined-PID entry.
+    /**
+     * The combined-PID listing is empty for a non-PID filter; only the mDL remains.
+     */
     @Test
     fun `Given Case 9, When getAddDocumentOption is called with a non-PID formatType, Then only that doc is returned`() {
         coroutineRule.runTest {
@@ -437,7 +440,6 @@ class TestAddDocumentInteractor {
                 )
                 result as AddDocumentInteractorScopedPartialState.Success
                 val firstGroup = result.options.first()
-                // The combined-PID listing is empty for a non-PID filter; only the mDL remains.
                 val titles: List<String> = firstGroup.second.map { item ->
                     (item.itemData.mainContentData as eu.europa.ec.uilogic.component.ListItemMainContentDataUi.Text).text
                 }
@@ -664,6 +666,7 @@ class TestAddDocumentInteractor {
     @Test
     fun `Given controller emits PartialSuccess with documents not issued, When issueDocuments is called, Then Success names them`() {
         coroutineRule.runTest {
+            // Given
             whenever(
                 walletCoreDocumentsController.issueDocuments(
                     issuanceMethod = IssuanceMethod.OPENID4VCI,
@@ -677,11 +680,13 @@ class TestAddDocumentInteractor {
                 ).toFlow()
             )
 
+            // When
             interactor.issueDocuments(
                 issuanceMethod = IssuanceMethod.OPENID4VCI,
                 configIds = listOf("id"),
                 issuerId = "issuerId",
             ).runFlowTest {
+                // Then
                 assertEquals(
                     AddDocumentInteractorIssueDocumentsPartialState.Success(
                         documentIds = listOf(mockedPidId),
@@ -696,6 +701,7 @@ class TestAddDocumentInteractor {
     @Test
     fun `Given controller emits PartialSuccessWithUntrustedIssuer with refused documents, When issueDocuments is called, Then Success names them`() {
         coroutineRule.runTest {
+            // Given
             whenever(
                 walletCoreDocumentsController.issueDocuments(
                     issuanceMethod = IssuanceMethod.OPENID4VCI,
@@ -710,11 +716,13 @@ class TestAddDocumentInteractor {
                 ).toFlow()
             )
 
+            // When
             interactor.issueDocuments(
                 issuanceMethod = IssuanceMethod.OPENID4VCI,
                 configIds = listOf("id"),
                 issuerId = "issuerId",
             ).runFlowTest {
+                // Then
                 assertEquals(
                     AddDocumentInteractorIssueDocumentsPartialState.Success(
                         documentIds = listOf(mockedPidId),
@@ -1045,7 +1053,7 @@ class TestAddDocumentInteractor {
     // 1. ConfigNavigation with NavigationType.PopRoute
     // 2. string resources mocked
     @Test
-    fun `When buildGenericSuccessRouteForDeferred (PopRoute) is called, then the expected string result is returned`() {
+    fun `Given a PopRoute navigation and the success strings, When buildGenericSuccessRouteForDeferred is called, Then the expected string result is returned`() {
         // Given
         mockDocumentIssuanceStrings()
 
@@ -1085,7 +1093,7 @@ class TestAddDocumentInteractor {
     // 1. uiSerializer.toBase64 returns null → the `.orEmpty()` fallback path is exercised,
     //    producing a route with an empty successConfig argument.
     @Test
-    fun `When buildGenericSuccessRouteForDeferred is called and uiSerializer returns null, Then the route uses the empty fallback`() {
+    fun `Given a uiSerializer that returns null, When buildGenericSuccessRouteForDeferred is called, Then the route uses the empty fallback`() {
         // Given
         mockDocumentIssuanceStrings()
 
@@ -1126,10 +1134,11 @@ class TestAddDocumentInteractor {
     // the expected result is the resumeOpenId4VciWithAuthorization function to be executed on
     // the walletCoreDocumentsController
     @Test
-    fun `When interactor resumeOpenId4VciWithAuthorization is called, Then resumeOpenId4VciWithAuthorization should be invoked on the controller`() {
+    fun `Given an authorization uri, When resumeOpenId4VciWithAuthorization is called on the interactor, Then it is invoked on the controller`() {
         // When
         interactor.resumeOpenId4VciWithAuthorization(mockedUriPath1)
 
+        // Then
         verify(walletCoreDocumentsController, times(1))
             .resumeOpenId4VciWithAuthorization(mockedUriPath1)
     }

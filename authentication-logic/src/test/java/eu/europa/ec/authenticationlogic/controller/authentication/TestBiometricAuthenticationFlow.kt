@@ -138,7 +138,7 @@ class TestBiometricAuthenticationFlow {
     }
 
     @Test
-    fun `terminal errors after a rejected scan are delivered once without relaunching the prompt`() =
+    fun `Given a rejected scan, When a terminal error arrives, Then it is delivered once without relaunching the prompt`() =
         coroutineRule.runTest {
             val errors = listOf(
                 BiometricPrompt.ERROR_NO_BIOMETRICS,
@@ -151,15 +151,18 @@ class TestBiometricAuthenticationFlow {
             )
 
             errors.forEachIndexed { index, code ->
+                // Given
                 startAuthentication(notifyOnFailure = false)
                 callbacks.last().onAuthenticationFailed()
                 coroutineRule.testScope.runCurrent()
 
                 assertEquals(index, results.size)
 
+                // When
                 callbacks.last().onAuthenticationError(code, "system error $code")
                 coroutineRule.testScope.runCurrent()
 
+                // Then
                 assertEquals(index + 1, prompts.constructed().size)
                 assertEquals(index + 1, results.size)
                 assertEquals(BiometricsAuthenticate.Failed("system error $code"), results.last())
@@ -167,7 +170,7 @@ class TestBiometricAuthenticationFlow {
         }
 
     @Test
-    fun `user negative-button and system cancellations do not become failures`() =
+    fun `Given a started prompt, When the user or the system cancels it, Then no failure is reported`() =
         coroutineRule.runTest {
             val cancellationCodes = listOf(
                 BiometricPrompt.ERROR_USER_CANCELED,
@@ -176,10 +179,14 @@ class TestBiometricAuthenticationFlow {
             )
 
             cancellationCodes.forEach { code ->
+                // Given
                 startAuthentication()
+
+                // When
                 callbacks.last().onAuthenticationError(code, "cancelled")
                 coroutineRule.testScope.runCurrent()
 
+                // Then
                 assertEquals(BiometricsAuthenticate.Cancelled, results.last())
             }
 
@@ -188,107 +195,134 @@ class TestBiometricAuthenticationFlow {
         }
 
     @Test
-    fun `cipher setup failure reports failure without opening a prompt`() = coroutineRule.runTest {
+    fun `Given a cipher that cannot be set up, When authentication starts, Then a failure is reported without opening a prompt`() = coroutineRule.runTest {
+        // Given
         whenever(crypto.getCipher(any(), any(), any())).thenReturn(null)
         val expectedFailure = BiometricsAuthenticate.Failed(
             activity.getString(R.string.biometric_authentication_error)
         )
 
+        // When
         startAuthentication()
 
+        // Then
         assertEquals(listOf(expectedFailure), results)
         assertTrue(prompts.constructed().isEmpty())
     }
 
     @Test
-    fun `storage exception reports failure without leaving a pending attempt`() =
+    fun `Given a storage that throws, When authentication starts, Then a failure is reported and no attempt is left pending`() =
         coroutineRule.runTest {
+            // Given
             whenever(storage.getBiometricAuthentication())
                 .thenThrow(IllegalStateException("unavailable"))
 
+            // When
             startAuthentication()
 
+            // Then
             assertTrue(results.single() is BiometricsAuthenticate.Failed)
             assertTrue(prompts.constructed().isEmpty())
         }
 
     @Test
-    fun `prompt startup exception reports failure`() = coroutineRule.runTest {
+    fun `Given a prompt that fails on startup, When authentication starts, Then a failure is reported`() = coroutineRule.runTest {
+        // Given
         prompts.close()
         prompts = mockConstruction(BiometricPrompt::class.java) { prompt, _ ->
             doThrow(IllegalArgumentException("unsupported")).whenever(prompt)
                 .authenticate(any(), any<BiometricPrompt.CryptoObject>())
         }
 
+        // When
         startAuthentication()
 
+        // Then
         assertTrue(results.single() is BiometricsAuthenticate.Failed)
         assertEquals(1, prompts.constructed().size)
     }
 
+    /**
+     * The test simulates even a synchronous cancellation callback from an OEM implementation.
+     */
     @Test
-    fun `rejected scan cancels prompt before delivering failure and ignores late callbacks`() =
+    fun `Given a started authentication, When a scan is rejected, Then the prompt is cancelled before the failure is delivered and late callbacks are ignored`() =
         coroutineRule.runTest {
+            // Given
             startAuthentication()
             val prompt = prompts.constructed().single()
 
-            // Simulate even a synchronous cancellation callback from an OEM implementation.
             doAnswer {
                 callbacks.single()
                     .onAuthenticationError(BiometricPrompt.ERROR_CANCELED, "cancelled")
             }.whenever(prompt).cancelAuthentication()
 
+            // When
             callbacks.single().onAuthenticationFailed()
             callbacks.single().onAuthenticationSucceeded(successfulAuthenticationResult())
             coroutineRule.testScope.runCurrent()
 
+            // Then
             verify(prompt).cancelAuthentication()
             assertTrue(results.single() is BiometricsAuthenticate.Failed)
             verify(storage, never()).setBiometricAuthentication(any())
         }
 
     @Test
-    fun `rejected scan stays in same prompt until the user cancels`() = coroutineRule.runTest {
+    fun `Given a started authentication, When a scan is rejected and then the user cancels, Then the prompt stays open until the cancellation`() = coroutineRule.runTest {
+        // Given
         startAuthentication(notifyOnFailure = false)
+
+        // When
         callbacks.single().onAuthenticationFailed()
         coroutineRule.testScope.runCurrent()
 
+        // Then
         assertTrue(results.isEmpty())
         verify(prompts.constructed().single(), never()).cancelAuthentication()
 
+        // When
         callbacks.single().onAuthenticationError(BiometricPrompt.ERROR_USER_CANCELED, "cancelled")
         coroutineRule.testScope.runCurrent()
 
+        // Then
         assertEquals(listOf(BiometricsAuthenticate.Cancelled), results)
     }
 
     @Test
-    fun `repeated rejected scans allow success in the same prompt without reporting failure`() =
+    fun `Given a started authentication, When scans are rejected repeatedly and then one succeeds, Then success is reported in the same prompt without a failure`() =
         coroutineRule.runTest {
+            // Given
             startAuthentication(notifyOnFailure = false)
 
+            // When
             repeat(3) {
                 callbacks.single().onAuthenticationFailed()
                 coroutineRule.testScope.runCurrent()
 
+                // Then
                 assertTrue(results.isEmpty())
                 assertEquals(1, prompts.constructed().size)
                 verify(storage, never()).setBiometricAuthentication(any())
             }
 
+            // When
             callbacks.single().onAuthenticationSucceeded(successfulAuthenticationResult())
             coroutineRule.testScope.runCurrent()
 
+            // Then
             assertEquals(listOf(BiometricsAuthenticate.Success), results)
             verify(storage).setBiometricAuthentication(any())
             verify(prompts.constructed().single(), never()).cancelAuthentication()
         }
 
     @Test
-    fun `first successful authentication stores crypto and requests strong biometrics`() =
+    fun `Given no stored crypto, When authentication starts and succeeds, Then strong biometrics are requested and the crypto is stored`() =
         coroutineRule.runTest {
+            // When
             startAuthentication()
 
+            // Then
             val info = argumentCaptor<BiometricPrompt.PromptInfo>()
             verify(prompts.constructed().single()).authenticate(
                 info.capture(),
@@ -296,9 +330,11 @@ class TestBiometricAuthenticationFlow {
             )
             assertEquals(BIOMETRIC_STRONG, info.firstValue.allowedAuthenticators)
 
+            // When
             callbacks.single().onAuthenticationSucceeded(successfulAuthenticationResult())
             coroutineRule.testScope.runCurrent()
 
+            // Then
             assertEquals(listOf(BiometricsAuthenticate.Success), results)
 
             val saved = argumentCaptor<BiometricAuthentication>()
@@ -309,8 +345,9 @@ class TestBiometricAuthenticationFlow {
         }
 
     @Test
-    fun `existing crypto must decrypt to the stored challenge before success`() =
+    fun `Given stored crypto, When authentication succeeds with a matching and then a wrong decryption, Then only the matching one succeeds`() =
         coroutineRule.runTest {
+            // Given
             val stored = BiometricAuthentication(
                 randomString = "challenge",
                 encryptedString = byteArrayOf(1, 2, 3).encodeToPemBase64String().orEmpty(),
@@ -319,12 +356,15 @@ class TestBiometricAuthenticationFlow {
             whenever(storage.getBiometricAuthentication()).thenReturn(stored)
             whenever(crypto.encryptDecrypt(any(), any())).thenReturn("challenge".toByteArray())
 
+            // When
             startAuthentication()
             callbacks.last().onAuthenticationSucceeded(successfulAuthenticationResult())
             coroutineRule.testScope.runCurrent()
 
+            // Then
             assertEquals(BiometricsAuthenticate.Success, results.single())
 
+            // When
             whenever(
                 crypto.encryptDecrypt(
                     any(),
@@ -336,88 +376,122 @@ class TestBiometricAuthenticationFlow {
             callbacks.last().onAuthenticationSucceeded(successfulAuthenticationResult())
             coroutineRule.testScope.runCurrent()
 
+            // Then
             assertTrue(results.last() is BiometricsAuthenticate.Failed)
             verify(storage, never()).setBiometricAuthentication(any())
         }
 
     @Test
-    fun `crypto verification exception cannot produce success or crash`() = coroutineRule.runTest {
+    fun `Given a key that is invalidated, When authentication succeeds, Then it fails instead of succeeding or crashing`() = coroutineRule.runTest {
+        // Given
         whenever(crypto.encryptDecrypt(any(), any()))
             .thenThrow(IllegalStateException("invalidated key"))
 
+        // When
         startAuthentication()
         callbacks.single().onAuthenticationSucceeded(successfulAuthenticationResult())
         coroutineRule.testScope.runCurrent()
 
+        // Then
         assertTrue(results.single() is BiometricsAuthenticate.Failed)
         verify(storage, never()).setBiometricAuthentication(any())
     }
 
+    /**
+     * The test ends with a fresh activity so that teardown can run normally.
+     */
     @Test
-    fun `destroyed activity cancels prompt and notifies caller once`() = coroutineRule.runTest {
+    fun `Given a started authentication, When the activity is destroyed, Then the prompt is cancelled and the caller is notified once`() = coroutineRule.runTest {
+        // Given
         startAuthentication()
 
+        // When
         host.pause().stop().destroy()
         coroutineRule.testScope.runCurrent()
 
+        // Then
         verify(prompts.constructed().single()).cancelAuthentication()
         assertEquals(listOf(BiometricsAuthenticate.Cancelled), results)
 
+        // When
         callbacks.single().onAuthenticationError(BiometricPrompt.ERROR_CANCELED, "cancelled")
         coroutineRule.testScope.runCurrent()
 
+        // Then
         assertEquals(1, results.size)
 
-        // Use a fresh activity so teardown can run normally.
         host = Robolectric.buildActivity(FragmentActivity::class.java).setup()
     }
 
     @Test
-    fun `already destroyed activity still notifies caller`() = coroutineRule.runTest {
+    fun `Given a destroyed activity, When authentication starts, Then the caller is notified`() = coroutineRule.runTest {
+        // Given
         host.pause().stop().destroy()
 
+        // When
         startAuthentication()
 
+        // Then
         assertEquals(listOf(BiometricsAuthenticate.Cancelled), results)
         assertTrue(prompts.constructed().isEmpty())
 
         host = Robolectric.buildActivity(FragmentActivity::class.java).setup()
     }
 
+    /**
+     * Real AndroidX is used after the prompt mock is closed: it returns without a callback if
+     * launched after state saving.
+     */
     @Test
-    fun `backgrounding during crypto preparation cancels the attempt and permits a foreground retry`() =
+    fun `Given crypto still being prepared, When the app is backgrounded, Then the attempt is cancelled and a foreground retry works`() =
+
         coroutineRule.runTest {
+            // Given
             val preparedCipher = CompletableDeferred<Cipher>()
             whenever(crypto.getCipher(any(), any(), any())).doSuspendableAnswer {
                 preparedCipher.await()
             }
 
+            // When
             startAuthentication()
 
+            // Then
             assertTrue(prompts.constructed().isEmpty())
 
+            // When
             host.pause().saveInstanceState(Bundle()).stop()
+
+            // Then
             assertTrue(activity.supportFragmentManager.isStateSaved)
 
-            // Use real AndroidX here: it returns without a callback if launched after state saving.
+            // When
             prompts.close()
             preparedCipher.complete(cipher)
             coroutineRule.testScope.runCurrent()
 
+            // Then
             assertEquals(listOf(BiometricsAuthenticate.Cancelled), results)
 
+            // When
             host.restart().start().resume()
+
+            // Then
             assertFalse(activity.supportFragmentManager.isStateSaved)
+
+            // When
             prompts = mockBiometricPrompts()
 
             startAuthentication()
 
+            // Then
             assertEquals(1, prompts.constructed().size)
 
+            // When
             callbacks.single()
                 .onAuthenticationError(BiometricPrompt.ERROR_USER_CANCELED, "cancelled")
             coroutineRule.testScope.runCurrent()
 
+            // Then
             assertEquals(
                 listOf(BiometricsAuthenticate.Cancelled, BiometricsAuthenticate.Cancelled),
                 results
@@ -425,15 +499,18 @@ class TestBiometricAuthenticationFlow {
         }
 
     @Test
-    fun `non activity context reports failure immediately`() {
+    fun `Given a context that is not an activity, When authentication starts, Then a failure is reported immediately`() {
+        // When
         controller.authenticate(activity.applicationContext, true) { results += it }
 
+        // Then
         assertTrue(results.single() is BiometricsAuthenticate.Failed)
         assertTrue(prompts.constructed().isEmpty())
     }
 
     @Test
-    fun `cancelling suspend caller dismisses its prompt`() = coroutineRule.runTest {
+    fun `Given a pending suspend request, When the caller is cancelled, Then its prompt is dismissed`() = coroutineRule.runTest {
+        // Given
         val request = async {
             controller.authenticate(
                 activity,
@@ -447,14 +524,17 @@ class TestBiometricAuthenticationFlow {
         }
         coroutineRule.testScope.runCurrent()
 
+        // When
         request.cancel()
         coroutineRule.testScope.runCurrent()
 
+        // Then
         verify(prompts.constructed().single()).cancelAuthentication()
     }
 
     @Test
-    fun `availability enforces the requested biometric strength`() {
+    fun `Given strong biometrics not enrolled and weak ones available, When availability is checked, Then the requested strength is enforced`() {
+        // Given
         whenever(manager.canAuthenticate(BIOMETRIC_STRONG))
             .thenReturn(BiometricManager.BIOMETRIC_ERROR_NONE_ENROLLED)
         whenever(manager.canAuthenticate(BIOMETRIC_WEAK))
@@ -463,22 +543,26 @@ class TestBiometricAuthenticationFlow {
         mockStatic(BiometricManager::class.java).use { factory ->
             factory.`when`<BiometricManager> { BiometricManager.from(activity) }.thenReturn(manager)
 
+            // When
+            val strong = controller.getBiometricsAvailability(BIOMETRIC_STRONG)
+            val weak = controller.getBiometricsAvailability(BIOMETRIC_WEAK)
+
+            // Then
             assertEquals(
                 BiometricsAvailability.Failure(activity.getString(R.string.biometric_strong_required)),
-                controller.getBiometricsAvailability(BIOMETRIC_STRONG)
+                strong
             )
-            assertEquals(
-                BiometricsAvailability.CanAuthenticate,
-                controller.getBiometricsAvailability(BIOMETRIC_WEAK)
-            )
+            assertEquals(BiometricsAvailability.CanAuthenticate, weak)
             verify(manager).canAuthenticate(BIOMETRIC_STRONG)
         }
     }
 
     @Test
-    fun `crypto enrollment requests strong biometrics`() {
+    fun `Given an activity, When the system enrollment screen is launched for crypto, Then strong biometrics are requested`() {
+        // When
         controller.launchBiometricSystemScreen(BIOMETRIC_STRONG)
 
+        // Then
         val intent = shadowOf(activity).nextStartedActivity
         assertEquals(Settings.ACTION_BIOMETRIC_ENROLL, intent.action)
         assertEquals(

@@ -26,7 +26,8 @@ class TestIssuerLogoHelper {
     private val issuer = "https://issuer.example"
 
     @Test
-    fun `Given an https logo on the issuer's origin, Then it may be loaded`() {
+    fun `Given an https logo on the issuer's origin, When issuerLogoOrNull is called, Then the logo is returned`() {
+        // Then
         listOf(
             "https://issuer.example/logo.png",
             "https://ISSUER.example:443/assets/logo.svg",
@@ -36,7 +37,8 @@ class TestIssuerLogoHelper {
     }
 
     @Test
-    fun `Given a logo elsewhere or on a local scheme, Then it is not loaded`() {
+    fun `Given a logo elsewhere or on a local scheme, When issuerLogoOrNull is called, Then null is returned`() {
+        // Then
         listOf(
             "https://cdn.example/logo.png",
             "https://issuer.example:8443/logo.png",
@@ -52,9 +54,11 @@ class TestIssuerLogoHelper {
     }
 
     @Test
-    fun `Given an origin configured for the issuer, Then a logo there may be loaded and one elsewhere not`() {
+    fun `Given an origin configured for the issuer, When issuerLogoOrNull is called, Then a logo there is returned and one elsewhere is not`() {
+        // Given
         val origins = listOf("https://cdn.example", "http://plain.example", "not a url")
 
+        // Then
         assertEquals(
             URI("https://cdn.example/logo.svg"),
             issuerLogoOrNull(
@@ -76,9 +80,11 @@ class TestIssuerLogoHelper {
     }
 
     @Test
-    fun `Given no logo, no issuer or an issuer that is not https, Then nothing is loaded`() {
+    fun `Given no logo, no issuer or an issuer that is not https, When issuerLogoOrNull is called, Then null is returned`() {
+        // Given
         val logo = URI("https://issuer.example/logo.png")
 
+        // Then
         assertNull(issuerLogoOrNull(logo = null, issuerId = issuer))
         assertNull(issuerLogoOrNull(logo = logo, issuerId = null))
         assertNull(issuerLogoOrNull(logo = logo, issuerId = "http://issuer.example"))

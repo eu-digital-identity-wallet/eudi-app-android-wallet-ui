@@ -42,15 +42,17 @@ class TestRemoteImageHelper {
     private val request = Request.Builder().url("https://issuer.example/logo.png").build()
 
     @Test
-    fun `Given an https URL, Then it may be loaded`() {
-        assertEquals(
-            "https://issuer.example/logo.png",
-            remoteImageSourceOrNull("https://issuer.example/logo.png")
-        )
+    fun `Given an https URL, When the image source is checked, Then it may be loaded`() {
+        // When
+        val result = remoteImageSourceOrNull("https://issuer.example/logo.png")
+
+        // Then
+        assertEquals("https://issuer.example/logo.png", result)
     }
 
     @Test
-    fun `Given a local scheme, plain http or a malformed address, Then it is not loaded`() {
+    fun `Given local schemes, plain http and malformed addresses, When the image source is checked, Then none is loaded`() {
+        // Then
         listOf(
             "content://eu.europa.ec.euidi.provider/logs/eudi-android-wallet-logs0.txt",
             "file:///data/data/eu.europa.ec.euidi/files/logs/eudi-android-wallet-logs0.txt",
@@ -67,34 +69,43 @@ class TestRemoteImageHelper {
     }
 
     @Test
-    fun `Given a response that declares more than the limit, Then it fails before it is read`() {
+    fun `Given a response that declares more than the limit, When it is intercepted, Then it fails before it is read`() {
+        // Given
         val limit = ResponseSizeLimit(maxBytes = 4)
 
+        // Then
         assertThrows(IOException::class.java) {
             limit.intercept(chainReturning(body = "12345".toResponseBody(PNG)))
         }
     }
 
     @Test
-    fun `Given a response of unknown length beyond the limit, Then reading it fails`() {
+    fun `Given a response of unknown length beyond the limit, When it is intercepted, Then reading it fails`() {
+        // Given
         val limit = ResponseSizeLimit(maxBytes = 4)
 
+        // When
         val response = limit.intercept(chainReturning(body = unknownLength("12345")))
 
+        // Then
         assertThrows(IOException::class.java) { response.body!!.bytes() }
     }
 
     @Test
-    fun `Given a response within the limit, Then it is passed on unchanged`() {
+    fun `Given a response within the limit, When it is intercepted, Then it is passed on unchanged`() {
+        // Given
         val limit = ResponseSizeLimit(maxBytes = 4)
 
+        // When
         val response = limit.intercept(chainReturning(body = unknownLength("1234")))
 
+        // Then
         assertEquals("1234", response.body!!.string())
     }
 
     @Test
-    fun `Given a redirect within the image's origin, Then it is followed`() {
+    fun `Given a redirect within the image's origin, When it is intercepted, Then it is followed`() {
+        // When
         val response = SameOriginRedirects().intercept(
             redirectChain(
                 requested = "https://issuer.example/logo",
@@ -102,11 +113,13 @@ class TestRemoteImageHelper {
             )
         )
 
+        // Then
         assertEquals(200, response.code)
     }
 
     @Test
-    fun `Given a redirect to another host, another port or plain http, Then the request fails`() {
+    fun `Given a redirect to another host, another port or plain http, When it is intercepted, Then the request fails`() {
+        // Then
         listOf(
             "https://cdn.example/logo",
             "https://issuer.example:8443/logo",
@@ -123,6 +136,7 @@ class TestRemoteImageHelper {
 
     @Test
     fun `Given the image client, When it is built, Then it limits responses and checks every redirect`() {
+        // Then
         assertFalse(remoteImageHttpClient.followSslRedirects)
         assertTrue(remoteImageHttpClient.interceptors.any { interceptor -> interceptor is ResponseSizeLimit })
         assertTrue(

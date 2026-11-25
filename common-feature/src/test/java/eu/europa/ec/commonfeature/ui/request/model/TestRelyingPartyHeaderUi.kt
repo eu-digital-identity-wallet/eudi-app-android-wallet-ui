@@ -25,8 +25,8 @@ import eu.europa.ec.corelogic.model.RegistrationStatusDomain
 import eu.europa.ec.corelogic.model.RelyingPartyDomain
 import eu.europa.ec.testfeature.util.mockedVerifierName
 import eu.europa.ec.uilogic.component.RelyingPartyDataUi
-import junit.framework.TestCase.assertEquals
-import junit.framework.TestCase.assertNull
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNull
 import org.junit.Test
 import java.net.URI
 
@@ -135,6 +135,7 @@ class TestRelyingPartyHeaderUi {
 
     @Test
     fun `Given a privacy-policy link into one of the wallet's own flows, When toRelyingPartyHeaderUi is called, Then no link is shown`() {
+        // Given
         listOf(
             "eudi-rqes://sign?request_uri=https%3A%2F%2Fattacker.example%2Fdoc",
             "openid-credential-offer://?credential_offer_uri=https%3A%2F%2Fattacker.example",
@@ -150,8 +151,10 @@ class TestRelyingPartyHeaderUi {
                 ),
             )
 
+            // When
             val result = relyingParty.toRelyingPartyHeaderUi(fallbackName = mockedFallbackName)
 
+            // Then
             assertNull(link, result.privacyPolicyUrl)
         }
     }
@@ -326,6 +329,7 @@ class TestRelyingPartyHeaderUi {
 
     @Test
     fun `Given an untrusted access certificate and an unevaluated registration, When toRegistrationWarningUi is called, Then an unaccepted access certificate warning is returned`() {
+        // Given
         val relyingParty = buildRelyingPartyDomain(
             name = mockedVerifierName,
             uniqueId = null,
@@ -333,8 +337,10 @@ class TestRelyingPartyHeaderUi {
             registration = RegistrationStatusDomain.NotEvaluated,
         )
 
+        // When
         val result = relyingParty.toRegistrationWarningUi()
 
+        // Then
         assertEquals(
             RegistrationWarningUi(
                 variant = RegistrationWarningVariantUi.ACCESS_CERTIFICATE_NOT_TRUSTED,
@@ -346,6 +352,7 @@ class TestRelyingPartyHeaderUi {
 
     @Test
     fun `Given an untrusted access certificate and a not verified registration, When toRegistrationWarningUi is called, Then the access certificate warning takes precedence`() {
+        // Given
         val relyingParty = buildRelyingPartyDomain(
             name = mockedVerifierName,
             uniqueId = null,
@@ -356,8 +363,10 @@ class TestRelyingPartyHeaderUi {
             ),
         )
 
+        // When
         val result = relyingParty.toRegistrationWarningUi()
 
+        // Then
         assertEquals(
             RegistrationWarningUi(
                 variant = RegistrationWarningVariantUi.ACCESS_CERTIFICATE_NOT_TRUSTED,
@@ -369,6 +378,7 @@ class TestRelyingPartyHeaderUi {
 
     @Test
     fun `Given an untrusted access certificate and a verified registration, When toRegistrationWarningUi is called, Then the access certificate warning is returned`() {
+        // Given
         val relyingParty = buildRelyingPartyDomain(
             name = mockedVerifierName,
             uniqueId = null,
@@ -379,8 +389,10 @@ class TestRelyingPartyHeaderUi {
             ),
         )
 
+        // When
         val result = relyingParty.toRegistrationWarningUi()
 
+        // Then
         assertEquals(
             RegistrationWarningUi(
                 variant = RegistrationWarningVariantUi.ACCESS_CERTIFICATE_NOT_TRUSTED,

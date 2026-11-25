@@ -71,6 +71,7 @@ class TestProximityQRViewModel {
     @Test
     fun `Given a QR shown and no reader connected, When the screen goes away, Then the session is stopped`() {
         coroutineRule.runTest {
+            // Given
             whenever(interactor.startQrEngagement()).thenReturn(
                 flowOf(
                     ProximityQRPartialState.QrReady(
@@ -80,11 +81,13 @@ class TestProximityQRViewModel {
             )
             val viewModel = ProximityQRViewModel(interactor, uiSerializer, "config")
 
+            // When
             viewModel.setEvent(Event.Init)
             coroutineRule.testScope.runCurrent()
             store.put("qr", viewModel)
             store.clear()
 
+            // Then
             verify(interactor).cancelTransfer()
         }
     }
@@ -92,14 +95,17 @@ class TestProximityQRViewModel {
     @Test
     fun `Given a reader connected, When the QR screen goes away, Then the session is left to the request screen`() {
         coroutineRule.runTest {
+            // Given
             whenever(interactor.startQrEngagement()).thenReturn(flowOf(ProximityQRPartialState.Connected))
             val viewModel = ProximityQRViewModel(interactor, uiSerializer, "config")
 
+            // When
             viewModel.setEvent(Event.Init)
             coroutineRule.testScope.runCurrent()
             store.put("qr", viewModel)
             store.clear()
 
+            // Then
             verify(interactor, never()).cancelTransfer()
         }
     }
@@ -107,6 +113,7 @@ class TestProximityQRViewModel {
     @Test
     fun `Given the user went back, When the screen is then removed, Then the session is stopped once`() {
         coroutineRule.runTest {
+            // Given
             whenever(interactor.startQrEngagement()).thenReturn(
                 flowOf(
                     ProximityQRPartialState.QrReady(
@@ -116,6 +123,7 @@ class TestProximityQRViewModel {
             )
             val viewModel = ProximityQRViewModel(interactor, uiSerializer, "config")
 
+            // When
             viewModel.setEvent(Event.Init)
             coroutineRule.testScope.runCurrent()
             viewModel.setEvent(Event.GoBack)
@@ -123,29 +131,36 @@ class TestProximityQRViewModel {
             store.put("qr", viewModel)
             store.clear()
 
+            // Then
             verify(interactor, times(1)).cancelTransfer()
         }
     }
 
     @Test
     fun `Given a screen removed before its session started, When it is cleared, Then nothing is stopped`() {
+        // Given
         val viewModel = ProximityQRViewModel(interactor, uiSerializer, "config")
 
+        // When
         store.put("qr", viewModel)
         store.clear()
 
+        // Then
         verify(interactor, never()).cancelTransfer()
     }
 
     @Test
     fun `Given a QR shown, When the app leaves the foreground, Then the session is stopped and the screen closes`() {
         coroutineRule.runTest {
+            // Given
             val viewModel = createViewModelShowingQr()
 
             viewModel.effect.runFlowTest {
+                // When
                 viewModel.setEvent(leftForeground)
                 coroutineRule.testScope.runCurrent()
 
+                // Then
                 assertEquals(Effect.Navigation.Pop, awaitItem())
             }
             verify(interactor).cancelTransfer()
@@ -155,12 +170,15 @@ class TestProximityQRViewModel {
     @Test
     fun `Given a QR shown, When the activity stops for a configuration change, Then the session keeps running`() {
         coroutineRule.runTest {
+            // Given
             val viewModel = createViewModelShowingQr()
 
             viewModel.effect.runFlowTest {
+                // When
                 viewModel.setEvent(stoppedForConfigurationChange)
                 coroutineRule.testScope.runCurrent()
 
+                // Then
                 expectNoEvents()
             }
             verify(interactor, never()).cancelTransfer()
@@ -170,15 +188,18 @@ class TestProximityQRViewModel {
     @Test
     fun `Given a reader connected, When the QR screen stops, Then the session is left to the request screen`() {
         coroutineRule.runTest {
+            // Given
             whenever(interactor.startQrEngagement())
                 .thenReturn(flowOf(ProximityQRPartialState.Connected))
             val viewModel = ProximityQRViewModel(interactor, uiSerializer, "config")
 
+            // When
             viewModel.setEvent(Event.Init)
             coroutineRule.testScope.runCurrent()
             viewModel.setEvent(leftForeground)
             coroutineRule.testScope.runCurrent()
 
+            // Then
             verify(interactor, never()).cancelTransfer()
         }
     }
@@ -186,14 +207,17 @@ class TestProximityQRViewModel {
     @Test
     fun `Given another screen taking the QR screen's place, When the activity stops, Then the session stops and nothing is closed`() {
         coroutineRule.runTest {
+            // Given
             val viewModel = createViewModelShowingQr()
 
             viewModel.effect.runFlowTest {
+                // When
                 viewModel.setEvent(
                     Event.OnStop(isChangingConfigurations = false, isCurrentScreen = false)
                 )
                 coroutineRule.testScope.runCurrent()
 
+                // Then
                 expectNoEvents()
             }
             verify(interactor).cancelTransfer()
@@ -203,14 +227,17 @@ class TestProximityQRViewModel {
     @Test
     fun `Given the session stopped on leaving the foreground, When the screen resumes, Then NFC engagement stays off`() {
         coroutineRule.runTest {
+            // Given
             val activity: ComponentActivity = mock()
             val viewModel = createViewModelShowingQr()
 
+            // When
             viewModel.setEvent(leftForeground)
             coroutineRule.testScope.runCurrent()
             viewModel.setEvent(Event.NfcEngagement(componentActivity = activity, enable = true))
             coroutineRule.testScope.runCurrent()
 
+            // Then
             verify(interactor, never()).toggleNfcEngagement(any(), eq(true))
         }
     }
@@ -218,12 +245,15 @@ class TestProximityQRViewModel {
     @Test
     fun `Given a QR shown, When the screen resumes, Then NFC engagement is switched on`() {
         coroutineRule.runTest {
+            // Given
             val activity: ComponentActivity = mock()
             val viewModel = createViewModelShowingQr()
 
+            // When
             viewModel.setEvent(Event.NfcEngagement(componentActivity = activity, enable = true))
             coroutineRule.testScope.runCurrent()
 
+            // Then
             verify(interactor).toggleNfcEngagement(activity, true)
         }
     }
@@ -231,13 +261,16 @@ class TestProximityQRViewModel {
     @Test
     fun `Given the session stopped on leaving the foreground, When the screen is then removed, Then the session is stopped once`() {
         coroutineRule.runTest {
+            // Given
             val viewModel = createViewModelShowingQr()
 
+            // When
             viewModel.setEvent(leftForeground)
             coroutineRule.testScope.runCurrent()
             store.put("qr", viewModel)
             store.clear()
 
+            // Then
             verify(interactor, times(1)).cancelTransfer()
         }
     }
@@ -245,16 +278,22 @@ class TestProximityQRViewModel {
     @Test
     fun `Given the user went back, When the activity then stops, Then the session is stopped once and nothing else closes`() {
         coroutineRule.runTest {
+            // Given
             val viewModel = createViewModelShowingQr()
 
             viewModel.effect.runFlowTest {
+                // When
                 viewModel.setEvent(Event.GoBack)
                 coroutineRule.testScope.runCurrent()
+
+                // Then
                 assertEquals(Effect.Navigation.Pop, awaitItem())
 
+                // When
                 viewModel.setEvent(leftForeground)
                 coroutineRule.testScope.runCurrent()
 
+                // Then
                 expectNoEvents()
             }
             verify(interactor, times(1)).cancelTransfer()
@@ -264,12 +303,15 @@ class TestProximityQRViewModel {
     @Test
     fun `Given a session not started yet, When the activity stops, Then nothing is stopped or closed`() {
         coroutineRule.runTest {
+            // Given
             val viewModel = ProximityQRViewModel(interactor, uiSerializer, "config")
 
             viewModel.effect.runFlowTest {
+                // When
                 viewModel.setEvent(leftForeground)
                 coroutineRule.testScope.runCurrent()
 
+                // Then
                 expectNoEvents()
             }
             verify(interactor, never()).cancelTransfer()

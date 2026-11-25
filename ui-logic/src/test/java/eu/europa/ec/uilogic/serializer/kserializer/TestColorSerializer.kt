@@ -26,43 +26,70 @@ class TestColorSerializer {
     private val json = Json
 
     @Test
-    fun `opaque white roundtrips losslessly`() {
+    fun `Given opaque white, When it is serialized and deserialized, Then it is unchanged`() {
+        // Given
         val color = Color.White
+
+        // When
         val encoded = json.encodeToString(ColorSerializer, color)
         val decoded = json.decodeFromString(ColorSerializer, encoded)
+
+        // Then
         assertEquals(color, decoded)
     }
 
     @Test
-    fun `fully transparent black roundtrips losslessly`() {
+    fun `Given fully transparent black, When it is serialized and deserialized, Then it is unchanged`() {
+        // Given
         val color = Color(0x00000000)
+
+        // When
         val encoded = json.encodeToString(ColorSerializer, color)
         val decoded = json.decodeFromString(ColorSerializer, encoded)
+
+        // Then
         assertEquals(color, decoded)
     }
 
     @Test
-    fun `arbitrary ARGB roundtrips losslessly`() {
+    fun `Given an arbitrary ARGB color, When it is serialized and deserialized, Then it is unchanged`() {
+        // Given
         val color = Color(red = 0.42f, green = 0.13f, blue = 0.7f, alpha = 0.85f)
+
+        // When
         val encoded = json.encodeToString(ColorSerializer, color)
         val decoded = json.decodeFromString(ColorSerializer, encoded)
+
+        // Then
         assertEquals(color, decoded)
     }
 
     @Test
-    fun `Color Unspecified roundtrips losslessly`() {
+    fun `Given Color Unspecified, When it is serialized and deserialized, Then it is unchanged`() {
+        // Given
         val color = Color.Unspecified
+
+        // When
         val encoded = json.encodeToString(ColorSerializer, color)
         val decoded = json.decodeFromString(ColorSerializer, encoded)
+
+        // Then
         assertEquals(color, decoded)
     }
 
+    /**
+     * ULong-to-Long reinterpret cast: top bit may be set so we just assert
+     * the payload is a plain numeric literal (no quotes / no object braces).
+     */
     @Test
-    fun `serialized form is a JSON number`() {
+    fun `Given a color, When it is serialized, Then the form is a plain JSON number`() {
+        // Given
         val color = Color(0xFFAABBCC.toInt())
+
+        // When
         val encoded = json.encodeToString(ColorSerializer, color)
-        // ULong-to-Long reinterpret cast: top bit may be set so we just assert
-        // the payload is a plain numeric literal (no quotes / no object braces).
+
+        // Then
         assert(encoded.toLongOrNull() != null) {
             "Expected a plain JSON Long, got: $encoded"
         }

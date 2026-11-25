@@ -160,6 +160,7 @@ class TestWalletCoreDocumentsController {
     @Test
     fun `Given blocked documents, When asked whether each is suspended, Then only the suspended one is`() =
         coroutineRule.runTest {
+            // Given
             whenever(revokedDocumentDao.retrieve("suspended"))
                 .thenReturn(
                     RevokedDocument(
@@ -175,6 +176,7 @@ class TestWalletCoreDocumentsController {
                     )
                 )
 
+            // Then
             assertTrue(controller.isDocumentSuspended("suspended"))
             assertFalse(controller.isDocumentSuspended("revoked"))
             assertFalse(controller.isDocumentSuspended("valid"))
@@ -183,10 +185,13 @@ class TestWalletCoreDocumentsController {
     @Test
     fun `Given a stored document, When it is deleted, Then its own records go`() =
         coroutineRule.runTest {
+            // Given
             whenever(eudiWallet.deleteDocumentById("pid")).thenReturn(Outcome.success(null))
 
+            // When
             val result = controller.deleteDocument("pid").first()
 
+            // Then
             assertEquals(DeleteDocumentPartialState.Success, result)
             verify(revokedDocumentDao).delete("pid")
             verify(issuerTrustDao).delete("pid")
@@ -198,25 +203,31 @@ class TestWalletCoreDocumentsController {
     @Test
     fun `Given a storage error after Wallet Core deleted the document, When it is deleted, Then the deletion is still reported`() =
         coroutineRule.runTest {
+            // Given
             whenever(eudiWallet.deleteDocumentById("pid")).thenReturn(Outcome.success(null))
             whenever(bookmarkDao.delete("pid")).doThrow(IllegalStateException("database closed"))
 
+            // When
             val result = controller.deleteDocument("pid").first()
 
+            // Then
             assertEquals(DeleteDocumentPartialState.Success, result)
         }
 
     @Test
     fun `Given a re-issuance replaced the document, When it is cleaned up, Then the bookmark moves and the original records go`() =
         coroutineRule.runTest {
+            // Given
             whenever(eudiWallet.getDocumentById("pid")).thenReturn(null)
             whenever(bookmarkDao.retrieve("pid")).thenReturn(Bookmark("pid"))
 
+            // When
             implementation().cleanUpAfterReIssuance(
                 originalId = "pid",
                 state = IssueDocumentsPartialState.Success(documentIds = listOf("newPid")),
             )
 
+            // Then
             verify(bookmarkDao).store(Bookmark("newPid"))
             verify(bookmarkDao).delete("pid")
             verify(revokedDocumentDao).delete("pid")
@@ -227,28 +238,34 @@ class TestWalletCoreDocumentsController {
     @Test
     fun `Given the original was revoked during its re-issuance, When it is cleaned up, Then a revocation check is scheduled`() =
         coroutineRule.runTest {
+            // Given
             whenever(eudiWallet.getDocumentById("pid")).thenReturn(null)
             whenever(revokedDocumentDao.retrieve("pid"))
                 .thenReturn(RevokedDocument("pid", RevocationStatus.INVALID))
 
+            // When
             implementation().cleanUpAfterReIssuance(
                 originalId = "pid",
                 state = IssueDocumentsPartialState.Success(documentIds = listOf("newPid")),
             )
 
+            // Then
             verify(walletWorkScheduler).scheduleRevocationCheck()
         }
 
     @Test
     fun `Given a deferred re-issuance, When it is cleaned up, Then the bookmark is copied and the original is kept until replaced`() =
         coroutineRule.runTest {
+            // Given
             whenever(bookmarkDao.retrieve("pid")).thenReturn(Bookmark("pid"))
 
+            // When
             implementation().cleanUpAfterReIssuance(
                 originalId = "pid",
                 state = IssueDocumentsPartialState.DeferredSuccess(deferredDocuments = mapOf("newPid" to pidType)),
             )
 
+            // Then
             verify(bookmarkDao).store(Bookmark("newPid"))
             verify(bookmarkDao, never()).delete(any())
             verify(revokedDocumentDao, never()).delete(any())
@@ -257,17 +274,20 @@ class TestWalletCoreDocumentsController {
     @Test
     fun `Given a failed re-issuance, When it is cleaned up, Then nothing changes`() =
         coroutineRule.runTest {
+            // When
             implementation().cleanUpAfterReIssuance(
                 originalId = "pid",
                 state = IssueDocumentsPartialState.Failure(errorMessage = "error"),
             )
 
+            // Then
             verifyNoInteractions(bookmarkDao, revokedDocumentDao, issuerTrustDao)
         }
 
     @Test
     fun `Given records of a document Wallet Core no longer holds, When missing documents are cleaned up, Then only those records go`() =
         coroutineRule.runTest {
+            // Given
             whenever(revokedDocumentDao.retrieveAll()).thenReturn(emptyList())
             whenever(issuerTrustDao.retrieveAll()).thenReturn(
                 listOf(
@@ -284,8 +304,10 @@ class TestWalletCoreDocumentsController {
             )
             whenever(eudiWallet.getDocuments(anyOrNull())).thenReturn(listOf(otherPid))
 
+            // When
             implementation().deleteRecordsOfMissingDocuments()
 
+            // Then
             verify(issuerTrustDao).delete("oldPid")
             verify(bookmarkDao).delete("oldPid")
             verify(issuerTrustDao, never()).delete("otherPid")
@@ -296,6 +318,7 @@ class TestWalletCoreDocumentsController {
     @Test
     fun `Given a revoked document Wallet Core no longer holds, When missing documents are cleaned up, Then a revocation check is scheduled`() =
         coroutineRule.runTest {
+            // Given
             whenever(revokedDocumentDao.retrieveAll())
                 .thenReturn(listOf(RevokedDocument("oldPid", RevocationStatus.INVALID)))
             whenever(issuerTrustDao.retrieveAll()).thenReturn(emptyList())
@@ -304,8 +327,10 @@ class TestWalletCoreDocumentsController {
             whenever(failedReIssuedDocumentDao.retrieveAll()).thenReturn(emptyList())
             whenever(eudiWallet.getDocuments(anyOrNull())).thenReturn(listOf(otherPid))
 
+            // When
             implementation().deleteRecordsOfMissingDocuments()
 
+            // Then
             verify(revokedDocumentDao).delete("oldPid")
             verify(walletWorkScheduler).scheduleRevocationCheck()
         }
@@ -313,12 +338,15 @@ class TestWalletCoreDocumentsController {
     @Test
     fun `Given Wallet Core fails to delete the document, When it is deleted, Then nothing else is deleted`() =
         coroutineRule.runTest {
+            // Given
             whenever(eudiWallet.deleteDocumentById("pid"))
                 .thenReturn(Outcome.failure(IllegalStateException("storage error")))
             whenever(resourceProvider.genericErrorMessage()).thenReturn("error")
 
+            // When
             val result = controller.deleteDocument("pid").first()
 
+            // Then
             assertTrue(result is DeleteDocumentPartialState.Failure)
             verifyNoInteractions(
                 revokedDocumentDao,
@@ -332,11 +360,14 @@ class TestWalletCoreDocumentsController {
     @Test
     fun `Given an offer from an issuer that is not configured, When it is resolved, Then it fails before any issuer is contacted`() =
         coroutineRule.runTest {
+            // Given
             givenTwoIssuers()
 
+            // When
             val result =
                 controller.resolveDocumentOffer(offerByValue("https://attacker.example")).first()
 
+            // Then
             assertEquals(ResolveDocumentOfferPartialState.Failure(NOT_CONFIGURED), result)
             verifyNoInteractions(firstIssuerManager, configuredIssuerManager)
         }
@@ -344,12 +375,15 @@ class TestWalletCoreDocumentsController {
     @Test
     fun `Given a link that is not a usable offer, When it is resolved, Then it fails before any issuer is contacted`() =
         coroutineRule.runTest {
+            // Given
             givenTwoIssuers()
 
+            // When
             val result =
                 controller.resolveDocumentOffer("openid-credential-offer://?credential_offer=%7Bnot-json")
                     .first()
 
+            // Then
             assertEquals(ResolveDocumentOfferPartialState.Failure(UNREADABLE), result)
             verifyNoInteractions(firstIssuerManager, configuredIssuerManager)
         }
@@ -357,13 +391,16 @@ class TestWalletCoreDocumentsController {
     @Test
     fun `Given an offer from a configured issuer, When it is resolved, Then that issuer's manager reads it`() =
         coroutineRule.runTest {
+            // Given
             givenTwoIssuers()
             val link = offerByValue(CONFIGURED_ISSUER)
 
+            // When
             val job =
                 coroutineRule.testScope.launch { controller.resolveDocumentOffer(link).collect {} }
             coroutineRule.testScope.runCurrent()
 
+            // Then
             verify(configuredIssuerManager, timeout(5_000)).resolveDocumentOffer(
                 eq(link),
                 anyOrNull(),
@@ -376,6 +413,7 @@ class TestWalletCoreDocumentsController {
     @Test
     fun `Given an offer that resolves to an issuer that is not configured, When it is resolved, Then it is refused`() =
         coroutineRule.runTest {
+            // Given
             givenTwoIssuers()
             val link = offerByValue(CONFIGURED_ISSUER)
             val resolvedOffer: CredentialOffer = mock()
@@ -389,14 +427,17 @@ class TestWalletCoreDocumentsController {
                         .onResult(OfferResult.Success(offer))
                 }
 
+            // When
             val result = controller.resolveDocumentOffer(link).first()
 
+            // Then
             assertEquals(ResolveDocumentOfferPartialState.Failure(NOT_CONFIGURED), result)
         }
 
     @Test
     fun `Given a deferred document, When it is issued, Then the manager of its own issuer is used`() =
         coroutineRule.runTest {
+            // Given
             givenTwoIssuers()
             val metadata: IssuerMetadata =
                 mock { on { credentialIssuerIdentifier } doReturn CONFIGURED_ISSUER }
@@ -406,11 +447,13 @@ class TestWalletCoreDocumentsController {
             }
             whenever(eudiWallet.getDocumentById("deferred")).thenReturn(deferred)
 
+            // When
             val job = coroutineRule.testScope.launch {
                 controller.issueDeferredDocument("deferred").collect {}
             }
             coroutineRule.testScope.runCurrent()
 
+            // Then
             verify(configuredIssuerManager, timeout(5_000)).issueDeferredDocument(
                 eq(deferred),
                 anyOrNull(),
@@ -423,14 +466,17 @@ class TestWalletCoreDocumentsController {
     @Test
     fun `Given a document from an issuer that is not configured, When it is re-issued, Then it fails without using another issuer`() =
         coroutineRule.runTest {
+            // Given
             givenTwoIssuers()
 
+            // When
             val result = controller.reIssueDocument(
                 documentId = "pid",
                 issuerId = "https://attacker.example",
                 allowAuthorizationFallback = false,
             ).first()
 
+            // Then
             assertEquals(IssueDocumentsPartialState.Failure(errorMessage = DOCUMENT_ERROR), result)
             verifyNoInteractions(firstIssuerManager, configuredIssuerManager)
         }
@@ -438,18 +484,21 @@ class TestWalletCoreDocumentsController {
     @Test
     fun `Given a revoked document, When it is re-issued, Then it is refused before the issuer is used`() =
         coroutineRule.runTest {
+            // Given
             givenTwoIssuers()
             whenever(revokedDocumentDao.retrieve("pid"))
                 .thenReturn(RevokedDocument("pid", RevocationStatus.SUSPENDED))
             whenever(resourceProvider.getString(R.string.document_details_reissue_blocked_text))
                 .thenReturn("blocked")
 
+            // When
             val result = controller.reIssueDocument(
                 documentId = "pid",
                 issuerId = CONFIGURED_ISSUER,
                 allowAuthorizationFallback = false,
             ).first()
 
+            // Then
             assertEquals(IssueDocumentsPartialState.Failure(errorMessage = "blocked"), result)
             verifyNoInteractions(firstIssuerManager, configuredIssuerManager)
         }
@@ -457,6 +506,7 @@ class TestWalletCoreDocumentsController {
     @Test
     fun `Given the issuer issues only part of a request, When issueDocuments is called, Then the documents not issued are passed on`() =
         coroutineRule.runTest {
+            // Given
             givenTwoIssuers()
             val notIssued: UnsignedDocument = mock {
                 on { name } doReturn "mDL"
@@ -480,12 +530,14 @@ class TestWalletCoreDocumentsController {
                 any(),
             )
 
+            // When
             val result = controller.issueDocuments(
                 issuanceMethod = IssuanceMethod.OPENID4VCI,
                 configIds = listOf("pid", "mdl"),
                 issuerId = CONFIGURED_ISSUER,
             ).first()
 
+            // Then
             assertEquals(
                 IssueDocumentsPartialState.PartialSuccess(
                     documentIds = listOf("pid"),
@@ -498,8 +550,10 @@ class TestWalletCoreDocumentsController {
     @Test
     fun `Given a failed re-issuance record, When hasReIssuanceFailed is called, Then it is reported for that document only`() =
         coroutineRule.runTest {
+            // Given
             whenever(failedReIssuedDocumentDao.retrieve("pid")).thenReturn(FailedReIssuedDocument("pid"))
 
+            // Then
             assertTrue(controller.hasReIssuanceFailed("pid"))
             assertFalse(controller.hasReIssuanceFailed("otherPid"))
         }

@@ -27,28 +27,43 @@ class TestScreenSerializer {
     private val json = Json
 
     @Test
-    fun `roundtrip a Screen with parameters preserves screenName and screenRoute`() {
+    fun `Given a Screen with parameters, When it is serialized and deserialized, Then screenName and screenRoute are preserved`() {
+        // Given
         val original = IssuanceScreens.AddDocument
+
+        // When
         val encoded = json.encodeToString(ScreenSerializer, original)
         val decoded = json.decodeFromString(ScreenSerializer, encoded)
+
+        // Then
         assertEquals(original.screenName, decoded.screenName)
         assertEquals(original.screenRoute, decoded.screenRoute)
     }
 
     @Test
-    fun `roundtrip a Screen without parameters preserves screenName and screenRoute`() {
+    fun `Given a Screen without parameters, When it is serialized and deserialized, Then screenName and screenRoute are preserved`() {
+        // Given
         val original = Screen("BARE_SCREEN")
+
+        // When
         val encoded = json.encodeToString(ScreenSerializer, original)
         val decoded = json.decodeFromString(ScreenSerializer, encoded)
+
+        // Then
         assertEquals("BARE_SCREEN", decoded.screenName)
         assertEquals("BARE_SCREEN", decoded.screenRoute)
     }
 
     @Test
-    fun `roundtrip a Screen with explicit parameters string preserves it`() {
+    fun `Given a Screen with an explicit parameters string, When it is serialized and deserialized, Then the parameters are preserved`() {
+        // Given
         val original = Screen("FOO", "?bar={bar}")
+
+        // When
         val encoded = json.encodeToString(ScreenSerializer, original)
         val decoded = json.decodeFromString(ScreenSerializer, encoded)
+
+        // Then
         assertEquals("FOO", decoded.screenName)
         assertEquals("FOO?bar={bar}", decoded.screenRoute)
     }
@@ -58,7 +73,8 @@ class TestScreenSerializer {
      * compiler-generated `missing required field` branch in `$$serializer`.
      */
     @Test(expected = Exception::class)
-    fun `decode payload missing required name throws`() {
+    fun `Given a payload missing the required name, When it is decoded, Then an exception is thrown`() {
+        // Then
         json.decodeFromString(ScreenSerializer, """{"parameters":"?x={x}"}""")
     }
 
@@ -69,11 +85,14 @@ class TestScreenSerializer {
      * default-handling logic untested.
      */
     @Test
-    fun `decode with explicit empty parameters reads the explicit value`() {
+    fun `Given an explicit empty parameters field, When it is decoded, Then the explicit value is read`() {
+        // When
         val decoded = json.decodeFromString(
             ScreenSerializer,
             """{"name":"X","parameters":""}"""
         )
+
+        // Then
         assertEquals("X", decoded.screenName)
         assertEquals("X", decoded.screenRoute)
     }

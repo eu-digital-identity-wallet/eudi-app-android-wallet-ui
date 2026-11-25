@@ -33,9 +33,9 @@ import eu.europa.ec.testlogic.extension.runFlowTest
 import eu.europa.ec.testlogic.extension.runTest
 import eu.europa.ec.testlogic.extension.toFlow
 import eu.europa.ec.testlogic.rule.CoroutineTestRule
-import junit.framework.TestCase.assertEquals
 import kotlinx.coroutines.flow.asFlow
 import org.junit.After
+import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -138,6 +138,7 @@ class TestProximityLoadingInteractor {
             interactor.observeResponse()
                 .runFlowTest {
                     val expectedResult = ProximityLoadingObserveResponsePartialState.Success
+
                     // Then
                     assertEquals(
                         expectedResult,
@@ -158,7 +159,7 @@ class TestProximityLoadingInteractor {
             // Given
             mockEmissionOfIntentionallyNotHandledEvent()
 
-            // When
+            // Then
             interactor.observeResponse()
                 .expectNoEvents()
         }
@@ -173,7 +174,7 @@ class TestProximityLoadingInteractor {
     @Test
     fun `Given Case 4, When observeResponse is called, Then Case 4 Expected Result is returned`() {
         coroutineRule.runTest {
-
+            // Given
             val mockedAuthenticationData = listOf(
                 AuthenticationDataDomain(
                     crypto = crypto,
@@ -190,6 +191,7 @@ class TestProximityLoadingInteractor {
             // When
             interactor.observeResponse()
                 .runFlowTest {
+                    // Then
                     val expectedResult =
                         ProximityLoadingObserveResponsePartialState.UserAuthenticationRequired(
                             authenticationData = mockedAuthenticationData
@@ -354,6 +356,8 @@ class TestProximityLoadingInteractor {
 
     //endregion
 
+    //region observeResponse
+
     // Case 5:
     // walletCorePresentationController.events emits:
     // WalletCorePartialState.RequestIsReadyToBeSent.
@@ -394,7 +398,7 @@ class TestProximityLoadingInteractor {
                 event = WalletCorePartialState.IntentToSend(intent = intent)
             )
 
-            // When
+            // Then
             interactor.observeResponse().expectNoEvents()
         }
     }
@@ -444,7 +448,7 @@ class TestProximityLoadingInteractor {
 
     //region constructor default
     @Test
-    fun `When constructed without walletCorePresentationController, Then construction does not throw`() {
+    fun `Given no walletCorePresentationController, When the interactor is constructed, Then the default presentation scope id is used`() {
         // When
         val newInteractor = ProximityLoadingInteractorImpl(
             deviceAuthenticationInteractor = deviceAuthenticationInteractor,

@@ -29,10 +29,15 @@ import org.mockito.kotlin.whenever
 
 class TestDocumentClaimExtensions {
 
+    /**
+     * Given a stored "nationalities" array with two elements, modelled as the SDK does: a parent
+     * object-key claim whose children carry ArrayElement path segments.
+     *
+     * Then each element is addressable on its own, with a typed Index segment.
+     */
     @Test
-    fun `an SD-JWT array claim expands to one typed Index leaf per element`() {
-        // Given a stored "nationalities" array with two elements, modelled as the SDK does:
-        // a parent object-key claim whose children carry ArrayElement path segments.
+    fun `Given an SD-JWT array claim, When toClaimPaths is called, Then one typed Index leaf per element is returned`() {
+        // Given
         val nationalities = sdJwtClaim(
             pathElement = ClaimPathElement.Claim("nationalities"),
             children = listOf(
@@ -44,7 +49,7 @@ class TestDocumentClaimExtensions {
         // When
         val paths = nationalities.toClaimPaths()
 
-        // Then each element is addressable on its own, with a typed Index segment.
+        // Then
         assertEquals(
             listOf(
                 ClaimPathDomain(
@@ -67,7 +72,7 @@ class TestDocumentClaimExtensions {
     }
 
     @Test
-    fun `a flat SD-JWT claim expands to a single Key leaf`() {
+    fun `Given a flat SD-JWT claim, When toClaimPaths is called, Then a single Key leaf is returned`() {
         // Given
         val familyName = sdJwtClaim(pathElement = ClaimPathElement.Claim("family_name"))
 
@@ -86,9 +91,12 @@ class TestDocumentClaimExtensions {
         )
     }
 
+    /**
+     * Given an "address" object with a single "country" leaf.
+     */
     @Test
-    fun `a nested SD-JWT object claim expands to the full Key path of each leaf`() {
-        // Given an "address" object with a single "country" leaf.
+    fun `Given a nested SD-JWT object claim, When toClaimPaths is called, Then the full Key path of each leaf is returned`() {
+        // Given
         val address = sdJwtClaim(
             pathElement = ClaimPathElement.Claim("address"),
             children = listOf(
@@ -114,15 +122,18 @@ class TestDocumentClaimExtensions {
         )
     }
 
+    /**
+     * Then the namespace lives in the ClaimType, not in the path segments.
+     */
     @Test
-    fun `an mso_mdoc claim expands to a single Key leaf carrying the namespace in its type`() {
+    fun `Given an mso_mdoc claim, When toClaimPaths is called, Then a single Key leaf carries the namespace in its type`() {
         // Given
         val familyName = mdocClaim(nameSpace = "org.iso.18013.5.1", dataElementName = "family_name")
 
         // When
         val paths = familyName.toClaimPaths()
 
-        // Then the namespace lives in the ClaimType, not in the path segments.
+        // Then
         assertEquals(
             listOf(
                 ClaimPathDomain(
@@ -137,41 +148,53 @@ class TestDocumentClaimExtensions {
     //region identifierString
 
     @Test
-    fun `identifierString of an mso_mdoc claim is its dataElementName`() {
+    fun `Given an mso_mdoc claim, When identifierString is read, Then it is the dataElementName`() {
         // Given
         val claim = mdocClaim(nameSpace = "org.iso.18013.5.1", dataElementName = "family_name")
 
-        // When / Then
-        assertEquals("family_name", claim.identifierString)
+        // When
+        val identifier = claim.identifierString
+
+        // Then
+        assertEquals("family_name", identifier)
     }
 
     @Test
-    fun `identifierString of an SD-JWT object-key claim is the key as-is`() {
+    fun `Given an SD-JWT object-key claim, When identifierString is read, Then it is the key as-is`() {
         // Given
         val claim = sdJwtClaim(pathElement = ClaimPathElement.Claim("place_of_birth"))
 
-        // When / Then
-        assertEquals("place_of_birth", claim.identifierString)
+        // When
+        val identifier = claim.identifierString
+
+        // Then
+        assertEquals("place_of_birth", identifier)
     }
 
     @Test
-    fun `identifierString of an SD-JWT array-element claim is the integer string of its index`() {
+    fun `Given an SD-JWT array-element claim, When identifierString is read, Then it is the integer string of its index`() {
         // Given
         val claim = sdJwtClaim(pathElement = ClaimPathElement.ArrayElement(0))
 
-        // When / Then
-        assertEquals("0", claim.identifierString)
+        // When
+        val identifier = claim.identifierString
+
+        // Then
+        assertEquals("0", identifier)
     }
 
     // wildcard and a hypothetical Key("null") both stringify to "null"; identifierString does
     // not distinguish them
     @Test
-    fun `identifierString of an SD-JWT wildcard claim is the literal null string`() {
+    fun `Given an SD-JWT wildcard claim, When identifierString is read, Then it is the literal null string`() {
         // Given
         val claim = sdJwtClaim(pathElement = ClaimPathElement.AllArrayElements)
 
-        // When / Then
-        assertEquals("null", claim.identifierString)
+        // When
+        val identifier = claim.identifierString
+
+        // Then
+        assertEquals("null", identifier)
     }
 
     //endregion

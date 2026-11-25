@@ -85,12 +85,15 @@ class TestResetWalletViewModel {
     @Test
     fun `Given a screen restored with the wallet locked, When it starts, Then the reset does not run`() =
         coroutineRule.runTest {
+            // Given
             whenever(interactor.isSessionUnlocked()).thenReturn(false)
 
             viewModel.effect.runFlowTest {
+                // When
                 viewModel.handleEvents(Event.Init)
                 coroutineRule.testScope.runCurrent()
 
+                // Then
                 expectNoEvents()
             }
             verify(interactor, never()).resetWallet()
@@ -99,11 +102,14 @@ class TestResetWalletViewModel {
     @Test
     fun `Given a successful reset, When the screen starts, Then the wallet starts again`() =
         coroutineRule.runTest {
+            // Given
             whenever(interactor.resetWallet()).thenReturn(ResetWalletInteractorPartialState.Success)
 
             viewModel.effect.runFlowTest {
+                // When
                 viewModel.handleEvents(Event.Init)
 
+                // Then
                 assertEquals(Effect.Navigation.StartAgain, awaitItem())
             }
         }
@@ -111,17 +117,20 @@ class TestResetWalletViewModel {
     @Test
     fun `Given a reset in progress, When Retry is sent, Then loading shows and the reset runs once`() =
         coroutineRule.runTest {
+            // Given
             val released = CompletableDeferred<Unit>()
             whenever(interactor.resetWallet()).doSuspendableAnswer {
                 released.await()
                 ResetWalletInteractorPartialState.Success
             }
 
+            // When
             viewModel.handleEvents(Event.Init)
             coroutineRule.testScope.runCurrent()
             viewModel.handleEvents(Event.Retry)
             coroutineRule.testScope.runCurrent()
 
+            // Then
             assertTrue(viewModel.viewState.value.isLoading)
             verify(interactor, times(1)).resetWallet()
 
@@ -132,12 +141,15 @@ class TestResetWalletViewModel {
     @Test
     fun `Given a failed reset, When the error is shown, Then it offers retry and close`() =
         coroutineRule.runTest {
+            // Given
             whenever(interactor.resetWallet())
                 .thenReturn(ResetWalletInteractorPartialState.Failure(errorMessage = "error"))
 
+            // When
             viewModel.handleEvents(Event.Init)
             coroutineRule.testScope.runCurrent()
 
+            // Then
             val error = viewModel.viewState.value.error
             assertFalse(viewModel.viewState.value.isLoading)
             assertNotNull(error)
@@ -157,6 +169,7 @@ class TestResetWalletViewModel {
     @Test
     fun `Given a failed reset, When the user closes the error, Then the wallet starts again`() =
         coroutineRule.runTest {
+            // Given
             whenever(interactor.resetWallet())
                 .thenReturn(ResetWalletInteractorPartialState.Failure(errorMessage = "error"))
 
@@ -164,8 +177,10 @@ class TestResetWalletViewModel {
             coroutineRule.testScope.runCurrent()
 
             viewModel.effect.runFlowTest {
+                // When
                 viewModel.viewState.value.error?.onCancel()
 
+                // Then
                 assertEquals(Effect.Navigation.StartAgain, awaitItem())
             }
         }

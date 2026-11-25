@@ -50,9 +50,13 @@ class TestResponseSizeLimit {
     @Test
     fun `Given a body within the limit, When it is read, Then it arrives whole`() =
         coroutineRule.runTest {
+            // Given
             createClient(ByteReadChannel(ByteArray(LIMIT))).use { client ->
+
+                // When
                 val body = client.get(URL).bodyAsBytes()
 
+                // Then
                 assertEquals(LIMIT, body.size)
             }
         }
@@ -60,9 +64,13 @@ class TestResponseSizeLimit {
     @Test
     fun `Given a body without a length that passes the limit, When it is read, Then the request fails`() =
         coroutineRule.runTest {
+            // Given
             createClient(ByteReadChannel(ByteArray(LIMIT + 1))).use { client ->
+
+                // When
                 val failure = runCatching { client.get(URL).bodyAsBytes() }.exceptionOrNull()
 
+                // Then
                 assertTrue(failure.isCausedByResponseTooLarge())
             }
         }
@@ -70,10 +78,14 @@ class TestResponseSizeLimit {
     @Test
     fun `Given a Content-Length past the limit, When the response arrives, Then the request fails before the body is read`() =
         coroutineRule.runTest {
+            // Given
             val headers = headersOf(HttpHeaders.ContentLength, (LIMIT + 1).toString())
             createClient(ByteReadChannel(ByteArray(1)), headers).use { client ->
+
+                // When
                 val failure = runCatching { client.get(URL).bodyAsBytes() }.exceptionOrNull()
 
+                // Then
                 assertTrue(failure.isCausedByResponseTooLarge())
             }
         }
@@ -86,15 +98,19 @@ class TestResponseSizeLimit {
     @Test
     fun `Given a body that passes the limit and never ends, When it is read, Then the request fails without waiting for its end`() =
         coroutineRule.runTest {
+            // Given
             val server = CoroutineScope(Dispatchers.Default)
             try {
                 createClient(server.createEndlessBody()).use { client ->
+
+                    // When
                     val failure = withContext(Dispatchers.Default) {
                         withTimeout(5.seconds) {
                             runCatching { client.get(URL).bodyAsBytes() }.exceptionOrNull()
                         }
                     }
 
+                    // Then
                     assertTrue(failure.isCausedByResponseTooLarge())
                 }
             } finally {

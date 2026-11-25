@@ -70,11 +70,11 @@ import eu.europa.ec.uilogic.component.ListItemSupportingContentDataUi
 import eu.europa.ec.uilogic.component.ListItemTrailingContentDataUi
 import eu.europa.ec.uilogic.component.ThemeColorKey
 import eu.europa.ec.uilogic.component.wrap.ExpandableListItemUi
-import junit.framework.TestCase.assertEquals
-import junit.framework.TestCase.assertFalse
-import junit.framework.TestCase.assertNull
-import junit.framework.TestCase.assertTrue
 import org.junit.After
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -123,6 +123,9 @@ class TestRequestTransformer {
     // One combination with one document item whose claim tree is the intersection
     // of the verifier's requested claims and the claims actually stored — the two requested
     // fields the document does NOT store ("portrait", "issuing_country") are filtered out.
+    /**
+     * 8 of the 10 requested claims are stored on the basic-fields PID.
+     */
     @Test
     fun `Given a single combination, When transformToCombinationsUi, Then it projects requested-and-stored claims only`() {
         coroutineRule.runTest {
@@ -158,7 +161,6 @@ class TestRequestTransformer {
             assertEquals(DocumentFormatDomain.MsoMdoc, payload.docFormatDomain)
             assertEquals(null, payload.queryId)
 
-            // 8 of the 10 requested claims are stored on the basic-fields PID.
             assertEquals(8, payload.docClaimsDomain.countLeaves())
             val leafKeys = payload.docClaimsDomain.leafKeys()
             assertFalse("portrait" in leafKeys)
@@ -169,6 +171,7 @@ class TestRequestTransformer {
     @Test
     fun `Given a request for the portrait of an mDL that stores it, When transformToCombinationsUi, Then the portrait stays selected and Share would disclose it`() {
         coroutineRule.runTest {
+            // When
             val combinationsUi = RequestTransformer.transformToCombinationsUi(
                 storageDocuments = listOf(getMockedMdlWithBasicFields()),
                 resourceProvider = resourceProvider,
@@ -185,6 +188,7 @@ class TestRequestTransformer {
                 userImageClaimKeys = mockedUserImageClaimKeys,
             ).getOrThrow()
 
+            // Then
             val requestDataUi = RequestDataUi.of(combinationsUi)
             assertTrue("portrait" in requestDataUi.selectedDocuments.single().domainPayload.docClaimsDomain.leafKeys())
             assertTrue(requestDataUi.requestsUserImage)
@@ -195,6 +199,7 @@ class TestRequestTransformer {
     @Test
     fun `Given the requested portrait is not stored, When transformToCombinationsUi, Then the portrait notice and confirmation do not apply`() {
         coroutineRule.runTest {
+            // When
             val combinationsUi = RequestTransformer.transformToCombinationsUi(
                 storageDocuments = listOf(getMockedPidWithBasicFields()),
                 resourceProvider = resourceProvider,
@@ -211,6 +216,7 @@ class TestRequestTransformer {
                 userImageClaimKeys = mockedUserImageClaimKeys,
             ).getOrThrow()
 
+            // Then
             val requestDataUi = RequestDataUi.of(combinationsUi)
             assertFalse(requestDataUi.requestsUserImage)
             assertFalse(requestDataUi.sharesUserImage)
@@ -370,10 +376,13 @@ class TestRequestTransformer {
     // Case 6 Expected Result:
     // The unmatched document is skipped, so the combination renders no items (rather than crashing
     // or fabricating an empty document).
+    /**
+     * Only the PID is in storage, but the combination asks for the mDL.
+     */
     @Test
     fun `Given a match for a non-stored document, When transformToCombinationsUi, Then it is skipped`() {
         coroutineRule.runTest {
-            // Given — only the PID is in storage, but the combination asks for the mDL.
+            // Given
             val storageDocuments = listOf(getMockedPidWithBasicFields())
             val combinationsDomain = listOf(
                 PresentationCombinationDomain(
@@ -685,6 +694,9 @@ class TestRequestTransformer {
     // Case 15 Expected Result:
     // Both builds materialise the identical claim tree, but only the selectable build carries
     // leaf checkboxes — the read-only build renders no checkbox anywhere.
+    /**
+     * Identical claim tree, but checkboxes only on the selectable build.
+     */
     @Test
     fun `Given claimsAreSelectable is false, When transformToCombinationsUi, Then no leaf carries a checkbox`() {
         coroutineRule.runTest {
@@ -710,7 +722,7 @@ class TestRequestTransformer {
                 claimsAreSelectable = mockedNonSelectableClaims,
             )
 
-            // Then — identical claim tree, but checkboxes only on the selectable build.
+            // Then
             assertEquals(
                 selectable.single().documents.single().domainPayload.docClaimsDomain.countLeaves(),
                 readOnly.single().documents.single().domainPayload.docClaimsDomain.countLeaves(),
@@ -1254,10 +1266,13 @@ class TestRequestTransformer {
     // Case 4 Expected Result:
     // The document is dropped — selections are only produced for documents with a backing
     // match.
+    /**
+     * Render the PID, but only offer an unrelated mDL match at recovery time.
+     */
     @Test
     fun `Given a rendered document with no backing match, When createSelectionsDomain, Then it is dropped`() {
         coroutineRule.runTest {
-            // Given — render the PID, but only offer an unrelated mDL match at recovery time.
+            // Given
             val pidMatch = pidMatch("family_name", "given_name")
             val items = render(listOf(getMockedPidWithBasicFields()), listOf(pidMatch))
             val unrelatedMdlMatch = mockedMdocPresentationMatch(
@@ -1288,6 +1303,9 @@ class TestRequestTransformer {
     // Two independent selections, each keyed by its own queryId and carrying only its own
     // query's claim — proving the (documentId, queryId) addressing keeps the two from
     // colliding (a documentId-only key would silently merge or drop one).
+    /**
+     * Two document items projected for the same physical document, one per query.
+     */
     @Test
     fun `Given two queries on the same document, When createSelectionsDomain, Then each query yields its own selection`() {
         coroutineRule.runTest {
@@ -1298,7 +1316,6 @@ class TestRequestTransformer {
                 storageDocuments = listOf(getMockedPidWithBasicFields()),
                 matches = listOf(matchQuery1, matchQuery2),
             )
-            // Two document items projected for the same physical document, one per query.
             assertEquals(2, items.size)
 
             // When
@@ -1671,6 +1688,9 @@ class TestRequestTransformer {
     // Every rendered item id — headers, nested groups and leaves — is pairwise distinct
     // across the two cards, and each query's selection carries its own claim set (the
     // shared nested path appears in BOTH).
+    /**
+     * Every id across both card trees is unique (headers, groups, leaves).
+     */
     @Test
     fun `Given two queries sharing a nested claim, When createSelectionsDomain, Then ids and selections stay per-query`() {
         coroutineRule.runTest {
@@ -1684,12 +1704,14 @@ class TestRequestTransformer {
                 sdJwtKeyPath("address", "locality"),
             ).copy(queryId = "pid_given")
             val matches = listOf(familyQuery, givenQuery)
+
+            // When
             val items = render(
                 storageDocuments = listOf(getMockedSdJwtFullPid()),
                 matches = matches
             )
 
-            // Then — every id across both card trees is unique (headers, groups, leaves).
+            // Then
             val allItemIds = items.flatMap { item ->
                 listOf(item.headerUi.header.itemId) +
                         item.headerUi.nestedItems.flatMap { it.collectItemIds() }
@@ -1730,10 +1752,13 @@ class TestRequestTransformer {
     // Case 17 Expected Result:
     // The lookup is last-wins: the LAST match's claims drive the selection. This pins the
     // documented boundary behavior — the upstream guard, not this function, is the defense.
+    /**
+     * Two matches with an identical (documentId, queryId) identity.
+     */
     @Test
     fun `Given two matches sharing one identity, When createSelectionsDomain, Then the lookup is last-wins behind the upstream guard`() {
         coroutineRule.runTest {
-            // Given — two matches with an identical (documentId, queryId) identity.
+            // Given
             val first = pidMatch("family_name")
                 .copy(queryId = "pid")
             val second = pidMatch("given_name")

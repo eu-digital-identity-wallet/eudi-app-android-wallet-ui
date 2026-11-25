@@ -36,10 +36,10 @@ import eu.europa.ec.testfeature.util.mockedMdocPidNameSpace
 import eu.europa.ec.testfeature.util.mockedSdJwtVcClaim
 import eu.europa.ec.testfeature.util.mockedUserImageClaimKeys
 import eu.europa.ec.testfeature.util.mockedUuid
-import junit.framework.TestCase.assertEquals
-import junit.framework.TestCase.assertFalse
-import junit.framework.TestCase.assertTrue
 import org.junit.After
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -129,15 +129,18 @@ class TestDocumentHelper {
 
     @Test
     fun `Given the user-image keys, When keyIsUserImage is called, Then only they classify as user images`() {
-        // When / Then
-        assertTrue(keyIsUserImage(key = "portrait", userImageClaimKeys = mockedUserImageClaimKeys))
-        assertTrue(keyIsUserImage(key = "picture", userImageClaimKeys = mockedUserImageClaimKeys))
-        assertFalse(
-            keyIsUserImage(
-                key = "family_name",
-                userImageClaimKeys = mockedUserImageClaimKeys
-            )
-        )
+        // When
+        val portrait =
+            keyIsUserImage(key = "portrait", userImageClaimKeys = mockedUserImageClaimKeys)
+        val picture =
+            keyIsUserImage(key = "picture", userImageClaimKeys = mockedUserImageClaimKeys)
+        val familyName =
+            keyIsUserImage(key = "family_name", userImageClaimKeys = mockedUserImageClaimKeys)
+
+        // Then
+        assertTrue(portrait)
+        assertTrue(picture)
+        assertFalse(familyName)
     }
 
     //endregion
@@ -146,9 +149,14 @@ class TestDocumentHelper {
 
     @Test
     fun `Given the signature key, When keyIsSignature is called, Then only it classifies as a signature`() {
-        // When / Then
-        assertTrue(keyIsSignature(key = "signature_usual_mark"))
-        assertFalse(keyIsSignature(key = "portrait"))
+        // When
+        val signature = keyIsSignature(key = "signature_usual_mark")
+        val portrait = keyIsSignature(key = "portrait")
+
+        // Then
+        assertTrue(signature)
+        assertFalse(portrait)
+
     }
 
     //endregion

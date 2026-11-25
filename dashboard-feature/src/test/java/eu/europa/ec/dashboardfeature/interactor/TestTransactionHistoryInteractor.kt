@@ -40,15 +40,15 @@ import eu.europa.ec.testlogic.rule.CoroutineTestRule
 import eu.europa.ec.uilogic.component.ListItemDataUi
 import eu.europa.ec.uilogic.component.ListItemMainContentDataUi
 import eu.europa.ec.uilogic.component.ListItemSupportingContentDataUi
-import junit.framework.TestCase.assertEquals
-import junit.framework.TestCase.assertNull
-import junit.framework.TestCase.assertTrue
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import org.junit.After
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -314,6 +314,7 @@ class TestTransactionHistoryInteractor {
                     TransactionDataProtectionAction.RequestDataDeletion to "Previous data deletion requests for $expectedName",
                     TransactionDataProtectionAction.ReportSuspiciousTransaction to "Previous transaction reports for $expectedName",
                 ).forEach { (action, expectedTitle) ->
+
                     // When
                     interactor.observeHistory(mockedParent.id, action).runFlowTest {
                         // Then
@@ -411,6 +412,7 @@ class TestTransactionHistoryInteractor {
             parents.forEach { parent ->
                 mockHistoryCall(flowOf(emptyList()), parent)
                 TransactionDataProtectionAction.entries.forEach { action ->
+
                     // When
                     interactor.observeHistory(mockedParent.id, action).runFlowTest {
                         // Then
@@ -462,6 +464,7 @@ class TestTransactionHistoryInteractor {
     fun `Given Case 9, When observeHistory is called, Then Case 9 Expected Result is returned`() {
         coroutineRule.runTest {
             listOf(mockedExceptionWithMessage, mockedExceptionWithNoMessage).forEach { exception ->
+
                 // Given
                 val loadingReceived = CountDownLatch(1)
                 doAnswer {
@@ -499,6 +502,7 @@ class TestTransactionHistoryInteractor {
     fun `Given Case 10, When observeHistory is called, Then Case 10 Expected Result is returned`() {
         coroutineRule.runTest {
             listOf(mockedExceptionWithMessage, mockedExceptionWithNoMessage).forEach { exception ->
+
                 // Given
                 val loadingReceived = CompletableDeferred<Unit>()
                 mockHistoryCall(flowOf(emptyList()), mockedParent)
@@ -599,10 +603,8 @@ class TestTransactionHistoryInteractor {
                 awaitComplete()
             }
 
-            // Given
-            mockHistoryCall(flowOf(emptyList()), mockedParent)
-
             // When
+            mockHistoryCall(flowOf(emptyList()), mockedParent)
             interactor.observeHistory(
                 mockedParent.id,
                 TransactionDataProtectionAction.ReportSuspiciousTransaction

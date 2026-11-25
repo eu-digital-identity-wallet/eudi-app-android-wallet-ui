@@ -28,6 +28,7 @@ class TestRecordedRegistrationCheckExtensions {
 
     @Test
     fun `Given every recordable check, When it is stored and read back, Then it is unchanged`() {
+        // Given
         val checks = listOf(
             RecordedRegistrationCheckDomain.Verified,
             RecordedRegistrationCheckDomain.NotEvaluated
@@ -36,6 +37,7 @@ class TestRecordedRegistrationCheckExtensions {
                     RecordedRegistrationCheckDomain.NotVerified(reason = reason)
                 }
 
+        // Then
         checks.forEach { check ->
             assertEquals(
                 check,
@@ -49,6 +51,7 @@ class TestRecordedRegistrationCheckExtensions {
 
     @Test
     fun `Given nothing recorded or an unknown value, When it is read, Then the check is unknown`() {
+        // Then
         assertEquals(
             RecordedRegistrationCheckDomain.Unknown,
             recordedRegistrationCheckOf(null, null)
@@ -62,14 +65,19 @@ class TestRecordedRegistrationCheckExtensions {
 
     @Test
     fun `Given a failed check with an unknown reason, When it is read, Then it is not verified without a reason`() {
-        assertEquals(
-            RecordedRegistrationCheckDomain.NotVerified(reason = null),
-            recordedRegistrationCheckOf(check = "NOT_VERIFIED", failureReason = "RETIRED_REASON"),
+        // When
+        val result = recordedRegistrationCheckOf(
+            check = "NOT_VERIFIED",
+            failureReason = "RETIRED_REASON",
         )
+
+        // Then
+        assertEquals(RecordedRegistrationCheckDomain.NotVerified(reason = null), result)
     }
 
     @Test
     fun `Given each registration outcome, When it is recorded, Then the matching check results`() {
+        // Then
         assertEquals(
             RecordedRegistrationCheckDomain.Verified,
             RegistrationStatusDomain.Verified(

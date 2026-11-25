@@ -44,9 +44,9 @@ import eu.europa.ec.uilogic.component.ListItemTrailingContentDataUi
 import eu.europa.ec.uilogic.component.RelyingPartyDataUi
 import eu.europa.ec.uilogic.component.content.ContentHeaderConfig
 import eu.europa.ec.uilogic.config.ConfigUILogic
-import junit.framework.TestCase.assertEquals
-import junit.framework.TestCase.assertTrue
 import org.junit.After
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -103,7 +103,7 @@ class TestProximitySuccessInteractor {
 
     //region stopPresentation
     @Test
-    fun `When stopPresentation is called, Then walletCorePresentationController#stopPresentation is invoked`() {
+    fun `Given a presentation controller, When stopPresentation is called, Then walletCorePresentationController#stopPresentation is invoked`() {
         // When
         interactor.stopPresentation()
 
@@ -129,7 +129,7 @@ class TestProximitySuccessInteractor {
     //region constructor default
     // the null-controller default: construction must not trigger the lazy Koin lookup
     @Test
-    fun `When constructed without walletCorePresentationController, Then construction does not throw`() {
+    fun `Given no walletCorePresentationController, When the interactor is constructed, Then the default presentation scope id is used`() {
         // When
         val newInteractor = ProximitySuccessInteractorImpl(
             walletCoreDocumentsController = walletCoreDocumentsController,

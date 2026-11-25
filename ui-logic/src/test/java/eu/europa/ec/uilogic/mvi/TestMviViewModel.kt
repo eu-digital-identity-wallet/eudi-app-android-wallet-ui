@@ -32,46 +32,62 @@ class TestMviViewModel {
 
     @Test
     fun `Given the same key, When run repeatedly on one instance, Then the block runs once`() {
+        // Given
         val viewModel = TestViewModel()
         var runs = 0
 
+        // When
         repeat(5) { viewModel.runOncePerInstance { runs++ } }
 
+        // Then
         assertEquals(1, runs)
     }
 
     @Test
     fun `Given a new instance, When run, Then the block runs again`() {
+        // Given
         var runs = 0
 
+        // When
         TestViewModel().runOncePerInstance { runs++ }
+
+        // Then
         assertEquals(1, runs)
 
+        // When
         TestViewModel().runOncePerInstance { runs++ }
+
+        // Then
         assertEquals(2, runs)
     }
 
     @Test
     fun `Given distinct keys, When run on one instance, Then each runs once`() {
+        // Given
         val viewModel = TestViewModel()
         val ran = mutableListOf<String>()
 
+        // When
         repeat(3) {
             viewModel.runOncePerInstance("a") { ran += "a" }
             viewModel.runOncePerInstance("b") { ran += "b" }
         }
 
+        // Then
         assertEquals(listOf("a", "b"), ran)
     }
 
     @Test
     fun `Given the default key, When run, Then it is the documented init key`() {
+        // Given
         val viewModel = TestViewModel()
         var runs = 0
 
+        // When
         viewModel.runOncePerInstance { runs++ }
         viewModel.runOncePerInstance(MviViewModel.ONE_TIME_INIT_KEY) { runs++ }
 
+        // Then
         assertEquals(1, runs)
     }
 }

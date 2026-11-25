@@ -72,14 +72,17 @@ class TestWrapSelectableCard {
      * the select layer above it does not hide it from them.
      */
     @Test
-    fun `Given an unselected card, Then accessibility services reach its content`() {
+    fun `Given an unselected card, When accessibility services read it, Then they reach its content`() {
+        // Given
         setCard(isSelected = false)
 
+        // When
         val documentNodeId = composeRule.onNodeWithText(documentName, useUnmergedTree = true)
             .fetchSemanticsNode()
             .id
         val documentInfo = accessibilityNodeProvider().createAccessibilityNodeInfo(documentNodeId)
 
+        // Then
         assertNotNull(documentInfo)
         assertTrue(documentInfo?.isVisibleToUser == true)
         assertEquals(documentName, documentInfo?.text?.toString())
@@ -90,9 +93,11 @@ class TestWrapSelectableCard {
      * the select layer is not offered as an unlabelled control.
      */
     @Test
-    fun `Given an unselected card, Then every control it offers has a label`() {
+    fun `Given an unselected card, When accessibility services read it, Then every control it offers has a label`() {
+        // Given
         setCard(isSelected = false)
 
+        // When
         val provider = accessibilityNodeProvider()
         val offeredClickableNodes = composeRule.onAllNodes(hasClickAction())
             .fetchSemanticsNodes()
@@ -101,6 +106,7 @@ class TestWrapSelectableCard {
                     ?.let { it.isVisibleToUser && it.isImportantForAccessibility } == true
             }
 
+        // Then
         assertTrue(offeredClickableNodes.isNotEmpty())
         offeredClickableNodes.forEach { node ->
             assertTrue("node ${node.id} has no label", node.hasLabel())
@@ -112,9 +118,11 @@ class TestWrapSelectableCard {
      * selected.
      */
     @Test
-    fun `Given an unselected card, Then its title reads as an unselected radio button`() {
+    fun `Given an unselected card, When accessibility services read its title, Then it reads as an unselected radio button`() {
+        // Given
         setCard(isSelected = false)
 
+        // Then
         composeRule.onNodeWithText(title)
             .assert(SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.RadioButton))
             .assertIsNotSelected()
@@ -126,11 +134,14 @@ class TestWrapSelectableCard {
      */
     @Test
     fun `Given an unselected card, When its title's click action runs, Then it is selected`() {
+        // Given
         var selections = 0
         setCard(isSelected = false, onSelected = { selections++ })
 
+        // When
         composeRule.onNodeWithText(title).performSemanticsAction(SemanticsActions.OnClick)
 
+        // Then
         composeRule.runOnIdle { assertEquals(1, selections) }
     }
 
@@ -139,9 +150,11 @@ class TestWrapSelectableCard {
      * action.
      */
     @Test
-    fun `Given a selected card, Then its title reads as selected and offers no select action`() {
+    fun `Given a selected card, When accessibility services read its title, Then it reads as selected and offers no select action`() {
+        // Given
         setCard(isSelected = true)
 
+        // Then
         composeRule.onNodeWithText(title)
             .assert(SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.RadioButton))
             .assertIsSelected()
@@ -153,9 +166,11 @@ class TestWrapSelectableCard {
      * itself, not as part of the radio button.
      */
     @Test
-    fun `Given a selected card, Then a read-only row is not read as part of the radio button`() {
+    fun `Given a selected card, When accessibility services read a read-only row, Then it is not read as part of the radio button`() {
+        // Given
         setCard(isSelected = true)
 
+        // Then
         composeRule.onNodeWithText(readOnlyRow)
             .assertTextEquals(readOnlyRow)
             .assert(SemanticsMatcher.keyNotDefined(SemanticsProperties.Role))
@@ -167,13 +182,16 @@ class TestWrapSelectableCard {
      */
     @Test
     fun `Given an unselected card, When its content is tapped, Then the card is selected`() {
+        // Given
         var selections = 0
         var itemClicks = 0
         setCard(isSelected = false, onSelected = { selections++ }, onItemClick = { itemClicks++ })
 
+        // When
         composeRule.onNodeWithText(documentName, useUnmergedTree = true)
             .performTouchInput { click() }
 
+        // Then
         composeRule.runOnIdle {
             assertEquals(1, selections)
             assertEquals(0, itemClicks)
@@ -186,13 +204,16 @@ class TestWrapSelectableCard {
      */
     @Test
     fun `Given a selected card, When its content is tapped, Then the content handles the tap`() {
+        // Given
         var selections = 0
         var itemClicks = 0
         setCard(isSelected = true, onSelected = { selections++ }, onItemClick = { itemClicks++ })
 
+        // When
         composeRule.onNodeWithText(documentName, useUnmergedTree = true)
             .performTouchInput { click() }
 
+        // Then
         composeRule.runOnIdle {
             assertEquals(0, selections)
             assertEquals(1, itemClicks)

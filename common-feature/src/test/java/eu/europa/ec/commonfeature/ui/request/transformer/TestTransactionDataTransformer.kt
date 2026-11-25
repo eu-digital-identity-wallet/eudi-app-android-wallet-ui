@@ -34,11 +34,11 @@ import eu.europa.ec.uilogic.component.ListItemMainContentDataUi
 import eu.europa.ec.uilogic.component.ListItemSupportingContentDataUi
 import eu.europa.ec.uilogic.component.ListItemTrailingContentDataUi
 import eu.europa.ec.uilogic.component.ThemeColorKey
-import junit.framework.TestCase.assertEquals
-import junit.framework.TestCase.assertFalse
-import junit.framework.TestCase.assertNull
-import junit.framework.TestCase.assertTrue
 import org.junit.After
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -564,6 +564,7 @@ class TestTransactionDataTransformer {
 
     @Test
     fun `Given a QES request with every optional field, When transformToUi is called, Then each field has a row`() {
+        // Given
         val request = PresentationTransactionDataDomain.Qes(
             displayName = mockedRequestDisplayName,
             credentialIds = listOf(mockedTransactionQueryId),
@@ -582,8 +583,10 @@ class TestTransactionDataTransformer {
             transactionDataHashAlgorithms = listOf("sha-256"),
         )
 
+        // When
         val section = transform(transactions = listOf(request))!!
 
+        // Then
         assertEquals(listOf("sha-256"), section.values("Transaction data hash algorithm"))
         assertEquals(listOf("Enveloped"), section.values("Signed envelope property"))
         assertEquals(listOf("#signed-part"), section.values("Reference URI"))
@@ -596,6 +599,7 @@ class TestTransactionDataTransformer {
 
     @Test
     fun `Given a QES request carrying its document, When transformToUi is called, Then the document is shown as included`() {
+        // Given
         val request = PresentationTransactionDataDomain.Qes(
             displayName = mockedRequestDisplayName,
             credentialIds = listOf(mockedTransactionQueryId),
@@ -616,8 +620,10 @@ class TestTransactionDataTransformer {
             ),
         )
 
+        // When
         val section = transform(transactions = listOf(request))!!
 
+        // Then
         assertEquals(
             listOf("Included in the request", "Included in the request"),
             section.values("Document content"),
@@ -632,6 +638,7 @@ class TestTransactionDataTransformer {
 
     @Test
     fun `Given an approval with locations and document circumstances, When transformToUi is called, Then they are shown`() {
+        // Given
         val approval = mockedTransactionDataApproval.copy(
             locations = listOf("https://qtsp.example/csc/v2"),
             transactionDataHashAlgorithms = listOf("sha-256", "sha-384"),
@@ -640,8 +647,10 @@ class TestTransactionDataTransformer {
             },
         )
 
+        // When
         val section = transform(transactions = listOf(approval))!!
 
+        // Then
         assertEquals(listOf("https://qtsp.example/csc/v2"), section.values("Location"))
         assertEquals(
             listOf("sha-256", "sha-384"),
@@ -653,6 +662,7 @@ class TestTransactionDataTransformer {
 
     @Test
     fun `Given attributes from the relying party, When transformToUi is called, Then each is marked as set by it`() {
+        // Given
         val request = PresentationTransactionDataDomain.Qes(
             displayName = mockedRequestDisplayName,
             credentialIds = listOf(mockedTransactionQueryId),
@@ -666,8 +676,10 @@ class TestTransactionDataTransformer {
             ),
         )
 
+        // When
         val section = transform(transactions = listOf(request))!!
 
+        // Then
         val attributeRows = section.rows().filter { row -> row.itemId.contains("/attribute-") }
         assertEquals(2, attributeRows.size)
         assertTrue(attributeRows.all { row ->
@@ -685,6 +697,7 @@ class TestTransactionDataTransformer {
 
     @Test
     fun `Given a recorded request with a one-time password, When transformRecordedToUi is called, Then the password is not shown`() {
+        // Given
         val request = PresentationTransactionDataDomain.Qes(
             displayName = null,
             credentialIds = listOf(mockedTransactionQueryId),
@@ -697,11 +710,13 @@ class TestTransactionDataTransformer {
             ),
         )
 
+        // When
         val rows = transformer.transformRecordedToUi(
             transactions = listOf(request),
             sectionId = mockedSectionId,
         ).map { item -> item.header }
 
+        // Then
         assertTrue(rows.none { row -> row.text() == mockedOtp })
         assertTrue(rows.any { row -> row.overlineText == "Document access" && row.text() == "One-time password" })
     }

@@ -26,8 +26,8 @@ import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.ListItemDataUi
 import eu.europa.ec.uilogic.component.ListItemMainContentDataUi
 import eu.europa.ec.uilogic.component.ListItemTrailingContentDataUi
-import junit.framework.TestCase.assertEquals
 import org.junit.After
+import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -74,20 +74,22 @@ class TestDocumentSignInteractor {
     // cannot intercept the call. We exercise the line for coverage and tolerate any
     // throwable from the un-initialized SDK; deeper verification would require
     // injecting EudiRQESUi behind a wallet-facing interface.
+    /**
+     * Expected: the SDK throws because setup() has not been called in the unit-test context.
+     */
     @Test
-    fun `When launchRqesSdk is called, Then the call is dispatched to the EudiRQESUi singleton`() {
+    fun `Given the uninitialized EudiRQESUi singleton, When launchRqesSdk is called, Then any throwable from the SDK is tolerated`() {
+        // Then
         try {
-            // When
             interactor.launchRqesSdk(context = context, uri = uri)
         } catch (_: Throwable) {
-            // Expected: SDK throws because setup() has not been called in unit-test context.
         }
     }
     //endregion
 
     //region getItemUi
     @Test
-    fun `When getItemUi is called, Then the expected DocumentSignButtonUi is returned`() {
+    fun `Given the select-document text, When getItemUi is called, Then the expected DocumentSignButtonUi is returned`() {
         // Given
         whenever(resourceProvider.getString(R.string.document_sign_select_document))
             .thenReturn(mockedSelectDocumentText)

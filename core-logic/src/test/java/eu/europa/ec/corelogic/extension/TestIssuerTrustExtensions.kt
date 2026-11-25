@@ -25,24 +25,39 @@ class TestIssuerTrustExtensions {
 
     @Test
     fun `Given a trusted chain, When toIssuerTrustVerdict is called, Then TRUSTED is returned`() {
+        // Given
         val result: CertificationChainValidation<String> =
             CertificationChainValidation.Trusted(trustAnchor = "anchor")
 
-        assertEquals(IssuerTrustVerdict.TRUSTED, result.toIssuerTrustVerdict())
+        // When
+        val verdict = result.toIssuerTrustVerdict()
+
+        // Then
+        assertEquals(IssuerTrustVerdict.TRUSTED, verdict)
     }
 
     @Test
     fun `Given an untrusted chain, When toIssuerTrustVerdict is called, Then NOT_TRUSTED is returned`() {
+        // Given
         val result: CertificationChainValidation<String> =
             CertificationChainValidation.NotTrusted(cause = IllegalStateException("no anchor"))
 
-        assertEquals(IssuerTrustVerdict.NOT_TRUSTED, result.toIssuerTrustVerdict())
+        // When
+        val verdict = result.toIssuerTrustVerdict()
+
+        // Then
+        assertEquals(IssuerTrustVerdict.NOT_TRUSTED, verdict)
     }
 
     @Test
     fun `Given no evaluation, When toIssuerTrustVerdict is called, Then NOT_EVALUATED is returned`() {
+        // Given
         val result: CertificationChainValidation<String>? = null
 
-        assertEquals(IssuerTrustVerdict.NOT_EVALUATED, result.toIssuerTrustVerdict())
+        // When
+        val verdict = result.toIssuerTrustVerdict()
+
+        // Then
+        assertEquals(IssuerTrustVerdict.NOT_EVALUATED, verdict)
     }
 }

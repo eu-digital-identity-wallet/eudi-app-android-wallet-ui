@@ -23,7 +23,8 @@ import org.junit.Test
 class TestExternalLinkHelper {
 
     @Test
-    fun `Given an https URL with a host, Then it may be opened`() {
+    fun `Given https URLs with a host, When they are checked, Then they may be opened`() {
+        // Then
         listOf(
             "https://verifier.example/done",
             "HTTPS://verifier.example:8443/done?response_code=abc#top",
@@ -33,7 +34,8 @@ class TestExternalLinkHelper {
     }
 
     @Test
-    fun `Given any other scheme or a malformed address, Then it is ignored`() {
+    fun `Given any other scheme or a malformed address, When it is checked, Then it is ignored`() {
+        // Then
         listOf(
             "eudi-rqes://sign?request_uri=https%3A%2F%2Fattacker.example",
             "openid-credential-offer://?credential_offer_uri=https%3A%2F%2Fattacker.example",

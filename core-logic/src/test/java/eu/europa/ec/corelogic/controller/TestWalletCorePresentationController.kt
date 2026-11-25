@@ -105,8 +105,10 @@ class TestWalletCorePresentationController {
 
     @Test
     fun `Given a reader whose authentication is not trusted, When its request arrives, Then the presentation is blocked before consent`() {
+        // When
         val state = receiveEach(processedRequest(hasReaderAuthentication = true)).single()
 
+        // Then
         assertEquals(TransferEventPartialState.VerifierNotTrusted, state)
         assertNull(controller.verifierName)
         assertEquals(false, controller.verifierIsFullyVerified)
@@ -114,31 +116,39 @@ class TestWalletCorePresentationController {
 
     @Test
     fun `Given a reader that sends no reader authentication, When its request arrives, Then it reaches consent`() {
+        // When
         val state = receiveEach(processedRequest(hasReaderAuthentication = false)).single()
 
+        // Then
         assertTrue("state was $state", state is TransferEventPartialState.RequestReceived)
     }
 
     @Test
     fun `Given reader authentication always required, When a reader that sends none makes a request, Then the presentation is blocked before consent`() {
+        // Given
         whenever(walletCoreConfig.readerAuthenticationEnforcement)
             .thenReturn(ReaderAuthenticationEnforcement.ALWAYS_REQUIRE)
 
+        // When
         val state = receiveEach(processedRequest(hasReaderAuthentication = false)).single()
 
+        // Then
         assertEquals(TransferEventPartialState.VerifierNotTrusted, state)
     }
 
     @Test
     fun `Given a trusted request was received, When a refused request follows in the session, Then the first one cannot be sent`() {
+        // Given
         val states = receiveEach(
             processedRequest(hasReaderAuthentication = true, isReaderTrusted = true),
             processedRequest(hasReaderAuthentication = true),
         )
         controller.updateRequestedDocuments(emptyList())
 
+        // When
         val sent = runBlocking { controller.sendRequestedDocuments() }
 
+        // Then
         assertTrue("states were $states", states[0] is TransferEventPartialState.RequestReceived)
         assertEquals(TransferEventPartialState.VerifierNotTrusted, states[1])
         assertNull(controller.verifierName)
@@ -148,14 +158,17 @@ class TestWalletCorePresentationController {
 
     @Test
     fun `Given a refused request, When an allowed request follows in the session, Then the allowed one is sent`() {
+        // Given
         val states = receiveEach(
             processedRequest(hasReaderAuthentication = true),
             processedRequest(hasReaderAuthentication = true, isReaderTrusted = true),
         )
         controller.updateRequestedDocuments(emptyList())
 
+        // When
         val sent = runBlocking { controller.sendRequestedDocuments() }
 
+        // Then
         assertEquals(TransferEventPartialState.VerifierNotTrusted, states[0])
         assertTrue("states were $states", states[1] is TransferEventPartialState.RequestReceived)
         assertEquals(SendRequestedDocumentsPartialState.RequestSent, sent)

@@ -37,27 +37,34 @@ import eu.europa.ec.uilogic.component.ListItemSupportingContentDataUi
 import eu.europa.ec.uilogic.component.ListItemTrailingContentDataUi
 import eu.europa.ec.uilogic.component.wrap.ExpandableListItemUi
 import eu.europa.ec.uilogic.extension.toggleCheckboxState
-import junit.framework.TestCase.assertEquals
-import junit.framework.TestCase.assertFalse
-import junit.framework.TestCase.assertNull
-import junit.framework.TestCase.assertSame
-import junit.framework.TestCase.assertTrue
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNull
+import org.junit.Assert.assertSame
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class TestRequestDataUi {
 
     @Test
     fun `Given a selected portrait, When the request is read, Then it asks for and would share the portrait`() {
+        // Given
         val requestDataUi = RequestDataUi.Single(
             combination(document(keys = listOf("family_name", "portrait"), selectable = true))
         )
 
-        assertTrue(requestDataUi.requestsUserImage)
-        assertTrue(requestDataUi.sharesUserImage)
+        // When
+        val requestsUserImage = requestDataUi.requestsUserImage
+        val sharesUserImage = requestDataUi.sharesUserImage
+
+        // Then
+        assertTrue(requestsUserImage)
+        assertTrue(sharesUserImage)
     }
 
     @Test
     fun `Given the portrait is unticked, When the request is read, Then it asks for the portrait but would not share it`() {
+        // Given
         val requestDataUi = RequestDataUi.Single(
             combination(
                 document(keys = listOf("family_name", "portrait"), selectable = true)
@@ -65,22 +72,34 @@ class TestRequestDataUi {
             )
         )
 
-        assertTrue(requestDataUi.requestsUserImage)
-        assertFalse(requestDataUi.sharesUserImage)
+        // When
+        val requestsUserImage = requestDataUi.requestsUserImage
+        val sharesUserImage = requestDataUi.sharesUserImage
+
+        // Then
+        assertTrue(requestsUserImage)
+        assertFalse(sharesUserImage)
     }
 
     @Test
     fun `Given claims disclosed as a whole, When the request includes the picture, Then it would be shared`() {
+        // Given
         val requestDataUi = RequestDataUi.Single(
             combination(document(keys = listOf("family_name", "picture"), selectable = false))
         )
 
-        assertTrue(requestDataUi.requestsUserImage)
-        assertTrue(requestDataUi.sharesUserImage)
+        // When
+        val requestsUserImage = requestDataUi.requestsUserImage
+        val sharesUserImage = requestDataUi.sharesUserImage
+
+        // Then
+        assertTrue(requestsUserImage)
+        assertTrue(sharesUserImage)
     }
 
     @Test
     fun `Given no picture of the holder, When the request is read, Then neither the notice nor the confirmation applies`() {
+        // Given
         val requestDataUi = RequestDataUi.Single(
             combination(
                 document(
@@ -90,37 +109,60 @@ class TestRequestDataUi {
             )
         )
 
-        assertFalse(requestDataUi.requestsUserImage)
-        assertFalse(requestDataUi.sharesUserImage)
-        assertFalse(RequestDataUi.NoData.requestsUserImage)
+        // When
+        val requestsUserImage = requestDataUi.requestsUserImage
+        val sharesUserImage = requestDataUi.sharesUserImage
+        val noDataRequestsUserImage = RequestDataUi.NoData.requestsUserImage
+
+        // Then
+        assertFalse(requestsUserImage)
+        assertFalse(sharesUserImage)
+        assertFalse(noDataRequestsUserImage)
     }
 
     @Test
     fun `Given a declined request, When it is read or edited, Then nothing can be shared and it stays as it is`() {
+        // Given
         val declined = RequestDataUi.Declined(reason = "declined")
 
-        assertNull(declined.selectedCombination)
-        assertTrue(declined.selectedDocuments.isEmpty())
-        assertEquals(declined, declined.withSelectedDocuments(emptyList()))
-        assertEquals(declined, declined.toggleTransactionDataExpansion("section", "section"))
+        // When
+        val selectedCombination = declined.selectedCombination
+        val selectedDocuments = declined.selectedDocuments
+        val withDocuments = declined.withSelectedDocuments(emptyList())
+        val toggled = declined.toggleTransactionDataExpansion("section", "section")
+
+        // Then
+        assertNull(selectedCombination)
+        assertTrue(selectedDocuments.isEmpty())
+        assertEquals(declined, withDocuments)
+        assertEquals(declined, toggled)
     }
 
     @Test
     fun `Given several combinations, When only another one includes the portrait, Then the selected one decides`() {
+        // Given
         val withPortrait = combination(document(keys = listOf("portrait"), selectable = true))
         val withoutPortrait = combination(document(keys = listOf("family_name"), selectable = true))
 
         val first = RequestDataUi.Multiple(listOf(withoutPortrait, withPortrait), selectedIndex = 0)
         val second = first.copy(selectedIndex = 1)
 
-        assertFalse(first.requestsUserImage)
-        assertFalse(first.sharesUserImage)
-        assertTrue(second.requestsUserImage)
-        assertTrue(second.sharesUserImage)
+        // When
+        val firstRequests = first.requestsUserImage
+        val firstShares = first.sharesUserImage
+        val secondRequests = second.requestsUserImage
+        val secondShares = second.sharesUserImage
+
+        // Then
+        assertFalse(firstRequests)
+        assertFalse(firstShares)
+        assertTrue(secondRequests)
+        assertTrue(secondShares)
     }
 
     @Test
     fun `Given a picture claim added to the configuration, When the request is read, Then it counts as a picture of the holder`() {
+        // Given
         val requestDataUi = RequestDataUi.Single(
             combination(
                 document(
@@ -131,8 +173,14 @@ class TestRequestDataUi {
             )
         )
 
-        assertTrue(requestDataUi.requestsUserImage)
-        assertTrue(requestDataUi.sharesUserImage)
+        // When
+        val requestsUserImage = requestDataUi.requestsUserImage
+        val sharesUserImage = requestDataUi.sharesUserImage
+
+        // Then
+        assertTrue(requestsUserImage)
+        assertTrue(sharesUserImage)
+
     }
 
     //region toggleTransactionDataExpansion

@@ -95,37 +95,46 @@ class TestBiometricAuthenticationController {
     //region getBiometricsAvailability
 
     @Test
-    fun `Given weak biometrics but no strong hardware, Then explain the security requirement`() {
+    fun `Given weak biometrics but no strong hardware, When checking strong availability, Then the security requirement is explained`() {
+        // Given
         whenever(biometricManager.canAuthenticate(BIOMETRIC_STRONG))
             .thenReturn(BiometricManager.BIOMETRIC_ERROR_NO_HARDWARE)
         whenever(biometricManager.canAuthenticate(BIOMETRIC_WEAK))
             .thenReturn(BiometricManager.BIOMETRIC_SUCCESS)
 
+        // When
         val result = controller.getBiometricsAvailability(BIOMETRIC_STRONG)
 
+        // Then
         assertEquals(BiometricsAvailability.Failure(STRONG_REQUIRED_MESSAGE), result)
     }
 
     @Test
-    fun `Given availability is unknown, Then allow the prompt to enforce the requested strength`() {
+    fun `Given availability is unknown, When checking strong availability, Then the prompt is allowed to enforce the requested strength`() {
+        // Given
         whenever(biometricManager.canAuthenticate(BIOMETRIC_STRONG))
             .thenReturn(BiometricManager.BIOMETRIC_STATUS_UNKNOWN)
         whenever(biometricManager.canAuthenticate(BIOMETRIC_WEAK))
             .thenReturn(BiometricManager.BIOMETRIC_SUCCESS)
 
+        // When
         val result = controller.getBiometricsAvailability(BIOMETRIC_STRONG)
 
+        // Then
         assertEquals(BiometricsAvailability.CanAuthenticate, result)
     }
 
     // Case: STRONG check succeeds, availability is CanAuthenticate
     @Test
     fun `Given canAuthenticate returns SUCCESS, When checking availability, Then result is CanAuthenticate`() {
+        // Given
         whenever(biometricManager.canAuthenticate(BIOMETRIC_STRONG))
             .thenReturn(BiometricManager.BIOMETRIC_SUCCESS)
 
+        // When
         val result = controller.getBiometricsAvailability(BIOMETRIC_STRONG)
 
+        // Then
         assertTrue(result is BiometricsAvailability.CanAuthenticate)
         verify(biometricManager, never()).canAuthenticate(BIOMETRIC_WEAK)
     }
@@ -135,13 +144,16 @@ class TestBiometricAuthenticationController {
     // passed and the flow failed silently in the cipher path)
     @Test
     fun `Given only weak biometric enrolled, When checking strong availability, Then result is Failure with strong required message`() {
+        // Given
         whenever(biometricManager.canAuthenticate(BIOMETRIC_STRONG))
             .thenReturn(BiometricManager.BIOMETRIC_ERROR_NONE_ENROLLED)
         whenever(biometricManager.canAuthenticate(BIOMETRIC_WEAK))
             .thenReturn(BiometricManager.BIOMETRIC_SUCCESS)
 
+        // When
         val result = controller.getBiometricsAvailability(BIOMETRIC_STRONG)
 
+        // Then
         assertEquals(BiometricsAvailability.Failure(STRONG_REQUIRED_MESSAGE), result)
     }
 
@@ -149,48 +161,60 @@ class TestBiometricAuthenticationController {
     // the user can be routed to the system enrollment screen
     @Test
     fun `Given no biometric enrolled, When checking strong availability, Then result is NonEnrolled`() {
+        // Given
         whenever(biometricManager.canAuthenticate(BIOMETRIC_STRONG))
             .thenReturn(BiometricManager.BIOMETRIC_ERROR_NONE_ENROLLED)
         whenever(biometricManager.canAuthenticate(BIOMETRIC_WEAK))
             .thenReturn(BiometricManager.BIOMETRIC_ERROR_NONE_ENROLLED)
 
+        // When
         val result = controller.getBiometricsAvailability(BIOMETRIC_STRONG)
 
+        // Then
         assertTrue(result is BiometricsAvailability.NonEnrolled)
     }
 
     // Case: WEAK check (non-crypto flow) with nothing enrolled, result is NonEnrolled
     @Test
     fun `Given no biometric enrolled, When checking weak availability, Then result is NonEnrolled`() {
+        // Given
         whenever(biometricManager.canAuthenticate(BIOMETRIC_WEAK))
             .thenReturn(BiometricManager.BIOMETRIC_ERROR_NONE_ENROLLED)
 
+        // When
         val result = controller.getBiometricsAvailability(BIOMETRIC_WEAK)
 
+        // Then
         assertTrue(result is BiometricsAvailability.NonEnrolled)
     }
 
     // Case: no biometric hardware, result is Failure with the no-hardware message
     @Test
     fun `Given no biometric hardware, When checking availability, Then result is Failure with no hardware message`() {
+        // Given
         whenever(biometricManager.canAuthenticate(BIOMETRIC_WEAK))
             .thenReturn(BiometricManager.BIOMETRIC_ERROR_NO_HARDWARE)
 
+        // When
         val result = controller.getBiometricsAvailability(BIOMETRIC_WEAK)
 
+        // Then
         assertEquals(BiometricsAvailability.Failure(NO_HARDWARE_MESSAGE), result)
     }
 
     // Case: unknown error code, result is Failure with the unknown-error message
     @Test
     fun `Given unknown canAuthenticate code, When checking availability, Then result is Failure with unknown error message`() {
+        // Given
         whenever(biometricManager.canAuthenticate(BIOMETRIC_STRONG))
             .thenReturn(999)
         whenever(biometricManager.canAuthenticate(BIOMETRIC_WEAK))
             .thenReturn(BiometricManager.BIOMETRIC_SUCCESS)
 
+        // When
         val result = controller.getBiometricsAvailability(BIOMETRIC_STRONG)
 
+        // Then
         assertEquals(BiometricsAvailability.Failure(UNKNOWN_ERROR_MESSAGE), result)
     }
 

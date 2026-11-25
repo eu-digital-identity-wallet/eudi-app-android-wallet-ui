@@ -35,11 +35,13 @@ class TestActivityExtensions {
 
     @Test
     fun `Given a sender that set a referrer extra, When the launching package is read, Then it is the one Android recorded`() {
+        // Given
         val recorded = activityStartedWith(linkIntent()).launchingPackage()
 
         val withReferrer = linkIntent().putExtra(Intent.EXTRA_REFERRER, Uri.parse(PAGE))
         val withReferrerName = linkIntent().putExtra(Intent.EXTRA_REFERRER_NAME, PAGE)
 
+        // Then
         assertEquals("verifier.example", activityStartedWith(withReferrer).referrer?.host)
         assertEquals(recorded, activityStartedWith(withReferrer).launchingPackage())
         assertEquals(recorded, activityStartedWith(withReferrerName).launchingPackage())
@@ -48,31 +50,40 @@ class TestActivityExtensions {
 
     @Test
     fun `Given a launch intent, When the launching package is read, Then the activity keeps that same intent`() {
+        // Given
         val activity =
             activityStartedWith(linkIntent().putExtra(Intent.EXTRA_REFERRER, Uri.parse(PAGE)))
         val launch = activity.intent
 
+        // When
         activity.launchingPackage()
 
+        // Then
         assertSame(launch, activity.intent)
     }
 
     @Test
     fun `Given screen capture prevented, When it is set, Then the window is secure`() {
+        // Given
         val activity = Robolectric.buildActivity(Activity::class.java).get()
 
+        // When
         activity.setScreenCapturePrevented(true)
 
+        // Then
         assertTrue(activity.isWindowSecure())
     }
 
     @Test
     fun `Given a secure window, When screen capture is allowed, Then the window is no longer secure`() {
+        // Given
         val activity = Robolectric.buildActivity(Activity::class.java).get()
         activity.setScreenCapturePrevented(true)
 
+        // When
         activity.setScreenCapturePrevented(false)
 
+        // Then
         assertFalse(activity.isWindowSecure())
     }
 

@@ -128,7 +128,14 @@ class PresentationRequestInteractorImpl(
                         ).getOrThrow()
                             .withIndex()
                             .filter { (_, combinationUi) -> combinationUi.documents.isNotEmpty() }
-                        val combinationsUi = presentedCombinations.map { it.value }
+                        val combinationsUi = presentedCombinations
+                            .filter { (index, combinationUi) ->
+                                showsEveryQuery(
+                                    requested = response.combinationsDomain[index],
+                                    shown = combinationUi,
+                                )
+                            }
+                            .map { it.value }
                         val canShowAllTransactionData =
                             presentedCombinations.all { (index, combinationUi) ->
                                 canShowTransactionData(
@@ -180,6 +187,24 @@ class PresentationRequestInteractorImpl(
 
     override fun stopPresentation() {
         walletCorePresentationController.stopPresentation()
+    }
+
+    /**
+     * True when every query of [requested] keeps a document on the consent screen ([shown]). A
+     * combination in which a query lost all its documents, because they are blocked or cannot be
+     * shown, is not offered: Wallet Core refuses a selection that leaves out a query of a required
+     * credential set, and for an optional set the combination that skips the set is offered on its
+     * own. A `multiple: true` query that keeps another document keeps the combination. The
+     * transaction-data check runs on the combinations first, so a request whose transaction data
+     * is bound to a document that is not shown is still declined.
+     */
+    private fun showsEveryQuery(
+        requested: PresentationCombinationDomain,
+        shown: RequestCombinationUi,
+    ): Boolean {
+        val requestedQueryIds = requested.matches.map { it.queryId }.toSet()
+        val shownQueryIds = shown.documents.map { it.domainPayload.queryId }.toSet()
+        return shownQueryIds == requestedQueryIds
     }
 
     /**

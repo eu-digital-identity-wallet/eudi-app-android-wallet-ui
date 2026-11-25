@@ -36,11 +36,14 @@ class TestWalletCoreDCAPIRegistrationController {
     @Test
     fun `Given an attached registration, When Wallet Core updates the registration, Then the update is passed on`() {
         coroutineRule.runTest {
+            // Given
             val controller = controller()
             controller.attach { registration() }
 
+            // When
             controller.registerCredentials()
 
+            // Then
             assertEquals(listOf("register"), steps)
         }
     }
@@ -48,11 +51,14 @@ class TestWalletCoreDCAPIRegistrationController {
     @Test
     fun `Given the user turned the Digital Credential API off, When Wallet Core updates the registration, Then the registry is cleared instead`() {
         coroutineRule.runTest {
+            // Given
             val controller = controller(enabled = false)
             controller.attach { registration() }
 
+            // When
             controller.registerCredentials()
 
+            // Then
             assertEquals(listOf("clear registry"), steps)
         }
     }
@@ -60,6 +66,7 @@ class TestWalletCoreDCAPIRegistrationController {
     @Test
     fun `Given the setting is off and the registry cannot be cleared, When Wallet Core updates the registration, Then the update does not fail`() {
         coroutineRule.runTest {
+            // Given
             val controller = WalletCoreDCAPIRegistrationControllerImpl(
                 clearRegistry = { throw IllegalStateException("registry unavailable") },
                 isEnabled = { false },
@@ -67,9 +74,11 @@ class TestWalletCoreDCAPIRegistrationController {
             )
             controller.attach { registration() }
 
+            // When
             controller.registerCredentials()
             controller.unregisterCredentials()
 
+            // Then
             assertEquals(emptyList<String>(), steps)
         }
     }
@@ -77,10 +86,12 @@ class TestWalletCoreDCAPIRegistrationController {
     @Test
     fun `Given the reset holds the registration, When Wallet Core updates it meanwhile, Then the update runs after the registry is cleared`() {
         coroutineRule.runTest {
+            // Given
             val controller = controller()
             controller.attach { registration() }
             val release = CompletableDeferred<Unit>()
 
+            // When
             coroutineRule.testScope.launch {
                 controller.clearAround {
                     steps.add("delete documents")
@@ -93,6 +104,7 @@ class TestWalletCoreDCAPIRegistrationController {
             release.complete(Unit)
             coroutineRule.testScope.runCurrent()
 
+            // Then
             assertEquals(listOf("delete documents", "clear registry", "register"), steps)
         }
     }
@@ -100,10 +112,12 @@ class TestWalletCoreDCAPIRegistrationController {
     @Test
     fun `Given an update in progress, When the reset holds the registration, Then it waits for the update`() {
         coroutineRule.runTest {
+            // Given
             val controller = controller()
             val release = CompletableDeferred<Unit>()
             controller.attach { registration(release) }
 
+            // When
             coroutineRule.testScope.launch { controller.registerCredentials() }
             coroutineRule.testScope.runCurrent()
             coroutineRule.testScope.launch { controller.clearAround { steps.add("delete documents") } }
@@ -111,6 +125,7 @@ class TestWalletCoreDCAPIRegistrationController {
             release.complete(Unit)
             coroutineRule.testScope.runCurrent()
 
+            // Then
             assertEquals(
                 listOf(
                     "register started",
@@ -125,14 +140,17 @@ class TestWalletCoreDCAPIRegistrationController {
     @Test
     fun `Given the registry cannot be cleared, When the reset holds the registration, Then the result is still returned`() {
         coroutineRule.runTest {
+            // Given
             val controller = WalletCoreDCAPIRegistrationControllerImpl(
                 clearRegistry = { throw IllegalStateException("registry unavailable") },
                 isEnabled = { true },
                 getBlockedDocumentIds = { emptySet() },
             )
 
+            // When
             val result = controller.clearAround { true }
 
+            // Then
             assertEquals(true, result)
         }
     }
@@ -140,8 +158,10 @@ class TestWalletCoreDCAPIRegistrationController {
     @Test
     fun `Given no wallet has been built, When the reset holds the registration, Then the registry is still cleared`() {
         coroutineRule.runTest {
+            // When
             controller().clearAround { steps.add("delete documents") }
 
+            // Then
             assertEquals(listOf("delete documents", "clear registry"), steps)
         }
     }
@@ -149,6 +169,7 @@ class TestWalletCoreDCAPIRegistrationController {
     @Test
     fun `Given blocked documents, When Wallet Core updates the registration, Then they are excluded from it`() {
         coroutineRule.runTest {
+            // Given
             var blocked = setOf("revoked")
             val controller = controller(getBlockedDocumentIds = { blocked })
             var excludedDuringUpdate = emptySet<String>()
@@ -163,12 +184,17 @@ class TestWalletCoreDCAPIRegistrationController {
                 }
             }
 
+            // When
             controller.registerCredentials()
+
+            // Then
             assertEquals(setOf("revoked"), excludedDuringUpdate)
 
+            // When
             blocked = emptySet()
             controller.registerCredentials()
 
+            // Then
             assertEquals(emptySet<String>(), excludedDuringUpdate)
             assertEquals(listOf("register", "register"), steps)
         }
@@ -177,13 +203,16 @@ class TestWalletCoreDCAPIRegistrationController {
     @Test
     fun `Given the blocked documents cannot be read, When Wallet Core updates the registration, Then the registry is cleared instead`() {
         coroutineRule.runTest {
+            // Given
             val controller = controller(
                 getBlockedDocumentIds = { throw IllegalStateException("unreadable") }
             )
             controller.attach { registration() }
 
+            // When
             controller.registerCredentials()
 
+            // Then
             assertEquals(listOf("clear registry"), steps)
         }
     }

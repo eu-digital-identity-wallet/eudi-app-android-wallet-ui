@@ -83,6 +83,7 @@ fun WrapListItem(
     clickableAreas: List<ClickableArea>? = null,
     shape: Shape? = null,
     colors: CardColors? = null,
+    collectionItemIndex: Int? = null,
 ) {
     WrapCard(
         modifier = modifier,
@@ -103,6 +104,7 @@ fun WrapListItem(
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 ),
             clickableAreas = clickableAreas ?: listOf(ClickableArea.ENTIRE_ROW),
+            collectionItemIndex = collectionItemIndex,
         )
     }
 }

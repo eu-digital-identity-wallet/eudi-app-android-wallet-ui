@@ -86,11 +86,14 @@ class TestRouterHost {
 
     @Test
     fun `Given a locked wallet showing the dashboard, When requireLoginIfLocked is called, Then only the login flow is left`() {
+        // Given
         whenever(sessionController.isUnlocked).thenReturn(false)
         navController.navigate(DashboardScreens.Dashboard.screenRoute)
 
+        // When
         routerHost.requireLoginIfLocked()
 
+        // Then
         assertEquals(StartupScreens.Splash.screenRoute, navController.currentDestination?.route)
         assertFalse(
             runCatching { navController.getBackStackEntry(DashboardScreens.Dashboard.screenRoute) }.isSuccess
@@ -99,11 +102,14 @@ class TestRouterHost {
 
     @Test
     fun `Given an unlocked wallet showing the dashboard, When requireLoginIfLocked is called, Then the dashboard stays`() {
+        // Given
         whenever(sessionController.isUnlocked).thenReturn(true)
         navController.navigate(DashboardScreens.Dashboard.screenRoute)
 
+        // When
         routerHost.requireLoginIfLocked()
 
+        // Then
         assertEquals(
             DashboardScreens.Dashboard.screenRoute,
             navController.currentDestination?.route
@@ -112,57 +118,98 @@ class TestRouterHost {
 
     @Test
     fun `Given a locked wallet showing only login screens, When requireLoginIfLocked is called, Then nothing changes`() {
+        // Given
         whenever(sessionController.isUnlocked).thenReturn(false)
         val entry = navController.currentBackStackEntry
 
+        // When
         routerHost.requireLoginIfLocked()
 
+        // Then
         assertEquals(StartupScreens.Splash.screenRoute, navController.currentDestination?.route)
         assertSame(entry, navController.currentBackStackEntry)
     }
 
     @Test
     fun `Given the dashboard on the back stack, When the login state is read, Then the wallet counts as logged in only while unlocked`() {
+        // Given
         navController.navigate(DashboardScreens.Dashboard.screenRoute)
-
         whenever(sessionController.isUnlocked).thenReturn(true)
-        assertTrue(routerHost.userIsLoggedInWithDocuments())
 
+        // When
+        val loggedInWhileUnlocked = routerHost.userIsLoggedInWithDocuments()
+
+        // Then
+        assertTrue(loggedInWhileUnlocked)
+
+        // When
         whenever(sessionController.isUnlocked).thenReturn(false)
-        assertFalse(routerHost.userIsLoggedInWithDocuments())
+        val loggedInWhileLocked = routerHost.userIsLoggedInWithDocuments()
+
+        // Then
+        assertFalse(loggedInWhileLocked)
     }
 
     @Test
     fun `Given the add-document screen on the back stack, When the login state is read, Then the wallet counts as logged in only while unlocked`() {
+        // Given
         navController.navigate(addDocument.screenRoute)
-
         whenever(sessionController.isUnlocked).thenReturn(true)
-        assertTrue(routerHost.userIsLoggedInWithNoDocuments())
-        assertFalse(routerHost.userIsLoggedInWithDocuments())
 
+        // When
+        val noDocumentsWhileUnlocked = routerHost.userIsLoggedInWithNoDocuments()
+        val withDocumentsWhileUnlocked = routerHost.userIsLoggedInWithDocuments()
+
+        // Then
+        assertTrue(noDocumentsWhileUnlocked)
+        assertFalse(withDocumentsWhileUnlocked)
+
+        // When
         whenever(sessionController.isUnlocked).thenReturn(false)
-        assertFalse(routerHost.userIsLoggedInWithNoDocuments())
+        val noDocumentsWhileLocked = routerHost.userIsLoggedInWithNoDocuments()
+
+        // Then
+        assertFalse(noDocumentsWhileLocked)
     }
 
     @Test
     fun `Given a protected-flow screen in front, When isInProtectedFlow is read, Then it is true only there`() {
+        // Given
         navController.navigate(DashboardScreens.Dashboard.screenRoute)
-        assertFalse(routerHost.isInProtectedFlow())
 
+        // When
+        val onDashboard = routerHost.isInProtectedFlow()
+
+        // Then
+        assertFalse(onDashboard)
+
+        // When
         navController.navigate(signing.screenRoute)
-        assertTrue(routerHost.isInProtectedFlow())
+        val onSigning = routerHost.isInProtectedFlow()
+
+        // Then
+        assertTrue(onSigning)
     }
 
     @Test
     fun `Given a protected-flow screen that is also a login screen, When isInProtectedFlow is read, Then it is true only past login`() {
+        // Given
         whenever(configUILogic.loginScreens).thenReturn(listOf(StartupScreens.Splash, login))
         whenever(configUILogic.protectedFlowScreens).thenReturn(listOf(login))
 
+        // When
         navController.navigate(login.screenRoute)
-        assertFalse(routerHost.isInProtectedFlow())
+        val onLoginBeforeDashboard = routerHost.isInProtectedFlow()
 
+        // Then
+        assertFalse(onLoginBeforeDashboard)
+
+        // When
         navController.navigate(DashboardScreens.Dashboard.screenRoute)
         navController.navigate(login.screenRoute)
-        assertTrue(routerHost.isInProtectedFlow())
+        val onLoginAfterDashboard = routerHost.isInProtectedFlow()
+
+        // Then
+        assertTrue(onLoginAfterDashboard)
     }
 }

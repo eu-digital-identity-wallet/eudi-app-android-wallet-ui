@@ -129,8 +129,10 @@ class TestSettingsViewModel {
     @Test
     fun `Given biometric unlock off, When the check succeeds 30 times, Then one biometric prompt opens`() =
         coroutineRule.runTest {
+            // When
             repeat(30) { confirmBiometricSwitch() }
 
+            // Then
             assertEquals(1, callbacks.size)
             verify(interactor).authenticateWithBiometrics(eq(context), eq(false), any())
             verify(interactor, never()).toggleBiometricsAuthentication()
@@ -139,12 +141,15 @@ class TestSettingsViewModel {
     @Test
     fun `Given biometric unlock available, When the switch is tapped, Then the PIN or biometric check opens first`() =
         coroutineRule.runTest {
+            // Given
             val config = argumentCaptor<BiometricUiConfig>()
             whenever(uiSerializer.toBase64(config.capture(), any())).thenReturn(SERIALIZED_CONFIG)
 
             viewModel.effect.runFlowTest {
+                // When
                 viewModel.handleEvents(click)
 
+                // Then
                 assertEquals(
                     Effect.Navigation.SwitchScreen(
                         screenRoute = "${CommonScreens.Biometric.screenName}?" +
@@ -177,11 +182,14 @@ class TestSettingsViewModel {
     @Test
     fun `Given biometric unlock on, When the check succeeds, Then it is turned off without another prompt`() =
         coroutineRule.runTest {
+            // Given
             val updatedItems = listOf(settingsItem)
             whenever(interactor.getSettingsItemsUi(null)).thenReturn(updatedItems)
 
+            // When
             confirmBiometricSwitch(isBiometricUnlockOn = true)
 
+            // Then
             verify(interactor, times(1)).toggleBiometricsAuthentication()
             assertEquals(0, callbacks.size)
             assertEquals(updatedItems, viewModel.viewState.value.settingsItems)
@@ -190,16 +198,21 @@ class TestSettingsViewModel {
     @Test
     fun `Given biometric unlock off, When the check succeeds, Then a biometric is asked for before it is turned on`() =
         coroutineRule.runTest {
+            // Given
             whenever(interactor.getSettingsItemsUi(null)).thenReturn(listOf(settingsItem))
 
+            // When
             confirmBiometricSwitch(isBiometricUnlockOn = false)
 
+            // Then
             assertEquals(1, callbacks.size)
             verify(interactor, never()).toggleBiometricsAuthentication()
 
+            // When
             completeAuthentication(BiometricsAuthenticate.Success)
             coroutineRule.testScope.runCurrent()
 
+            // Then
             verify(interactor, times(1)).toggleBiometricsAuthentication()
         }
 
@@ -210,6 +223,7 @@ class TestSettingsViewModel {
     @Test
     fun `Given biometric unlock off, When the check succeeds and more confirmations follow, Then it is saved and refreshed once`() =
         coroutineRule.runTest {
+            // Given
             val saveFinished = CompletableDeferred<Unit>()
             val updatedItems = listOf(settingsItem)
 
@@ -218,6 +232,7 @@ class TestSettingsViewModel {
             }
             whenever(interactor.getSettingsItemsUi(null)).thenReturn(updatedItems)
 
+            // When
             confirmBiometricSwitch()
             completeAuthentication(BiometricsAuthenticate.Success)
 
@@ -225,22 +240,28 @@ class TestSettingsViewModel {
             coroutineRule.testScope.runCurrent()
             repeat(30) { confirmBiometricSwitch() }
 
+            // Then
             assertEquals(1, callbacks.size)
 
+            // When
             saveFinished.complete(Unit)
             coroutineRule.testScope.runCurrent()
 
+            // Then
             verify(interactor, times(1)).toggleBiometricsAuthentication()
             assertEquals(updatedItems, viewModel.viewState.value.settingsItems)
 
+            // When
             confirmBiometricSwitch()
 
+            // Then
             assertEquals(2, callbacks.size)
         }
 
     @Test
-    fun `failure shows the reason preserves settings and permits another attempt`() =
+    fun `Given biometric unlock off, When the check succeeds and the biometric prompt fails, Then the reason shows, settings stay and another attempt is possible`() =
         coroutineRule.runTest {
+            // Given
             val originalItems = listOf(settingsItem)
             whenever(interactor.getSettingsItemsUi(null)).thenReturn(originalItems)
 
@@ -248,67 +269,82 @@ class TestSettingsViewModel {
             coroutineRule.testScope.runCurrent()
 
             viewModel.effect.runFlowTest {
+                // When
                 confirmBiometricSwitch()
                 completeAuthentication(BiometricsAuthenticate.Failed("Sensor locked"))
 
+                // Then
                 assertEquals(Effect.ShowSnackbar("Sensor locked"), awaitItem())
                 assertEquals(originalItems, viewModel.viewState.value.settingsItems)
                 verify(interactor, never()).toggleBiometricsAuthentication()
 
+                // When
                 confirmBiometricSwitch()
 
+                // Then
                 assertEquals(2, callbacks.size)
                 expectNoEvents()
             }
         }
 
     @Test
-    fun `cancellation preserves settings without snackbar and permits retry`() =
+    fun `Given biometric unlock off, When the check succeeds and the biometric prompt is cancelled, Then settings stay without a snackbar and a retry is possible`() =
         coroutineRule.runTest {
             viewModel.effect.runFlowTest {
+                // When
                 confirmBiometricSwitch()
                 completeAuthentication(BiometricsAuthenticate.Cancelled)
                 coroutineRule.testScope.runCurrent()
 
+                // Then
                 verify(interactor, never()).toggleBiometricsAuthentication()
                 expectNoEvents()
 
+                // When
                 confirmBiometricSwitch()
 
+                // Then
                 assertEquals(2, callbacks.size)
             }
         }
 
     @Test
-    fun `unsuitable biometrics show explanation without starting authentication`() =
+    fun `Given unsuitable biometrics, When the switch is tapped, Then an explanation shows without starting authentication`() =
         coroutineRule.runTest {
+            // Given
             whenever(interactor.getBiometricsAvailability())
                 .thenReturn(BiometricsAvailability.Failure("Set up a supported biometric"))
 
             viewModel.effect.runFlowTest {
+                // When
                 viewModel.handleEvents(click)
 
+                // Then
                 assertEquals(Effect.ShowSnackbar("Set up a supported biometric"), awaitItem())
                 assertEquals(0, callbacks.size)
             }
         }
 
     @Test
-    fun `no enrollment opens system setup without authenticating`() = coroutineRule.runTest {
+    fun `Given no biometric enrollment, When the switch is tapped, Then the system setup opens without authenticating`() = coroutineRule.runTest {
+        // Given
         whenever(interactor.getBiometricsAvailability())
             .thenReturn(BiometricsAvailability.NonEnrolled)
 
         viewModel.effect.runFlowTest {
+            // When
             viewModel.handleEvents(click)
 
+            // Then
             assertEquals(Effect.Navigation.LaunchBiometricsSystemScreen, awaitItem())
             assertEquals(0, callbacks.size)
         }
     }
 
     @Test
-    fun `init shows a loading pass before publishing the settings items`() =
+    fun `Given a pending settings load, When Init is sent, Then a loading pass shows before the settings items are published`() =
         coroutineRule.runTest {
+            // Given
             val items = listOf(settingsItem)
             val released = CompletableDeferred<Unit>()
             whenever(interactor.getSettingsItemsUi(null)).doSuspendableAnswer {
@@ -316,80 +352,97 @@ class TestSettingsViewModel {
                 items
             }
 
+            // When
             viewModel.handleEvents(Event.Init)
             coroutineRule.testScope.runCurrent()
 
+            // Then
             assertTrue(viewModel.viewState.value.isLoading)
             assertEquals(emptyList<SettingsItemUi>(), viewModel.viewState.value.settingsItems)
 
+            // When
             released.complete(Unit)
             coroutineRule.testScope.runCurrent()
 
+            // Then
             assertFalse(viewModel.viewState.value.isLoading)
             assertEquals(items, viewModel.viewState.value.settingsItems)
         }
 
     @Test
-    fun `pop requests navigation back`() = coroutineRule.runTest {
+    fun `Given the settings screen, When Pop is sent, Then navigation goes back`() = coroutineRule.runTest {
         viewModel.effect.runFlowTest {
+            // When
             viewModel.handleEvents(Event.Pop)
 
+            // Then
             assertEquals(Effect.Navigation.Pop, awaitItem())
         }
     }
 
     @Test
-    fun `launch biometric system screen delegates to the interactor`() = coroutineRule.runTest {
+    fun `Given the settings screen, When LaunchBiometricSystemScreen is sent, Then it is delegated to the interactor`() = coroutineRule.runTest {
+        // When
         viewModel.handleEvents(Event.LaunchBiometricSystemScreen)
 
+        // Then
         verify(interactor).launchBiometricSystemScreen()
         assertEquals(0, callbacks.size)
     }
 
     @Test
-    fun `toggling the batch issuance counter refreshes the settings items`() =
+    fun `Given updated settings items, When the batch issuance counter item is clicked, Then the setting is toggled and the items refresh`() =
         coroutineRule.runTest {
+            // Given
             val updatedItems = listOf(settingsItem)
             whenever(interactor.getSettingsItemsUi(null)).thenReturn(updatedItems)
 
+            // When
             viewModel.handleEvents(
                 Event.ItemClicked(SettingsMenuItemType.SHOW_BATCH_ISSUANCE_COUNTER, context)
             )
             coroutineRule.testScope.runCurrent()
 
+            // Then
             verify(interactor).toggleShowBatchIssuanceCounter()
             assertEquals(updatedItems, viewModel.viewState.value.settingsItems)
             verify(interactor, never()).authenticateWithBiometrics(any(), any(), any())
         }
 
     @Test
-    fun `toggling the Digital Credential API applies the setting and refreshes the items`() =
+    fun `Given updated settings items, When the Digital Credential API item is clicked, Then the setting is applied and the items refresh`() =
         coroutineRule.runTest {
+            // Given
             val updatedItems = listOf(settingsItem)
             whenever(interactor.getSettingsItemsUi(null)).thenReturn(updatedItems)
 
+            // When
             viewModel.handleEvents(
                 Event.ItemClicked(SettingsMenuItemType.DC_API, context)
             )
             coroutineRule.testScope.runCurrent()
 
+            // Then
             verify(interactor).toggleDCAPI()
             assertEquals(updatedItems, viewModel.viewState.value.settingsItems)
             verify(interactor, never()).authenticateWithBiometrics(any(), any(), any())
         }
 
     @Test
-    fun `toggling the registration check refreshes the items and asks for a restart`() =
+    fun `Given updated settings items, When the registration check item is clicked, Then the items refresh and a restart is requested`() =
         coroutineRule.runTest {
+            // Given
             val updatedItems = listOf(settingsItem)
             whenever(interactor.getSettingsItemsUi(null)).thenReturn(updatedItems)
 
             viewModel.effect.runFlowTest {
+                // When
                 viewModel.handleEvents(
                     Event.ItemClicked(SettingsMenuItemType.REGISTRATION_CHECK, context)
                 )
                 coroutineRule.testScope.runCurrent()
 
+                // Then
                 verify(interactor).toggleRegistrationCheck()
                 assertEquals(updatedItems, viewModel.viewState.value.settingsItems)
                 assertEquals(Effect.ShowSnackbar(RESTART_STRING), awaitItem())
@@ -397,13 +450,16 @@ class TestSettingsViewModel {
         }
 
     @Test
-    fun `retrieving logs shares every log file`() = coroutineRule.runTest {
+    fun `Given log files, When the Retrieve logs item is clicked, Then every log file is shared`() = coroutineRule.runTest {
+        // Given
         val logs = arrayListOf("content://logs/1".toUri(), "content://logs/2".toUri())
         whenever(interactor.retrieveLogFileUris()).thenReturn(logs)
 
         viewModel.effect.runFlowTest {
+            // When
             viewModel.handleEvents(Event.ItemClicked(SettingsMenuItemType.RETRIEVE_LOGS, context))
 
+            // Then
             val effect = awaitItem()
             assertTrue(effect is Effect.ShareLogFile)
             val shareLogFile = effect as Effect.ShareLogFile
@@ -422,25 +478,31 @@ class TestSettingsViewModel {
     }
 
     @Test
-    fun `retrieving logs stays silent when there is nothing to share`() = coroutineRule.runTest {
+    fun `Given no log files, When the Retrieve logs item is clicked, Then nothing is emitted`() = coroutineRule.runTest {
+        // Given
         whenever(interactor.retrieveLogFileUris()).thenReturn(arrayListOf())
 
         viewModel.effect.runFlowTest {
+            // When
             viewModel.handleEvents(Event.ItemClicked(SettingsMenuItemType.RETRIEVE_LOGS, context))
             coroutineRule.testScope.runCurrent()
 
+            // Then
             expectNoEvents()
         }
     }
 
     @Test
-    fun `changelog opens the configured url externally`() = coroutineRule.runTest {
+    fun `Given a configured changelog url, When the Changelog item is clicked, Then the url opens externally`() = coroutineRule.runTest {
+        // Given
         whenever(interactor.getChangelogUrl()).thenReturn(CHANGELOG_URL)
         val withChangelog = newViewModel("withChangelog")
 
         withChangelog.effect.runFlowTest {
+            // When
             withChangelog.handleEvents(Event.ItemClicked(SettingsMenuItemType.CHANGELOG, context))
 
+            // Then
             assertEquals(
                 Effect.Navigation.OpenUrlExternally(CHANGELOG_URL.toUri()),
                 awaitItem()
@@ -449,25 +511,30 @@ class TestSettingsViewModel {
     }
 
     @Test
-    fun `changelog stays silent when no url is configured`() = coroutineRule.runTest {
+    fun `Given no changelog url, When the Changelog item is clicked, Then nothing is emitted`() = coroutineRule.runTest {
+        // Given
         whenever(interactor.getChangelogUrl()).thenReturn(null)
         val withoutChangelog = newViewModel("withoutChangelog")
 
         withoutChangelog.effect.runFlowTest {
+            // When
             withoutChangelog.handleEvents(
                 Event.ItemClicked(SettingsMenuItemType.CHANGELOG, context)
             )
             coroutineRule.testScope.runCurrent()
 
+            // Then
             expectNoEvents()
         }
     }
 
     @Test
-    fun `reset wallet asks for confirmation first`() = coroutineRule.runTest {
+    fun `Given the settings screen, When the Reset wallet item is clicked, Then a confirmation sheet is requested first`() = coroutineRule.runTest {
         viewModel.effect.runFlowTest {
+            // When
             viewModel.handleEvents(Event.ItemClicked(SettingsMenuItemType.RESET_WALLET, context))
 
+            // Then
             assertEquals(Effect.ShowBottomSheet, awaitItem())
             expectNoEvents()
         }
@@ -475,27 +542,39 @@ class TestSettingsViewModel {
     }
 
     @Test
-    fun `the confirmation sheet state follows the screen`() = coroutineRule.runTest {
+    fun `Given the settings screen, When the bottom sheet state is updated, Then the view state follows`() = coroutineRule.runTest {
+        // When
         viewModel.handleEvents(Event.BottomSheet.UpdateBottomSheetState(isOpen = true))
+
+        // Then
         assertTrue(viewModel.viewState.value.isBottomSheetOpen)
 
+        // When
         viewModel.handleEvents(Event.BottomSheet.UpdateBottomSheetState(isOpen = false))
+
+        // Then
         assertFalse(viewModel.viewState.value.isBottomSheetOpen)
     }
 
     @Test
-    fun `confirming the reset asks for the PIN, which leads to the reset screen`() =
+    fun `Given the reset confirmation sheet, When the reset is confirmed, Then the PIN check opens and leads to the reset screen`() =
         coroutineRule.runTest {
+            // Given
             val config = argumentCaptor<BiometricUiConfig>()
             whenever(uiSerializer.toBase64(config.capture(), any())).thenReturn(SERIALIZED_CONFIG)
 
             viewModel.effect.runFlowTest {
+                // When
                 viewModel.handleEvents(Event.BottomSheet.ResetWallet.PrimaryButtonPressed)
 
+                // Then
                 assertEquals(Effect.CloseBottomSheet, awaitItem())
                 expectNoEvents()
 
+                // When
                 viewModel.handleEvents(Event.BottomSheet.FinishedClosing)
+
+                // Then
                 assertEquals(
                     Effect.Navigation.SwitchScreen(
                         screenRoute = "${CommonScreens.Biometric.screenName}?${BiometricUiConfig.serializedKeyName}=$SERIALIZED_CONFIG"
@@ -517,12 +596,18 @@ class TestSettingsViewModel {
         }
 
     @Test
-    fun `cancelling the reset only closes the sheet`() = coroutineRule.runTest {
+    fun `Given the reset confirmation sheet, When the reset is cancelled, Then only the sheet closes`() = coroutineRule.runTest {
         viewModel.effect.runFlowTest {
+            // When
             viewModel.handleEvents(Event.BottomSheet.ResetWallet.SecondaryButtonPressed)
 
+            // Then
             assertEquals(Effect.CloseBottomSheet, awaitItem())
+
+            // When
             viewModel.handleEvents(Event.BottomSheet.FinishedClosing)
+
+            // Then
             expectNoEvents()
         }
         verify(uiSerializer, never()).toBase64(any<BiometricUiConfig>(), any())

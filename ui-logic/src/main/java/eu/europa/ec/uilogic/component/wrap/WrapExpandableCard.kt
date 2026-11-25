@@ -39,6 +39,8 @@ import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
  * @param onExpandFinished runs each time the card opens after it first appeared, once the opening animation has
  * finished and the expanded content is laid out (at once when the card reopens before its closing animation ended), so
  * a screen can bring the opened content into view. It does not run for a card that is open when it first appears.
+ * @param expandedContentModifier applied to the column that holds the expanded content, for
+ * example to report it to accessibility services as a list.
  */
 @Composable
 fun WrapExpandableCard(
@@ -51,6 +53,7 @@ fun WrapExpandableCard(
     colors: CardColors? = null,
     throttleClicks: Boolean = true,
     onExpandFinished: (() -> Unit)? = null,
+    expandedContentModifier: Modifier = Modifier,
 ) {
     var isOpening by remember { mutableStateOf(false) }
     var isPreviouslyExpanded by remember { mutableStateOf(isExpanded) }
@@ -80,7 +83,7 @@ fun WrapExpandableCard(
                         }
                     }
                 }
-                Column {
+                Column(modifier = expandedContentModifier) {
                     cardExpandedContent()
                 }
             }

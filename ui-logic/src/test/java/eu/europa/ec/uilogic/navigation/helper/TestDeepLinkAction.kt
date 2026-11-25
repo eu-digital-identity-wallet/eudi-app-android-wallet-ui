@@ -26,6 +26,7 @@ class TestDeepLinkAction {
 
     @Test
     fun `Given each scheme the wallet registers, When parsed, Then it maps to its flow`() {
+        // Then
         assertEquals(DeepLinkType.OPENID4VP, DeepLinkType.parse(BuildConfig.OPENID4VP_SCHEME))
         assertEquals(DeepLinkType.OPENID4VP, DeepLinkType.parse(BuildConfig.EUDI_OPENID4VP_SCHEME))
         assertEquals(DeepLinkType.OPENID4VP, DeepLinkType.parse(BuildConfig.MDOC_OPENID4VP_SCHEME))
@@ -57,6 +58,7 @@ class TestDeepLinkAction {
 
     @Test
     fun `Given a known scheme with the wrong host, When parsed, Then it starts no flow`() {
+        // Then
         assertEquals(
             DeepLinkType.EXTERNAL,
             DeepLinkType.parse(BuildConfig.RQES_SCHEME, "attacker.example", BuildConfig.RQES_PATH)
@@ -69,8 +71,10 @@ class TestDeepLinkAction {
 
     @Test
     fun `Given a configured document-retrieval host, When parsed, Then only that host starts the signing flow`() {
+        // Given
         val configured = "docs.qtsp.example"
 
+        // Then
         assertEquals(
             DeepLinkType.RQES_DOC_RETRIEVAL,
             DeepLinkType.parse(
@@ -99,6 +103,7 @@ class TestDeepLinkAction {
 
     @Test
     fun `Given a known host in another case, When parsed, Then it starts its flow`() {
+        // Then
         assertEquals(
             DeepLinkType.ISSUANCE,
             DeepLinkType.parse(
@@ -118,6 +123,7 @@ class TestDeepLinkAction {
 
     @Test
     fun `Given the signing callback's scheme and host with another path or none, When parsed, Then it starts no flow`() {
+        // Then
         assertEquals(
             DeepLinkType.EXTERNAL,
             DeepLinkType.parse(BuildConfig.RQES_SCHEME, BuildConfig.RQES_HOST, "/other")
@@ -130,6 +136,7 @@ class TestDeepLinkAction {
 
     @Test
     fun `Given a configured host, When a host is matched, Then only that host matches, in any case`() {
+        // Then
         assertTrue(
             DeepLinkType.hostMatches(
                 configured = "docs.qtsp.example",
@@ -154,6 +161,7 @@ class TestDeepLinkAction {
 
     @Test
     fun `Given the any-host sentinel, When a host is matched, Then every host matches`() {
+        // Then
         assertTrue(
             DeepLinkType.hostMatches(
                 configured = DeepLinkType.ANY_HOST,

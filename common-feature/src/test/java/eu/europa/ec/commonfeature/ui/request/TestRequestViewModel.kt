@@ -76,11 +76,14 @@ class TestRequestViewModel {
     @Test
     fun `Given a document without the portrait, When Share is pressed, Then the PIN screen opens straight away`() =
         coroutineRule.runTest {
+            // Given
             viewModel.show(document(keys = listOf("family_name")))
 
             viewModel.effect.runFlowTest {
+                // When
                 viewModel.handleEvents(Event.StickyButtonPressed)
 
+                // Then
                 assertEquals(Effect.Navigation.SwitchScreen(NEXT_SCREEN), awaitItem())
             }
         }
@@ -88,11 +91,14 @@ class TestRequestViewModel {
     @Test
     fun `Given a document with the portrait, When Share is pressed, Then a confirmation is asked first`() =
         coroutineRule.runTest {
+            // Given
             viewModel.show(document(keys = listOf("family_name", "portrait")))
 
             viewModel.effect.runFlowTest {
+                // When
                 viewModel.handleEvents(Event.StickyButtonPressed)
 
+                // Then
                 assertEquals(Effect.ShowBottomSheet, awaitItem())
                 assertEquals(
                     RequestBottomSheetContent.UserImageConfirmation,
@@ -105,17 +111,27 @@ class TestRequestViewModel {
     @Test
     fun `Given the portrait confirmation, When Share is confirmed, Then sharing goes ahead once the sheet has closed`() =
         coroutineRule.runTest {
+            // Given
             viewModel.show(document(keys = listOf("portrait")))
 
             viewModel.effect.runFlowTest {
+                // When
                 viewModel.handleEvents(Event.StickyButtonPressed)
+
+                // Then
                 assertEquals(Effect.ShowBottomSheet, awaitItem())
 
+                // When
                 viewModel.handleEvents(Event.BottomSheet.UserImageConfirmation.Share)
+
+                // Then
                 assertEquals(Effect.CloseBottomSheet, awaitItem())
                 expectNoEvents()
 
+                // When
                 viewModel.handleEvents(Event.BottomSheet.FinishedClosing)
+
+                // Then
                 assertEquals(Effect.Navigation.SwitchScreen(NEXT_SCREEN), awaitItem())
                 assertFalse(viewModel.viewState.value.shareAfterSheetCloses)
             }
@@ -124,16 +140,26 @@ class TestRequestViewModel {
     @Test
     fun `Given the portrait confirmation, When it is cancelled, Then nothing is shared`() =
         coroutineRule.runTest {
+            // Given
             viewModel.show(document(keys = listOf("portrait")))
 
             viewModel.effect.runFlowTest {
+                // When
                 viewModel.handleEvents(Event.StickyButtonPressed)
+
+                // Then
                 assertEquals(Effect.ShowBottomSheet, awaitItem())
 
+                // When
                 viewModel.handleEvents(Event.BottomSheet.UserImageConfirmation.Cancel)
+
+                // Then
                 assertEquals(Effect.CloseBottomSheet, awaitItem())
 
+                // When
                 viewModel.handleEvents(Event.BottomSheet.FinishedClosing)
+
+                // Then
                 expectNoEvents()
             }
         }
@@ -141,6 +167,7 @@ class TestRequestViewModel {
     @Test
     fun `Given an unticked portrait, When Share is pressed, Then no confirmation is needed`() =
         coroutineRule.runTest {
+            // Given
             viewModel.show(
                 document(
                     keys = listOf(
@@ -151,8 +178,10 @@ class TestRequestViewModel {
             )
 
             viewModel.effect.runFlowTest {
+                // When
                 viewModel.handleEvents(Event.StickyButtonPressed)
 
+                // Then
                 assertEquals(Effect.Navigation.SwitchScreen(NEXT_SCREEN), awaitItem())
             }
         }

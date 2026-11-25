@@ -66,7 +66,6 @@ class TestDeviceAuthenticationInteractor {
     // Case: getBiometricsAvailability behaviour
     @Test
     fun `Given a BiometricsAvailability listener, When getBiometricsAvailability is called, Then deviceSupportsBiometrics should be triggered`() {
-
         // When
         interactor.getBiometricsAvailability(biometricCrypto)
 
@@ -76,7 +75,7 @@ class TestDeviceAuthenticationInteractor {
 
     // Case: launchBiometricSystemScreen behaviour
     @Test
-    fun `When launchBiometricSystemScreen is called, Then deviceAuthenticationController#launchBiometricSystemScreen is invoked`() {
+    fun `Given a biometric crypto, When launchBiometricSystemScreen is called, Then the controller launches the system screen`() {
         // When
         interactor.launchBiometricSystemScreen(biometricCrypto)
 
@@ -86,7 +85,7 @@ class TestDeviceAuthenticationInteractor {
 
     // Case: authenticateWithBiometrics behaviour
     @Test
-    fun `When authenticateWithBiometrics is called, Then authenticate function should be executed`() {
+    fun `Given a context and a result handler, When authenticateWithBiometrics is called, Then authenticate is executed on the controller`() {
         // Given
         val context = getMockedContext()
 

@@ -25,7 +25,8 @@ class TestOfferIssuerHelper {
     private val configured = listOf("https://issuer.example", "https://second.example:8443")
 
     @Test
-    fun `Given an offer by value from a configured issuer, Then that issuer is returned`() {
+    fun `Given an offer by value from a configured issuer, When offerIssuerOf is called, Then that issuer is returned`() {
+        // Then
         assertEquals(
             OfferIssuer.Configured("https://issuer.example"),
             offerIssuerOf(offerByValue("https://issuer.example"), configured)
@@ -42,7 +43,8 @@ class TestOfferIssuerHelper {
     }
 
     @Test
-    fun `Given an offer by value from an issuer that is not configured, Then it is not configured`() {
+    fun `Given an offer by value from an issuer that is not configured, When offerIssuerOf is called, Then NotConfigured is returned`() {
+        // Then
         listOf(
             "https://attacker.example",
             "https://issuer.example/",
@@ -58,7 +60,8 @@ class TestOfferIssuerHelper {
     }
 
     @Test
-    fun `Given an offer by reference on a configured issuer's origin, Then that issuer is returned`() {
+    fun `Given an offer by reference on a configured issuer's origin, When offerIssuerOf is called, Then that issuer is returned`() {
+        // Then
         assertEquals(
             OfferIssuer.Configured("https://issuer.example"),
             offerIssuerOf(offerByReference("https://ISSUER.example/offers/123"), configured)
@@ -70,7 +73,8 @@ class TestOfferIssuerHelper {
     }
 
     @Test
-    fun `Given an offer by reference anywhere else, Then it is not configured`() {
+    fun `Given an offer by reference anywhere else, When offerIssuerOf is called, Then NotConfigured is returned`() {
+        // Then
         listOf(
             "https://attacker.example/offers/123",
             "https://second.example/offers/123",
@@ -85,9 +89,12 @@ class TestOfferIssuerHelper {
     }
 
     @Test
-    fun `Given the offer given more than once, in any spelling, Then the link is unreadable`() {
+    fun `Given the offer given more than once in any spelling, When offerIssuerOf is called, Then Unreadable is returned`() {
+        // Given
         val attacker = encode(offer("https://attacker.example"))
         val configuredOffer = encode(offer("https://issuer.example"))
+
+        // Then
         listOf(
             "openid-credential-offer://?CREDENTIAL_OFFER=$attacker&credential_offer=$configuredOffer",
             "openid-credential-offer://?credential_offer=$configuredOffer&credential_offer=$attacker",
@@ -99,7 +106,8 @@ class TestOfferIssuerHelper {
     }
 
     @Test
-    fun `Given a parameter name in another case, Then it is read as the library reads it`() {
+    fun `Given a parameter name in another case, When offerIssuerOf is called, Then it is read as the library reads it`() {
+        // Then
         assertEquals(
             OfferIssuer.NotConfigured,
             offerIssuerOf(
@@ -110,7 +118,8 @@ class TestOfferIssuerHelper {
     }
 
     @Test
-    fun `Given a link without a usable offer, Then it is unreadable`() {
+    fun `Given a link without a usable offer, When offerIssuerOf is called, Then Unreadable is returned`() {
+        // Then
         listOf(
             "openid-credential-offer://",
             "openid-credential-offer://?other=1",
