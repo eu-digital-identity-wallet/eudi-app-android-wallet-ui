@@ -19,18 +19,22 @@ package eu.europa.ec.corelogic.config
 import kotlin.time.Duration
 
 /**
- * Deferred polling policy. Delays must be finite and positive in milliseconds; limits must be positive.
+ * Deferred polling policy. Delays must be finite and positive in milliseconds; limits must be
+ * positive: a zero delay would poll continuously and a zero concurrency limit would prevent all
+ * attempts.
  *
- * @property initialPollingDelay Polling fallback until Wallet Core supplies a valid issuer interval.
- * @property failureRetryDelay Time to wait after an ordinary deferred issuance failure before retrying.
- * @property maxConcurrentDeferredRequests Global cap, or null for unlimited; each ID still has one attempt.
+ * @property initialPollingDelay Polling fallback until Wallet Core supplies a valid issuer
+ * interval.
+ * @property failureRetryDelay Time to wait after an ordinary deferred issuance failure before
+ * retrying.
+ * @property maxConcurrentDeferredRequests Global cap, or null for unlimited; each ID still has one
+ * attempt.
  */
 data class DeferredIssuanceConfig(
     val initialPollingDelay: Duration,
     val failureRetryDelay: Duration,
     val maxConcurrentDeferredRequests: Int?,
 ) {
-    // A zero delay would poll continuously and a zero concurrency limit would prevent all attempts.
     init {
         require(initialPollingDelay.isFinite() && initialPollingDelay.inWholeMilliseconds > 0)
         require(failureRetryDelay.isFinite() && failureRetryDelay.inWholeMilliseconds > 0)

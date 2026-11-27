@@ -826,14 +826,13 @@ class TestDocumentDetailsInteractor {
         }
     }
 
-    //region deleteDocument
     // Case 1:
     // 1. PID activation is required and the selected document is the only Issued PID.
     //
     // Case 1 Expected Result:
     // Request full-wallet deletion, which includes any Pending replacements.
     @Test
-    fun `Given Case 1, When deleteDocument is called, Then Case 1 Expected Result is returned`() =
+    fun `Given Case 1, When deleteDocument is called for the single PID, Then AllDocumentsDeleted is returned`() =
         coroutineRule.runTest {
             // Given
             val original = getMockedPidWithBasicFields()
@@ -859,7 +858,7 @@ class TestDocumentDetailsInteractor {
     // Case 2 Expected Result:
     // Request full-wallet deletion and return AllDocumentsDeleted.
     @Test
-    fun `Given Case 2, When deleteDocument is called, Then Case 2 Expected Result is returned`() =
+    fun `Given Case 2, When deleteDocument is called for the main PID with multiple PIDs, Then AllDocumentsDeleted is returned`() =
         coroutineRule.runTest {
             // Given
             val mainPid = getMockedOldestPidWithBasicFields()
@@ -887,7 +886,7 @@ class TestDocumentDetailsInteractor {
     // Case 3 Expected Result:
     // Delete only the selected ID, leaving any replacement intact.
     @Test
-    fun `Given Case 3, When deleteDocument is called, Then Case 3 Expected Result is returned`() =
+    fun `Given Case 3, When deleteDocument is called with forcePidActivation false, Then SingleDocumentDeleted is returned`() =
         coroutineRule.runTest {
             // Given
             whenever(configLogic.forcePidActivation).thenReturn(false)
@@ -912,7 +911,7 @@ class TestDocumentDetailsInteractor {
     // Case 4 Expected Result:
     // Delete only the selected ID.
     @Test
-    fun `Given Case 4, When deleteDocument is called, Then Case 4 Expected Result is returned`() =
+    fun `Given Case 4, When deleteDocument is called, Then it returns SingleDocumentDeleted`() =
         coroutineRule.runTest {
             // Given
             val mainPid = getMockedOldestPidWithBasicFields()
@@ -940,7 +939,7 @@ class TestDocumentDetailsInteractor {
     // Case 5 Expected Result:
     // Delete only the selected ID, leaving any replacement intact.
     @Test
-    fun `Given Case 5, When deleteDocument is called, Then Case 5 Expected Result is returned`() =
+    fun `Given Case 5, When deleteDocument is called for a non-PID document, Then SingleDocumentDeleted is returned`() =
         coroutineRule.runTest {
             // Given
             mockGetDocumentByIdCall(response = getMockedMdlWithBasicFields())
@@ -964,7 +963,7 @@ class TestDocumentDetailsInteractor {
     // Case 6 Expected Result:
     // Forward the failure without reporting AllDocumentsDeleted.
     @Test
-    fun `Given Case 6, When deleteDocument is called, Then Case 6 Expected Result is returned`() =
+    fun `Given Case 6, When deleteDocument is called, Then it returns Failure with failure's error message`() =
         coroutineRule.runTest {
             // Given
             val original = getMockedPidWithBasicFields()
@@ -1049,7 +1048,7 @@ class TestDocumentDetailsInteractor {
     // Case 9 Expected Result:
     // Forward the single-document deletion failure.
     @Test
-    fun `Given Case 9, When deleteDocument is called, Then Case 9 Expected Result is returned`() =
+    fun `Given Case 9, When deleteDocument is called, Then it returns Failure with failure's error message`() =
         coroutineRule.runTest {
             // Given
             mockGetDocumentByIdCall(response = getMockedMdlWithBasicFields())
@@ -1075,7 +1074,7 @@ class TestDocumentDetailsInteractor {
     // Case 10 Expected Result:
     // Apply the same full-wallet deletion rule as for an mdoc PID.
     @Test
-    fun `Given Case 10, When deleteDocument is called, Then Case 10 Expected Result is returned`() =
+    fun `Given Case 10, When deleteDocument is called for an SdJwt PID, Then AllDocumentsDeleted is returned`() =
         coroutineRule.runTest {
             // Given
             val original = getMockedSdJwtPidWithBasicFields()
@@ -1126,7 +1125,6 @@ class TestDocumentDetailsInteractor {
             verify(walletCoreDocumentsController, never()).deleteDocument(otherPid.id)
             verify(walletCoreDocumentsController, never()).deleteAllDocuments()
         }
-    //endregion
 
     /**
      * Case 1:
@@ -1356,7 +1354,9 @@ class TestDocumentDetailsInteractor {
         }
     }
 
-    // A Deferred result completes the manual submission while the replacement keeps polling.
+    /**
+     * A Deferred result completes the manual submission while the replacement keeps polling.
+     */
     @Test
     fun `Given a Deferred replacement, When the user reissues the original again, Then each submission succeeds independently`() =
         coroutineRule.runTest {

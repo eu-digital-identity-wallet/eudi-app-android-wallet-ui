@@ -122,7 +122,9 @@ internal fun DashboardScreen(
                 DocumentsScreen(
                     hostNavController,
                     documentsViewModel,
-                    isDashboardCovered = state.isBottomSheetOpen || state.isSideMenuVisible || !sideMenuVisibility.isIdle,
+                    isDashboardCovered = state.isBottomSheetOpen ||
+                            state.isSideMenuVisible ||
+                            !sideMenuVisibility.isIdle,
                     onDashboardEventSent = { event ->
                         viewModel.setEvent(event)
                     }

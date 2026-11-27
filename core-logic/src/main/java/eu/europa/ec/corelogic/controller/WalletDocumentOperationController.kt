@@ -41,7 +41,10 @@ import kotlinx.coroutines.sync.withLock
 interface WalletDocumentOperationController {
     val state: StateFlow<WalletDocumentOperationStateDomain>
 
-    /** Completed Deferred issuances waiting for their first appearance in Documents in this process. */
+    /**
+     * Completed Deferred issuances waiting for their first appearance in Documents in this
+     * process.
+     */
     val unseenDeferredIssuanceIds: StateFlow<Set<String>>
 
     fun recordDeferredIssuance(documentId: String)
@@ -58,17 +61,25 @@ interface WalletDocumentOperationController {
      */
     fun canPoll(documentId: String?): Boolean
 
-    /** Records a confirmed Wallet Core deletion to reject late schedule registration for this ID. */
+    /**
+     * Records a confirmed Wallet Core deletion to reject late schedule registration for this ID.
+     */
     fun recordRemoval(documentId: String)
 
     /** Blocks new ordinary operations. Call [awaitIdle] before starting reset deletion. */
     fun stop()
     fun resume()
 
-    /** Called after operations drain and storage is cleared, while reset still blocks new operations. */
+    /**
+     * Called after operations drain and storage is cleared, while reset still blocks new
+     * operations.
+     */
     fun onWalletReset()
 
-    /** Waits for tracked actions and their writes. Stop new work first; the caller owns the timeout. */
+    /**
+     * Waits for tracked actions and their writes. Stop new work first; the caller owns the
+     * timeout.
+     */
     suspend fun awaitIdle()
 
     /**
@@ -78,7 +89,9 @@ interface WalletDocumentOperationController {
      */
     fun startCorePolling(documentId: String, start: () -> Unit): Boolean
 
-    /** Reserves one attempt per ID through its result writes; null [limit] removes the global cap. */
+    /**
+     * Reserves one attempt per ID through its result writes; null [limit] removes the global cap.
+     */
     fun tryStartPolling(documentId: String, limit: Int?, action: suspend () -> Unit): Boolean
 
     /** Serializes work for one ID. Do not acquire the same ID's lock again from [action]. */
@@ -88,10 +101,11 @@ interface WalletDocumentOperationController {
     suspend fun <T> withRemoval(documentId: String, action: suspend () -> T): T
 
     /**
-     * Forwards states from [flowToCollect] up to and including the first state matching [completeWhen].
-     * The flow must finish its writes before emitting that state. Tracking continues if the screen stops
-     * observing, unless [isAbandonable] is true then: such an operation has written nothing yet and is
-     * cancelled, so it cannot hold back reset or bulk removal.
+     * Forwards states from [flowToCollect] up to and including the first state matching
+     * [completeWhen]. The flow must finish its writes before emitting that state. Tracking
+     * continues if the screen stops observing, unless [isAbandonable] is true then: such an
+     * operation has written nothing yet and is cancelled, so it cannot hold back reset or bulk
+     * removal.
      */
     fun <T> trackedOperationFlow(
         completeWhen: (state: T) -> Boolean,
@@ -101,8 +115,9 @@ interface WalletDocumentOperationController {
     ): Flow<T>
 
     /**
-     * Tracks [action], which must await its calls and writes. Returns null if the operation cannot start.
-     * When [isResetOperation] is true, the controller must be stopped and idle during an active reset.
+     * Tracks [action], which must await its calls and writes. Returns null if the operation cannot
+     * start. When [isResetOperation] is true, the controller must be stopped and idle during an
+     * active reset.
      */
     fun <T> startOperation(isResetOperation: Boolean, action: suspend () -> T): Deferred<T>?
 
@@ -122,14 +137,14 @@ class WalletDocumentOperationControllerImpl(
     private val coroutineScope: CoroutineScope,
 ) : WalletDocumentOperationController {
 
-    // Share the lock for reset and operation state; suspending work uses per-document mutexes.
+    /** Shares the lock for reset and operation state; suspending work uses per-document mutexes. */
     private val monitor = resetStatus.operationStateLock
     private val operations = mutableSetOf<Job>()
 
-    // Keep locks until reset; replacing one could leave callers waiting on a different lock.
+    /** Kept until reset; replacing a lock could leave callers waiting on a different lock. */
     private val documentLocks = mutableMapOf<String, Mutex>()
 
-    // One removal finishing must not reopen polling while another removal is still waiting.
+    /** One removal finishing must not reopen polling while another removal is still waiting. */
     private val removing = mutableMapOf<String, Int>()
     private val mutableState = MutableStateFlow(
         WalletDocumentOperationStateDomain(
@@ -147,7 +162,7 @@ class WalletDocumentOperationControllerImpl(
 
     override val state: StateFlow<WalletDocumentOperationStateDomain> = mutableState.asStateFlow()
 
-    // A row becoming visible should not wake the polling timer.
+    /** Kept apart from [state], so a row becoming visible does not wake the polling timer. */
     private val mutableUnseenDeferredIssuanceIds = MutableStateFlow(emptySet<String>())
     override val unseenDeferredIssuanceIds = mutableUnseenDeferredIssuanceIds.asStateFlow()
 
@@ -168,7 +183,8 @@ class WalletDocumentOperationControllerImpl(
             val failedIds = state.value.failedDeferredDocumentIds
             if ((documentId in failedIds) == failed) return false
             mutableState.value = state.value.copy(
-                failedDeferredDocumentIds = if (failed) failedIds + documentId else failedIds - documentId,
+                failedDeferredDocumentIds =
+                    if (failed) failedIds + documentId else failedIds - documentId,
             )
             true
         }
@@ -177,7 +193,8 @@ class WalletDocumentOperationControllerImpl(
         val current = state.value
         current.isForeground && !current.isStopped && !current.isRemovingAllDocuments &&
                 sessionController.isUnlocked && !resetStatus.isResetting.value &&
-                documentId !in current.removingDocumentIds && documentId !in current.removedDocumentIds
+                documentId !in current.removingDocumentIds &&
+                documentId !in current.removedDocumentIds
     }
 
     override fun recordRemoval(documentId: String) = synchronized(monitor) {
@@ -212,10 +229,12 @@ class WalletDocumentOperationControllerImpl(
         state.first { current -> current.pendingOperations == 0 }
     }
 
+    /**
+     * Locks the operation state before the session, and releases both after the Core submission.
+     */
     override fun startCorePolling(documentId: String, start: () -> Unit): Boolean =
         synchronized(monitor) {
             if (!canPoll(documentId)) return false
-            // Lock operation state before the session, and release both after Core submission.
             sessionController.runIfUnlocked(start)
         }
 
@@ -225,7 +244,9 @@ class WalletDocumentOperationControllerImpl(
         action: suspend () -> Unit,
     ): Boolean = synchronized(monitor) {
         val active = state.value.activeDocumentIds
-        if (!canPoll(documentId) || documentId in active || (limit != null && active.size >= limit)) {
+        if (!canPoll(documentId) || documentId in active ||
+            (limit != null && active.size >= limit)
+        ) {
             return false
         }
         mutableState.value = state.value.copy(activeDocumentIds = active + documentId)
@@ -262,13 +283,13 @@ class WalletDocumentOperationControllerImpl(
         }
     }
 
+    /** Buffers intermediate states without making Core observation wait for the screen. */
     override fun <T> trackedOperationFlow(
         completeWhen: (state: T) -> Boolean,
         isResetOperation: Boolean,
         isAbandonable: () -> Boolean,
         flowToCollect: () -> Flow<T>,
     ): Flow<T> = flow {
-        // Buffer intermediate states without making Core observation wait for the screen.
         val intermediateStates = Channel<T>(Channel.UNLIMITED)
         val trackedOperation = startOperation(isResetOperation = isResetOperation) {
             try {
@@ -286,7 +307,9 @@ class WalletDocumentOperationControllerImpl(
         }
 
         if (trackedOperation == null) {
-            intermediateStates.close(IllegalStateException("Wallet document operations are temporarily unavailable"))
+            intermediateStates.close(
+                IllegalStateException("Wallet document operations are temporarily unavailable")
+            )
         }
 
         try {
@@ -306,7 +329,9 @@ class WalletDocumentOperationControllerImpl(
         action: suspend () -> T,
     ): Deferred<T>? = synchronized(monitor) {
         if (state.value.isRemovingAllDocuments) return null
-        if (!isResetOperation && (state.value.isStopped || resetStatus.isResetting.value)) return null
+        if (!isResetOperation &&
+            (state.value.isStopped || resetStatus.isResetting.value)
+        ) return null
         if (isResetOperation &&
             (!state.value.isStopped || !resetStatus.isResetting.value || operations.isNotEmpty())
         ) return null
@@ -314,12 +339,18 @@ class WalletDocumentOperationControllerImpl(
         launchTrackedOperation(action = action)
     }
 
+    /**
+     * Captures the earlier work before registering this removal, because waiting for itself would
+     * deadlock.
+     */
     override fun <T> tryStartRemovingAllDocuments(action: suspend () -> T): Deferred<T>? =
         synchronized(monitor) {
-            if (state.value.isRemovingAllDocuments || state.value.isStopped || resetStatus.isResetting.value) {
+            if (state.value.isRemovingAllDocuments ||
+                state.value.isStopped ||
+                resetStatus.isResetting.value
+            ) {
                 return null
             }
-            // Capture earlier work before registering this removal; waiting for itself would deadlock.
             val operationsToAwait = operations.toList()
             mutableState.value = state.value.copy(isRemovingAllDocuments = true)
             launchTrackedOperation {
@@ -334,9 +365,11 @@ class WalletDocumentOperationControllerImpl(
             }
         }
 
-    /** Called under [monitor] after the caller has checked whether this operation can start. */
+    /**
+     * Called under [monitor] after the caller has checked whether this operation can start. The
+     * operation is registered before it runs, even if the action can finish immediately.
+     */
     private fun <T> launchTrackedOperation(action: suspend () -> T): Deferred<T> {
-        // Register before execution, even if the action can finish immediately.
         lateinit var operation: Deferred<T>
         operation = coroutineScope.async(start = CoroutineStart.LAZY) {
             try {

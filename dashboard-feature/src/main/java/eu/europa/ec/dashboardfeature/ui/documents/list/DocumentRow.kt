@@ -50,7 +50,13 @@ private val HIGHLIGHT_HOLD = 700.milliseconds
 private const val HIGHLIGHT_FADE_OUT_MILLIS = 450
 private const val HIGHLIGHT_TINT_FRACTION = 0.20f
 
-/** A grouped document row. Its category can be composed while this row is outside the list viewport. */
+/**
+ * A grouped document row. Its category can be composed while this row is outside the list
+ * viewport. A placed row can become eligible for its highlight after a refresh or a sheet closure
+ * without moving, so its visibility is tracked. The highlight is acknowledged when it is
+ * displayed: consuming the ID leaves this row's animation running. With system animations
+ * disabled the fades snap, while the hold still shows the tint.
+ */
 @Composable
 internal fun DocumentRow(
     document: DocumentUi,
@@ -62,7 +68,6 @@ internal fun DocumentRow(
     onClick: () -> Unit,
 ) {
     val item = document.uiData
-    // A placed row can become eligible after a refresh or sheet closure without moving.
     var isRowVisible by remember(item.itemId) { mutableStateOf(false) }
     var isHighlighting by remember(item.itemId) { mutableStateOf(false) }
     val showHighlight = isHighlighting ||
@@ -71,11 +76,9 @@ internal fun DocumentRow(
     val colors = if (showHighlight) {
         val tint = remember { Animatable(0f) }
         LaunchedEffect(Unit) {
-            // Acknowledge at display time. Consuming the ID leaves this row's animation running.
             isHighlighting = true
             onHighlightShown()
             tint.animateTo(HIGHLIGHT_TINT_FRACTION, tween(HIGHLIGHT_FADE_IN_MILLIS))
-            // With system animations disabled the fades snap, while the hold still shows the tint.
             delay(HIGHLIGHT_HOLD)
             tint.animateTo(0f, tween(HIGHLIGHT_FADE_OUT_MILLIS))
             isHighlighting = false

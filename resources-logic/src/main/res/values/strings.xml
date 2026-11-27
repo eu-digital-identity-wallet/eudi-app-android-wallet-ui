@@ -315,7 +315,6 @@
     <string name="dashboard_bottom_sheet_deferred_document_pressed_primary_button_text">@string/generic_bottom_sheet_delete_primary_button_text</string>
     <string name="dashboard_bottom_sheet_deferred_document_pressed_secondary_button_text">@string/generic_bottom_sheet_delete_secondary_button_text</string>
 
-
     <string name="dashboard_bottom_sheet_revoked_document_dialog_title">Revoked or suspended documents</string>
     <string name="dashboard_bottom_sheet_revoked_document_dialog_subtitle">The issuers of the following documents have revoked or suspended them, so they cannot be used.</string>
     <!--endregion-->

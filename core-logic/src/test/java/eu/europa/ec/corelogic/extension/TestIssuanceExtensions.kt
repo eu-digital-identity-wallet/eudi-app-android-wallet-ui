@@ -53,8 +53,6 @@ class TestIssuanceExtensions {
         ),
     )
 
-    //region withAuthenticationObserver
-
     /**
      * Case 1:
      * 1. The observer has left before Core asks for a key unlock.
@@ -181,15 +179,10 @@ class TestIssuanceExtensions {
             }
         }
 
-    //endregion
-
-    //region helper functions
-
     private suspend fun observeAuthenticationRequest(): DeviceAuthenticationResult {
         val state = flowOf(authenticationRequest).withAuthenticationObserver(observer).single()
         assertTrue(state is IssueDocumentsPartialState.UserAuthRequired)
         return state.resultHandler
     }
 
-    //endregion
 }

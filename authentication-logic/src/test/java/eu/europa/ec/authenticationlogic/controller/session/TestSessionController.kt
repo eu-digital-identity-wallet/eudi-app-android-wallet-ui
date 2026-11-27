@@ -77,12 +77,13 @@ class TestSessionController {
         assertFalse(unlockedAfterLock)
     }
 
-    //region runIfUnlocked
-    // Case 1:
-    // 1. The session has locked before an action is submitted.
-    //
-    // Case 1 Expected Result:
-    // The action is refused without being called.
+    /**
+     * Case 1:
+     * 1. The session has locked before an action is submitted.
+     *
+     * Case 1 Expected Result:
+     * The action is refused without being called.
+     */
     @Test
     fun `Given a locked session, When an action is submitted, Then it is not called`() {
         // Given
@@ -98,11 +99,13 @@ class TestSessionController {
         assertEquals(0, calls)
     }
 
-    // Case 2:
-    // 1. Authentication has unlocked the session.
-    //
-    // Case 2 Expected Result:
-    // The action runs once and admission succeeds.
+    /**
+     * Case 2:
+     * 1. Authentication has unlocked the session.
+     *
+     * Case 2 Expected Result:
+     * The action runs once and admission succeeds.
+     */
     @Test
     fun `Given an unlocked session, When an action is submitted, Then it runs once`() {
         // Given
@@ -117,12 +120,14 @@ class TestSessionController {
         assertEquals(1, calls)
     }
 
-    // Case 3:
-    // 1. An admitted action has started while the session is unlocked.
-    // 2. Another thread checks the expired idle timeout before that action returns.
-    //
-    // Case 3 Expected Result:
-    // The session remains unlocked through submission, then the idle lock completes.
+    /**
+     * Case 3:
+     * 1. An admitted action has started while the session is unlocked.
+     * 2. Another thread checks the expired idle timeout before that action returns.
+     *
+     * Case 3 Expected Result:
+     * The session remains unlocked through submission, then the idle lock completes.
+     */
     @Test
     fun `Given an admitted action, When the idle timeout expires concurrently, Then locking waits for submission`() {
         // Given
@@ -159,7 +164,6 @@ class TestSessionController {
             assertTrue(executor.awaitTermination(timeoutSeconds, TimeUnit.SECONDS))
         }
     }
-    //endregion
 
     @Test
     fun `Given an unlocked session in the background, When it returns before the background timeout, Then it stays unlocked`() {

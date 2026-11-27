@@ -52,9 +52,11 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 
 /**
- * @property isEditingFilters Protects the editable draft from the opening request through actual closure.
+ * @property isEditingFilters Protects the editable draft from the opening request through actual
+ * closure.
  * @property isRefreshPending Coalesces document changes delayed by Filters into one reload.
- * @property isApplyingDocumentFilters Keeps new highlights off the previous search or filter results.
+ * @property isApplyingDocumentFilters Keeps new highlights off the previous search or filter
+ * results.
  */
 data class State(
     val isLoading: Boolean,
@@ -157,7 +159,7 @@ class DocumentsViewModel(
     private var filterStateJob: Job? = null
     private var fetchDocumentsJob: Job? = null
 
-    // A Remove tap can still arrive while the sheet is closing after issuance.
+    /** A Remove tap can still arrive while the sheet is closing after issuance. */
     private var documentIdToIgnoreRemoveTapsFor: DocumentId? = null
 
     init {
@@ -189,7 +191,8 @@ class DocumentsViewModel(
                 getDocuments(Event.GetDocuments)
             }
 
-            is Event.DeferredIssuanceHighlightShown -> interactor.markDeferredIssuanceSeen(event.documentId)
+            is Event.DeferredIssuanceHighlightShown ->
+                interactor.markDeferredIssuanceSeen(event.documentId)
 
             is Event.OnPause -> stopFetchDocuments()
 
@@ -278,13 +281,13 @@ class DocumentsViewModel(
         }
     }
 
+    /** A queued Apply result must not replace an open Filters draft. */
     private fun filterStateChanged() {
         if (filterStateJob?.isActive == true) return
         filterStateJob = viewModelScope.launch {
             interactor.onFilterStateChange().collect { result ->
                 when (result) {
                     is DocumentInteractorFilterPartialState.FilterApplyResult -> {
-                        // A queued Apply result must not replace an open Filters draft.
                         if (viewState.value.isEditingFilters) {
                             setState { copy(isRefreshPending = true) }
                             return@collect
@@ -316,6 +319,11 @@ class DocumentsViewModel(
         }
     }
 
+    /**
+     * A load started before Filters opened may still deliver a result, which then only marks a
+     * refresh as pending. A successful load rebuilds the dynamic filter options while keeping
+     * valid applied selections.
+     */
     private fun getDocuments(
         event: Event,
     ) {
@@ -333,7 +341,6 @@ class DocumentsViewModel(
         fetchDocumentsJob = viewModelScope.launch {
             interactor.getDocuments()
                 .collect { response ->
-                    // A load started before Filters opened may still deliver a result.
                     if (viewState.value.isEditingFilters) {
                         setState { copy(isRefreshPending = true) }
                         return@collect
@@ -364,7 +371,6 @@ class DocumentsViewModel(
                                     isApplyingDocumentFilters = true,
                                 )
                             }
-                            // Rebuild dynamic options while keeping valid applied selections.
                             interactor.initializeFilters(response.allDocuments)
                             interactor.applyFilters()
                         }
@@ -495,9 +501,11 @@ class DocumentsViewModel(
         }
     }
 
+    /**
+     * Opening Filters freezes the displayed options first. Issuer pings continue independently.
+     */
     private fun showBottomSheet(sheetContent: DocumentsBottomSheetContent) {
         if (sheetContent is Filters) {
-            // Freeze the displayed options before opening. Issuer pings continue independently.
             setState {
                 copy(
                     isEditingFilters = true,
@@ -572,10 +580,12 @@ class DocumentsViewModel(
         hideBottomSheet()
     }
 
-    /** Called after reported sheet closure or real screen disposal. */
+    /**
+     * Called after reported sheet closure or real screen disposal. Resolves the draft before a
+     * refresh rebuilds the issuer and category options.
+     */
     private fun finishFiltering(refresh: Boolean) {
         if (!viewState.value.isEditingFilters) return
-        // Resolve the draft before a refresh rebuilds issuer/category options.
         if (viewState.value.shouldRevertFilterChanges) interactor.revertFilters()
         val needsRefresh = viewState.value.isRefreshPending
         setState {

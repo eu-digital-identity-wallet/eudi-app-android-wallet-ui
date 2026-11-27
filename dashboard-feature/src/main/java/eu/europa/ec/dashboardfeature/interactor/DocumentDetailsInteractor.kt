@@ -296,7 +296,8 @@ class DocumentDetailsInteractorImpl(
                                 )
 
                             is DeleteDocumentPartialState.Success ->
-                                DocumentDetailsInteractorDeleteDocumentPartialState.SingleDocumentDeleted
+                                DocumentDetailsInteractorDeleteDocumentPartialState
+                                    .SingleDocumentDeleted
                         }
                     }
             }.collect { state ->

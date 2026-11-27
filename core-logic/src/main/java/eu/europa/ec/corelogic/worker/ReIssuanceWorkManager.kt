@@ -65,6 +65,14 @@ class ReIssuanceWorkManager(
 
     override suspend fun doWork(): Result = runLock.withLock { reIssueDueDocuments() }
 
+    /**
+     * Skips an original when a manual request has registered a replacement for it while earlier
+     * originals were processed. The worker cannot show a prompt, so it cancels a request for user
+     * authentication; Core then emits Failure, whose branch adds the document ID to the failed
+     * ones (adding it on the prompt as well would duplicate the ID). A Deferred replacement changes
+     * the documents list even while the original remains in the wallet, so the list is notified
+     * after every successful re-issuance.
+     */
     private suspend fun reIssueDueDocuments(): Result {
 
         try {
@@ -100,7 +108,6 @@ class ReIssuanceWorkManager(
 
                     currentCoroutineContext().ensureActive()
 
-                    // A manual request may have registered a replacement while earlier originals were processed.
                     if (deferredScheduleDao.hasPendingReplacement(document.id)) return@forEach
 
                     val issuerId = document.issuerMetadata?.credentialIssuerIdentifier.orEmpty()
@@ -117,7 +124,9 @@ class ReIssuanceWorkManager(
                                 is IssueDocumentsPartialState.PartialSuccessWithUntrustedIssuer,
                                 is IssueDocumentsPartialState.Success -> {
                                     documentsChanged = true
-                                    if (walletCoreDocumentsController.getDocumentById(document.id) == null) {
+                                    if (walletCoreDocumentsController
+                                            .getDocumentById(document.id) == null
+                                    ) {
                                         idsRemoved.add(document.id)
                                     }
                                 }
@@ -128,8 +137,6 @@ class ReIssuanceWorkManager(
                                 }
 
                                 is IssueDocumentsPartialState.UserAuthRequired -> {
-                                    // The worker cannot show a prompt. Core emits Failure when we cancel authentication.
-                                    // The Failure branch adds the document ID to failed. Adding it here would duplicate the ID.
                                     state.resultHandler.onAuthenticationError()
                                 }
                             }
@@ -143,7 +150,6 @@ class ReIssuanceWorkManager(
                 storeFailedToStorage(failed)
             }
 
-            // A Deferred replacement changes the list even while the original remains in the wallet.
             if (documentsChanged) {
                 notifyDocumentsList()
             }

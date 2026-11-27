@@ -63,7 +63,7 @@ interface WalletCoreResetController {
  */
 class WalletResetStatus {
 
-    // Use the same lock when changing reset state and allowing document operations to start.
+    /** Used both when changing reset state and when allowing document operations to start. */
     internal val operationStateLock = Any()
     private val resetting = MutableStateFlow(false)
 
@@ -143,7 +143,8 @@ class WalletCoreResetControllerImpl(
 
     /**
      * Deletes all stored documents after operations drain, with the main PID last when present.
-     * Up to [DELETION_PASSES] passes retry remaining documents; a failed deletion does not skip other IDs.
+     * Up to [DELETION_PASSES] passes retry remaining documents; a failed deletion does not skip
+     * other IDs.
      */
     private suspend fun deleteDocuments(): Boolean {
         repeat(DELETION_PASSES) {

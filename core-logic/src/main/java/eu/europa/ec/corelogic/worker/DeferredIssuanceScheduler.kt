@@ -49,14 +49,21 @@ import kotlin.time.Duration.Companion.milliseconds
 
 /** Schedules persisted Deferred deadlines; tracked attempts run independently of its timer. */
 interface DeferredIssuanceScheduler {
-    /** Retains successful Deferred IDs until Documents shows them, even with no broadcast receiver. */
+    /**
+     * Retains successful Deferred IDs until Documents shows them, even with no broadcast receiver.
+     */
     val unseenDeferredIssuanceIds: StateFlow<Set<String>>
     fun markDeferredIssuanceSeen(documentId: String)
 
-    /** Activates the current wallet lifecycle from an unlocked Dashboard; repeated calls reuse the observer. */
+    /**
+     * Activates the current wallet lifecycle from an unlocked Dashboard; repeated calls reuse the
+     * observer.
+     */
     fun start()
 
-    /** Includes retryable failures observed in this process and durable terminal states from Room. */
+    /**
+     * Includes retryable failures observed in this process and durable terminal states from Room.
+     */
     suspend fun getFailedDocumentIds(): Set<String>
 }
 
@@ -80,20 +87,26 @@ class DeferredIssuanceSchedulerImpl(
 
     private val policy = DeferredRetryPolicy(config)
 
-    // Process-local backoff when storage or result handling fails.
+    /** Process-local backoff when storage or result handling fails. */
     private val infrastructureRetryAt = MutableStateFlow(emptyMap<String, Long>())
     private var scheduling: Job? = null
 
-    // Timer restarts await the same recovery operation, including one already in progress.
+    /** Timer restarts await the same recovery operation, including one already in progress. */
     private var reconciliation: Deferred<Unit>? = null
 
-    // Reset invalidates the previous Dashboard activation even while this observer remains alive.
+    /**
+     * Reset invalidates the previous Dashboard activation even while this observer remains alive.
+     */
     private var generation = -1L
     private val dashboardGeneration = MutableStateFlow<Long?>(null)
 
+    /**
+     * Refreshes the activation before reusing an observer that survived reset. After a transient
+     * local storage failure it waits `failureRetryDelay` before observing again, so the failure
+     * cannot turn into a hot polling loop.
+     */
     @Synchronized
     override fun start() {
-        // Refresh activation before reusing an observer that survived reset.
         dashboardGeneration.value = walletDocumentOperationController.state.value.walletGeneration
         if (scheduling?.isActive == true) return
         scheduling = coroutineScope.launch {
@@ -103,13 +116,19 @@ class DeferredIssuanceSchedulerImpl(
                 } catch (error: CancellationException) {
                     throw error
                 } catch (_: Exception) {
-                    // A transient local storage failure must not turn into a hot polling loop.
                     delay(config.failureRetryDelay)
                 }
             }
         }
     }
 
+    /**
+     * Replaces the timer on every schedule, gate or activation change; tracked attempts continue in
+     * the operation controller. Cancelling the timer leaves recovery running, and a failed recovery
+     * may be retried. The oldest due entries are submitted first, and freeing a slot triggers
+     * another pass. With no future deadline the timer waits for a Room or gate change instead of
+     * spinning.
+     */
     private suspend fun observeSchedule() {
         combine(
             combine(scheduleDao.observeActive(), infrastructureRetryAt) { rows, _ -> rows },
@@ -118,7 +137,6 @@ class DeferredIssuanceSchedulerImpl(
             resetStatus.isResetting,
             dashboardGeneration,
         ) { rows, _, _, _, startedGeneration -> rows to startedGeneration }
-            // Changes replace the timer; tracked attempts continue in the operation controller.
             .collectLatest { (rows, startedGeneration) ->
                 val currentGeneration =
                     walletDocumentOperationController.state.value.walletGeneration
@@ -139,7 +157,6 @@ class DeferredIssuanceSchedulerImpl(
                 try {
                     reconciliation?.await() ?: return@collectLatest
                 } catch (error: Exception) {
-                    // Timer cancellation leaves recovery running; a failed recovery may be retried.
                     if (error !is CancellationException) reconciliation = null
                     throw error
                 }
@@ -151,13 +168,13 @@ class DeferredIssuanceSchedulerImpl(
                                 row.identifier !in operationState.removedDocumentIds
                     }.sortedWith(compareBy({ row -> dueAt(row) }, { row -> row.identifier }))
                     val timestamp = now()
-                    // Submit the oldest due entries first; freeing a slot triggers another pass.
-                    for (row in candidates.takeWhile { candidate -> dueAt(candidate) <= timestamp }) {
+                    for (row in candidates
+                        .takeWhile { candidate -> dueAt(candidate) <= timestamp }
+                    ) {
                         if (!tryStartAttempt(documentId = row.identifier)) break
                     }
                     val next = candidates.firstOrNull { row -> dueAt(row) > timestamp }
                     if (next == null) {
-                        // With no future deadline, wait for a Room or gate change instead of spinning.
                         awaitCancellation()
                     } else {
                         delay((dueAt(next) - now()).coerceAtLeast(1).milliseconds)
@@ -187,7 +204,9 @@ class DeferredIssuanceSchedulerImpl(
         return walletDocumentOperationController.state.value.failedDeferredDocumentIds + terminalIds
     }
 
-    /** Local backoff wakes the timer even when a failed lookup or write produced no Room emission. */
+    /**
+     * Local backoff wakes the timer even when a failed lookup or write produced no Room emission.
+     */
     private fun postponeAfterLocalFailure(documentId: String) {
         val retryAt = now() + config.failureRetryDelay.inWholeMilliseconds
         infrastructureRetryAt.update { deadlines -> deadlines + (documentId to retryAt) }
@@ -196,18 +215,23 @@ class DeferredIssuanceSchedulerImpl(
     private fun dueAt(row: DeferredDocumentSchedule): Long =
         maxOf(row.nextAttemptAt, infrastructureRetryAt.value[row.identifier] ?: Long.MIN_VALUE)
 
-    /** Repairs local schedules before polling, without making issuance requests to an issuer. */
+    /**
+     * Repairs local schedules before polling, without making issuance requests to an issuer. The
+     * initial list may predate an issuance or a removal, so each document is read again under its
+     * document lock. The insert is ignored where a schedule exists, which keeps existing deadlines,
+     * original IDs and terminal states.
+     */
     private suspend fun reconcile() {
         val controller = getDocumentsController()
         val localDocuments = controller.getAllDocuments()
         for (document in localDocuments) {
             walletDocumentOperationController.withDocumentLock(document.id) {
-                if (document.id in walletDocumentOperationController.state.value.removedDocumentIds) {
+                if (document.id in
+                    walletDocumentOperationController.state.value.removedDocumentIds
+                ) {
                     return@withDocumentLock
                 }
-                // The initial list may predate issuance or Remove; re-read under the document lock.
                 when (controller.getDocumentById(document.id)) {
-                    // Insert-ignore keeps existing deadlines, original IDs and terminal states.
                     is DeferredDocument -> scheduleDao.store(
                         DeferredDocumentSchedule(
                             identifier = document.id,
@@ -224,7 +248,12 @@ class DeferredIssuanceSchedulerImpl(
         }
     }
 
-    /** Rechecks the persisted schedule under the document lock before submitting the request. */
+    /**
+     * Rechecks the persisted schedule under the document lock before submitting the request. A
+     * null lookup can mean a local read failure, so the row and its UI state are kept and the
+     * attempt is postponed. The schedule is updated before submission, so if the process dies
+     * after it, recovery still respects this document's wait.
+     */
     private suspend fun attempt(documentId: String) {
         val row = scheduleDao.retrieve(documentId) ?: return
         if (row.status != DeferredDocumentScheduleStatus.ACTIVE ||
@@ -241,13 +270,11 @@ class DeferredIssuanceSchedulerImpl(
 
             is DeferredDocument -> Unit
             else -> {
-                // A null lookup can mean a local read failure. Keep the row and its UI state.
                 postponeAfterLocalFailure(documentId)
                 return
             }
         }
 
-        // If the process dies after submission, recovery will still respect this document's wait.
         scheduleDao.update(policy.prepareForAttempt(row, now()))
         when (val result = controller.issueDeferredDocument(documentId).first()) {
             is IssueDeferredDocumentPartialState.Paused -> scheduleDao.update(row)
@@ -278,7 +305,10 @@ class DeferredIssuanceSchedulerImpl(
         }
     }
 
-    /** The persisted status stops future polls and keeps the document visible as Failed after restart. */
+    /**
+     * The persisted status stops future polls and keeps the document visible as Failed after
+     * restart.
+     */
     private suspend fun markTerminalFailure(
         schedule: DeferredDocumentSchedule,
         status: DeferredDocumentScheduleStatus,
@@ -307,7 +337,8 @@ class DeferredIssuanceSchedulerImpl(
     private fun notifyDocumentChanged(event: DeferredDocumentEventDomain) {
         val action = when (event) {
             is DeferredDocumentEventDomain.Issued -> CoreActions.DEFERRED_DOCUMENT_ISSUED_ACTION
-            is DeferredDocumentEventDomain.StatusChanged -> CoreActions.DEFERRED_DOCUMENT_STATUS_CHANGED_ACTION
+            is DeferredDocumentEventDomain.StatusChanged ->
+                CoreActions.DEFERRED_DOCUMENT_STATUS_CHANGED_ACTION
         }
         val intent = Intent(action).apply {
             setPackage(context.packageName)

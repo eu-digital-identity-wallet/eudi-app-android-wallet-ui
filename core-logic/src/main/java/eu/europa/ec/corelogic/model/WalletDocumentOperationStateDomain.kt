@@ -22,12 +22,18 @@ package eu.europa.ec.corelogic.model
  * @property isForeground Whether the wallet activity is resumed; unlock is checked separately.
  * @property isStopped Blocks new ordinary operations during drain; tracked operations continue.
  * @property isRemovingAllDocuments Blocks new work until bulk removal and its writes finish.
- * @property failedDeferredDocumentIds Retryable documents whose latest poll failed in this process.
- * @property activeDocumentIds Deferred attempts holding a concurrency slot, including result writes.
- * @property removingDocumentIds IDs waiting for their removal lock or being removed; new pings stop.
- * @property removedDocumentIds Confirmed removals kept until reset/process exit to reject late registration.
- * @property pendingOperations Count used by reset, including non-polling operations and metadata writes.
- * @property walletGeneration Increases after storage is cleared; polling needs a new Dashboard activation.
+ * @property failedDeferredDocumentIds Retryable documents whose latest poll failed in this
+ * process.
+ * @property activeDocumentIds Deferred attempts holding a concurrency slot, including result
+ * writes.
+ * @property removingDocumentIds IDs waiting for their removal lock or being removed; new pings
+ * stop.
+ * @property removedDocumentIds Confirmed removals kept until reset/process exit to reject late
+ * registration.
+ * @property pendingOperations Count used by reset, including non-polling operations and metadata
+ * writes.
+ * @property walletGeneration Increases after storage is cleared; polling needs a new Dashboard
+ * activation.
  */
 data class WalletDocumentOperationStateDomain(
     val isForeground: Boolean,

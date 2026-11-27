@@ -305,12 +305,13 @@ class FilterValidatorImpl(
         }
     }
 
+    /** Returns to the initial filters and applies them in this same ordered mutation. */
     override fun resetFilters() = mutate {
         // Return back to default filters
         appliedFilters = initialFilters
         // Remove if any selected filter
         snapshotFilters = Filters.emptyFilters()
-        // Apply the default in this same ordered mutation.
+        // Apply the default
         applyFiltersNow()
     }
 
@@ -392,32 +393,36 @@ class FilterValidatorImpl(
         // Check if the sort order is the default one
         val isDefaultSortOrder = appliedFilters.sortOrder.isDefault
 
-        // Combine the conditions to determine if exactly the default filters and sort order are applied
+        // Combine the conditions to determine if exactly the default filters and sort order are
+        // applied
         val allDefaultAreSelected =
             allSelectedAreDefault && allUnselectedAreNotDefault && isDefaultSortOrder
 
         val filteredList = appliedFilters.filterGroups
             .fold(initialList) { currentList, group ->
                 when (group) {
-                    is FilterGroup.MultipleSelectionFilterGroup<*> -> applyMultipleSelectionFilter(
-                        currentList,
-                        group
-                    )
+                    is FilterGroup.MultipleSelectionFilterGroup<*> ->
+                        applyMultipleSelectionFilter(
+                            currentList,
+                            group
+                        )
 
                     is FilterGroup.SingleSelectionFilterGroup -> applySingleSelectionFilter(
                         currentList,
                         group
                     )
 
-                    is FilterGroup.ReversibleSingleSelectionFilterGroup -> applyReversibleSingleSelectionFilter(
-                        currentList,
-                        group
-                    )
+                    is FilterGroup.ReversibleSingleSelectionFilterGroup ->
+                        applyReversibleSingleSelectionFilter(
+                            currentList,
+                            group
+                        )
 
-                    is FilterGroup.ReversibleMultipleSelectionFilterGroup<*> -> applyReversibleMultipleSelectionFilter(
-                        currentList,
-                        group
-                    )
+                    is FilterGroup.ReversibleMultipleSelectionFilterGroup<*> ->
+                        applyReversibleMultipleSelectionFilter(
+                            currentList,
+                            group
+                        )
                 }
             }
             .filterByQuery(searchQuery)

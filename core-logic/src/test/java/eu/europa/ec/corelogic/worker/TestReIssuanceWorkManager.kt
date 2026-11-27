@@ -100,8 +100,6 @@ class TestReIssuanceWorkManager {
         closeable.close()
     }
 
-    //region doWork
-
     @Test
     fun `Given a revoked document, When the worker runs, Then it is not re-issued`() {
         coroutineRule.runTest {
@@ -208,11 +206,15 @@ class TestReIssuanceWorkManager {
             assertTrue(waitingForOutcome)
             assertFalse(ReIssuanceWorkManager.runLock.isLocked)
             assertEquals(ListenableWorker.Result.success(), result)
-            verify(failedReIssuedDocumentDao).storeAll(listOf(FailedReIssuedDocument(dueDocument.id)))
+            verify(failedReIssuedDocumentDao).storeAll(
+                listOf(FailedReIssuedDocument(dueDocument.id))
+            )
         }
     }
 
-    // A persisted replacement is still active after an ordinary failure or a process restart.
+    /**
+     * A persisted replacement is still active after an ordinary failure or a process restart.
+     */
     @Test
     fun `Given a due original with an active replacement, When automatic Reissuance runs, Then it skips without recording failure`() =
         coroutineRule.runTest {
@@ -244,10 +246,12 @@ class TestReIssuanceWorkManager {
     /**
      * Case 5:
      * 1. Two originals are due for automatic Reissuance. Only the first has an active replacement.
-     * 2. On the next run the first replacement has stopped polling and the second original has an active one.
+     * 2. On the next run the first replacement has stopped polling and the second original has an
+     *    active one.
      *
      * Case 5 Expected Result:
-     * Each run submits only the original that is eligible at that time. Skips leave no failure record.
+     * Each run submits only the original that is eligible at that time. Skips leave no failure
+     * record.
      */
     @Test
     fun `Given two due originals, When their active replacements change between runs, Then the worker checks each original again`() =
@@ -321,10 +325,6 @@ class TestReIssuanceWorkManager {
             verify(failedReIssuedDocumentDao, never()).storeAll(any())
         }
 
-    //endregion
-
-    //region helper functions
-
     private suspend fun runWorker(): ListenableWorker.Result {
         val worker =
             TestListenableWorkerBuilder<ReIssuanceWorkManager>(RuntimeEnvironment.getApplication())
@@ -345,5 +345,4 @@ class TestReIssuanceWorkManager {
         return worker.doWork()
     }
 
-    //endregion
 }

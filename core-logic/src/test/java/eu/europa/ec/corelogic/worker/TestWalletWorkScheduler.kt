@@ -82,11 +82,13 @@ class TestWalletWorkScheduler {
     }
 
     //region stop
-    // Case 5:
-    // 1. A background lock takes twenty seconds to release and Core is still finishing.
-    //
-    // Case 5 Expected Result:
-    // The entire stop times out at thirty seconds; a later retry can succeed.
+    /**
+     * Case 5:
+     * 1. A background lock takes twenty seconds to release and Core is still finishing.
+     *
+     * Case 5 Expected Result:
+     * The entire stop times out at thirty seconds; a later retry can succeed.
+     */
     @Test
     fun `Given pending work, When the shared stop deadline expires, Then reset can retry after completion`() {
         coroutineRule.runTest {

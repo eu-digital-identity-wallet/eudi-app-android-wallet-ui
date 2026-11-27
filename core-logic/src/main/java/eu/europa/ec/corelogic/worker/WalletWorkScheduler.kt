@@ -62,8 +62,9 @@ interface WalletWorkScheduler {
     fun scheduleRevocationCheck()
 
     /**
-     * Blocks new work and waits for worker cancellation, active workers and tracked document operations
-     * within one [WalletCoreConfig.workerStopTimeout]. False means reset must not start deleting data.
+     * Blocks new work and waits for worker cancellation, active workers and tracked document
+     * operations within one [WalletCoreConfig.workerStopTimeout]. False means reset must not start
+     * deleting data.
      */
     suspend fun stop(): Boolean
 }
@@ -132,6 +133,10 @@ class WalletWorkSchedulerImpl(
         )
     }
 
+    /**
+     * WorkManager cancellation does not mean a worker has finished its Core callbacks, so the wait
+     * is also on the locks the workers hold while they work.
+     */
     override suspend fun stop(): Boolean {
         synchronized(this) {
             isStopped = true
@@ -139,7 +144,6 @@ class WalletWorkSchedulerImpl(
         walletDocumentOperationController.stop()
         return withTimeoutOrNull(stopTimeout) {
             WORK_NAMES.forEach { name -> workManager.cancelUniqueWork(name).await() }
-            // WorkManager cancellation does not mean a worker has finished its Core callbacks.
             workerLocks.forEach { lock -> lock.withLock {} }
             walletDocumentOperationController.awaitIdle()
             true

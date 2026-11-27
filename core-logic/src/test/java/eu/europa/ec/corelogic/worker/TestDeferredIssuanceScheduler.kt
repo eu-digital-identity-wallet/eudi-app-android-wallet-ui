@@ -122,7 +122,8 @@ class TestDeferredIssuanceScheduler {
         whenever(resetStatus.isResetting).thenReturn(MutableStateFlow(false))
         whenever(deferredDocument.id).thenReturn(mockedDeferredSchedule.identifier)
         whenever(issuedDocument.id).thenReturn("original-document")
-        whenever(documentsController.getDocumentById("original-document")).thenReturn(issuedDocument)
+        whenever(documentsController.getDocumentById("original-document"))
+            .thenReturn(issuedDocument)
         whenever(documentsController.getDocumentById(mockedDeferredSchedule.identifier)).thenReturn(
             deferredDocument
         )
@@ -152,13 +153,14 @@ class TestDeferredIssuanceScheduler {
         closeable.close()
     }
 
-    //region start
-    // Case 1:
-    // 1. Local Core documents include a Deferred and an Issued document.
-    // 2. Admission opens only after the first start call.
-    //
-    // Case 1 Expected Result:
-    // Local recovery runs once, registering the Deferred fallback and clearing the Issued row.
+    /**
+     * Case 1:
+     * 1. Local Core documents include a Deferred and an Issued document.
+     * 2. Admission opens only after the first start call.
+     *
+     * Case 1 Expected Result:
+     * Local recovery runs once, registering the Deferred fallback and clearing the Issued row.
+     */
     @Test
     fun `Given a closed gate, When Dashboard starts and later unlocks, Then recovery runs once after admission opens`() =
         coroutineRule.runTest {
@@ -188,11 +190,13 @@ class TestDeferredIssuanceScheduler {
             verify(operationController, never()).recordDeferredIssuance("original-document")
         }
 
-    // Case 2:
-    // 1. Two rows have different deadlines and a configured concurrency limit.
-    //
-    // Case 2 Expected Result:
-    // Each deadline is scheduled independently and admission receives the configured limit.
+    /**
+     * Case 2:
+     * 1. Two rows have different deadlines and a configured concurrency limit.
+     *
+     * Case 2 Expected Result:
+     * Each deadline is scheduled independently and admission receives the configured limit.
+     */
     @Test
     fun `Given independent deadlines, When time advances, Then each document is submitted at its own deadline`() =
         coroutineRule.runTest {
@@ -232,11 +236,13 @@ class TestDeferredIssuanceScheduler {
             verify(operationController).tryStartPolling(eq("second"), eq(2), any())
         }
 
-    // Case 3:
-    // 1. A deadline passes while new polling is paused.
-    //
-    // Case 3 Expected Result:
-    // One attempt is submitted on resume without replaying missed intervals.
+    /**
+     * Case 3:
+     * 1. A deadline passes while new polling is paused.
+     *
+     * Case 3 Expected Result:
+     * One attempt is submitted on resume without replaying missed intervals.
+     */
     @Test
     fun `Given an overdue document, When polling resumes, Then one attempt is submitted with unlimited default concurrency`() =
         coroutineRule.runTest {
@@ -266,7 +272,8 @@ class TestDeferredIssuanceScheduler {
      * 2. A fresh scheduler opens the same stored schedules after restart.
      *
      * Case 4 Expected Result:
-     * The rejected document stays Failed. Only the other document is polled when its deadline passes.
+     * The rejected document stays Failed. Only the other document is polled when its deadline
+     * passes.
      */
     @Test
     fun `Given a persisted trust rejection, When the Wallet restarts, Then the document stays Failed and only the other document is polled`() =
@@ -285,7 +292,8 @@ class TestDeferredIssuanceScheduler {
                     otherDocument
                 )
             )
-            whenever(documentsController.getDocumentById(other.identifier)).thenReturn(otherDocument)
+            whenever(documentsController.getDocumentById(other.identifier))
+                .thenReturn(otherDocument)
             whenever(documentsController.issueDeferredDocument(other.identifier)).thenReturn(
                 flowOf(
                     IssueDeferredDocumentPartialState.NotReady(
@@ -326,7 +334,8 @@ class TestDeferredIssuanceScheduler {
     /**
      * Case 5:
      * 1. A poll is in flight when the Wallet leaves the foreground.
-     * 2. Its next deadline passes in the background, and the Wallet returns with the session locked.
+     * 2. Its next deadline passes in the background, and the Wallet returns with the session
+     *    locked.
      *
      * Case 5 Expected Result:
      * Save the response on arrival. Unlocking starts one overdue poll for this ID.
@@ -390,14 +399,14 @@ class TestDeferredIssuanceScheduler {
             // Then
             verify(documentsController, times(2)).issueDeferredDocument(row.identifier)
         }
-    //endregion
 
-    //region wallet reset
-    // Case 1:
-    // 1. Reset creates a new wallet lifecycle while the old scheduler still observes state.
-    //
-    // Case 1 Expected Result:
-    // Recovery waits for Dashboard to start scheduling for the new wallet.
+    /**
+     * Case 1:
+     * 1. Reset creates a new wallet lifecycle while the old scheduler still observes state.
+     *
+     * Case 1 Expected Result:
+     * Recovery waits for Dashboard to start scheduling for the new wallet.
+     */
     @Test
     fun `Given a new wallet after reset, When its generation changes, Then recovery waits for Dashboard`() =
         coroutineRule.runTest {
@@ -427,14 +436,15 @@ class TestDeferredIssuanceScheduler {
             // Then
             verify(documentsController, times(2)).getAllDocuments()
         }
-    //endregion
 
-    //region attempt
-    // Case 1:
-    // 1. A previously failing document returns NotReady with a new interval.
-    //
-    // Case 1 Expected Result:
-    // Write the pre-call deadline first. Only the deadline calculated from the new interval gets the margin.
+    /**
+     * Case 1:
+     * 1. A previously failing document returns NotReady with a new interval.
+     *
+     * Case 1 Expected Result:
+     * Write the pre-call deadline first. Only the deadline calculated from the new interval gets
+     * the margin.
+     */
     @Test
     fun `Given NotReady, When an attempt completes, Then deadline writes surround the Core call`() =
         coroutineRule.runTest {
@@ -466,7 +476,9 @@ class TestDeferredIssuanceScheduler {
             verifyBroadcast(CoreActions.DEFERRED_DOCUMENT_STATUS_CHANGED_ACTION)
         }
 
-    // Case 2: A replacement can fail and retry even while its original is still in the Wallet.
+    /**
+     * Case 2: A replacement can fail and retry even while its original is still in the Wallet.
+     */
     @Test
     fun `Given a failed replacement, When Core reports failure, Then another attempt is scheduled and the failure is visible`() =
         coroutineRule.runTest {
@@ -488,7 +500,9 @@ class TestDeferredIssuanceScheduler {
             verifyBroadcast(CoreActions.DEFERRED_DOCUMENT_STATUS_CHANGED_ACTION)
         }
 
-    // Case 3: A local lookup error cannot establish that the document is missing or failed.
+    /**
+     * Case 3: A local lookup error cannot establish that the document is missing or failed.
+     */
     @Test
     fun `Given an ambiguous Core lookup, When the document is due, Then the schedule is retained without a ping`() =
         coroutineRule.runTest {
@@ -506,11 +520,13 @@ class TestDeferredIssuanceScheduler {
             verify(context, never()).sendBroadcast(any())
         }
 
-    // Case 4:
-    // 1. Core issues a previously Deferred document.
-    //
-    // Case 4 Expected Result:
-    // Delete the schedule before broadcasting the individual document ID.
+    /**
+     * Case 4:
+     * 1. Core issues a previously Deferred document.
+     *
+     * Case 4 Expected Result:
+     * Delete the schedule before broadcasting the individual document ID.
+     */
     @Test
     fun `Given an Issued response, When an attempt completes, Then its schedule is cleared before notification`() =
         coroutineRule.runTest {
@@ -532,11 +548,13 @@ class TestDeferredIssuanceScheduler {
             verifyBroadcast(CoreActions.DEFERRED_DOCUMENT_ISSUED_ACTION)
         }
 
-    // Case 5:
-    // 1. The request is blocked after saving the deadline and before the Core call.
-    //
-    // Case 5 Expected Result:
-    // Restore the previous deadline and leave the existing indication alone.
+    /**
+     * Case 5:
+     * 1. The request is blocked after saving the deadline and before the Core call.
+     *
+     * Case 5 Expected Result:
+     * Restore the previous deadline and leave the existing indication alone.
+     */
     @Test
     fun `Given a paused attempt, When Core admission is refused, Then no failure is recorded`() =
         coroutineRule.runTest {
@@ -556,7 +574,8 @@ class TestDeferredIssuanceScheduler {
      * 1. The issuer reports expiration while the document is still Deferred in the wallet.
      *
      * Case 6 Expected Result:
-     * The persisted expiry ends polling across restarts and the document remains available for Remove.
+     * The persisted expiry ends polling across restarts and the document remains available for
+     * Remove.
      */
     @Test
     fun `Given a Deferred document, When Core returns Expired, Then it is retained as terminal Failed`() =
@@ -571,7 +590,9 @@ class TestDeferredIssuanceScheduler {
             )
 
             // Then
-            verify(scheduleDao).update(mockedDeferredSchedule.copy(status = DeferredDocumentScheduleStatus.EXPIRED))
+            verify(scheduleDao).update(
+                mockedDeferredSchedule.copy(status = DeferredDocumentScheduleStatus.EXPIRED)
+            )
             verify(documentsController, never()).deleteDocument(any())
             verifyBroadcast(CoreActions.DEFERRED_DOCUMENT_STATUS_CHANGED_ACTION)
         }
@@ -581,7 +602,8 @@ class TestDeferredIssuanceScheduler {
      * 1. The wallet no longer trusts the issuer of a document that is still Deferred.
      *
      * Case 7 Expected Result:
-     * Persist the terminal status before refreshing Documents. The user can still remove the document.
+     * Persist the terminal status before refreshing Documents. The user can still remove the
+     * document.
      */
     @Test
     fun `Given a Deferred document, When Core returns IssuerNotTrusted, Then its terminal failure is stored before Documents is notified`() =
@@ -598,7 +620,9 @@ class TestDeferredIssuanceScheduler {
             // Then
             inOrder(scheduleDao, operationController, context) {
                 verify(scheduleDao).update(
-                    mockedDeferredSchedule.copy(status = DeferredDocumentScheduleStatus.ISSUER_NOT_TRUSTED)
+                    mockedDeferredSchedule.copy(
+                        status = DeferredDocumentScheduleStatus.ISSUER_NOT_TRUSTED
+                    )
                 )
                 verify(operationController).setRetryableDeferredFailure(documentId, failed = false)
                 verify(context).sendBroadcast(any())
@@ -607,9 +631,7 @@ class TestDeferredIssuanceScheduler {
             verify(documentsController, never()).deleteDocument(any())
             verifyBroadcast(CoreActions.DEFERRED_DOCUMENT_STATUS_CHANGED_ACTION)
         }
-    //endregion
 
-    //region successful Deferred issuance
     @Test
     fun `Given three Deferred replacements issued without an observer, When Documents opens, Then each ID is retained until seen or removed`() =
         coroutineRule.runTest {
@@ -665,9 +687,7 @@ class TestDeferredIssuanceScheduler {
             // Then
             assertTrue(scheduler.unseenDeferredIssuanceIds.value.isEmpty())
         }
-    //endregion
 
-    //region failure indications and restart
     @Test
     fun `Given a retryable failure and an expiry, When a new process opens, Then only expiry stays red until the next result`() =
         coroutineRule.runTest {
@@ -761,7 +781,8 @@ class TestDeferredIssuanceScheduler {
 
     /**
      * Case 2:
-     * 1. Two documents fail. On retry, one receives NotReady without an interval and the other fails again.
+     * 1. Two documents fail. On retry, one receives NotReady without an interval and the other
+     *    fails again.
      *
      * Case 2 Expected Result:
      * Only the recovering ID returns to Pending and reuses its raw issuer interval.
@@ -829,9 +850,7 @@ class TestDeferredIssuanceScheduler {
             assertEquals(2, ids.count { id -> id == recovering.identifier })
             assertEquals(1, ids.count { id -> id == stillFailing.identifier })
         }
-    //endregion
 
-    //region per-document deadlines
     @Test
     fun `Given two documents due at five seconds, When their issuers return different intervals, Then each has its own deadline`() =
         coroutineRule.runTest {
@@ -964,19 +983,121 @@ class TestDeferredIssuanceScheduler {
                 scheduleDao.retrieve(row.identifier),
             )
         }
-    //endregion
 
-    //region concurrent deadlines
     @Test
     fun `Given eight overdue documents and three slots, When scheduling starts, Then the oldest three are submitted first`() =
-        coroutineRule.runTest { verifyConcurrentAttempts(limit = 3) }
+        coroutineRule.runTest {
+            // Given
+            val rows = (1..8).map { index ->
+                mockedDeferredSchedule.copy(
+                    identifier = "document-$index",
+                    nextAttemptAt = index - 9L
+                )
+            }
+            mockStoredSchedules(rows.reversed())
+            whenever(documentsController.getDocumentById(any())).thenReturn(deferredDocument)
+            val submitted = mutableListOf<String>()
+            val response = CompletableDeferred<Unit>()
+            whenever(documentsController.issueDeferredDocument(any())).thenAnswer { call ->
+                val documentId = call.getArgument<String>(0)
+                flow {
+                    submitted.add(documentId)
+                    response.await()
+                    emit(
+                        IssueDeferredDocumentPartialState.NotReady(
+                            mockedDeferredDocumentData.copy(
+                                documentId = documentId
+                            ), 10.seconds
+                        )
+                    )
+                }
+            }
+            val reset = WalletResetStatus()
+            val operations = foregroundOperations(reset)
+            val config = mockedDeferredConfig.copy(maxConcurrentDeferredRequests = 3)
+
+            // When
+            createScheduler(config, operations, reset).start()
+            runCurrent()
+
+            // Then
+            val ids = rows.map { row -> row.identifier }
+            assertEquals(ids.take(3), submitted)
+
+            // When
+            operations.setForeground(false)
+            response.complete(Unit)
+            runCurrent()
+
+            // Then
+            assertEquals(ids.take(3), submitted)
+            assertTrue(submitted.all { id -> scheduleDao.retrieve(id)?.nextAttemptAt == 11_000L })
+
+            // When
+            operations.setForeground(true)
+            runCurrent()
+
+            // Then
+            assertEquals(ids, submitted)
+        }
 
     @Test
     fun `Given eight overdue documents and no limit, When scheduling starts, Then each is submitted once`() =
-        coroutineRule.runTest { verifyConcurrentAttempts(limit = null) }
-    //endregion
+        coroutineRule.runTest {
+            // Given
+            val rows = (1..8).map { index ->
+                mockedDeferredSchedule.copy(
+                    identifier = "document-$index",
+                    nextAttemptAt = index - 9L
+                )
+            }
+            mockStoredSchedules(rows.reversed())
+            whenever(documentsController.getDocumentById(any())).thenReturn(deferredDocument)
+            val submitted = mutableListOf<String>()
+            val response = CompletableDeferred<Unit>()
+            whenever(documentsController.issueDeferredDocument(any())).thenAnswer { call ->
+                val documentId = call.getArgument<String>(0)
+                flow {
+                    submitted.add(documentId)
+                    response.await()
+                    emit(
+                        IssueDeferredDocumentPartialState.NotReady(
+                            mockedDeferredDocumentData.copy(
+                                documentId = documentId
+                            ), 10.seconds
+                        )
+                    )
+                }
+            }
+            val reset = WalletResetStatus()
+            val operations = foregroundOperations(reset)
+            val config = mockedDeferredConfig.copy(maxConcurrentDeferredRequests = null)
 
-    //region helper functions
+            // When
+            createScheduler(config, operations, reset).start()
+            runCurrent()
+
+            // Then
+            val ids = rows.map { row -> row.identifier }
+            assertEquals(ids, submitted)
+
+            // When
+            operations.setForeground(false)
+            response.complete(Unit)
+            runCurrent()
+
+            // Then
+            assertEquals(ids, submitted)
+            assertTrue(submitted.all { id -> scheduleDao.retrieve(id)?.nextAttemptAt == 11_000L })
+
+            // When
+            operations.setForeground(true)
+            runCurrent()
+
+            // Then
+            assertEquals(ids, submitted)
+        }
+
     private fun foregroundOperations(reset: WalletResetStatus): WalletDocumentOperationController {
         whenever(sessionController.isUnlocked).thenReturn(true)
         return WalletDocumentOperationControllerImpl(
@@ -986,7 +1107,10 @@ class TestDeferredIssuanceScheduler {
         ).apply { setForeground(true) }
     }
 
-    /** The mocked DAO shares persisted deadlines between schedulers with separate process-local state. */
+    /**
+     * The mocked DAO shares persisted deadlines between schedulers with separate process-local
+     * state.
+     */
     private suspend fun mockStoredSchedules(rows: List<DeferredDocumentSchedule>) {
         mockedSchedules.value = rows
         whenever(scheduleDao.retrieve(any())).thenAnswer { call ->
@@ -1000,61 +1124,10 @@ class TestDeferredIssuanceScheduler {
             Unit
         }
         whenever(scheduleDao.getTerminalDocumentIds()).thenAnswer {
-            mockedSchedules.value.filter { row -> row.status != DeferredDocumentScheduleStatus.ACTIVE }
+            mockedSchedules.value
+                .filter { row -> row.status != DeferredDocumentScheduleStatus.ACTIVE }
                 .map { row -> row.identifier }
         }
-    }
-
-    private suspend fun verifyConcurrentAttempts(limit: Int?) {
-        // Given
-        val rows = (1..8).map { index ->
-            mockedDeferredSchedule.copy(identifier = "document-$index", nextAttemptAt = index - 9L)
-        }
-        mockStoredSchedules(rows.reversed())
-        whenever(documentsController.getDocumentById(any())).thenReturn(deferredDocument)
-        val submitted = mutableListOf<String>()
-        val response = CompletableDeferred<Unit>()
-        whenever(documentsController.issueDeferredDocument(any())).thenAnswer { call ->
-            val documentId = call.getArgument<String>(0)
-            flow {
-                submitted.add(documentId)
-                response.await()
-                emit(
-                    IssueDeferredDocumentPartialState.NotReady(
-                        mockedDeferredDocumentData.copy(
-                            documentId = documentId
-                        ), 10.seconds
-                    )
-                )
-            }
-        }
-        val reset = WalletResetStatus()
-        val operations = foregroundOperations(reset)
-        val config = mockedDeferredConfig.copy(maxConcurrentDeferredRequests = limit)
-
-        // When
-        createScheduler(config, operations, reset).start()
-        runCurrent()
-
-        // Then
-        val ids = rows.map { row -> row.identifier }
-        assertEquals(ids.take(limit ?: ids.size), submitted)
-
-        // When
-        operations.setForeground(false)
-        response.complete(Unit)
-        runCurrent()
-
-        // Then
-        assertEquals(ids.take(limit ?: ids.size), submitted)
-        assertTrue(submitted.all { id -> scheduleDao.retrieve(id)?.nextAttemptAt == 11_000L })
-
-        // When
-        operations.setForeground(true)
-        runCurrent()
-
-        // Then
-        assertEquals(ids, submitted)
     }
 
     private fun createScheduler(
@@ -1111,5 +1184,4 @@ class TestDeferredIssuanceScheduler {
     private fun runCurrent() = coroutineRule.testScope.testScheduler.runCurrent()
     private fun advanceTimeBy(duration: Duration) =
         coroutineRule.testScope.testScheduler.advanceTimeBy(duration)
-    //endregion
 }

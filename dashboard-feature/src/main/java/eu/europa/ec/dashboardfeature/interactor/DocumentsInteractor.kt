@@ -102,7 +102,10 @@ interface DocumentsInteractor {
 
     fun getDocuments(): Flow<DocumentInteractorGetDocumentsPartialState>
 
-    /** Documents handles Remove for a selected Pending or Failed ID, including the first Deferred PID. */
+    /**
+     * Documents handles Remove for a selected Pending or Failed ID, including the first Deferred
+     * PID.
+     */
     fun deleteDocument(
         documentId: String,
     ): Flow<DocumentInteractorDeleteDocumentPartialState>
@@ -244,6 +247,10 @@ class DocumentsInteractorImpl(
 
     override fun resetFilters() = filterValidator.resetFilters()
 
+    /**
+     * Wallet Core retains Deferred documents for both retryable failures and terminal expiry, so
+     * the scheduler's failed IDs decide which of them show as Failed.
+     */
     override fun getDocuments(): Flow<DocumentInteractorGetDocumentsPartialState> =
         flow<DocumentInteractorGetDocumentsPartialState> {
             val shouldAllowUserInteraction =
@@ -255,7 +262,6 @@ class DocumentsInteractorImpl(
 
             val showBatchIssuanceCounter = prefKeys.getShowBatchIssuanceCounter()
 
-            // Core retains Deferred documents for both retryable failures and terminal expiry.
             val failedDeferredIds = deferredIssuanceScheduler.getFailedDocumentIds()
 
             val allDocuments = FilterableList(
@@ -425,8 +431,11 @@ class DocumentsInteractorImpl(
                                         overlineText = issuerName,
                                         supportingContentData = ListItemSupportingContentDataUi.Text(
                                             text = resourceProvider.getString(
-                                                if (isFailed) R.string.dashboard_document_deferred_failed
-                                                else R.string.dashboard_document_deferred_pending
+                                                if (isFailed) {
+                                                    R.string.dashboard_document_deferred_failed
+                                                } else {
+                                                    R.string.dashboard_document_deferred_pending
+                                                }
                                             ),
                                             textColorKey = pendingColor,
                                         ),
@@ -439,7 +448,11 @@ class DocumentsInteractorImpl(
                                             errorImage = AppIcons.Id,
                                         ),
                                         trailingContentData = ListItemTrailingContentDataUi.Icon(
-                                            iconData = if (isFailed) AppIcons.ErrorFilled else AppIcons.ClockTimer,
+                                            iconData = if (isFailed) {
+                                                AppIcons.ErrorFilled
+                                            } else {
+                                                AppIcons.ClockTimer
+                                            },
                                             tint = pendingColor,
                                         )
                                     ),

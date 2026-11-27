@@ -502,17 +502,15 @@ class TestDocumentsInteractor {
     }
     //endregion
 
-    //region onFilterStateChange
-
     /**
-     * Case 1:
+     * Case 7:
      * 1. No document matches the applied filters.
      *
-     * Case 1 Expected Result:
+     * Case 7 Expected Result:
      * The interactor emits an applied result with an empty document list.
      */
     @Test
-    fun `Given an empty filter result, When onFilterStateChange emits it, Then the document list is empty`() =
+    fun `Given Case 7, When onFilterStateChange is called, Then Case 7 Expected Result is returned`() =
         coroutineRule.runTest {
             // Given
             mockOnFilterChangedEvent(
@@ -537,14 +535,14 @@ class TestDocumentsInteractor {
         }
 
     /**
-     * Case 2:
+     * Case 8:
      * 1. The validator returns an Education document followed by a Government document.
      *
-     * Case 2 Expected Result:
+     * Case 8 Expected Result:
      * The document list uses category order and preserves the contents of each matching document.
      */
     @Test
-    fun `Given matching documents, When onFilterStateChange emits them, Then each document appears in its category`() =
+    fun `Given Case 8, When onFilterStateChange is called, Then Case 8 Expected Result is returned`() =
         coroutineRule.runTest {
             // Given
             val educationDocument =
@@ -579,14 +577,14 @@ class TestDocumentsInteractor {
         }
 
     /**
-     * Case 3:
+     * Case 9:
      * 1. The validator updates a group with two filter options.
      *
-     * Case 3 Expected Result:
+     * Case 9 Expected Result:
      * The group keeps its name and options and starts collapsed with a down arrow.
      */
     @Test
-    fun `Given an updated filter group, When onFilterStateChange emits it, Then its header and options are preserved`() =
+    fun `Given Case 9, When onFilterStateChange is called, Then Case 9 Expected Result is returned`() =
         coroutineRule.runTest {
             // Given
             val filterGroup = mockFilters.filterGroups.single()
@@ -616,7 +614,9 @@ class TestDocumentsInteractor {
                             filter.name
                         )
                     },
-                    group.nestedItems.map { item -> item.header.itemId to item.header.mainContentData },
+                    group.nestedItems.map { item ->
+                        item.header.itemId to item.header.mainContentData
+                    },
                 )
             }
         }
@@ -736,11 +736,13 @@ class TestDocumentsInteractor {
 
     //region getDocuments — UnsignedDocument & expired
 
-    // Case 6:
-    // 1. The scheduler reports a failure for only one of two retained Deferred documents.
-    //
-    // Case 6 Expected Result:
-    // Only the ID in the current failure snapshot renders Failed.
+    /**
+     * Case 6:
+     * 1. The scheduler reports a failure for only one of two retained Deferred documents.
+     *
+     * Case 6 Expected Result:
+     * Only the ID in the current failure snapshot renders Failed.
+     */
     @Test
     fun `Given a failure for one ID, When documents load, Then Failed and Pending are rendered independently`() =
         coroutineRule.runTest {
@@ -763,9 +765,12 @@ class TestDocumentsInteractor {
             // When
             interactor.getDocuments().runFlowTest {
                 val state = awaitItem() as DocumentInteractorGetDocumentsPartialState.Success
+
                 // Then
                 val states = state.allDocuments.items.map { item -> item.payload as DocumentUi }
-                    .associate { document -> document.uiData.itemId to document.documentIssuanceState }
+                    .associate { document ->
+                        document.uiData.itemId to document.documentIssuanceState
+                    }
                 assertEquals(DocumentIssuanceStateUi.Failed, states[failedId])
                 assertEquals(DocumentIssuanceStateUi.Pending, states[pendingId])
             }
@@ -1056,9 +1061,9 @@ class TestDocumentsInteractor {
     //endregion
 
     //region addDynamicFilters default parameter
-    // The interface declares `filters: Filters = Filters.emptyFilters()`. Calling without
-    // the filters argument exercises the default-parameter synthetic.
     /**
+     * The interface declares `filters: Filters = Filters.emptyFilters()`. Calling without
+     * the filters argument exercises the default-parameter synthetic.
      * The default filters is Filters.emptyFilters(), which has empty filterGroups.
      */
     @Test

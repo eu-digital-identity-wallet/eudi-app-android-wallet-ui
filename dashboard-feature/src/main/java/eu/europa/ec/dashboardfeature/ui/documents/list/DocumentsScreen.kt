@@ -138,6 +138,10 @@ typealias OpenSideMenuEvent = eu.europa.ec.dashboardfeature.ui.dashboard.Event.S
 private const val FAB_ENTER_DELAY_MILLIS = 200
 private const val FAB_ENTER_DURATION_MILLIS = 300
 
+/**
+ * Leaving Documents discards an open draft even if its ViewModel survives; a rotation recreates
+ * the Activity with the same draft and pending refresh.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DocumentsScreen(
@@ -273,8 +277,6 @@ fun DocumentsScreen(
     DisposableEffect(viewModel, context) {
         val activity = context.findActivity()
         onDispose {
-            // Leaving Documents discards an open draft even if its ViewModel survives.
-            // Rotation recreates the Activity with the same draft and pending refresh.
             if (!activity.isChangingConfigurations) {
                 viewModel.setEvent(Event.OnScreenDisposed)
                 viewModel.setEvent(Event.BottomSheet.UpdateBottomSheetState(isOpen = false))
@@ -431,15 +433,13 @@ private fun Content(
                         },
                         onDocumentClick = { document ->
                             val id = document.uiData.itemId
-                            if (document.isDeferred) {
-                                onEventSend(
-                                    Event.BottomSheet.DeferredDocument.DeferredNotReadyYet.DocumentSelected(
-                                        id
-                                    )
-                                )
+                            val event = if (document.isDeferred) {
+                                Event.BottomSheet.DeferredDocument.DeferredNotReadyYet
+                                    .DocumentSelected(documentId = id)
                             } else {
-                                onEventSend(Event.GoToDocumentDetails(id))
+                                Event.GoToDocumentDetails(id)
                             }
+                            onEventSend(event)
                         },
                     )
 
@@ -591,7 +591,9 @@ private fun DocumentsSheetContent(
                                         isExpanded = filter.isExpanded,
                                         onExpandedChange = { item ->
                                             onEventSent(
-                                                Event.BottomSheet.Filters.ExpansionChanged(item.itemId)
+                                                Event.BottomSheet.Filters.ExpansionChanged(
+                                                    item.itemId
+                                                )
                                             )
                                         },
                                         onItemClick = { item ->

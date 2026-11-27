@@ -97,7 +97,11 @@ class TestDocumentRow {
                         DocumentRow(
                             document = documentItem(
                                 name,
-                                if (name == "Immediate") DocumentIssuanceStateUi.Issued else issuanceState.value,
+                                if (name == "Immediate") {
+                                    DocumentIssuanceStateUi.Issued
+                                } else {
+                                    issuanceState.value
+                                },
                             ),
                             shape = RectangleShape,
                             listViewport = viewport,

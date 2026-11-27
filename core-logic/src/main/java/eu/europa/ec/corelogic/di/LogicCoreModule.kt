@@ -105,7 +105,6 @@ val logicCoreModule = module {
     factoryOf(::provideWalletCoreResetController)
     singleOf(::provideWalletResetStatus)
     singleOf(::provideWalletWorkScheduler)
-    // Operation coordination and scheduling own process-wide state shared by document controller instances.
     singleOf(::provideWalletDocumentOperationController)
     singleOf(::provideDeferredIssuanceScheduler)
 
@@ -268,6 +267,11 @@ fun provideWalletCoreDocumentsController(
         walletDocumentOperationController = walletDocumentOperationController,
     )
 
+/**
+ * The database clear also advances the wallet lifecycle
+ * ([WalletDocumentOperationController.onWalletReset]) after storage clears, while reset still
+ * blocks new operations.
+ */
 fun provideWalletCoreResetController(
     context: Context,
     walletCoreDocumentsController: WalletCoreDocumentsController,
@@ -293,7 +297,6 @@ fun provideWalletCoreResetController(
     clearTransactionLogs = { walletCoreTransactionLogController.deleteAllTransactionLogs() },
     clearDatabase = {
         databaseEraser.clearAllTables()
-        // Advance the wallet lifecycle after storage clears, while reset still blocks new operations.
         walletDocumentOperationController.onWalletReset()
     },
     deleteLogFiles = { logController.deleteLogFiles() },
@@ -302,6 +305,10 @@ fun provideWalletCoreResetController(
 
 fun provideWalletResetStatus(): WalletResetStatus = WalletResetStatus()
 
+/**
+ * A single instance: operation coordination owns process-wide state shared by the document
+ * controller instances.
+ */
 fun provideWalletDocumentOperationController(
     sessionController: SessionController,
     resetStatus: WalletResetStatus,
@@ -311,6 +318,11 @@ fun provideWalletDocumentOperationController(
     coroutineScope = CoroutineScope(Dispatchers.IO + SupervisorJob()),
 )
 
+/**
+ * A single instance: scheduling owns process-wide state shared by the document controller
+ * instances. The scheduler survives reset, while each operation needs a controller for the
+ * current Core session, so [WalletCoreDocumentsController] is resolved whenever one is needed.
+ */
 fun provideDeferredIssuanceScheduler(
     scheduleDao: DeferredDocumentScheduleDao,
     walletDocumentOperationController: WalletDocumentOperationController,
@@ -324,7 +336,6 @@ fun provideDeferredIssuanceScheduler(
     sessionController = sessionController,
     resetStatus = resetStatus,
     config = walletCoreConfig.deferredIssuanceConfig,
-    // The scheduler survives reset; each operation needs a controller for the current Core session.
     getDocumentsController = { KoinPlatform.getKoin().get<WalletCoreDocumentsController>() },
     context = context,
     now = System::currentTimeMillis,

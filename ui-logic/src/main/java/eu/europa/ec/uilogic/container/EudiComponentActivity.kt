@@ -185,10 +185,10 @@ open class EudiComponentActivity : FragmentActivity() {
         }
     }
 
+    /** Applies the session timeouts before allowing new Deferred requests to start. */
     override fun onResume() {
         super.onResume()
         viewModel.onResume()
-        // Apply session timeouts before allowing new Deferred requests to start.
         checkSessionAfterCover()
         checkSessionOnForeground()
         walletDocumentOperationController.setForeground(true)

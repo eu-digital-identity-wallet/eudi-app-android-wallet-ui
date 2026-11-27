@@ -35,7 +35,8 @@ interface DashboardInteractor {
     /**
      * Activates checks only from an unlocked Dashboard, including Deferred recovery for this wallet
      * lifecycle. Repeated visits keep existing work and reuse completed startup checks. Periodic
-     * WorkManager checks retain their own schedule; new Deferred pings also require foreground/unlock.
+     * WorkManager checks retain their own schedule; new Deferred pings also require
+     * foreground/unlock.
      */
     fun scheduleBackgroundWork()
 }

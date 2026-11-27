@@ -452,6 +452,7 @@ interface WalletCoreConfig {
     val isRegistrationCheckEnabled: Boolean
     val readerAuthenticationEnforcement: ReaderAuthenticationEnforcement
     val workerStopTimeout: Duration
+    val deferredIssuanceConfig: DeferredIssuanceConfig
 }
 ```
 
@@ -1415,6 +1416,66 @@ What the user sees:
   the app requests another revocation check to read the new copy's own status without waiting for
   the periodic interval.
 
+## Deferred Issuance
+
+An issuer can accept a request and issue the credential later. Wallet Core then stores a deferred
+document, and the app keeps a schedule for it in the Room table `deferredDocumentSchedules`
+(`DeferredDocumentSchedule`): when to ask next, the issuer's last interval, the document it
+replaces, and whether its requests have stopped. `DeferredIssuanceScheduler` asks the issuer again
+when a schedule falls due. It starts from the Dashboard, so nothing is asked before the first
+unlocked Dashboard in the process, or after a factory reset before the Dashboard opens again. Requests
+are sent only while the wallet is unlocked and in front; a deadline that passed in the background
+leads to one request on return, not one per missed interval.
+
+The wait before the next request depends on the last answer:
+
+* after a "not ready" answer with a valid `interval`, the issuer's interval plus one second, which
+  allows for rounding to whole seconds;
+* after a "not ready" answer without one, the issuer's last interval, or `initialPollingDelay` when
+  the issuer has sent none. Wallet Core does not yet expose the interval of the first deferral, so
+  the first request always waits `initialPollingDelay`;
+* after a failed request, `failureRetryDelay` or the issuer's last interval, whichever is longer.
+  The document shows as Failed until a later answer clears it. The app keeps this indication in
+  memory only, so after a restart the document shows as Pending until a request fails again.
+
+The wallet never deletes a deferred document itself. In the following cases the requests stop and
+the document stays Failed, across restarts, until the user removes it:
+
+* Wallet Core reports `DocumentExpired`;
+* the issuer answers `invalid_transaction_id`: the transaction is unknown to it or already used;
+* the issuance policy refuses the issuer's registration;
+* the issuer's certificate chain was evaluated and found untrusted for a reason other than its
+  validity period.
+
+A trust check that could not run, for example because the trust list was unreachable, a chain
+refused for its validity period, which a wrong device clock can cause, and signed metadata that
+cannot be verified count as ordinary failures and are asked again.
+
+Each document has at most one request in flight, and `maxConcurrentDeferredRequests` can limit the
+requests across documents (see
+[CONFIGURATION.md](CONFIGURATION.md#deferred-issuance-configuration)). Deferred requests are not
+held while another issuance runs, because Wallet Core keeps no shared state between issuance calls.
+Automatic re-issuance skips an original while its deferred replacement is still pending. Removing a
+deferred document waits for a request in flight and its writes, and removes the document even if
+that request issued it. When a deferred document is issued, the Documents list highlights its row
+once, when the row is visible, and announces it to accessibility services.
+
+A factory reset stops new requests and waits for the document operations in progress, deferred
+requests included, for at most `workerStopTimeout`. If they have not finished by then, the reset
+fails before it deletes anything, and the user can try again. An issuance whose browser sign-in was
+abandoned is not waited for: it is cancelled when its screen closes, since nothing has been written
+yet.
+
+Production decisions:
+
+* Agree `initialPollingDelay`, `failureRetryDelay` and `maxConcurrentDeferredRequests` with the
+  capacity of each issuer that defers issuance.
+* Set `workerStopTimeout` above the network request timeout (`NetworkConfig.requestTimeout`), so
+  that a slow deferred request does not fail a reset. In the reference configuration the reset waits
+  30 seconds and a request may take 60.
+* Decide how users are told about a deferred document that can no longer be issued. The reference
+  app shows it as Failed and leaves its removal to the user.
+
 ## Document Categories
 
 `WalletCoreConfig.documentCategories` maps credential format identifiers into UI categories.
@@ -1978,6 +2039,7 @@ The database stores:
 * Failed reissuance document IDs.
 * The issuer-trust verdict for each document.
 * The last failed status refresh for each document.
+* The Deferred Issuance schedule of each deferred document (see [Deferred Issuance](#deferred-issuance)).
 
 **Transaction log contents.** Each history entry uses Wallet Core's TS10 model (`TransactionEntry`).
 Wallet Core writes presentation, issuance and deletion entries, and the app writes signing entries
@@ -2013,9 +2075,11 @@ decoded, for example after a Wallet Core update changed its format, when the dat
 missing at start-up and the database file is deleted, and when an app update raises the database
 version. In the last case the destructive fallback below recreates every table, so the transaction
 history, bookmarks, data-deletion and DPA-report attempts, failed re-issuance records, issuer-trust
-records, revocation records and failed status refreshes are lost. Documents then show "Issuer
-verification unavailable" until issued again, and the next status check rebuilds the revocation
-records. State this in the release notes of an update that
+records, revocation records, failed status refreshes and Deferred Issuance schedules are lost.
+Documents then show "Issuer verification unavailable" until issued again, and the next status check
+rebuilds the revocation records. The next unlocked Dashboard rebuilds a schedule for each document
+still deferred, whose requests start again after `initialPollingDelay`, so a deferred document that
+had stopped as Failed is asked again. State this in the release notes of an update that
 changes the schema.
 
 Current risk:
@@ -2060,11 +2124,14 @@ Room.databaseBuilder(
 
 Removing a document also deletes these app records:
 
+* its Deferred Issuance schedule, in the `deferredDocumentSchedules` table;
 * its revocation record, issuer-trust verdict and last failed status refresh;
 * its bookmark and its failed re-issuance record.
 
-These deletions are best effort: a storage error leaves records behind rather than reporting a
-completed removal as failed, and the factory reset removes what is left.
+The schedule is deleted first. If that fails, the removal is reported as failed and the other
+records stay, although Wallet Core has already deleted the document. The other deletions are best
+effort: a storage error leaves records behind rather than reporting a completed removal as failed,
+and the factory reset removes what is left.
 
 The transaction history stays, and Wallet Core adds its own record of the deletion. The user can
 delete single entries, and **Reset wallet** deletes them all.

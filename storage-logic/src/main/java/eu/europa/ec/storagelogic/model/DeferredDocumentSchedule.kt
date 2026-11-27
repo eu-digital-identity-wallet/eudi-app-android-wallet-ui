@@ -19,7 +19,10 @@ package eu.europa.ec.storagelogic.model
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
-/** Expiry and issuer trust rejection end polling. Documents shows both as Failed until user removal. */
+/**
+ * Expiry and issuer trust rejection end polling. Documents shows both as Failed until user
+ * removal.
+ */
 enum class DeferredDocumentScheduleStatus {
     ACTIVE,
     EXPIRED,
@@ -33,8 +36,10 @@ enum class DeferredDocumentScheduleStatus {
  * @property nextAttemptAt Earliest next attempt in epoch milliseconds, including the deadline saved
  * before a request.
  * @property lastIntervalMillis Last valid issuer interval; null until a valid interval is received.
- * @property status A retryable failure keeps the schedule active. Expiry and trust refusal survive restart.
- * @property originalDocumentId Known Reissuance origin; null for initial issuance or unknown recovery data.
+ * @property status A retryable failure keeps the schedule active. Expiry and trust refusal survive
+ * restart.
+ * @property originalDocumentId Known Reissuance origin; null for initial issuance or unknown
+ * recovery data.
  */
 @Entity(tableName = "deferredDocumentSchedules")
 data class DeferredDocumentSchedule(

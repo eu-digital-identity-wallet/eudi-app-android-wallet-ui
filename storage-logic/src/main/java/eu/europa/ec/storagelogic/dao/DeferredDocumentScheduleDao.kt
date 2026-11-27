@@ -28,7 +28,10 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface DeferredDocumentScheduleDao : StorageDao<DeferredDocumentSchedule> {
 
-    @Query("SELECT * FROM deferredDocumentSchedules WHERE status = 'ACTIVE' ORDER BY nextAttemptAt, identifier")
+    @Query(
+        "SELECT * FROM deferredDocumentSchedules WHERE status = 'ACTIVE' " +
+                "ORDER BY nextAttemptAt, identifier"
+    )
     fun observeActive(): Flow<List<DeferredDocumentSchedule>>
 
     @Query("SELECT * FROM deferredDocumentSchedules ORDER BY nextAttemptAt, identifier")

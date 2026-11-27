@@ -37,11 +37,14 @@ interface WalletCoreConfig {
      */
     val config: EudiWalletConfig
 
-    /** Polling and retry settings for Deferred Issuance, shared by all document schedules. */
+    /**
+     * Polling and retry settings for Deferred Issuance, shared by all document schedules.
+     *
+     * TODO Remove `initialPollingDelay` when Wallet Core exposes the first eligible poll time for
+     * new and restored Deferred documents.
+     */
     val deferredIssuanceConfig: DeferredIssuanceConfig
         get() = DeferredIssuanceConfig(
-            // TODO Remove initialPollingDelay when Wallet Core exposes the first eligible poll time
-            //  for new and restored Deferred documents.
             initialPollingDelay = 5.seconds,
             failureRetryDelay = 30.seconds,
             maxConcurrentDeferredRequests = null,

@@ -66,12 +66,13 @@ class TestFilterValidator {
         sharingStarted = SharingStarted.Eagerly
     )
 
-    //region revertFilters
-    // Case 1:
-    // 1. A draft selection is cancelled immediately before a dynamic refresh.
-    //
-    // Case 1 Expected Result:
-    // The refreshed list keeps the applied selection, not the cancelled draft.
+    /**
+     * Case 1:
+     * 1. A draft selection is cancelled immediately before a dynamic refresh.
+     *
+     * Case 1 Expected Result:
+     * The refreshed list keeps the applied selection, not the cancelled draft.
+     */
     @Test
     fun `Given a cancelled draft, When filters refresh immediately, Then the applied selection survives`() =
         coroutineRule.runTest {
@@ -81,18 +82,18 @@ class TestFilterValidator {
                 filterValidator.applyFilters()
                 val initial = awaitItem()
                 filterValidator.updateFilter(multipleSelectionGroup.id, filterItemsMultiple[2].id)
+
                 // When
                 filterValidator.revertFilters()
                 filterValidator.initializeValidator(filtersWithMultipleSelection, filterableList)
                 filterValidator.applyFilters()
+
                 // Then
                 val refreshed = awaitItem()
                 assertEquals(initial.updatedFilters, refreshed.updatedFilters)
             }
         }
-    //endregion
 
-    //region initializeValidator after new documents arrive
     @Test
     fun `Given a restricted selection, When an issuer first appears, Then it starts selected and known deselections survive`() =
         coroutineRule.runTest {
@@ -123,14 +124,13 @@ class TestFilterValidator {
                 // Then
                 val result = awaitItem() as FilterValidatorPartialState.FilterListResult
                 assertEquals(listOf(newItem), result.filteredItems())
-                val choices =
-                    result.updatedFilters.filterGroups.single { group -> group.id == mockedPartyGroupId }
-                        .filters.associate { filter -> filter.id to filter.selected }
+                val choices = result.updatedFilters.filterGroups
+                    .single { group -> group.id == mockedPartyGroupId }
+                    .filters.associate { filter -> filter.id to filter.selected }
                 assertEquals(false, choices["party:$mockedPrimaryName"])
                 assertEquals(true, choices["party:$mockedIssuerName"])
             }
         }
-    //endregion
 
     @Test
     fun `Given initial filters, When initializeValidator is called with applyFilters, Then FilterUpdateResult is emitted`() =
