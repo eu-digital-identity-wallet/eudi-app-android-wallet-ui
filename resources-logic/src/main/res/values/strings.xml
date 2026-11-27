@@ -589,7 +589,7 @@
     <!--endregion-->
 
     <!-- region Issuance Qr Scan -->
-    <string name="issuance_qr_scan_title">Add document from QR</string>
+    <string name="issuance_qr_scan_title">@string/generic_scan_qr</string>
     <string name="issuance_qr_scan_subtitle">Scan a QR code provided from an issuer to add a digital document to your wallet.</string>
     <!--endregion-->
 
