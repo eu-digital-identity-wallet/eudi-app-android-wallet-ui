@@ -18,6 +18,9 @@ package eu.europa.ec.authenticationlogic.controller.session
 
 import android.os.SystemClock
 import eu.europa.ec.authenticationlogic.config.AuthenticationConfig
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
 
@@ -43,6 +46,9 @@ interface SessionController {
     /** True between a successful authentication and the next lock. */
     val isUnlocked: Boolean
 
+    /** Observable [isUnlocked] state, including locks that occur without an activity transition. */
+    val unlockedState: StateFlow<Boolean>
+
     /**
      * Called when the user has authenticated to open the wallet. If the app left before the
      * authentication completed, the background record is kept, so the background timeout still
@@ -53,6 +59,12 @@ interface SessionController {
 
     /** Ends the session. */
     fun lock()
+
+    /**
+     * Runs a short synchronous [action] only while unlocked, ordered with [lock].
+     * Returns false without calling it when locked. Do not wait for asynchronous completion here.
+     */
+    fun runIfUnlocked(action: () -> Unit): Boolean
 
     /** Records user interaction, which restarts the idle timeout. */
     fun onUserInteraction()
@@ -116,8 +128,8 @@ class SessionControllerImpl(
     private val elapsedRealtime: () -> Long = { SystemClock.elapsedRealtime() },
 ) : SessionController {
 
-    @Volatile
-    private var unlocked: Boolean = false
+    private val unlocked = MutableStateFlow(false)
+    override val unlockedState: StateFlow<Boolean> = unlocked.asStateFlow()
 
     @Volatile
     private var lastInteractionAt: Long = 0L
@@ -135,16 +147,25 @@ class SessionControllerImpl(
     private var coveredSince: Long? = null
 
     override val isUnlocked: Boolean
-        get() = unlocked
+        get() = unlocked.value
 
+    @Synchronized
     override fun unlock() {
-        unlocked = true
+        unlocked.value = true
         lastInteractionAt = elapsedRealtime()
     }
 
+    @Synchronized
     override fun lock() {
-        unlocked = false
+        unlocked.value = false
         externalFlowInProgress = false
+    }
+
+    @Synchronized
+    override fun runIfUnlocked(action: () -> Unit): Boolean {
+        if (!isUnlocked) return false
+        action()
+        return true
     }
 
     override fun onUserInteraction() {
@@ -162,7 +183,7 @@ class SessionControllerImpl(
     override fun onForeground(): Boolean {
         val since = backgroundSince ?: return false
         backgroundSince = null
-        if (!unlocked) return false
+        if (!isUnlocked) return false
 
         val now = elapsedRealtime()
         val limit = if (protectedFlowWhenHidden || externalFlowInProgress || coveredSince != null) {
@@ -179,7 +200,7 @@ class SessionControllerImpl(
     }
 
     override fun lockIfIdle(): Boolean {
-        if (!unlocked || coveredSince != null) return false
+        if (!isUnlocked || coveredSince != null) return false
         if ((elapsedRealtime() - lastInteractionAt).milliseconds >= authenticationConfig.idleLockTimeout) {
             lock()
             return true
@@ -188,7 +209,7 @@ class SessionControllerImpl(
     }
 
     override fun timeUntilIdleLock(): Duration {
-        if (!unlocked || coveredSince != null) return authenticationConfig.idleLockTimeout
+        if (!isUnlocked || coveredSince != null) return authenticationConfig.idleLockTimeout
         val idle = (elapsedRealtime() - lastInteractionAt).milliseconds
         return (authenticationConfig.idleLockTimeout - idle).coerceAtLeast(Duration.ZERO)
     }
@@ -210,7 +231,7 @@ class SessionControllerImpl(
     override fun onWalletScreenShown(): Boolean {
         val since = coveredSince ?: return false
         coveredSince = null
-        if (!unlocked) return false
+        if (!isUnlocked) return false
 
         val now = elapsedRealtime()
         if ((now - since).milliseconds >= authenticationConfig.protectedFlowLockTimeout) {

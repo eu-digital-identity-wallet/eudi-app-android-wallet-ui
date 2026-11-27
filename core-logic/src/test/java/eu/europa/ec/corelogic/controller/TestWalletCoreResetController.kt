@@ -224,7 +224,7 @@ class TestWalletCoreResetController {
         coroutineRule.runTest {
             // Given
             givenDocuments(listOf(mdl), mainPid = null)
-            whenever(walletCoreDocumentsController.deleteDocument("mdl")).thenReturn(
+            whenever(walletCoreDocumentsController.deleteDocumentForReset("mdl")).thenReturn(
                 flow { emit(DeleteDocumentPartialState.Failure(errorMessage = "storage error")) }
             )
 
@@ -246,7 +246,7 @@ class TestWalletCoreResetController {
             // Given
             givenDocuments(listOf(mdl), mainPid = null)
             var lateDocumentStored = false
-            whenever(walletCoreDocumentsController.deleteDocument("mdl")).thenReturn(
+            whenever(walletCoreDocumentsController.deleteDocumentForReset("mdl")).thenReturn(
                 flow {
                     steps.add("delete mdl")
                     storedDocuments.remove(mdl)
@@ -342,7 +342,7 @@ class TestWalletCoreResetController {
         storedDocuments.addAll(documents)
         whenever(walletCoreDocumentsController.getMainPidDocument()).thenReturn(mainPid)
         listOf(pid, mdl).forEach { document ->
-            whenever(walletCoreDocumentsController.deleteDocument(document.id)).thenReturn(
+            whenever(walletCoreDocumentsController.deleteDocumentForReset(document.id)).thenReturn(
                 flow {
                     steps.add("delete ${document.id}")
                     storedDocuments.remove(document)

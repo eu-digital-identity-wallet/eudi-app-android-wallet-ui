@@ -26,12 +26,12 @@ import eu.europa.ec.corelogic.util.CoreActions
 import eu.europa.ec.corelogic.util.CoreActions.RE_ISSUANCE_IDS_DETAILS_EXTRA
 import eu.europa.ec.eudi.wallet.document.CreateDocumentSettings.CredentialPolicy
 import eu.europa.ec.eudi.wallet.document.IssuedDocument
+import eu.europa.ec.storagelogic.dao.DeferredDocumentScheduleDao
 import eu.europa.ec.storagelogic.dao.FailedReIssuedDocumentDao
 import eu.europa.ec.storagelogic.model.FailedReIssuedDocument
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.ensureActive
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
@@ -52,6 +52,7 @@ class ReIssuanceWorkManager(
     appContext: Context,
     workerParams: WorkerParameters,
     private val failedReIssuedDocumentDao: FailedReIssuedDocumentDao,
+    private val deferredScheduleDao: DeferredDocumentScheduleDao,
     private val walletCoreDocumentsController: WalletCoreDocumentsController,
 ) : CoroutineWorker(appContext, workerParams) {
 
@@ -64,12 +65,21 @@ class ReIssuanceWorkManager(
 
     override suspend fun doWork(): Result = runLock.withLock { reIssueDueDocuments() }
 
+    /**
+     * Skips an original when a manual request has registered a replacement for it while earlier
+     * originals were processed. The worker cannot show a prompt, so it cancels a request for user
+     * authentication; Core then emits Failure, whose branch adds the document ID to the failed
+     * ones (adding it on the prompt as well would duplicate the ID). A Deferred replacement changes
+     * the documents list even while the original remains in the wallet, so the list is notified
+     * after every successful re-issuance.
+     */
     private suspend fun reIssueDueDocuments(): Result {
 
         try {
 
             val failed = mutableListOf<String>()
             val idsRemoved = mutableListOf<String>()
+            var documentsChanged = false
 
             val now = Clock.System.now()
 
@@ -98,35 +108,38 @@ class ReIssuanceWorkManager(
 
                     currentCoroutineContext().ensureActive()
 
+                    if (deferredScheduleDao.hasPendingReplacement(document.id)) return@forEach
+
                     val issuerId = document.issuerMetadata?.credentialIssuerIdentifier.orEmpty()
 
-                    val state = withContext(NonCancellable) {
+                    withContext(NonCancellable) {
                         walletCoreDocumentsController.reIssueDocument(
                             documentId = document.id,
                             issuerId = issuerId,
                             allowAuthorizationFallback = false
-                        ).first()
-                    }
+                        ).collect { state ->
+                            when (state) {
+                                is IssueDocumentsPartialState.DeferredSuccess,
+                                is IssueDocumentsPartialState.PartialSuccess,
+                                is IssueDocumentsPartialState.PartialSuccessWithUntrustedIssuer,
+                                is IssueDocumentsPartialState.Success -> {
+                                    documentsChanged = true
+                                    if (walletCoreDocumentsController
+                                            .getDocumentById(document.id) == null
+                                    ) {
+                                        idsRemoved.add(document.id)
+                                    }
+                                }
 
-                    when (state) {
-                        is IssueDocumentsPartialState.DeferredSuccess,
-                        is IssueDocumentsPartialState.PartialSuccess,
-                        is IssueDocumentsPartialState.PartialSuccessWithUntrustedIssuer,
-                        is IssueDocumentsPartialState.Success -> {
-                            idsRemoved.add(document.id)
-                        }
+                                is IssueDocumentsPartialState.Failure,
+                                is IssueDocumentsPartialState.IssuerNotTrusted -> {
+                                    failed.add(document.id)
+                                }
 
-                        is IssueDocumentsPartialState.Failure -> {
-                            failed.add(document.id)
-                        }
-
-                        is IssueDocumentsPartialState.IssuerNotTrusted -> {
-                            failed.add(document.id)
-                        }
-
-                        is IssueDocumentsPartialState.UserAuthRequired -> {
-                            state.resultHandler.onAuthenticationFailure()
-                            failed.add(document.id)
+                                is IssueDocumentsPartialState.UserAuthRequired -> {
+                                    state.resultHandler.onAuthenticationError()
+                                }
+                            }
                         }
                     }
                 }
@@ -137,8 +150,10 @@ class ReIssuanceWorkManager(
                 storeFailedToStorage(failed)
             }
 
-            if (idsRemoved.isNotEmpty()) {
+            if (documentsChanged) {
                 notifyDocumentsList()
+            }
+            if (idsRemoved.isNotEmpty()) {
                 notifyDocumentDetails(idsRemoved)
             }
 

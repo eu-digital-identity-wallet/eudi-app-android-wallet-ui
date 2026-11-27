@@ -28,11 +28,14 @@ import eu.europa.ec.corelogic.di.getOrCreateKoinScope
 import eu.europa.ec.corelogic.extension.documentIdentifier
 import eu.europa.ec.corelogic.extension.getIssuerLogo
 import eu.europa.ec.corelogic.extension.getLocalizedDisplayName
+import eu.europa.ec.corelogic.extension.isDeferredTrustVerdict
+import eu.europa.ec.corelogic.extension.isUnknownDeferredTransaction
 import eu.europa.ec.corelogic.extension.localizedIssuerMetadata
 import eu.europa.ec.corelogic.extension.toIssuerRegistrationDomain
 import eu.europa.ec.corelogic.extension.toIssuerTrustVerdict
 import eu.europa.ec.corelogic.extension.toIssuerTrustVerdictDomain
 import eu.europa.ec.corelogic.extension.toUntrustedIssuerReasonOrNull
+import eu.europa.ec.corelogic.extension.withAuthenticationObserver
 import eu.europa.ec.corelogic.model.DeferredDocumentDataDomain
 import eu.europa.ec.corelogic.model.DocumentCategories
 import eu.europa.ec.corelogic.model.DocumentIdentifier
@@ -43,6 +46,7 @@ import eu.europa.ec.corelogic.model.ScopedDocumentDomain
 import eu.europa.ec.corelogic.model.UntrustedIssuerReasonDomain
 import eu.europa.ec.corelogic.model.isBlockedForIssuance
 import eu.europa.ec.corelogic.model.toDocumentIdentifier
+import eu.europa.ec.corelogic.util.IssuanceStart
 import eu.europa.ec.corelogic.util.OfferIssuer
 import eu.europa.ec.corelogic.util.issuerLogoOrNull
 import eu.europa.ec.corelogic.util.offerIssuerOf
@@ -72,11 +76,13 @@ import eu.europa.ec.eudi.wallet.statium.DefaultStatusReferenceExtractor
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.storagelogic.dao.BookmarkDao
+import eu.europa.ec.storagelogic.dao.DeferredDocumentScheduleDao
 import eu.europa.ec.storagelogic.dao.FailedReIssuedDocumentDao
 import eu.europa.ec.storagelogic.dao.IssuerTrustDao
 import eu.europa.ec.storagelogic.dao.RevokedDocumentDao
 import eu.europa.ec.storagelogic.dao.StatusRefreshFailureDao
 import eu.europa.ec.storagelogic.model.Bookmark
+import eu.europa.ec.storagelogic.model.DeferredDocumentSchedule
 import eu.europa.ec.storagelogic.model.FailedReIssuedDocument
 import eu.europa.ec.storagelogic.model.IssuerTrust
 import eu.europa.ec.storagelogic.model.IssuerTrustVerdict
@@ -84,16 +90,22 @@ import eu.europa.ec.storagelogic.model.RevocationStatus
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineStart
+import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.NonCancellable
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.channels.ProducerScope
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.channels.trySendBlocking
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.flow.emitAll
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
@@ -101,6 +113,7 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import java.net.URI
 import java.util.Locale
+import kotlin.time.Duration
 
 enum class IssuanceMethod {
     OPENID4VCI
@@ -183,31 +196,55 @@ private sealed class GetIssuerMetadataPartialState {
 }
 
 sealed class IssueDeferredDocumentPartialState {
+    /**
+     * A lifecycle or removal gate closed before submission. Restore the previous deadline so
+     * returning to the foreground can immediately retry a document that was already due.
+     */
+    data object Paused : IssueDeferredDocumentPartialState()
+
     data class Issued(
         val deferredDocumentData: DeferredDocumentDataDomain,
     ) : IssueDeferredDocumentPartialState()
 
+    /**
+     * @property interval The issuer's requested wait, when supplied by Core. The scheduler owns
+     * validation and fallback selection; the controller forwards the value unchanged.
+     */
     data class NotReady(
         val deferredDocumentData: DeferredDocumentDataDomain,
+        val interval: Duration?,
     ) : IssueDeferredDocumentPartialState()
 
-    data class Failed(
-        val documentId: DocumentId,
-        val errorMessage: String,
-    ) : IssueDeferredDocumentPartialState()
+    /**
+     * An ordinary DocumentFailed callback from Core. The transaction remains eligible for another
+     * attempt.
+     */
+    data object Failed : IssueDeferredDocumentPartialState()
+
+    /**
+     * A local lookup or setup failed before a Core result was available. Preserve the visible
+     * status.
+     */
+    data object Unavailable : IssueDeferredDocumentPartialState()
 
     data class Expired(
         val documentId: DocumentId,
     ) : IssueDeferredDocumentPartialState()
 
+    /**
+     * A trust rejection ends polling for this document and leaves it available for user removal.
+     */
     data class IssuerNotTrusted(
         val documentId: DocumentId,
     ) : IssueDeferredDocumentPartialState()
 }
 
 /**
- * Controller for interacting with internal local storage of Core for CRUD operations on documents
- * */
+ * Document storage and issuance boundary to Wallet Core, including app-owned document metadata.
+ * Deferred callbacks register persisted schedules here; the scheduler owns deadlines and retries.
+ * Issuance and removal operations use shared coordination so reset can await Core calls and their
+ * metadata writes independently of the screen collecting their results.
+ */
 interface WalletCoreDocumentsController {
 
     /**
@@ -248,6 +285,11 @@ interface WalletCoreDocumentsController {
         prioritizeDeferred: Boolean = true
     ): Flow<IssueDocumentsPartialState>
 
+    /**
+     * Tracks this submission through authentication and its terminal result. Each manual request
+     * can create a replacement. The automatic worker checks for active replacements before
+     * submitting.
+     */
     fun reIssueDocument(
         documentId: DocumentId,
         issuerId: String,
@@ -255,14 +297,34 @@ interface WalletCoreDocumentsController {
         prioritizeDeferred: Boolean = false
     ): Flow<IssueDocumentsPartialState>
 
+    /**
+     * Removes the selected ID after any active Deferred attempt and its writes finish, even if the
+     * document became Issued meanwhile. Removing an original does not remove its replacement.
+     */
     fun deleteDocument(
         documentId: DocumentId,
     ): Flow<DeleteDocumentPartialState>
 
+    /**
+     * Reset-only deletion, allowed after workers and tracked document operations have drained.
+     * New ordinary operations remain blocked while reset uses this explicit entry point.
+     */
+    fun deleteDocumentForReset(documentId: DocumentId): Flow<DeleteDocumentPartialState>
+
+    /**
+     * Removes all documents, including Pending replacements, after active operations finish.
+     * Keeps the main PID until the other deletions succeed; reset waits for the whole operation.
+     */
     fun deleteAllDocuments(): Flow<DeleteAllDocumentsPartialState>
 
     fun resolveDocumentOffer(offerUri: String): Flow<ResolveDocumentOfferPartialState>
 
+    /**
+     * Performs one Deferred attempt. The scheduler owns the document lock, concurrency slot,
+     * deadlines and result persistence. The conditions for starting the request are checked again
+     * immediately before the Core call; [IssueDeferredDocumentPartialState.Paused] means no request
+     * was started.
+     */
     fun issueDeferredDocument(docId: DocumentId): Flow<IssueDeferredDocumentPartialState>
 
     fun resumeOpenId4VciWithAuthorization(uri: String): Boolean
@@ -322,6 +384,8 @@ class WalletCoreDocumentsControllerImpl(
     private val statusRefreshFailureDao: StatusRefreshFailureDao,
     private val prefKeys: PrefKeys,
     private val walletWorkScheduler: WalletWorkScheduler,
+    private val deferredScheduleDao: DeferredDocumentScheduleDao,
+    private val walletDocumentOperationController: WalletDocumentOperationController,
     private val dispatcher: CoroutineDispatcher = Dispatchers.IO,
     walletCore: EudiWallet? = null,
 ) : WalletCoreDocumentsController {
@@ -607,7 +671,7 @@ class WalletCoreDocumentsControllerImpl(
         }
     }.safeAsync {
         IssueDocumentsPartialState.Failure(errorMessage = documentErrorMessage)
-    }
+    }.trackedIssuance()
 
     override fun reIssueDocument(
         documentId: DocumentId,
@@ -641,7 +705,10 @@ class WalletCoreDocumentsControllerImpl(
             manager.reissueDocument(
                 documentId,
                 allowAuthorizationFallback,
-                onIssueEvent = issuanceCallback(prioritizeDeferred = prioritizeDeferred)
+                onIssueEvent = issuanceCallback(
+                    prioritizeDeferred = prioritizeDeferred,
+                    originalDocumentId = documentId,
+                )
             )
         }
 
@@ -653,7 +720,7 @@ class WalletCoreDocumentsControllerImpl(
         IssueDocumentsPartialState.Failure(
             errorMessage = documentErrorMessage
         )
-    }
+    }.trackedIssuance()
 
     override fun issueDocumentsByOffer(
         offer: Offer,
@@ -676,7 +743,10 @@ class WalletCoreDocumentsControllerImpl(
 
             manager.issueDocumentByOffer(
                 offer = offer,
-                onIssueEvent = issuanceCallback(prioritizeDeferred = prioritizeDeferred),
+                onIssueEvent = issuanceCallback(
+                    prioritizeDeferred = prioritizeDeferred,
+                    originalDocumentId = null
+                ),
                 txCode = txCode,
             )
             awaitClose()
@@ -684,96 +754,130 @@ class WalletCoreDocumentsControllerImpl(
             IssueDocumentsPartialState.Failure(
                 errorMessage = documentErrorMessage
             )
-        }
+        }.trackedIssuance()
 
-    override fun deleteDocument(documentId: String): Flow<DeleteDocumentPartialState> = flow {
-        eudiWallet.deleteDocumentById(documentId = documentId)
-            .kotlinResult
-            .onSuccess {
-                cleanUpRecords {
-                    deleteDocumentRecords(documentId)
-                }
-                emit(DeleteDocumentPartialState.Success)
-            }
-            .onFailure {
-                emit(
-                    DeleteDocumentPartialState.Failure(
-                        errorMessage = it.localizedMessage
-                            ?: genericErrorMessage
-                    )
-                )
-            }
-    }.safeAsync {
-        DeleteDocumentPartialState.Failure(
-            errorMessage = it.localizedMessage ?: genericErrorMessage
+    override fun deleteDocument(
+        documentId: String,
+    ): Flow<DeleteDocumentPartialState> = deleteDocumentAsTrackedOperation(
+        documentId = documentId,
+        duringReset = false,
+    )
+
+    override fun deleteDocumentForReset(documentId: String): Flow<DeleteDocumentPartialState> =
+        deleteDocumentAsTrackedOperation(
+            documentId = documentId,
+            duringReset = true,
         )
+
+    /**
+     * Tracks Core deletion and metadata cleanup as one operation for reset. The removal guard
+     * blocks new pings for this ID before waiting for its document lock and any active attempt.
+     */
+    private fun deleteDocumentAsTrackedOperation(
+        documentId: String,
+        duringReset: Boolean,
+    ): Flow<DeleteDocumentPartialState> = walletDocumentOperationController.trackedOperationFlow(
+        completeWhen = { true },
+        isResetOperation = duringReset,
+        flowToCollect = {
+            deleteDocumentAndCleanUpLocalMetadata(documentId)
+        },
+    ).safeAsync {
+        DeleteDocumentPartialState.Failure(it.localizedMessage ?: genericErrorMessage)
+    }
+
+    /**
+     * Deletes [documentId] from Wallet Core. The caller tracks the removal for reset. A user
+     * removal still targets this ID if an in-flight ping issued the document while the removal
+     * waited. The confirmed removal is recorded before the fallible cleanup, so a late callback
+     * cannot recreate the schedule; reset also waits for the queue deletion.
+     *
+     * Success requires clearing the document's Room polling schedule. Wallet Core has already
+     * deleted the document by then, so if deleting the schedule fails, `safeAsync` reports
+     * Failure without undoing the document deletion. Cleanup of its other local metadata is best
+     * effort.
+     */
+    private fun deleteDocumentAndCleanUpLocalMetadata(
+        documentId: String,
+    ): Flow<DeleteDocumentPartialState> = flow {
+        val result = walletDocumentOperationController.withRemoval(documentId) {
+            eudiWallet.deleteDocumentById(documentId).kotlinResult.fold(
+                onSuccess = {
+                    walletDocumentOperationController.recordRemoval(documentId)
+
+                    deferredScheduleDao.delete(documentId)
+
+                    runBestEffortLocalMetadataUpdate {
+                        deleteLocalDocumentMetadata(documentId)
+                    }
+
+                    DeleteDocumentPartialState.Success
+                },
+                onFailure = { cause ->
+                    DeleteDocumentPartialState.Failure(
+                        cause.localizedMessage ?: genericErrorMessage
+                    )
+                },
+            )
+        }
+        emit(result)
+    }.safeAsync {
+        DeleteDocumentPartialState.Failure(it.localizedMessage ?: genericErrorMessage)
     }
 
     override fun deleteAllDocuments(): Flow<DeleteAllDocumentsPartialState> =
         flow {
-
-            val allDocuments = getAllDocuments()
-            val mainPidDocument = getMainPidDocument()
-
-            mainPidDocument?.let { safeMainPidDocument ->
-
-                val restOfDocuments = allDocuments.filterNot { doc ->
-                    doc.id == safeMainPidDocument.id
-                }
-
-                var restOfAllDocsDeleted = true
-                var restOfAllDocsDeletedFailureReason = ""
-
-                restOfDocuments.forEach { document ->
-
-                    deleteDocument(
-                        documentId = document.id
-                    ).collect { deleteDocumentPartialState ->
-                        when (deleteDocumentPartialState) {
-                            is DeleteDocumentPartialState.Failure -> {
-                                restOfAllDocsDeleted = false
-                                restOfAllDocsDeletedFailureReason =
-                                    deleteDocumentPartialState.errorMessage
-                            }
-
-                            is DeleteDocumentPartialState.Success -> {}
-                        }
-                    }
-                }
-
-                if (restOfAllDocsDeleted) {
-                    deleteDocument(
-                        documentId = safeMainPidDocument.id
-                    ).collect { deleteMainPidDocumentPartialState ->
-                        when (deleteMainPidDocumentPartialState) {
-                            is DeleteDocumentPartialState.Failure -> emit(
-                                DeleteAllDocumentsPartialState.Failure(
-                                    errorMessage = deleteMainPidDocumentPartialState.errorMessage
-                                )
-                            )
-
-                            is DeleteDocumentPartialState.Success -> emit(
-                                DeleteAllDocumentsPartialState.Success
-                            )
-                        }
-                    }
-                } else {
-                    emit(
-                        DeleteAllDocumentsPartialState.Failure(
-                            errorMessage = restOfAllDocsDeletedFailureReason
-                        )
-                    )
-                }
-            } ?: emit(
-                DeleteAllDocumentsPartialState.Failure(
-                    errorMessage = genericErrorMessage
-                )
+            val removalOperation = walletDocumentOperationController.tryStartRemovingAllDocuments {
+                deleteAllDocumentsWithMainPidLast()
+            }
+            emit(
+                removalOperation?.await()
+                    ?: DeleteAllDocumentsPartialState.Failure(errorMessage = genericErrorMessage)
             )
         }.safeAsync {
             DeleteAllDocumentsPartialState.Failure(
                 errorMessage = it.localizedMessage ?: genericErrorMessage
             )
         }
+
+    /**
+     * Runs within [WalletDocumentOperationController.tryStartRemovingAllDocuments] after earlier
+     * operations finish. Reading the documents here includes any replacement issued during the
+     * wait.
+     */
+    private suspend fun deleteAllDocumentsWithMainPidLast(): DeleteAllDocumentsPartialState {
+        val allDocuments = getAllDocuments()
+        val mainPidDocument = getMainPidDocument()
+            ?: return DeleteAllDocumentsPartialState.Failure(errorMessage = genericErrorMessage)
+        val documentsExceptMainPid = allDocuments.filterNot { document ->
+            document.id == mainPidDocument.id
+        }
+        var lastDeletionErrorMessage: String? = null
+
+        for (document in documentsExceptMainPid) {
+            when (
+                val result = deleteDocumentAndCleanUpLocalMetadata(document.id).first()
+            ) {
+                is DeleteDocumentPartialState.Failure -> {
+                    lastDeletionErrorMessage = result.errorMessage
+                }
+
+                is DeleteDocumentPartialState.Success -> Unit
+            }
+        }
+
+        lastDeletionErrorMessage?.let { message ->
+            return DeleteAllDocumentsPartialState.Failure(errorMessage = message)
+        }
+        return when (
+            val result = deleteDocumentAndCleanUpLocalMetadata(mainPidDocument.id).first()
+        ) {
+            is DeleteDocumentPartialState.Failure ->
+                DeleteAllDocumentsPartialState.Failure(errorMessage = result.errorMessage)
+
+            is DeleteDocumentPartialState.Success -> DeleteAllDocumentsPartialState.Success
+        }
+    }
 
     override fun resolveDocumentOffer(offerUri: String): Flow<ResolveDocumentOfferPartialState> =
         callbackFlow {
@@ -853,7 +957,9 @@ class WalletCoreDocumentsControllerImpl(
     /**
      * Stores a deferred document's issuer-trust verdict before reporting it as issued. The write
      * starts atomically ([CoroutineStart.ATOMIC]), so a cancellation right after the event cannot
-     * skip it.
+     * skip it. The wallet can lock, leave the foreground or start a removal after the schedule
+     * write, so the request's conditions are checked again at the point where it is submitted to
+     * Core ([WalletDocumentOperationController.startCorePolling]).
      */
     @OptIn(DelicateCoroutinesApi::class)
     override fun issueDeferredDocument(docId: DocumentId): Flow<IssueDeferredDocumentPartialState> =
@@ -865,86 +971,85 @@ class WalletCoreDocumentsControllerImpl(
                     errorMessage = documentErrorMessage
                 ).getOrThrow()
 
-                manager.issueDeferredDocument(
-                    deferredDocument = deferredDoc,
-                    executor = null,
-                    onIssueResult = { deferredIssuanceResult ->
-                        when (deferredIssuanceResult) {
-                            is DeferredIssueResult.DocumentFailed -> {
-                                trySendBlocking(
-                                    if (deferredIssuanceResult.cause.toUntrustedIssuerReasonOrNull() != null) {
-                                        IssueDeferredDocumentPartialState.IssuerNotTrusted(
-                                            documentId = deferredIssuanceResult.documentId
-                                        )
-                                    } else {
-                                        IssueDeferredDocumentPartialState.Failed(
-                                            documentId = deferredIssuanceResult.documentId,
-                                            errorMessage = deferredIssuanceResult.cause.localizedMessage
-                                                ?: documentErrorMessage
-                                        )
-                                    }
-                                )
-                            }
-
-                            is DeferredIssueResult.DocumentIssued -> {
-                                launch(start = CoroutineStart.ATOMIC) {
-                                    storeIssuerTrust(
-                                        documentId = deferredIssuanceResult.documentId,
-                                        verdict = deferredIssuanceResult.issuerTrustResult
-                                            .toIssuerTrustVerdict(),
-                                    )
-
-                                    cleanUpRecords {
-                                        deleteRecordsOfMissingDocuments()
-                                    }
-
+                val started = walletDocumentOperationController.startCorePolling(docId) {
+                    manager.issueDeferredDocument(
+                        deferredDocument = deferredDoc,
+                        executor = null,
+                        onIssueResult = { deferredIssuanceResult ->
+                            when (deferredIssuanceResult) {
+                                is DeferredIssueResult.DocumentFailed -> {
+                                    val cause = deferredIssuanceResult.cause
                                     trySendBlocking(
-                                        IssueDeferredDocumentPartialState.Issued(
+                                        when {
+                                            cause.isDeferredTrustVerdict() ->
+                                                IssueDeferredDocumentPartialState.IssuerNotTrusted(
+                                                    documentId = deferredIssuanceResult.documentId
+                                                )
+
+                                            cause.isUnknownDeferredTransaction() ->
+                                                IssueDeferredDocumentPartialState.Expired(
+                                                    documentId = deferredIssuanceResult.documentId
+                                                )
+
+                                            else -> IssueDeferredDocumentPartialState.Failed
+                                        }
+                                    )
+                                }
+
+                                is DeferredIssueResult.DocumentIssued -> {
+                                    launch(start = CoroutineStart.ATOMIC) {
+                                        storeIssuerTrust(
+                                            documentId = deferredIssuanceResult.documentId,
+                                            verdict = deferredIssuanceResult.issuerTrustResult
+                                                .toIssuerTrustVerdict(),
+                                        )
+
+                                        runBestEffortLocalMetadataUpdate {
+                                            deleteLocalMetadataForMissingDocuments()
+                                        }
+
+                                        trySendBlocking(
+                                            IssueDeferredDocumentPartialState.Issued(
+                                                DeferredDocumentDataDomain(
+                                                    documentId = deferredIssuanceResult.documentId,
+                                                    formatType = deferredIssuanceResult.docType,
+                                                    docName = deferredIssuanceResult.name
+                                                )
+                                            )
+                                        )
+                                    }
+                                }
+
+                                is DeferredIssueResult.DocumentNotReady -> {
+                                    trySendBlocking(
+                                        IssueDeferredDocumentPartialState.NotReady(
                                             DeferredDocumentDataDomain(
                                                 documentId = deferredIssuanceResult.documentId,
                                                 formatType = deferredIssuanceResult.docType,
                                                 docName = deferredIssuanceResult.name
-                                            )
+                                            ),
+                                            interval = deferredIssuanceResult.interval,
+                                        )
+                                    )
+                                }
+
+                                is DeferredIssueResult.DocumentExpired -> {
+                                    trySendBlocking(
+                                        IssueDeferredDocumentPartialState.Expired(
+                                            documentId = deferredIssuanceResult.documentId
                                         )
                                     )
                                 }
                             }
-
-                            is DeferredIssueResult.DocumentNotReady -> {
-                                trySendBlocking(
-                                    IssueDeferredDocumentPartialState.NotReady(
-                                        DeferredDocumentDataDomain(
-                                            documentId = deferredIssuanceResult.documentId,
-                                            formatType = deferredIssuanceResult.docType,
-                                            docName = deferredIssuanceResult.name
-                                        )
-                                    )
-                                )
-                            }
-
-                            is DeferredIssueResult.DocumentExpired -> {
-                                trySendBlocking(
-                                    IssueDeferredDocumentPartialState.Expired(
-                                        documentId = deferredIssuanceResult.documentId
-                                    )
-                                )
-                            }
                         }
-                    }
-                )
-            } ?: trySendBlocking(
-                IssueDeferredDocumentPartialState.Failed(
-                    documentId = docId,
-                    errorMessage = documentErrorMessage
-                )
-            )
+                    )
+                }
+                if (!started) trySend(IssueDeferredDocumentPartialState.Paused)
+            } ?: trySendBlocking(IssueDeferredDocumentPartialState.Unavailable)
 
             awaitClose()
         }.safeAsync {
-            IssueDeferredDocumentPartialState.Failed(
-                documentId = docId,
-                errorMessage = it.localizedMessage ?: genericErrorMessage
-            )
+            IssueDeferredDocumentPartialState.Unavailable
         }
 
     override fun resumeOpenId4VciWithAuthorization(uri: String): Boolean {
@@ -993,7 +1098,7 @@ class WalletCoreDocumentsControllerImpl(
      * Deletes what the app stores about [documentId] beside Wallet Core: its revocation record,
      * issuer-trust verdict, failed status refresh, bookmark and failed re-issuance record.
      */
-    private suspend fun deleteDocumentRecords(documentId: DocumentId) {
+    private suspend fun deleteLocalDocumentMetadata(documentId: DocumentId) {
         revokedDocumentDao.delete(documentId)
         issuerTrustDao.delete(documentId)
         statusRefreshFailureDao.delete(documentId)
@@ -1004,11 +1109,13 @@ class WalletCoreDocumentsControllerImpl(
     /**
      * Wallet Core deletes the original document once a re-issuance has issued a new credential;
      * when the new credential is deferred, only once it arrives (see
-     * [deleteRecordsOfMissingDocuments]). Copies the original's bookmark to the new documents,
-     * which keep their ids when a deferred credential arrives, and deletes the rest of what the app
-     * stored about the original once Wallet Core has deleted it. The history stays. If the original
-     * gained a revocation record while the re-issuance was under way, a revocation check is
-     * scheduled, so that the new documents are checked without waiting for the periodic interval.
+     * [deleteLocalMetadataForMissingDocuments]). Copies the original's bookmark to the new
+     * documents, which keep their ids when a deferred credential arrives, and deletes the rest of
+     * what the app stored about the original once Wallet Core has deleted it. Per-document
+     * callbacks may have copied the bookmark already and [BookmarkDao] rejects duplicates, so a
+     * new document that has one is skipped. The history stays. If the original gained a
+     * revocation record while the re-issuance was under way, a revocation check is scheduled, so
+     * that the new documents are checked without waiting for the periodic interval.
      */
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
     internal suspend fun cleanUpAfterReIssuance(
@@ -1027,25 +1134,27 @@ class WalletCoreDocumentsControllerImpl(
         if (newIds.isEmpty() || originalId in newIds) return
         if (isDocumentRevoked(originalId)) walletWorkScheduler.scheduleRevocationCheck()
 
-        cleanUpRecords {
+        runBestEffortLocalMetadataUpdate {
             if (bookmarkDao.retrieve(originalId) != null) {
-                newIds.forEach { newId -> bookmarkDao.store(Bookmark(newId)) }
+                newIds.forEach { newId ->
+                    if (bookmarkDao.retrieve(newId) == null) bookmarkDao.store(Bookmark(newId))
+                }
             }
             if (getDocumentById(originalId) == null) {
-                deleteDocumentRecords(originalId)
+                deleteLocalDocumentMetadata(originalId)
             }
         }
     }
 
     /**
-     * Deletes the records of documents Wallet Core no longer holds. Wallet Core deletes the
+     * Deletes local metadata for documents Wallet Core no longer holds. Wallet Core deletes the
      * original of a deferred re-issuance when the new credential arrives, without saying which
      * document that was. Records are read before the documents, so a record written for a document
      * issued in the meantime is kept. A revocation record among those deleted schedules a
      * revocation check, as in [cleanUpAfterReIssuance].
      */
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
-    internal suspend fun deleteRecordsOfMissingDocuments() {
+    internal suspend fun deleteLocalMetadataForMissingDocuments() {
         val revokedIds = revokedDocumentDao.retrieveAll().map { it.identifier }.toSet()
         val recordIds = buildSet {
             addAll(revokedIds)
@@ -1057,19 +1166,19 @@ class WalletCoreDocumentsControllerImpl(
         val documentIds = getAllDocuments().map { it.id }.toSet()
         val missingIds = recordIds - documentIds
         if (missingIds.any { it in revokedIds }) walletWorkScheduler.scheduleRevocationCheck()
-        missingIds.forEach { documentId -> deleteDocumentRecords(documentId) }
+        missingIds.forEach { documentId -> deleteLocalDocumentMetadata(documentId) }
     }
 
     /**
-     * Runs a clean-up of the app's records after Wallet Core has changed its documents. It
-     * completes even if the flow is no longer collected, and a storage error leaves records behind
-     * rather than turning a completed operation into a reported failure; the factory reset removes
-     * what is left.
+     * Runs [action] on local document metadata after Wallet Core has changed its documents.
+     * [NonCancellable] lets the update finish if flow collection stops. A [CancellationException]
+     * from [action] propagates. Other exceptions leave the wallet operation's result intact.
+     * A factory reset clears any remaining metadata.
      */
-    private suspend fun cleanUpRecords(cleanUp: suspend () -> Unit) {
+    private suspend fun runBestEffortLocalMetadataUpdate(action: suspend () -> Unit) {
         withContext(NonCancellable) {
             try {
-                cleanUp()
+                action()
             } catch (e: CancellationException) {
                 throw e
             } catch (_: Exception) {
@@ -1165,7 +1274,10 @@ class WalletCoreDocumentsControllerImpl(
                 manager.issueDocumentByConfigurationIdentifiers(
                     issuerUrl = issuerId,
                     credentialConfigurationIds = configIds,
-                    onIssueEvent = issuanceCallback(prioritizeDeferred = prioritizeDeferred)
+                    onIssueEvent = issuanceCallback(
+                        prioritizeDeferred = prioritizeDeferred,
+                        originalDocumentId = null
+                    )
                 )
             }
 
@@ -1178,23 +1290,45 @@ class WalletCoreDocumentsControllerImpl(
         }
 
     /**
-     * Turns Wallet Core's issuance events into [IssueDocumentsPartialState]s. Each issued
-     * document's issuer-trust verdict is stored as it arrives, and the outcome is reported only
-     * after those writes finish, because the success screen reads the stored verdicts. The writes
-     * start atomically ([CoroutineStart.ATOMIC]), so a cancellation right after an event cannot
-     * skip them.
+     * Turns Wallet Core's issuance events into [IssueDocumentsPartialState]s and persists each
+     * document's trust verdict or Deferred schedule as it arrives. A mixed or failed batch may
+     * never produce [IssueDocumentsPartialState.DeferredSuccess], so registration cannot depend
+     * on that aggregate outcome.
+     *
+     * Terminal callbacks await these writes before publishing a result: screens read the metadata,
+     * and reset must not finish draining while an issuance operation still has writes pending.
+     * A batch can fail after creating Deferred documents, so [IssueEvent.Failure] finishes their
+     * writes too, and [IssueEvent.Finished] finishes them without replacing Wallet Core's issuance
+     * result. [CoroutineStart.ATOMIC] protects coroutine entry only; awaiting the writes tracks
+     * completion.
+     *
+     * [IssueEvent.DocumentDeferred] exposes no interval, so the configured `initialPollingDelay`
+     * starts when the callback is received, before the document lock or the Room write is awaited.
+     * A persistence failure is kept as a result, because an uncaught async failure would cancel
+     * the observation while Core may still be running. Under the document lock no schedule is
+     * written when a removal completed before the callback acquired the lock, and a document an
+     * earlier poll already issued (a duplicate callback) only gets its bookmark copied. The insert
+     * is ignored where a schedule exists, which preserves its deadline or terminal status.
+     * Recovery may not know the origin, so for a Reissuance only that missing link is filled,
+     * leaving any existing schedule and known origin unchanged.
+     *
+     * @param originalDocumentId Known Reissuance origin, or null for initial Issuance. Persisted
+     * with replacements for duplicate-request checks and conditional automatic removal.
      */
     @OptIn(DelicateCoroutinesApi::class)
     private fun ProducerScope<IssueDocumentsPartialState>.issuanceCallback(
-        prioritizeDeferred: Boolean = true
+        prioritizeDeferred: Boolean = true,
+        originalDocumentId: DocumentId?,
     ): OpenId4VciManager.OnIssueEvent {
 
         var totalDocumentsToBeIssued = 0
+        val issuanceStart = coroutineContext[IssuanceStart]
         val untrustedDocuments: MutableMap<FormatType, String> = mutableMapOf()
         val nonIssuedDocuments: MutableMap<FormatType, String> = mutableMapOf()
         val deferredDocuments: MutableMap<DocumentId, FormatType> = mutableMapOf()
         val issuedDocuments: MutableMap<DocumentId, FormatType> = mutableMapOf()
         val issuerTrustWrites: MutableList<Job> = mutableListOf()
+        val scheduleWrites = mutableListOf<Deferred<Result<Unit>>>()
 
         val listener = OpenId4VciManager.OnIssueEvent { event ->
             when (event) {
@@ -1279,22 +1413,29 @@ class WalletCoreDocumentsControllerImpl(
                 }
 
                 is IssueEvent.Failure -> {
-                    val untrustedReason = event.cause.toUntrustedIssuerReasonOrNull()
+                    launch {
+                        issuerTrustWrites.joinAll()
+                        scheduleWrites.awaitAll()
 
-                    trySendBlocking(
-                        if (untrustedReason != null) {
-                            IssueDocumentsPartialState.IssuerNotTrusted(reason = untrustedReason)
-                        } else {
-                            IssueDocumentsPartialState.Failure(
-                                errorMessage = documentErrorMessage
-                            )
-                        }
-                    )
+                        val untrustedReason = event.cause.toUntrustedIssuerReasonOrNull()
+                        trySendBlocking(
+                            if (untrustedReason != null) {
+                                IssueDocumentsPartialState.IssuerNotTrusted(
+                                    reason = untrustedReason
+                                )
+                            } else {
+                                IssueDocumentsPartialState.Failure(
+                                    errorMessage = documentErrorMessage
+                                )
+                            }
+                        )
+                    }
                 }
 
                 is IssueEvent.Finished -> {
                     launch {
                         issuerTrustWrites.joinAll()
+                        scheduleWrites.awaitAll()
 
                         // event.issuedDocuments folds in deferred ids too — the Core emits
                         // Finished(issuedDocumentIds + deferredDocumentIds) — so the untrusted
@@ -1367,21 +1508,108 @@ class WalletCoreDocumentsControllerImpl(
                             documentId = event.documentId,
                             verdict = event.issuerTrustResult.toIssuerTrustVerdict(),
                         )
+                        copyReplacementBookmark(originalDocumentId, event.documentId)
                     }
                 }
 
                 is IssueEvent.Started -> {
                     totalDocumentsToBeIssued = event.total
+                    issuanceStart?.markStarted()
                 }
 
                 is IssueEvent.DocumentDeferred -> {
                     deferredDocuments[event.documentId] = event.docType
+                    val firstAttemptAt = System.currentTimeMillis() +
+                            walletCoreConfig.deferredIssuanceConfig
+                                .initialPollingDelay
+                                .inWholeMilliseconds
+                    scheduleWrites += async(start = CoroutineStart.ATOMIC) {
+                        runCatching {
+                            walletDocumentOperationController.withDocumentLock(event.documentId) {
+                                if (event.documentId in
+                                    walletDocumentOperationController.state.value.removedDocumentIds
+                                ) {
+                                    return@withDocumentLock
+                                }
+                                if (getDocumentById(event.documentId) is IssuedDocument) {
+                                    copyReplacementBookmark(originalDocumentId, event.documentId)
+                                    return@withDocumentLock
+                                }
+                                deferredScheduleDao.store(
+                                    DeferredDocumentSchedule(
+                                        identifier = event.documentId,
+                                        nextAttemptAt = firstAttemptAt,
+                                        lastIntervalMillis = null,
+                                        originalDocumentId = originalDocumentId,
+                                    )
+                                )
+                                if (originalDocumentId != null) {
+                                    deferredScheduleDao.attachOriginalIfUnknown(
+                                        event.documentId,
+                                        originalDocumentId
+                                    )
+                                }
+                                copyReplacementBookmark(originalDocumentId, event.documentId)
+                            }
+                        }
+                    }
                 }
             }
         }
 
         return listener
     }
+
+    /**
+     * Copies a Reissuance bookmark at each Issued/Deferred callback, before terminal cleanup can
+     * remove the original's metadata. Aggregate outcomes may omit Deferred replacement IDs.
+     * Bookmark copying keeps the existing best-effort cleanup behavior.
+     */
+    private suspend fun copyReplacementBookmark(originalId: String?, replacementId: String) {
+        if (originalId == null) return
+        runBestEffortLocalMetadataUpdate {
+            if (bookmarkDao.retrieve(originalId) != null &&
+                bookmarkDao.retrieve(replacementId) == null
+            ) {
+                bookmarkDao.store(Bookmark(replacementId))
+            }
+        }
+    }
+
+    /**
+     * Collects initial Issuance and Reissuance in the shared operation scope through their first
+     * terminal state and callback writes. Cancelling a screen collector stops result delivery but
+     * leaves the registered operation running and tracked, so reset can await its completion.
+     * If Core needs a key unlocked, an observer that leaves can no longer answer the prompt.
+     * Cancel its unanswered authentication so Core can send the terminal result.
+     * Reset and bulk removal wait for every submission, including multiple replacements for one
+     * original. A screen that leaves before Wallet Core reports [IssueEvent.Started] (after any
+     * browser sign-in) stops that wait: an abandoned sign-in, which Wallet Core waits for with no
+     * time limit, does not hold back reset or bulk removal. The issuance itself keeps running and
+     * records what Wallet Core reports.
+     */
+    private fun Flow<IssueDocumentsPartialState>.trackedIssuance():
+            Flow<IssueDocumentsPartialState> =
+        flow {
+            val observerLifetime = Job()
+            val issuanceStart = IssuanceStart()
+            val issuance = this@trackedIssuance
+                .flowOn(issuanceStart)
+                .withAuthenticationObserver(observerLifetime)
+            val trackedOperation = walletDocumentOperationController.trackedOperationFlow(
+                completeWhen = { state ->
+                    state !is IssueDocumentsPartialState.UserAuthRequired
+                },
+                isResetOperation = false,
+                isAbandonable = { !issuanceStart.hasStarted },
+                flowToCollect = { issuance },
+            )
+            try {
+                emitAll(trackedOperation)
+            } finally {
+                observerLifetime.cancel()
+            }
+        }
 
     /**
      * Registration check for a flow with no approval screen, run before it starts. Returns the

@@ -17,6 +17,7 @@
 package eu.europa.ec.dashboardfeature.interactor
 
 import eu.europa.ec.authenticationlogic.controller.session.SessionController
+import eu.europa.ec.corelogic.worker.DeferredIssuanceScheduler
 import eu.europa.ec.corelogic.worker.WalletWorkScheduler
 import eu.europa.ec.dashboardfeature.ui.dashboard.model.SideMenuItemUi
 import eu.europa.ec.dashboardfeature.ui.dashboard.model.SideMenuTypeUi
@@ -32,13 +33,10 @@ interface DashboardInteractor {
     fun getSideMenuOptions(): List<SideMenuItemUi>
 
     /**
-     * Schedules the wallet's background work once the user has logged in: the periodic revocation
-     * and re-issuance checks, and the revocation check that runs once per process. Does nothing
-     * while the wallet is locked, as a dashboard restored before login is. So the start-up check
-     * waits for login, and on a new install nothing is scheduled before the first login. Periodic
-     * work already scheduled is kept, and runs on WorkManager's schedule whether or not the wallet
-     * is unlocked. Unlike the factory reset, which schedules only the periodic checks, this also
-     * asks for the start-up check. Safe to call on every visit: it runs once per process.
+     * Activates checks only from an unlocked Dashboard, including Deferred recovery for this wallet
+     * lifecycle. Repeated visits keep existing work and reuse completed startup checks. Periodic
+     * WorkManager checks retain their own schedule; new Deferred pings also require
+     * foreground/unlock.
      */
     fun scheduleBackgroundWork()
 }
@@ -47,6 +45,7 @@ class DashboardInteractorImpl(
     private val resourceProvider: ResourceProvider,
     private val walletWorkScheduler: WalletWorkScheduler,
     private val sessionController: SessionController,
+    private val deferredIssuanceScheduler: DeferredIssuanceScheduler,
 ) : DashboardInteractor {
 
     override fun getSideMenuOptions(): List<SideMenuItemUi> {
@@ -111,5 +110,6 @@ class DashboardInteractorImpl(
         if (!sessionController.isUnlocked) return
         walletWorkScheduler.schedule()
         walletWorkScheduler.scheduleStartupCheck()
+        deferredIssuanceScheduler.start()
     }
 }

@@ -25,6 +25,7 @@ import androidx.work.PeriodicWorkRequest
 import androidx.work.WorkManager
 import androidx.work.await
 import eu.europa.ec.corelogic.config.WalletCoreConfig
+import eu.europa.ec.corelogic.controller.WalletDocumentOperationController
 import eu.europa.ec.corelogic.controller.WalletResetStatus
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -37,9 +38,8 @@ import kotlin.time.toJavaDuration
 interface WalletWorkScheduler {
 
     /**
-     * Resumes the periodic revocation and re-issuance checks unless a reset is running. Work already
-     * scheduled is kept. The dashboard calls it once the user has logged in, and a factory reset
-     * that fails calls it again.
+     * Resumes periodic checks and allows document operations again unless reset is running.
+     * Existing scheduled work is kept; Dashboard and a failed reset may call this repeatedly.
      */
     fun schedule()
 
@@ -62,11 +62,9 @@ interface WalletWorkScheduler {
     fun scheduleRevocationCheck()
 
     /**
-     * Blocks new checks until [schedule] resumes them. Cancels the wallet's workers and waits until
-     * none is still working, for [WalletCoreConfig.workerStopTimeout] at most.
-     * WorkManager marks a running worker cancelled at once, and Wallet Core finishes a re-issuance it
-     * has started even when its worker is cancelled, so the wait is on the locks the workers hold
-     * while they work. Returns false if a worker is still working when the time is up.
+     * Blocks new work and waits for worker cancellation, active workers and tracked document
+     * operations within one [WalletCoreConfig.workerStopTimeout]. False means reset must not start
+     * deleting data.
      */
     suspend fun stop(): Boolean
 }
@@ -75,6 +73,7 @@ class WalletWorkSchedulerImpl(
     private val context: Context,
     private val walletCoreConfig: WalletCoreConfig,
     private val resetStatus: WalletResetStatus,
+    private val walletDocumentOperationController: WalletDocumentOperationController,
     private val stopTimeout: Duration = walletCoreConfig.workerStopTimeout,
     private val workerLocks: List<Mutex> = listOf(
         RevocationWorkManager.runLock,
@@ -100,6 +99,7 @@ class WalletWorkSchedulerImpl(
     override fun schedule() {
         if (resetStatus.isResetting.value) return
         isStopped = false
+        walletDocumentOperationController.resume()
         enqueuePeriodicWorker(
             RevocationWorkManager.REVOCATION_WORK_NAME,
             walletCoreConfig.revocationInterval,
@@ -133,13 +133,19 @@ class WalletWorkSchedulerImpl(
         )
     }
 
+    /**
+     * WorkManager cancellation does not mean a worker has finished its Core callbacks, so the wait
+     * is also on the locks the workers hold while they work.
+     */
     override suspend fun stop(): Boolean {
         synchronized(this) {
             isStopped = true
         }
-        WORK_NAMES.forEach { name -> workManager.cancelUniqueWork(name).await() }
+        walletDocumentOperationController.stop()
         return withTimeoutOrNull(stopTimeout) {
+            WORK_NAMES.forEach { name -> workManager.cancelUniqueWork(name).await() }
             workerLocks.forEach { lock -> lock.withLock {} }
+            walletDocumentOperationController.awaitIdle()
             true
         } ?: false
     }

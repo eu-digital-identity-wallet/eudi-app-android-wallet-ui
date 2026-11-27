@@ -13,6 +13,7 @@
 * [Pin Storage configuration](#pin-storage-configuration)
 * [PIN throttle configuration](#pin-throttle-configuration)
 * [Analytics configuration](#analytics-configuration)
+* [Deferred Issuance configuration](#deferred-issuance-configuration)
 
 ## General configuration
 
@@ -50,8 +51,12 @@ interface WalletCoreConfig {
     //    flow to block, before consent, a request Wallet Core would answer with no data.
     val readerAuthenticationEnforcement: ReaderAuthenticationEnforcement
 
-    // 10. How long a factory reset waits for the background workers; default 30.seconds.
+    // 10. How long a factory reset waits for background work and document operations;
+    //     default 30.seconds.
     val workerStopTimeout: Duration
+
+    // 11. Deferred Issuance polling and retry settings, shared by every deferred document.
+    val deferredIssuanceConfig: DeferredIssuanceConfig
 
 }
 ```
@@ -528,7 +533,8 @@ complete production process, see [GO_LIVE.md](GO_LIVE.md).
 | DCAPI                                      | `configureDCAPI { withEnabled(...); withSupportedProtocols(...) }` and the *Allow document requests from apps and websites (DC API)* setting (`DCAPISettingProvider`) | Enable only if the production wallet supports Digital Credential API flows and has tested them. List only approved protocols; at least one is required. The user setting is on by default, is shown only when the build enables the API, and should be kept (see [GO_LIVE.md](GO_LIVE.md#digital-credential-api)).                                                                                                                                                                                                                                                                                                                                                                                                                                      |
 | Document issuance rules                    | `documentIssuanceConfig`                                                                                                                  | Credential rotation, one-time-use, quantity, and re-issuance intervals agreed with issuer capacity and privacy policy.                                                                                                                                                                                                                                                                                                                                                                                                               |
 | Revocation interval                        | `revocationInterval`                                                                                                                      | A value that balances user experience, battery/network use, and relying-party risk.                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| Worker stop timeout                        | `workerStopTimeout`                                                                                                                       | How long a factory reset waits for running revocation and re-issuance work to finish after cancellation. The default is 30 seconds. The app blocks new checks and waits for active operations to complete. A timeout fails the reset before data deletion. See [GO_LIVE.md](GO_LIVE.md#data-deletion-and-factory-reset). |
+| Deferred Issuance                          | `deferredIssuanceConfig`                                                                                                                  | Delays agreed with the issuers' capacity. `initialPollingDelay` (5 seconds by default) is the wait while the issuer has sent no interval yet; `failureRetryDelay` (30 seconds) is the shortest wait after a failed request, and the wallet waits for the issuer's last interval when it is longer; `maxConcurrentDeferredRequests` (`null`, no global limit) caps the requests sent at once across documents. See [GO_LIVE.md](GO_LIVE.md#deferred-issuance). |
+| Worker stop timeout                        | `workerStopTimeout`                                                                                                                       | One total budget for stopping revocation, Reissuance and Deferred Issuance, including Core callbacks and persistence. The default is 30 seconds. The app blocks new checks and waits for active operations to complete. A timeout fails the reset before data deletion. Set it above the network request timeout (`NetworkConfig.requestTimeout`), so that a slow deferred request does not fail a reset. See [GO_LIVE.md](GO_LIVE.md#data-deletion-and-factory-reset). |
 | RQES QTSP endpoint                         | `business-logic/src/<flavor>/java/.../RQESConfigImpl.kt`                                                                                  | Production CSC/QTSP endpoint provided by the selected qualified trust service provider.                                                                                                                                                                                                                                                                                                                                                                                                                                              |
 | RQES TSA URL                               | `RQESConfigImpl.kt`                                                                                                                       | Production timestamp authority URL required by the QTSP/signature profile.                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
 | RQES client ID/secret                      | `RQESConfigImpl.kt`                                                                                                                       | Do not hardcode confidential secrets in the app. Use an approved public-client or backend-mediated design.                                                                                                                                                                                                                                                                                                                                                                                                                           |
@@ -1136,3 +1142,36 @@ fun provideAnalyticsConfig(): AnalyticsConfig {
     }
 }
 ```
+
+## Deferred Issuance configuration
+
+Override `deferredIssuanceConfig` in a flavor's `WalletCoreConfigImpl` when needed:
+
+```kotlin
+override val deferredIssuanceConfig = DeferredIssuanceConfig(
+    initialPollingDelay = 5.seconds,
+    failureRetryDelay = 30.seconds,
+    maxConcurrentDeferredRequests = null,
+)
+```
+
+These are the shared defaults. A positive `maxConcurrentDeferredRequests` caps the requests sent
+at once across documents; with `null`, every document that is due may be asked at the same time.
+Each document has at most one request in flight.
+
+* The first request waits `initialPollingDelay`, because Wallet Core does not yet expose the
+  issuer's first interval.
+* After a `DocumentNotReady` answer with a valid interval, the wallet stores it and waits for it
+  plus one second, which allows for rounding to whole seconds. Without a valid interval it waits for
+  the last valid one, or `initialPollingDelay`.
+* After a `DocumentFailed` answer it waits `failureRetryDelay` or the issuer's last interval,
+  whichever is longer, and keeps asking.
+* `DocumentExpired`, an issuer answer `invalid_transaction_id`, a registration the issuance policy
+  refuses and an issuer chain found untrusted for a reason other than its validity period stop the
+  requests for that document, also after a restart. The document stays as **Failed** until the user
+  removes it.
+
+Requests start after the first unlocked Dashboard and are sent only while the app is in front and
+unlocked, also while the Filters are open. A factory reset stops new requests and waits for those
+in flight within the shared `workerStopTimeout`. The production decisions are in
+[GO_LIVE.md](GO_LIVE.md#deferred-issuance).

@@ -22,12 +22,14 @@ import androidx.work.WorkManager
 import androidx.work.testing.SynchronousExecutor
 import androidx.work.testing.WorkManagerTestInitHelper
 import eu.europa.ec.corelogic.config.WalletCoreConfig
+import eu.europa.ec.corelogic.controller.WalletDocumentOperationController
 import eu.europa.ec.corelogic.controller.WalletResetStatus
+import eu.europa.ec.testlogic.extension.runTest
 import eu.europa.ec.testlogic.rule.CoroutineTestRule
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.async
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.test.runCurrent
-import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -36,8 +38,12 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.mockito.Mockito.RETURNS_DEEP_STUBS
-import org.mockito.kotlin.mock
+import org.mockito.Answers
+import org.mockito.Mock
+import org.mockito.MockitoAnnotations
+import org.mockito.kotlin.doSuspendableAnswer
+import org.mockito.kotlin.verify
+import org.mockito.kotlin.whenever
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.RuntimeEnvironment
 import java.util.UUID
@@ -51,11 +57,18 @@ class TestWalletWorkScheduler {
 
     private val context: Context = RuntimeEnvironment.getApplication()
 
-    private val walletCoreConfig: WalletCoreConfig = mock(defaultAnswer = RETURNS_DEEP_STUBS)
+    @Mock(answer = Answers.RETURNS_DEEP_STUBS)
+    private lateinit var walletCoreConfig: WalletCoreConfig
+
+    @Mock
+    private lateinit var operationController: WalletDocumentOperationController
+
+    private lateinit var closeable: AutoCloseable
     private val resetStatus = WalletResetStatus()
 
     @Before
     fun before() {
+        closeable = MockitoAnnotations.openMocks(this)
         WorkManagerTestInitHelper.initializeTestWorkManager(
             context,
             Configuration.Builder().setExecutor(SynchronousExecutor()).build(),
@@ -65,12 +78,57 @@ class TestWalletWorkScheduler {
     @After
     fun after() {
         WorkManagerTestInitHelper.closeWorkDatabase()
+        closeable.close()
     }
 
     //region stop
+    /**
+     * 1. A background lock takes twenty seconds to release and Core is still finishing.
+     *
+     * Expected result:
+     * The entire stop times out at thirty seconds; a later retry can succeed.
+     */
+    @Test
+    fun `Given pending work, When the shared stop deadline expires, Then reset can retry after completion`() {
+        coroutineRule.runTest {
+            // Given
+            val completion = CompletableDeferred<Unit>()
+            whenever(operationController.awaitIdle()).doSuspendableAnswer { completion.await() }
+            val workerLock = Mutex(locked = true)
+            val scheduler = buildScheduler(workerLocks = listOf(workerLock))
+
+            // When
+            val firstStop = async { scheduler.stop() }
+            coroutineRule.testScope.runCurrent()
+            coroutineRule.testScope.testScheduler.advanceTimeBy(20.seconds)
+            workerLock.unlock()
+            coroutineRule.testScope.runCurrent()
+
+            // Then
+            assertFalse(firstStop.isCompleted)
+
+            // When
+            coroutineRule.testScope.testScheduler.advanceTimeBy(10.seconds)
+            coroutineRule.testScope.runCurrent()
+
+            // Then
+            assertTrue(firstStop.isCompleted)
+            assertFalse(firstStop.await())
+            assertFalse(completion.isCompleted)
+            verify(operationController).stop()
+
+            // When
+            completion.complete(Unit)
+            val stoppedOnRetry = scheduler.stop()
+
+            // Then
+            assertTrue(stoppedOnRetry)
+        }
+    }
+
     @Test
     fun `Given no worker is working, When the work is stopped, Then it returns true`() {
-        coroutineRule.testScope.runTest {
+        coroutineRule.runTest {
             // Given
             val scheduler = buildScheduler(workerLocks = listOf(Mutex(), Mutex()))
 
@@ -90,14 +148,14 @@ class TestWalletWorkScheduler {
     // Stopping waits for re-issuance to finish without queuing another check.
     @Test
     fun `Given a worker is finishing, When stop waits, Then a requested revocation check is not queued`() {
-        coroutineRule.testScope.runTest {
+        coroutineRule.runTest {
             // Given
             val workerLock = Mutex(locked = true)
             val scheduler = buildScheduler(workerLocks = listOf(Mutex(), workerLock))
 
             // When
             val stopped = async { scheduler.stop() }
-            runCurrent()
+            coroutineRule.testScope.runCurrent()
 
             assertFalse(stopped.isCompleted)
             scheduler.scheduleRevocationCheck()
@@ -111,7 +169,7 @@ class TestWalletWorkScheduler {
 
     @Test
     fun `Given a worker that does not finish, When the work is stopped, Then it returns false when the wait ends`() {
-        coroutineRule.testScope.runTest {
+        coroutineRule.runTest {
             // Given
             val scheduler = buildScheduler(workerLocks = listOf(Mutex(locked = true)))
 
@@ -130,7 +188,7 @@ class TestWalletWorkScheduler {
     // One-time checks stay blocked until scheduling resumes.
     @Test
     fun `Given work has stopped, When one-time checks are requested, Then no work is queued`() {
-        coroutineRule.testScope.runTest {
+        coroutineRule.runTest {
             // Given
             val scheduler = buildScheduler(workerLocks = emptyList())
             assertTrue(scheduler.stop())
@@ -153,7 +211,7 @@ class TestWalletWorkScheduler {
     // Scheduling cannot restart any checks during deletion.
     @Test
     fun `Given a reset is running, When background work is scheduled, Then no work is queued`() {
-        coroutineRule.testScope.runTest {
+        coroutineRule.runTest {
             // Given
             val scheduler = buildScheduler(workerLocks = emptyList())
             resetStatus.setResetting(true)
@@ -179,7 +237,7 @@ class TestWalletWorkScheduler {
     // Resuming queues the periodic work and allows the start-up check.
     @Test
     fun `Given a reset has finished, When scheduling resumes, Then periodic and start-up checks are queued`() {
-        coroutineRule.testScope.runTest {
+        coroutineRule.runTest {
             // Given
             val scheduler = buildScheduler(workerLocks = emptyList())
             resetStatus.setResetting(true)
@@ -205,7 +263,7 @@ class TestWalletWorkScheduler {
     // A revocation check is blocked until failure recovery resumes scheduling.
     @Test
     fun `Given stopping timed out, When scheduling resumes, Then revocation checks can be queued again`() {
-        coroutineRule.testScope.runTest {
+        coroutineRule.runTest {
             // Given
             val scheduler = buildScheduler(workerLocks = listOf(Mutex(locked = true)))
             resetStatus.setResetting(true)
@@ -275,12 +333,13 @@ class TestWalletWorkScheduler {
     private fun workIds(uniqueWorkName: String): List<UUID> = WorkManager.getInstance(context)
         .getWorkInfosForUniqueWork(uniqueWorkName)
         .get()
-        .map { it.id }
+        .map { info -> info.id }
 
     private fun buildScheduler(workerLocks: List<Mutex>) = WalletWorkSchedulerImpl(
         context = context,
         walletCoreConfig = walletCoreConfig,
         resetStatus = resetStatus,
+        walletDocumentOperationController = operationController,
         stopTimeout = 30.seconds,
         workerLocks = workerLocks,
     )

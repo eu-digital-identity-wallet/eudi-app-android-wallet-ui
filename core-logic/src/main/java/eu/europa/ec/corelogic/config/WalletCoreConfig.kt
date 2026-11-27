@@ -30,13 +30,25 @@ import kotlin.time.Duration.Companion.seconds
 
 interface WalletCoreConfig {
 
-
     /**
      * Holds the configuration settings for the EudiWallet.
      * This configuration includes settings such as API endpoints, cryptographic parameters,
      * and storage locations.
      */
     val config: EudiWalletConfig
+
+    /**
+     * Polling and retry settings for Deferred Issuance, shared by all document schedules.
+     *
+     * TODO Remove `initialPollingDelay` when Wallet Core exposes the first eligible poll time for
+     * new and restored Deferred documents.
+     */
+    val deferredIssuanceConfig: DeferredIssuanceConfig
+        get() = DeferredIssuanceConfig(
+            initialPollingDelay = 5.seconds,
+            failureRetryDelay = 30.seconds,
+            maxConcurrentDeferredRequests = null,
+        )
 
     /**
      * Whether registration certificates are checked in this process — the value [config] was built
@@ -190,8 +202,8 @@ interface WalletCoreConfig {
     val revocationInterval: Duration get() = 15.minutes
 
     /**
-     * How long a factory reset waits for a running revocation or re-issuance worker to finish
-     * before it gives up and reports that the wallet could not be reset.
+     * One total budget for stopping revocation, re-issuance and deferred work, including Core
+     * callbacks and their persistence. A timeout fails reset before it deletes any data.
      */
     val workerStopTimeout: Duration get() = 30.seconds
 

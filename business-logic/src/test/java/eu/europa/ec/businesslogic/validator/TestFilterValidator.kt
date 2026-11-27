@@ -66,6 +66,71 @@ class TestFilterValidator {
         sharingStarted = SharingStarted.Eagerly
     )
 
+    /**
+     * 1. A draft selection is cancelled immediately before a dynamic refresh.
+     *
+     * Expected result:
+     * The refreshed list keeps the applied selection, not the cancelled draft.
+     */
+    @Test
+    fun `Given a cancelled draft, When filters refresh immediately, Then the applied selection survives`() =
+        coroutineRule.runTest {
+            filterValidator.onFilterStateChange().runFlowTest {
+                // Given
+                filterValidator.initializeValidator(filtersWithMultipleSelection, filterableList)
+                filterValidator.applyFilters()
+                val initial = awaitItem()
+                filterValidator.updateFilter(multipleSelectionGroup.id, filterItemsMultiple[2].id)
+
+                // When
+                filterValidator.revertFilters()
+                filterValidator.initializeValidator(filtersWithMultipleSelection, filterableList)
+                filterValidator.applyFilters()
+
+                // Then
+                val refreshed = awaitItem()
+                assertEquals(initial.updatedFilters, refreshed.updatedFilters)
+            }
+        }
+
+    @Test
+    fun `Given a restricted selection, When an issuer first appears, Then it starts selected and known deselections survive`() =
+        coroutineRule.runTest {
+            // Given
+            val firstList = FilterableList(items = listOf(mockedRetainedItem))
+            val newItem = getMockedSelectionItem(
+                name = mockedIssuerName,
+                attributes = mockedSelectionAttributes.copy(partyName = mockedIssuerName),
+            )
+            filterValidator.initializeValidator(
+                getMockedSelectionFilters(listOf(mockedPrimaryName)),
+                firstList
+            )
+            filterValidator.onFilterStateChange().runFlowTest {
+                filterValidator.applyFilters()
+                awaitItem()
+                filterValidator.updateFilter(mockedPartyGroupId, "party:$mockedPrimaryName")
+                awaitItem()
+
+                // When
+                filterValidator.applyFilters()
+                filterValidator.initializeValidator(
+                    getMockedSelectionFilters(listOf(mockedPrimaryName, mockedIssuerName)),
+                    FilterableList(items = firstList.items + newItem),
+                )
+                filterValidator.applyFilters()
+
+                // Then
+                val result = awaitItem() as FilterValidatorPartialState.FilterListResult
+                assertEquals(listOf(newItem), result.filteredItems())
+                val choices = result.updatedFilters.filterGroups
+                    .single { group -> group.id == mockedPartyGroupId }
+                    .filters.associate { filter -> filter.id to filter.selected }
+                assertEquals(false, choices["party:$mockedPrimaryName"])
+                assertEquals(true, choices["party:$mockedIssuerName"])
+            }
+        }
+
     @Test
     fun `Given initial filters, When initializeValidator is called with applyFilters, Then FilterUpdateResult is emitted`() =
         coroutineRule.runTest {

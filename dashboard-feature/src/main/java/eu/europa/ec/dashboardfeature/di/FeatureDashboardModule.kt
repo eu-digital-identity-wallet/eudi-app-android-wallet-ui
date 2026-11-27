@@ -31,6 +31,7 @@ import eu.europa.ec.corelogic.controller.WalletCoreResetController
 import eu.europa.ec.corelogic.controller.WalletCoreTransactionLogController
 import eu.europa.ec.corelogic.controller.WalletCoreTransactionRecordingController
 import eu.europa.ec.corelogic.provider.DCAPISettingProvider
+import eu.europa.ec.corelogic.worker.DeferredIssuanceScheduler
 import eu.europa.ec.corelogic.worker.WalletWorkScheduler
 import eu.europa.ec.dashboardfeature.interactor.DashboardInteractor
 import eu.europa.ec.dashboardfeature.interactor.DashboardInteractorImpl
@@ -109,10 +110,12 @@ fun provideDashboardInteractor(
     resourceProvider: ResourceProvider,
     walletWorkScheduler: WalletWorkScheduler,
     sessionController: SessionController,
+    deferredIssuanceScheduler: DeferredIssuanceScheduler,
 ): DashboardInteractor = DashboardInteractorImpl(
     resourceProvider,
     walletWorkScheduler,
     sessionController,
+    deferredIssuanceScheduler,
 )
 
 fun provideSettingsInteractor(
@@ -157,6 +160,7 @@ fun provideDocumentsInteractor(
     filterValidator: FilterValidator,
     configLogic: ConfigLogic,
     prefKeys: PrefKeys,
+    deferredIssuanceScheduler: DeferredIssuanceScheduler,
 ): DocumentsInteractor =
     DocumentsInteractorImpl(
         resourceProvider,
@@ -164,6 +168,7 @@ fun provideDocumentsInteractor(
         filterValidator,
         configLogic,
         prefKeys,
+        deferredIssuanceScheduler,
     )
 
 fun provideTransactionInteractor(

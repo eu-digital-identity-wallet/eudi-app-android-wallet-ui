@@ -17,6 +17,7 @@
 package eu.europa.ec.dashboardfeature.interactor
 
 import eu.europa.ec.authenticationlogic.controller.session.SessionController
+import eu.europa.ec.corelogic.worker.DeferredIssuanceScheduler
 import eu.europa.ec.corelogic.worker.WalletWorkScheduler
 import eu.europa.ec.dashboardfeature.ui.dashboard.model.SideMenuTypeUi
 import eu.europa.ec.resourceslogic.R
@@ -48,6 +49,9 @@ class TestDashboardInteractor {
     @Mock
     private lateinit var sessionController: SessionController
 
+    @Mock
+    private lateinit var deferredIssuanceScheduler: DeferredIssuanceScheduler
+
     private lateinit var interactor: DashboardInteractor
 
     private lateinit var closeable: AutoCloseable
@@ -60,6 +64,7 @@ class TestDashboardInteractor {
             resourceProvider = resourceProvider,
             walletWorkScheduler = walletWorkScheduler,
             sessionController = sessionController,
+            deferredIssuanceScheduler = deferredIssuanceScheduler,
         )
     }
 
@@ -79,6 +84,7 @@ class TestDashboardInteractor {
         // Then
         verify(walletWorkScheduler, times(1)).schedule()
         verify(walletWorkScheduler, times(1)).scheduleStartupCheck()
+        verify(deferredIssuanceScheduler).start()
     }
 
     @Test
@@ -90,7 +96,7 @@ class TestDashboardInteractor {
         interactor.scheduleBackgroundWork()
 
         // Then
-        verifyNoInteractions(walletWorkScheduler)
+        verifyNoInteractions(walletWorkScheduler, deferredIssuanceScheduler)
     }
 
     /**

@@ -21,6 +21,7 @@ import androidx.room.Room
 import eu.europa.ec.businesslogic.controller.crypto.CryptoController
 import eu.europa.ec.businesslogic.controller.storage.PrefKeys
 import eu.europa.ec.storagelogic.dao.BookmarkDao
+import eu.europa.ec.storagelogic.dao.DeferredDocumentScheduleDao
 import eu.europa.ec.storagelogic.dao.FailedReIssuedDocumentDao
 import eu.europa.ec.storagelogic.dao.IssuerTrustDao
 import eu.europa.ec.storagelogic.dao.RevokedDocumentDao
@@ -43,6 +44,7 @@ val logicStorageModule = module {
     singleOf(::provideFailedReIssuedDocumentDao)
     singleOf(::provideIssuerTrustDao)
     singleOf(::provideStatusRefreshFailureDao)
+    singleOf(::provideDeferredDocumentScheduleDao)
 }
 
 /**
@@ -91,3 +93,6 @@ fun provideIssuerTrustDao(service: DatabaseService): IssuerTrustDao =
 
 fun provideStatusRefreshFailureDao(service: DatabaseService): StatusRefreshFailureDao =
     service.statusRefreshFailureDao()
+
+fun provideDeferredDocumentScheduleDao(service: DatabaseService): DeferredDocumentScheduleDao =
+    service.deferredDocumentScheduleDao()

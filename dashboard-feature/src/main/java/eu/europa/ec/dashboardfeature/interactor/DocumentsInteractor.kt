@@ -36,22 +36,19 @@ import eu.europa.ec.businesslogic.validator.model.FilterableList
 import eu.europa.ec.businesslogic.validator.model.Filters
 import eu.europa.ec.businesslogic.validator.model.SortOrder
 import eu.europa.ec.corelogic.controller.DeleteDocumentPartialState
-import eu.europa.ec.corelogic.controller.IssueDeferredDocumentPartialState
 import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
 import eu.europa.ec.corelogic.extension.getExpiryDate
 import eu.europa.ec.corelogic.extension.isExpired
 import eu.europa.ec.corelogic.extension.localizedIssuerMetadata
-import eu.europa.ec.corelogic.model.DeferredDocumentDataDomain
 import eu.europa.ec.corelogic.model.DocumentCategory
-import eu.europa.ec.corelogic.model.FormatType
 import eu.europa.ec.corelogic.model.toDocumentCategory
 import eu.europa.ec.corelogic.model.toDocumentIdentifier
+import eu.europa.ec.corelogic.worker.DeferredIssuanceScheduler
 import eu.europa.ec.dashboardfeature.ui.documents.detail.model.DocumentIssuanceStateUi
 import eu.europa.ec.dashboardfeature.ui.documents.list.model.DocumentFilterIds
 import eu.europa.ec.dashboardfeature.ui.documents.list.model.DocumentUi
 import eu.europa.ec.dashboardfeature.ui.documents.list.model.DocumentsFilterableAttributes
 import eu.europa.ec.dashboardfeature.ui.documents.model.DocumentCredentialsInfoUi
-import eu.europa.ec.eudi.wallet.document.DocumentId
 import eu.europa.ec.eudi.wallet.document.IssuedDocument
 import eu.europa.ec.eudi.wallet.document.UnsignedDocument
 import eu.europa.ec.resourceslogic.R
@@ -66,15 +63,10 @@ import eu.europa.ec.uilogic.component.ThemeColorKey
 import eu.europa.ec.uilogic.component.wrap.CheckboxDataUi
 import eu.europa.ec.uilogic.component.wrap.ExpandableListItemUi
 import eu.europa.ec.uilogic.component.wrap.RadioButtonDataUi
-import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.lastOrNull
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.withContext
 
 sealed class DocumentInteractorFilterPartialState {
     data class FilterApplyResult(
@@ -104,48 +96,16 @@ sealed class DocumentInteractorDeleteDocumentPartialState {
         DocumentInteractorDeleteDocumentPartialState()
 }
 
-sealed class DocumentInteractorRetryIssuingDeferredDocumentPartialState {
-    data class Success(
-        val deferredDocumentData: DeferredDocumentDataDomain,
-    ) : DocumentInteractorRetryIssuingDeferredDocumentPartialState()
-
-    data class NotReady(
-        val deferredDocumentData: DeferredDocumentDataDomain,
-    ) : DocumentInteractorRetryIssuingDeferredDocumentPartialState()
-
-    data class Failure(
-        val documentId: DocumentId,
-        val errorMessage: String,
-    ) : DocumentInteractorRetryIssuingDeferredDocumentPartialState()
-
-    data class Expired(
-        val documentId: DocumentId,
-    ) : DocumentInteractorRetryIssuingDeferredDocumentPartialState()
-
-    data class IssuerNotTrusted(
-        val documentId: DocumentId,
-    ) : DocumentInteractorRetryIssuingDeferredDocumentPartialState()
-}
-
-sealed class DocumentInteractorRetryIssuingDeferredDocumentsPartialState {
-    data class Result(
-        val successfullyIssuedDeferredDocuments: List<DeferredDocumentDataDomain>,
-        val failedIssuedDeferredDocuments: List<DocumentId>,
-    ) : DocumentInteractorRetryIssuingDeferredDocumentsPartialState()
-
-    data class Failure(
-        val errorMessage: String,
-    ) : DocumentInteractorRetryIssuingDeferredDocumentsPartialState()
-}
-
 interface DocumentsInteractor {
+    val unseenDeferredIssuanceIds: StateFlow<Set<String>>
+    fun markDeferredIssuanceSeen(documentId: String)
+
     fun getDocuments(): Flow<DocumentInteractorGetDocumentsPartialState>
 
-    fun tryIssuingDeferredDocumentsFlow(
-        deferredDocuments: Map<DocumentId, FormatType>,
-        dispatcher: CoroutineDispatcher = Dispatchers.IO,
-    ): Flow<DocumentInteractorRetryIssuingDeferredDocumentsPartialState>
-
+    /**
+     * Documents handles Remove for a selected Pending or Failed ID, including the first Deferred
+     * PID.
+     */
     fun deleteDocument(
         documentId: String,
     ): Flow<DocumentInteractorDeleteDocumentPartialState>
@@ -155,7 +115,6 @@ interface DocumentsInteractor {
         filterableList: FilterableList,
     )
 
-    fun updateLists(filterableList: FilterableList)
     fun applyFilters()
     fun applySearch(query: String)
     fun resetFilters()
@@ -176,7 +135,14 @@ class DocumentsInteractorImpl(
     private val filterValidator: FilterValidator,
     private val configLogic: ConfigLogic,
     private val prefKeys: PrefKeys,
+    private val deferredIssuanceScheduler: DeferredIssuanceScheduler,
 ) : DocumentsInteractor {
+
+    override val unseenDeferredIssuanceIds: StateFlow<Set<String>>
+        get() = deferredIssuanceScheduler.unseenDeferredIssuanceIds
+
+    override fun markDeferredIssuanceSeen(documentId: String) =
+        deferredIssuanceScheduler.markDeferredIssuanceSeen(documentId)
 
     private val genericErrorMsg
         get() = resourceProvider.genericErrorMessage()
@@ -267,9 +233,6 @@ class DocumentsInteractorImpl(
         filterableList
     )
 
-    override fun updateLists(filterableList: FilterableList) =
-        filterValidator.updateLists(filterableList)
-
     override fun applySearch(query: String) = filterValidator.applySearch(query)
 
     override fun revertFilters() = filterValidator.revertFilters()
@@ -284,6 +247,10 @@ class DocumentsInteractorImpl(
 
     override fun resetFilters() = filterValidator.resetFilters()
 
+    /**
+     * Wallet Core retains Deferred documents for both retryable failures and terminal expiry, so
+     * the scheduler's failed IDs decide which of them show as Failed.
+     */
     override fun getDocuments(): Flow<DocumentInteractorGetDocumentsPartialState> =
         flow<DocumentInteractorGetDocumentsPartialState> {
             val shouldAllowUserInteraction =
@@ -294,6 +261,8 @@ class DocumentsInteractorImpl(
             val userLocale = resourceProvider.getLocale()
 
             val showBatchIssuanceCounter = prefKeys.getShowBatchIssuanceCounter()
+
+            val failedDeferredIds = deferredIssuanceScheduler.getFailedDocumentIds()
 
             val allDocuments = FilterableList(
                 items = walletCoreDocumentsController.getAllDocuments().map { document ->
@@ -425,6 +394,9 @@ class DocumentsInteractorImpl(
                         }
 
                         is UnsignedDocument -> {
+                            val isFailed = document.id in failedDeferredIds
+                            val pendingColor =
+                                if (isFailed) ThemeColorKey.Error else ThemeColorKey.Warning
                             val localizedIssuerMetadata =
                                 document.localizedIssuerMetadata(userLocale)
 
@@ -448,14 +420,24 @@ class DocumentsInteractorImpl(
 
                             FilterableItem(
                                 payload = DocumentUi(
-                                    documentIssuanceState = DocumentIssuanceStateUi.Pending,
+                                    documentIssuanceState = if (isFailed) {
+                                        DocumentIssuanceStateUi.Failed
+                                    } else {
+                                        DocumentIssuanceStateUi.Pending
+                                    },
                                     uiData = ListItemDataUi(
                                         itemId = document.id,
                                         mainContentData = ListItemMainContentDataUi.Text(text = documentName),
                                         overlineText = issuerName,
                                         supportingContentData = ListItemSupportingContentDataUi.Text(
-                                            text = resourceProvider.getString(R.string.dashboard_document_deferred_pending),
-                                            textColorKey = ThemeColorKey.Warning,
+                                            text = resourceProvider.getString(
+                                                if (isFailed) {
+                                                    R.string.dashboard_document_deferred_failed
+                                                } else {
+                                                    R.string.dashboard_document_deferred_pending
+                                                }
+                                            ),
+                                            textColorKey = pendingColor,
                                         ),
                                         leadingContentData = ListItemLeadingContentDataUi.AsyncImage(
                                             imageUrl = walletCoreDocumentsController.getIssuerLogo(
@@ -466,8 +448,12 @@ class DocumentsInteractorImpl(
                                             errorImage = AppIcons.Id,
                                         ),
                                         trailingContentData = ListItemTrailingContentDataUi.Icon(
-                                            iconData = AppIcons.ClockTimer,
-                                            tint = ThemeColorKey.Warning,
+                                            iconData = if (isFailed) {
+                                                AppIcons.ErrorFilled
+                                            } else {
+                                                AppIcons.ClockTimer
+                                            },
+                                            tint = pendingColor,
                                         )
                                     ),
                                     documentIdentifier = documentIdentifier,
@@ -536,104 +522,6 @@ class DocumentsInteractorImpl(
                     iconData = AppIcons.KeyboardArrowRight
                 )
             }
-        }
-    }
-
-    override fun tryIssuingDeferredDocumentsFlow(
-        deferredDocuments: Map<DocumentId, FormatType>,
-        dispatcher: CoroutineDispatcher,
-    ): Flow<DocumentInteractorRetryIssuingDeferredDocumentsPartialState> = flow {
-
-        val successResults: MutableList<DeferredDocumentDataDomain> = mutableListOf()
-        val failedResults: MutableList<DocumentId> = mutableListOf()
-
-        withContext(dispatcher) {
-            val allJobs = deferredDocuments.keys.map { deferredDocumentId ->
-                async {
-                    tryIssuingDeferredDocumentSuspend(deferredDocumentId)
-                }
-            }
-
-            allJobs.forEach { job ->
-                when (val result = job.await()) {
-                    is DocumentInteractorRetryIssuingDeferredDocumentPartialState.Failure -> {
-                        failedResults.add(result.documentId)
-                    }
-
-                    is DocumentInteractorRetryIssuingDeferredDocumentPartialState.Success -> {
-                        successResults.add(result.deferredDocumentData)
-                    }
-
-                    is DocumentInteractorRetryIssuingDeferredDocumentPartialState.NotReady -> {}
-
-                    is DocumentInteractorRetryIssuingDeferredDocumentPartialState.Expired -> {
-                        deleteDocument(result.documentId).lastOrNull()
-                    }
-
-                    is DocumentInteractorRetryIssuingDeferredDocumentPartialState.IssuerNotTrusted -> {
-                        deleteDocument(result.documentId).lastOrNull()
-                    }
-                }
-            }
-        }
-
-        emit(
-            DocumentInteractorRetryIssuingDeferredDocumentsPartialState.Result(
-                successfullyIssuedDeferredDocuments = successResults,
-                failedIssuedDeferredDocuments = failedResults
-            )
-        )
-
-    }.safeAsync {
-        DocumentInteractorRetryIssuingDeferredDocumentsPartialState.Failure(
-            errorMessage = it.localizedMessage ?: genericErrorMsg
-        )
-    }
-
-    private suspend fun tryIssuingDeferredDocumentSuspend(
-        deferredDocumentId: DocumentId,
-        dispatcher: CoroutineDispatcher = Dispatchers.IO,
-    ): DocumentInteractorRetryIssuingDeferredDocumentPartialState {
-        return withContext(dispatcher) {
-            walletCoreDocumentsController.issueDeferredDocument(deferredDocumentId)
-                .map { result ->
-                    when (result) {
-                        is IssueDeferredDocumentPartialState.Failed -> {
-                            DocumentInteractorRetryIssuingDeferredDocumentPartialState.Failure(
-                                documentId = result.documentId,
-                                errorMessage = result.errorMessage
-                            )
-                        }
-
-                        is IssueDeferredDocumentPartialState.Issued -> {
-                            DocumentInteractorRetryIssuingDeferredDocumentPartialState.Success(
-                                deferredDocumentData = result.deferredDocumentData
-                            )
-                        }
-
-                        is IssueDeferredDocumentPartialState.NotReady -> {
-                            DocumentInteractorRetryIssuingDeferredDocumentPartialState.NotReady(
-                                deferredDocumentData = result.deferredDocumentData
-                            )
-                        }
-
-                        is IssueDeferredDocumentPartialState.Expired -> {
-                            DocumentInteractorRetryIssuingDeferredDocumentPartialState.Expired(
-                                documentId = result.documentId
-                            )
-                        }
-
-                        is IssueDeferredDocumentPartialState.IssuerNotTrusted -> {
-                            DocumentInteractorRetryIssuingDeferredDocumentPartialState.IssuerNotTrusted(
-                                documentId = result.documentId
-                            )
-                        }
-                    }
-                }.firstOrNull()
-                ?: DocumentInteractorRetryIssuingDeferredDocumentPartialState.Failure(
-                    documentId = deferredDocumentId,
-                    errorMessage = genericErrorMsg
-                )
         }
     }
 

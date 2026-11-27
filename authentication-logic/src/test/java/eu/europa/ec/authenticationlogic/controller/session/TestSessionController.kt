@@ -22,6 +22,10 @@ import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.Executors
+import java.util.concurrent.Future
+import java.util.concurrent.TimeUnit
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
@@ -71,6 +75,91 @@ class TestSessionController {
         // Then
         assertTrue(unlockedAfterUnlock)
         assertFalse(unlockedAfterLock)
+    }
+
+    /**
+     * 1. The session has locked before an action is submitted.
+     *
+     * Expected result:
+     * The action is refused without being called.
+     */
+    @Test
+    fun `Given a locked session, When an action is submitted, Then it is not called`() {
+        // Given
+        controller.unlock()
+        controller.lock()
+        var calls = 0
+
+        // When
+        val started = controller.runIfUnlocked { calls++ }
+
+        // Then
+        assertFalse(started)
+        assertEquals(0, calls)
+    }
+
+    /**
+     * 1. Authentication has unlocked the session.
+     *
+     * Expected result:
+     * The action runs once and admission succeeds.
+     */
+    @Test
+    fun `Given an unlocked session, When an action is submitted, Then it runs once`() {
+        // Given
+        controller.unlock()
+        var calls = 0
+
+        // When
+        val started = controller.runIfUnlocked { calls++ }
+
+        // Then
+        assertTrue(started)
+        assertEquals(1, calls)
+    }
+
+    /**
+     * 1. An admitted action has started while the session is unlocked.
+     * 2. Another thread checks the expired idle timeout before that action returns.
+     *
+     * Expected result:
+     * The session remains unlocked through submission, then the idle lock completes.
+     */
+    @Test
+    fun `Given an admitted action, When the idle timeout expires concurrently, Then locking waits for submission`() {
+        // Given
+        controller.unlock()
+        advance(config.idleLockTimeout)
+        val executor = Executors.newSingleThreadExecutor()
+        val lockRequested = CountDownLatch(1)
+        val lockCompleted = CountDownLatch(1)
+        val timeoutSeconds = 5L
+        lateinit var idleLock: Future<Boolean>
+
+        try {
+            // When
+            val started = controller.runIfUnlocked {
+                idleLock = executor.submit<Boolean> {
+                    lockRequested.countDown()
+                    try {
+                        controller.lockIfIdle()
+                    } finally {
+                        lockCompleted.countDown()
+                    }
+                }
+                assertTrue(lockRequested.await(timeoutSeconds, TimeUnit.SECONDS))
+                assertFalse(lockCompleted.await(100, TimeUnit.MILLISECONDS))
+                assertTrue(controller.isUnlocked)
+            }
+
+            // Then
+            assertTrue(started)
+            assertTrue(idleLock.get(timeoutSeconds, TimeUnit.SECONDS))
+            assertFalse(controller.isUnlocked)
+        } finally {
+            executor.shutdownNow()
+            assertTrue(executor.awaitTermination(timeoutSeconds, TimeUnit.SECONDS))
+        }
     }
 
     @Test

@@ -42,6 +42,8 @@ import eu.europa.ec.corelogic.controller.WalletCoreTransactionRecordingControlle
 import eu.europa.ec.corelogic.controller.WalletCoreTransactionRecordingControllerImpl
 import eu.europa.ec.corelogic.controller.WalletCoreTrustMarkController
 import eu.europa.ec.corelogic.controller.WalletCoreTrustMarkControllerImpl
+import eu.europa.ec.corelogic.controller.WalletDocumentOperationController
+import eu.europa.ec.corelogic.controller.WalletDocumentOperationControllerImpl
 import eu.europa.ec.corelogic.controller.WalletResetStatus
 import eu.europa.ec.corelogic.provider.DCAPISettingProvider
 import eu.europa.ec.corelogic.provider.DCAPISettingProviderImpl
@@ -50,6 +52,8 @@ import eu.europa.ec.corelogic.provider.RegistrationCheckProviderImpl
 import eu.europa.ec.corelogic.provider.WalletCoreAttestationProvider
 import eu.europa.ec.corelogic.provider.WalletCoreAttestationProviderImpl
 import eu.europa.ec.corelogic.util.DocumentManagerWithoutExcluded
+import eu.europa.ec.corelogic.worker.DeferredIssuanceScheduler
+import eu.europa.ec.corelogic.worker.DeferredIssuanceSchedulerImpl
 import eu.europa.ec.corelogic.worker.ReIssuanceWorkManager
 import eu.europa.ec.corelogic.worker.RevocationWorkManager
 import eu.europa.ec.corelogic.worker.WalletWorkScheduler
@@ -62,6 +66,7 @@ import eu.europa.ec.eudi.wallet.transactionLogging.TransactionLogManager
 import eu.europa.ec.networklogic.repository.WalletAttestationRepository
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.storagelogic.dao.BookmarkDao
+import eu.europa.ec.storagelogic.dao.DeferredDocumentScheduleDao
 import eu.europa.ec.storagelogic.dao.FailedReIssuedDocumentDao
 import eu.europa.ec.storagelogic.dao.IssuerTrustDao
 import eu.europa.ec.storagelogic.dao.RevokedDocumentDao
@@ -69,6 +74,9 @@ import eu.europa.ec.storagelogic.dao.StatusRefreshFailureDao
 import eu.europa.ec.storagelogic.dao.TransactionLogDao
 import eu.europa.ec.storagelogic.service.DatabaseEraser
 import io.ktor.client.HttpClient
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import org.koin.androidx.workmanager.dsl.workerOf
 import org.koin.core.module.dsl.bind
 import org.koin.core.module.dsl.factoryOf
@@ -97,6 +105,8 @@ val logicCoreModule = module {
     factoryOf(::provideWalletCoreResetController)
     singleOf(::provideWalletResetStatus)
     singleOf(::provideWalletWorkScheduler)
+    singleOf(::provideWalletDocumentOperationController)
+    singleOf(::provideDeferredIssuanceScheduler)
 
     scope<WalletCoreScope> {
         scopedOf(::provideEudiWallet)
@@ -240,6 +250,8 @@ fun provideWalletCoreDocumentsController(
     statusRefreshFailureDao: StatusRefreshFailureDao,
     prefKeys: PrefKeys,
     walletWorkScheduler: WalletWorkScheduler,
+    deferredScheduleDao: DeferredDocumentScheduleDao,
+    walletDocumentOperationController: WalletDocumentOperationController,
 ): WalletCoreDocumentsController =
     WalletCoreDocumentsControllerImpl(
         resourceProvider = resourceProvider,
@@ -251,8 +263,15 @@ fun provideWalletCoreDocumentsController(
         statusRefreshFailureDao = statusRefreshFailureDao,
         prefKeys = prefKeys,
         walletWorkScheduler = walletWorkScheduler,
+        deferredScheduleDao = deferredScheduleDao,
+        walletDocumentOperationController = walletDocumentOperationController,
     )
 
+/**
+ * The database clear also advances the wallet lifecycle
+ * ([WalletDocumentOperationController.onWalletReset]) after storage clears, while reset still
+ * blocks new operations.
+ */
 fun provideWalletCoreResetController(
     context: Context,
     walletCoreDocumentsController: WalletCoreDocumentsController,
@@ -265,6 +284,7 @@ fun provideWalletCoreResetController(
     databaseEraser: DatabaseEraser,
     logController: LogController,
     walletCoreTransactionLogController: WalletCoreTransactionLogController,
+    walletDocumentOperationController: WalletDocumentOperationController,
 ): WalletCoreResetController = WalletCoreResetControllerImpl(
     walletCoreDocumentsController = walletCoreDocumentsController,
     walletCoreDCAPIRegistrationController = walletCoreDCAPIRegistrationController,
@@ -275,21 +295,63 @@ fun provideWalletCoreResetController(
     stopBackgroundWork = { walletWorkScheduler.stop() },
     scheduleBackgroundWork = { walletWorkScheduler.schedule() },
     clearTransactionLogs = { walletCoreTransactionLogController.deleteAllTransactionLogs() },
-    clearDatabase = { databaseEraser.clearAllTables() },
+    clearDatabase = {
+        databaseEraser.clearAllTables()
+        walletDocumentOperationController.onWalletReset()
+    },
     deleteLogFiles = { logController.deleteLogFiles() },
     deleteCacheFiles = { context.cacheDir.deleteContents(recursively = true) },
 )
 
 fun provideWalletResetStatus(): WalletResetStatus = WalletResetStatus()
 
+/**
+ * A single instance: operation coordination owns process-wide state shared by the document
+ * controller instances.
+ */
+fun provideWalletDocumentOperationController(
+    sessionController: SessionController,
+    resetStatus: WalletResetStatus,
+): WalletDocumentOperationController = WalletDocumentOperationControllerImpl(
+    sessionController = sessionController,
+    resetStatus = resetStatus,
+    coroutineScope = CoroutineScope(Dispatchers.IO + SupervisorJob()),
+)
+
+/**
+ * A single instance: scheduling owns process-wide state shared by the document controller
+ * instances. The scheduler survives reset, while each operation needs a controller for the
+ * current Core session, so [WalletCoreDocumentsController] is resolved whenever one is needed.
+ */
+fun provideDeferredIssuanceScheduler(
+    scheduleDao: DeferredDocumentScheduleDao,
+    walletDocumentOperationController: WalletDocumentOperationController,
+    sessionController: SessionController,
+    resetStatus: WalletResetStatus,
+    walletCoreConfig: WalletCoreConfig,
+    context: Context,
+): DeferredIssuanceScheduler = DeferredIssuanceSchedulerImpl(
+    scheduleDao = scheduleDao,
+    walletDocumentOperationController = walletDocumentOperationController,
+    sessionController = sessionController,
+    resetStatus = resetStatus,
+    config = walletCoreConfig.deferredIssuanceConfig,
+    getDocumentsController = { KoinPlatform.getKoin().get<WalletCoreDocumentsController>() },
+    context = context,
+    now = System::currentTimeMillis,
+    coroutineScope = CoroutineScope(Dispatchers.IO + SupervisorJob()),
+)
+
 fun provideWalletWorkScheduler(
     context: Context,
     walletCoreConfig: WalletCoreConfig,
     resetStatus: WalletResetStatus,
+    walletDocumentOperationController: WalletDocumentOperationController,
 ): WalletWorkScheduler = WalletWorkSchedulerImpl(
     context = context,
     walletCoreConfig = walletCoreConfig,
     resetStatus = resetStatus,
+    walletDocumentOperationController = walletDocumentOperationController,
 )
 
 fun provideWalletCorePresentationController(
