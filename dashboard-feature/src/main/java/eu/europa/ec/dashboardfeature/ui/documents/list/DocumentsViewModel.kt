@@ -238,7 +238,9 @@ class DocumentsViewModel(
 
             is Event.BottomSheet.UpdateBottomSheetState -> {
                 setState { copy(isBottomSheetOpen = event.isOpen) }
-                if (!event.isOpen) {
+                if (event.isOpen) {
+                    closeRemovalSheetIfAlreadyIssued()
+                } else {
                     documentIdToIgnoreRemoveTapsFor = null
                     finishFiltering(refresh = true)
                 }
@@ -528,6 +530,14 @@ class DocumentsViewModel(
     private fun hideBottomSheet() {
         setEffect {
             Effect.CloseBottomSheet
+        }
+    }
+
+    /** Closes a Remove sheet whose document was issued while the sheet was opening. */
+    private fun closeRemovalSheetIfAlreadyIssued() {
+        val removalSheet = viewState.value.sheetContent as? DeferredDocumentPressed ?: return
+        if (removalSheet.documentId in viewState.value.unseenDeferredIssuanceIds) {
+            closeRemovalSheetIfOpenFor(issuedDocumentId = removalSheet.documentId)
         }
     }
 

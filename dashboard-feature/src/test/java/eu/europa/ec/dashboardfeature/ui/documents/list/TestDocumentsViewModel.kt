@@ -41,7 +41,6 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.test.runCurrent
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -107,13 +106,11 @@ class TestDocumentsViewModel {
     fun after() {
         try {
             store.clear()
-            coroutineRule.testScope.runCurrent()
+            runCurrent()
         } finally {
             closeable.close()
         }
     }
-
-    //region Filters
 
     @Test
     fun `Given Filters closed, When an apply result arrives, Then the list is replaced`() =
@@ -128,12 +125,13 @@ class TestDocumentsViewModel {
             assertFalse(viewModel.viewState.value.isRefreshPending)
         }
 
-    // Case 2:
-    // 1. Filters are open for editing.
-    // 2. A queued apply result arrives.
-    //
-    // Case 2 Expected Result:
-    // The list and the active-filter indication stay as they were and a refresh is pending.
+    /**
+     * 1. Filters are open for editing.
+     * 2. A queued apply result arrives.
+     *
+     * Expected result:
+     * The list and the active-filter indication stay as they were and a refresh is pending.
+     */
     @Test
     fun `Given Filters open, When an apply result arrives, Then only a refresh is marked`() =
         coroutineRule.runTest {
@@ -153,12 +151,13 @@ class TestDocumentsViewModel {
             verify(interactor, never()).getDocuments()
         }
 
-    // Case 3:
-    // 1. An apply result arrived while Filters were open.
-    // 2. Filters close, and the screen reports the closure a second time.
-    //
-    // Case 3 Expected Result:
-    // The draft is reverted and the documents are loaded once.
+    /**
+     * 1. An apply result arrived while Filters were open.
+     * 2. Filters close, and the screen reports the closure a second time.
+     *
+     * Expected result:
+     * The draft is reverted and the documents are loaded once.
+     */
     @Test
     fun `Given a refresh waiting on Filters, When Filters close twice, Then documents load once`() =
         coroutineRule.runTest {
@@ -179,16 +178,13 @@ class TestDocumentsViewModel {
             assertFalse(viewModel.viewState.value.isRefreshPending)
         }
 
-    //endregion
-
-    //region Deferred documents
-
-    // Case 1:
-    // 1. The Remove sheet of a pending document is open.
-    // 2. The document is issued, and then Remove is tapped on the closing sheet.
-    //
-    // Case 1 Expected Result:
-    // The sheet closes, the documents reload and the Remove tap deletes nothing.
+    /**
+     * 1. The Remove sheet of a pending document is open.
+     * 2. The document is issued, and then Remove is tapped on the closing sheet.
+     *
+     * Expected result:
+     * The sheet closes, the documents reload and the Remove tap deletes nothing.
+     */
     @Test
     fun `Given its Remove sheet open, When the document is issued, Then the sheet closes`() =
         coroutineRule.runTest {
@@ -219,6 +215,32 @@ class TestDocumentsViewModel {
             // Then
             assertEquals(listOf(Effect.ShowBottomSheet, Effect.CloseBottomSheet), effects)
             verify(interactor).deleteDocument(PENDING_ID)
+        }
+
+    /**
+     * 1. The Remove sheet of a pending document is requested.
+     * 2. The document is issued before the sheet reports that it is open.
+     *
+     * Expected result:
+     * The sheet closes as soon as it opens, and the Remove tap deletes nothing.
+     */
+    @Test
+    fun `Given its Remove sheet opening, When the document is issued first, Then the sheet closes`() =
+        coroutineRule.runTest {
+            // Given
+            viewModel.handleEvents(documentSelected(PENDING_ID))
+            runCurrent()
+
+            // When
+            givenUnseenIssuance(PENDING_ID)
+            viewModel.handleEvents(Event.DeferredDocumentIssued(PENDING_ID))
+            viewModel.handleEvents(Event.BottomSheet.UpdateBottomSheetState(isOpen = true))
+            viewModel.handleEvents(removeTapped(PENDING_ID))
+            runCurrent()
+
+            // Then
+            assertEquals(listOf(Effect.ShowBottomSheet, Effect.CloseBottomSheet), effects)
+            verify(interactor, never()).deleteDocument(any())
         }
 
     /** The row still shows the document as pending until the reload replaces it. */
@@ -256,16 +278,13 @@ class TestDocumentsViewModel {
             verify(interactor, never()).deleteDocument(any())
         }
 
-    //endregion
-
-    //region Screen disposal
-
-    // Case 1:
-    // 1. A document load is under way and delivers its result after one second.
-    // 2. The screen is disposed before then.
-    //
-    // Case 1 Expected Result:
-    // The load is cancelled and its result never rebuilds the filters.
+    /**
+     * 1. A document load is under way and delivers its result after one second.
+     * 2. The screen is disposed before then.
+     *
+     * Expected result:
+     * The load is cancelled and its result never rebuilds the filters.
+     */
     @Test
     fun `Given a load under way, When the screen is disposed, Then the load stops`() =
         coroutineRule.runTest {
@@ -288,12 +307,13 @@ class TestDocumentsViewModel {
             verify(interactor, never()).applyFilters()
         }
 
-    // Case 2:
-    // 1. Filters are open with a changed selection and a refresh pending.
-    // 2. The screen is disposed.
-    //
-    // Case 2 Expected Result:
-    // The draft is reverted, editing ends and no reload starts.
+    /**
+     * 1. Filters are open with a changed selection and a refresh pending.
+     * 2. The screen is disposed.
+     *
+     * Expected result:
+     * The draft is reverted, editing ends and no reload starts.
+     */
     @Test
     fun `Given a Filters draft, When the screen is disposed, Then the draft is reverted`() =
         coroutineRule.runTest {
@@ -315,10 +335,6 @@ class TestDocumentsViewModel {
             assertFalse(viewModel.viewState.value.isEditingFilters)
             assertFalse(viewModel.viewState.value.isRefreshPending)
         }
-
-    //endregion
-
-    //region Mocked objects needed for tests.
 
     private val mockedApplyResult = DocumentInteractorFilterPartialState.FilterApplyResult(
         documents = listOf(
@@ -381,6 +397,4 @@ class TestDocumentsViewModel {
         const val PENDING_ID = "pending"
         const val ISSUED_ID = "issued"
     }
-
-    //endregion
 }

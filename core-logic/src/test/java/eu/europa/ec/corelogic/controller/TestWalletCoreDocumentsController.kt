@@ -612,6 +612,55 @@ class TestWalletCoreDocumentsController {
             )
         }
 
+    /**
+     * 1. An issuance waits for its browser sign-in, then Core reports Started.
+     *
+     * Expected result:
+     * The tracked operation can be abandoned while it waits, and no longer once Core has started.
+     */
+    @Test
+    fun `Given an issuance, When Core reports Started, Then it can no longer be abandoned`() =
+        coroutineRule.runTest {
+            // Given
+            givenTwoIssuers()
+            var isAbandonable: (() -> Boolean)? = null
+            var abandonableBeforeStart: Boolean? = null
+            whenever(
+                walletDocumentOperationController.trackedOperationFlow<IssueDocumentsPartialState>(
+                    any(),
+                    any(),
+                    any(),
+                    any()
+                )
+            ).thenAnswer { invocation ->
+                isAbandonable = invocation.getArgument(2)
+                invocation.getArgument<() -> Flow<IssueDocumentsPartialState>>(3).invoke()
+            }
+            doAnswer { invocation ->
+                abandonableBeforeStart = isAbandonable?.invoke()
+                val onIssueEvent = invocation.getArgument<OpenId4VciManager.OnIssueEvent>(4)
+                onIssueEvent(IssueEvent.Started(total = 1))
+                onIssueEvent(IssueEvent.Finished(issuedDocuments = listOf("pid")))
+            }.whenever(configuredIssuerManager).issueDocumentByConfigurationIdentifiers(
+                eq(CONFIGURED_ISSUER),
+                any(),
+                anyOrNull(),
+                anyOrNull(),
+                any(),
+            )
+
+            // When
+            controller.issueDocuments(
+                issuanceMethod = IssuanceMethod.OPENID4VCI,
+                configIds = listOf("pid"),
+                issuerId = CONFIGURED_ISSUER,
+            ).first()
+
+            // Then
+            assertEquals(true, abandonableBeforeStart)
+            assertEquals(false, isAbandonable?.invoke())
+        }
+
     @Test
     fun `Given a failed re-issuance record, When hasReIssuanceFailed is called, Then it is reported for that document only`() =
         coroutineRule.runTest {
@@ -624,10 +673,9 @@ class TestWalletCoreDocumentsController {
         }
 
     /**
-     * Case 1:
      * 1. Core reports one document as deferred during an issuance.
      *
-     * Case 1 Expected Result:
+     * Expected result:
      * An active schedule is stored for it, due after the configured initial polling delay.
      */
     @Test

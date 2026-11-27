@@ -1585,9 +1585,10 @@ class WalletCoreDocumentsControllerImpl(
      * If Core needs a key unlocked, an observer that leaves can no longer answer the prompt.
      * Cancel its unanswered authentication so Core can send the terminal result.
      * Reset and bulk removal wait for every submission, including multiple replacements for one
-     * original. Until Wallet Core reports [IssueEvent.Started] (after any browser sign-in), nothing
-     * is written, so a screen that leaves before then cancels the operation: an abandoned sign-in,
-     * which Wallet Core waits for with no time limit, does not hold back reset or bulk removal.
+     * original. A screen that leaves before Wallet Core reports [IssueEvent.Started] (after any
+     * browser sign-in) stops that wait: an abandoned sign-in, which Wallet Core waits for with no
+     * time limit, does not hold back reset or bulk removal. The issuance itself keeps running and
+     * records what Wallet Core reports.
      */
     private fun Flow<IssueDocumentsPartialState>.trackedIssuance():
             Flow<IssueDocumentsPartialState> =

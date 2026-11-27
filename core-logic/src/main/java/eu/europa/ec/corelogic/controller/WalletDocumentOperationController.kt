@@ -104,8 +104,7 @@ interface WalletDocumentOperationController {
      * Forwards states from [flowToCollect] up to and including the first state matching
      * [completeWhen]. The flow must finish its writes before emitting that state. Tracking
      * continues if the screen stops observing, unless [isAbandonable] is true then: such an
-     * operation has written nothing yet and is cancelled, so it cannot hold back reset or bulk
-     * removal.
+     * operation keeps running and writing, but reset and bulk removal no longer wait for it.
      */
     fun <T> trackedOperationFlow(
         completeWhen: (state: T) -> Boolean,
@@ -320,7 +319,9 @@ class WalletDocumentOperationControllerImpl(
             if (trackedOperation != null) emit(trackedOperation.await())
         } finally {
             intermediateStates.cancel()
-            if (trackedOperation?.isActive == true && isAbandonable()) trackedOperation.cancel()
+            if (trackedOperation?.isActive == true && isAbandonable()) {
+                stopWaitingFor(trackedOperation)
+            }
         }
     }
 
@@ -385,6 +386,16 @@ class WalletDocumentOperationControllerImpl(
         mutableState.value = state.value.copy(pendingOperations = operations.size)
         operation.start()
         return operation
+    }
+
+    /**
+     * Removes a running operation from those reset and bulk removal wait for. It still removes
+     * itself again when it completes, which is then a no-op.
+     */
+    private fun stopWaitingFor(operation: Job) = synchronized(monitor) {
+        if (operations.remove(operation)) {
+            mutableState.value = state.value.copy(pendingOperations = operations.size)
+        }
     }
 
     private fun releasePolling(documentId: String) = synchronized(monitor) {

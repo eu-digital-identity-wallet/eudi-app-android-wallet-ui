@@ -1462,9 +1462,9 @@ once, when the row is visible, and announces it to accessibility services.
 
 A factory reset stops new requests and waits for the document operations in progress, deferred
 requests included, for at most `workerStopTimeout`. If they have not finished by then, the reset
-fails before it deletes anything, and the user can try again. An issuance whose browser sign-in was
-abandoned is not waited for: it is cancelled when its screen closes, since nothing has been written
-yet.
+fails before it deletes anything, and the user can try again. An issuance whose screen closes
+before Wallet Core reports that it has started, for example after an abandoned browser sign-in, is
+no longer waited for. It keeps running, and what Wallet Core reports later is still recorded.
 
 Production decisions:
 

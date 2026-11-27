@@ -19,15 +19,12 @@ package eu.europa.ec.corelogic.controller
 import eu.europa.ec.authenticationlogic.controller.session.SessionController
 import eu.europa.ec.testlogic.extension.runTest
 import eu.europa.ec.testlogic.rule.CoroutineTestRule
-import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.onCompletion
 import org.junit.After
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
@@ -49,14 +46,11 @@ class TestWalletDocumentOperationController {
 
     private lateinit var closeable: AutoCloseable
 
-    private var completionCause: Throwable? = null
-
     private var reachedCompletingState = false
 
     @Before
     fun before() {
         closeable = MockitoAnnotations.openMocks(this)
-        completionCause = null
         reachedCompletingState = false
         controller = WalletDocumentOperationControllerImpl(
             sessionController = sessionController,
@@ -70,16 +64,15 @@ class TestWalletDocumentOperationController {
         closeable.close()
     }
 
-    //region trackedOperationFlow
-
-    // Case 1:
-    // 1. An abandonable operation emits an intermediate state and then waits for its result.
-    // 2. Its collector stops after the intermediate state.
-    //
-    // Case 1 Expected Result:
-    // The operation is cancelled before its completing state and no operation stays pending.
+    /**
+     * 1. An abandonable operation emits an intermediate state and then waits for its result.
+     * 2. Its collector stops after the intermediate state.
+     *
+     * Expected result:
+     * No operation stays pending, and the operation still runs to its completing state.
+     */
     @Test
-    fun `Given an abandonable operation, When its collector leaves early, Then it is cancelled`() =
+    fun `Given an abandonable operation, When its collector leaves early, Then it is no longer waited for`() =
         coroutineRule.runTest {
             // Given
             val tracked = controller.trackedOperationFlow(
@@ -99,16 +92,17 @@ class TestWalletDocumentOperationController {
             // Then
             assertEquals(STARTED, firstState)
             assertEquals(0, pendingAfterLeaving)
-            assertTrue(completionCause is CancellationException)
-            assertFalse(reachedCompletingState)
+            assertTrue(reachedCompletingState)
+            assertEquals(0, controller.state.value.pendingOperations)
         }
 
-    // Case 2:
-    // 1. An operation that is not abandonable emits an intermediate state and then waits.
-    // 2. Its collector stops after the intermediate state.
-    //
-    // Case 2 Expected Result:
-    // The operation keeps running and stays pending until its flow reaches the completing state.
+    /**
+     * 1. An operation that is not abandonable emits an intermediate state and then waits.
+     * 2. Its collector stops after the intermediate state.
+     *
+     * Expected result:
+     * The operation keeps running and stays pending until its flow reaches the completing state.
+     */
     @Test
     fun `Given a kept operation, When its collector leaves early, Then it runs to completion`() =
         coroutineRule.runTest {
@@ -134,17 +128,13 @@ class TestWalletDocumentOperationController {
             assertEquals(0, controller.state.value.pendingOperations)
         }
 
-    //endregion
-
-    //region Mocked objects needed for tests.
-
     /** Emits [STARTED], then [COMPLETED] after [OPERATION_DURATION] of virtual time. */
     private fun operationFlow(): Flow<String> = flow {
         emit(STARTED)
         delay(OPERATION_DURATION)
         reachedCompletingState = true
         emit(COMPLETED)
-    }.onCompletion { cause -> completionCause = cause }
+    }
 
     private fun runCurrent() = coroutineRule.testScope.testScheduler.runCurrent()
 
@@ -156,6 +146,4 @@ class TestWalletDocumentOperationController {
         const val COMPLETED = "completed"
         val OPERATION_DURATION = 10.seconds
     }
-
-    //endregion
 }
