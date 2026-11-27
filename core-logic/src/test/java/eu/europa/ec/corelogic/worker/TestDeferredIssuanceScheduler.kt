@@ -20,13 +20,11 @@ import android.content.Context
 import android.content.Intent
 import eu.europa.ec.authenticationlogic.controller.session.SessionController
 import eu.europa.ec.corelogic.config.DeferredIssuanceConfig
-import eu.europa.ec.corelogic.controller.DeleteDocumentPartialState
 import eu.europa.ec.corelogic.controller.IssueDeferredDocumentPartialState
 import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
 import eu.europa.ec.corelogic.controller.WalletDocumentOperationController
 import eu.europa.ec.corelogic.controller.WalletDocumentOperationControllerImpl
 import eu.europa.ec.corelogic.controller.WalletResetStatus
-import eu.europa.ec.corelogic.model.DeferredDocumentRemovalReasonDomain
 import eu.europa.ec.corelogic.util.CoreActions
 import eu.europa.ec.corelogic.util.mockedDeferredConfig
 import eu.europa.ec.corelogic.util.mockedDeferredDocumentData
@@ -44,6 +42,7 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.runBlocking
 import org.junit.After
 import org.junit.Assert.assertEquals
@@ -112,7 +111,11 @@ class TestDeferredIssuanceScheduler {
     fun before() {
         closeable = MockitoAnnotations.openMocks(this)
         whenever(context.packageName).thenReturn("eu.europa.ec.eudiwallet")
-        whenever(scheduleDao.observeAll()).thenReturn(mockedSchedules)
+        whenever(scheduleDao.observeActive()).thenReturn(
+            mockedSchedules.map { rows ->
+                rows.filter { row -> row.status == DeferredDocumentScheduleStatus.ACTIVE }
+            }
+        )
         whenever(operationController.state).thenReturn(mockedOperationState)
         whenever(operationController.canPoll(anyOrNull())).thenReturn(true)
         whenever(sessionController.unlockedState).thenReturn(MutableStateFlow(true))
@@ -136,7 +139,6 @@ class TestDeferredIssuanceScheduler {
         }
         whenever(operationController.tryStartPolling(any(), anyOrNull(), any())).thenReturn(true)
         runBlocking {
-            whenever(scheduleDao.retrieveAll()).thenReturn(emptyList())
             whenever(operationController.withDocumentLock<Any?>(any(), any()))
                 .doSuspendableAnswer { invocation ->
                     invocation.getArgument<suspend () -> Any?>(1).invoke()
@@ -260,49 +262,65 @@ class TestDeferredIssuanceScheduler {
 
     /**
      * Case 4:
-     * 1. A persisted automatic removal fails at startup.
-     * 2. A fresh scheduler reads the same pending removal in the next process.
+     * 1. An issuer was rejected for one Deferred document. A second document is still polling.
+     * 2. A fresh scheduler opens the same stored schedules after restart.
      *
      * Case 4 Expected Result:
-     * Each process tries the removal once and leaves polling stopped.
+     * The rejected document stays Failed. Only the other document is polled when its deadline passes.
      */
     @Test
-    fun `Given a failed pending removal, When scheduling restarts in one process, Then recovery does not loop`() =
+    fun `Given a persisted trust rejection, When the Wallet restarts, Then the document stays Failed and only the other document is polled`() =
         coroutineRule.runTest {
             // Given
-            val schedule = mockedDeferredSchedule.copy(
-                status = DeferredDocumentScheduleStatus.PENDING_TRUST_REMOVAL,
+            val rejected = mockedDeferredSchedule.copy(
+                status = DeferredDocumentScheduleStatus.ISSUER_NOT_TRUSTED,
             )
-            mockedSchedules.value = listOf(schedule)
-            whenever(scheduleDao.retrieveAll()).thenReturn(listOf(schedule))
-            whenever(scheduleDao.retrieve(schedule.identifier)).thenReturn(schedule)
-            whenever(documentsController.deleteUntrustedDeferredDocument(schedule.identifier))
-                .thenReturn(flowOf(DeleteDocumentPartialState.Failure("remove failed")))
+            val other =
+                mockedDeferredSchedule.copy(identifier = "other-document", nextAttemptAt = 60_000)
+            mockStoredSchedules(listOf(rejected, other))
+            val otherDocument = mock<DeferredDocument> { on { id } doReturn other.identifier }
+            whenever(documentsController.getAllDocuments()).thenReturn(
+                listOf(
+                    deferredDocument,
+                    otherDocument
+                )
+            )
+            whenever(documentsController.getDocumentById(other.identifier)).thenReturn(otherDocument)
+            whenever(documentsController.issueDeferredDocument(other.identifier)).thenReturn(
+                flowOf(
+                    IssueDeferredDocumentPartialState.NotReady(
+                        mockedDeferredDocumentData.copy(documentId = other.identifier),
+                        1.days,
+                    )
+                )
+            )
+            val reset = WalletResetStatus()
+            val operations = foregroundOperations(reset)
+            val first = createScheduler(mockedDeferredConfig, operations, reset)
 
             // When
-            scheduler.start()
+            first.start()
             runCurrent()
-            scheduler.start()
-            mockedOperationState.value = mockedDocumentOperationState.copy(isForeground = false)
+
+            // Then
+            assertEquals(setOf(rejected.identifier), first.getFailedDocumentIds())
+
+            // When
+            operations.setForeground(false)
+            val next = createScheduler(mockedDeferredConfig, foregroundOperations(reset), reset)
+            next.start()
             runCurrent()
             advanceTimeBy(2.minutes)
             runCurrent()
 
             // Then
-            verify(documentsController).deleteUntrustedDeferredDocument(schedule.identifier)
-            verify(scheduleDao, never()).delete(schedule.identifier)
-            verify(operationController, never()).tryStartPolling(any(), anyOrNull(), any())
-            verifyBroadcast(CoreActions.DEFERRED_DOCUMENT_STATUS_CHANGED_ACTION, reason = null)
-
-            // When
-            createScheduler(mockedDeferredConfig).start()
-            runCurrent()
-
-            // Then
-            verify(
-                documentsController,
-                times(2)
-            ).deleteUntrustedDeferredDocument(schedule.identifier)
+            assertEquals(rejected, scheduleDao.retrieve(rejected.identifier))
+            assertEquals(setOf(rejected.identifier), next.getFailedDocumentIds())
+            verify(documentsController, times(2)).getAllDocuments()
+            verify(documentsController, never()).issueDeferredDocument(rejected.identifier)
+            verify(documentsController).issueDeferredDocument(other.identifier)
+            verify(documentsController, never()).deleteDocument(any())
+            verify(scheduleDao, never()).delete(rejected.identifier)
         }
 
     /**
@@ -445,7 +463,7 @@ class TestDeferredIssuanceScheduler {
                     )
                 )
             }
-            verifyBroadcast(CoreActions.DEFERRED_DOCUMENT_STATUS_CHANGED_ACTION, reason = null)
+            verifyBroadcast(CoreActions.DEFERRED_DOCUMENT_STATUS_CHANGED_ACTION)
         }
 
     // Case 2: A replacement can fail and retry even while its original is still in the Wallet.
@@ -466,8 +484,8 @@ class TestDeferredIssuanceScheduler {
 
             // Then
             verify(scheduleDao).update(schedule.copy(nextAttemptAt = 30_000))
-            verify(documentsController, never()).deleteUntrustedDeferredDocument(any())
-            verifyBroadcast(CoreActions.DEFERRED_DOCUMENT_STATUS_CHANGED_ACTION, reason = null)
+            verify(documentsController, never()).deleteDocument(any())
+            verifyBroadcast(CoreActions.DEFERRED_DOCUMENT_STATUS_CHANGED_ACTION)
         }
 
     // Case 3: A local lookup error cannot establish that the document is missing or failed.
@@ -511,7 +529,7 @@ class TestDeferredIssuanceScheduler {
                 verify(operationController).recordDeferredIssuance(schedule.identifier)
                 verify(context).sendBroadcast(any())
             }
-            verifyBroadcast(CoreActions.DEFERRED_DOCUMENT_ISSUED_ACTION, reason = null)
+            verifyBroadcast(CoreActions.DEFERRED_DOCUMENT_ISSUED_ACTION)
         }
 
     // Case 5:
@@ -554,8 +572,8 @@ class TestDeferredIssuanceScheduler {
 
             // Then
             verify(scheduleDao).update(mockedDeferredSchedule.copy(status = DeferredDocumentScheduleStatus.EXPIRED))
-            verify(documentsController, never()).deleteUntrustedDeferredDocument(any())
-            verifyBroadcast(CoreActions.DEFERRED_DOCUMENT_STATUS_CHANGED_ACTION, reason = null)
+            verify(documentsController, never()).deleteDocument(any())
+            verifyBroadcast(CoreActions.DEFERRED_DOCUMENT_STATUS_CHANGED_ACTION)
         }
 
     /**
@@ -563,15 +581,13 @@ class TestDeferredIssuanceScheduler {
      * 1. The wallet no longer trusts the issuer of a document that is still Deferred.
      *
      * Case 7 Expected Result:
-     * The scheduler records the trust failure, removes the document and broadcasts its ID and reason.
+     * Persist the terminal status before refreshing Documents. The user can still remove the document.
      */
     @Test
-    fun `Given a Deferred document, When Core returns IssuerNotTrusted, Then it is removed with reason ISSUER_NOT_TRUSTED`() =
+    fun `Given a Deferred document, When Core returns IssuerNotTrusted, Then its terminal failure is stored before Documents is notified`() =
         coroutineRule.runTest {
             // Given
             val documentId = mockedDeferredSchedule.identifier
-            whenever(documentsController.deleteUntrustedDeferredDocument(documentId))
-                .thenReturn(flowOf(DeleteDocumentPartialState.Success))
 
             // When
             executeAttempt(
@@ -580,47 +596,16 @@ class TestDeferredIssuanceScheduler {
             )
 
             // Then
-            inOrder(scheduleDao, documentsController, context) {
-                verify(scheduleDao).update(mockedDeferredSchedule.copy(status = DeferredDocumentScheduleStatus.PENDING_TRUST_REMOVAL))
-                verify(documentsController).deleteUntrustedDeferredDocument(documentId)
+            inOrder(scheduleDao, operationController, context) {
+                verify(scheduleDao).update(
+                    mockedDeferredSchedule.copy(status = DeferredDocumentScheduleStatus.ISSUER_NOT_TRUSTED)
+                )
+                verify(operationController).setRetryableDeferredFailure(documentId, failed = false)
                 verify(context).sendBroadcast(any())
             }
-            verifyBroadcast(
-                CoreActions.DEFERRED_DOCUMENT_REMOVED_ACTION,
-                DeferredDocumentRemovalReasonDomain.ISSUER_NOT_TRUSTED.name
-            )
-        }
-
-    /**
-     * Case 8:
-     * 1. Trust cleanup fails and a fresh local read finds the same ID already Issued.
-     *
-     * Case 8 Expected Result:
-     * Complete the schedule and notify Documents of issuance for this ID.
-     */
-    @Test
-    fun `Given a trust removal that fails, When Core now holds an Issued document, Then Documents receives its issuance`() =
-        coroutineRule.runTest {
-            // Given
-            val documentId = mockedDeferredSchedule.identifier
-            whenever(issuedDocument.id).thenReturn(documentId)
-            whenever(documentsController.getDocumentById(documentId)).thenReturn(
-                deferredDocument,
-                issuedDocument
-            )
-            whenever(documentsController.deleteUntrustedDeferredDocument(documentId))
-                .thenReturn(flowOf(DeleteDocumentPartialState.Failure("Document is already issued")))
-
-            // When
-            executeAttempt(
-                mockedDeferredSchedule,
-                IssueDeferredDocumentPartialState.IssuerNotTrusted(documentId)
-            )
-
-            // Then
-            verify(scheduleDao).delete(documentId)
-            verify(operationController).recordDeferredIssuance(documentId)
-            verifyBroadcast(CoreActions.DEFERRED_DOCUMENT_ISSUED_ACTION, reason = null)
+            verify(scheduleDao, never()).delete(documentId)
+            verify(documentsController, never()).deleteDocument(any())
+            verifyBroadcast(CoreActions.DEFERRED_DOCUMENT_STATUS_CHANGED_ACTION)
         }
     //endregion
 
@@ -1112,7 +1097,7 @@ class TestDeferredIssuanceScheduler {
         action()
     }
 
-    private fun verifyBroadcast(action: String, reason: String?) {
+    private fun verifyBroadcast(action: String) {
         val intent = argumentCaptor<Intent>()
         verify(context).sendBroadcast(intent.capture())
         assertEquals(action, intent.firstValue.action)
@@ -1120,10 +1105,6 @@ class TestDeferredIssuanceScheduler {
         assertEquals(
             mockedDeferredSchedule.identifier,
             intent.firstValue.getStringExtra(CoreActions.DEFERRED_DOCUMENT_ID_EXTRA)
-        )
-        assertEquals(
-            reason,
-            intent.firstValue.getStringExtra(CoreActions.DEFERRED_REMOVAL_REASON_EXTRA)
         )
     }
 

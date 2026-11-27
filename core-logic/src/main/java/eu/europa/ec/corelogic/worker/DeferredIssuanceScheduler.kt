@@ -20,13 +20,11 @@ import android.content.Context
 import android.content.Intent
 import eu.europa.ec.authenticationlogic.controller.session.SessionController
 import eu.europa.ec.corelogic.config.DeferredIssuanceConfig
-import eu.europa.ec.corelogic.controller.DeleteDocumentPartialState
 import eu.europa.ec.corelogic.controller.IssueDeferredDocumentPartialState
 import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
 import eu.europa.ec.corelogic.controller.WalletDocumentOperationController
 import eu.europa.ec.corelogic.controller.WalletResetStatus
 import eu.europa.ec.corelogic.model.DeferredDocumentEventDomain
-import eu.europa.ec.corelogic.model.DeferredDocumentRemovalReasonDomain
 import eu.europa.ec.corelogic.util.CoreActions
 import eu.europa.ec.eudi.wallet.document.DeferredDocument
 import eu.europa.ec.eudi.wallet.document.IssuedDocument
@@ -93,9 +91,6 @@ class DeferredIssuanceSchedulerImpl(
     private var generation = -1L
     private val dashboardGeneration = MutableStateFlow<Long?>(null)
 
-    // A recovery restart must not repeat a removal already attempted in this wallet lifecycle.
-    private val recoveryRemovalAttempts = mutableSetOf<String>()
-
     @Synchronized
     override fun start() {
         // Refresh activation before reusing an observer that survived reset.
@@ -117,7 +112,7 @@ class DeferredIssuanceSchedulerImpl(
 
     private suspend fun observeSchedule() {
         combine(
-            combine(scheduleDao.observeAll(), infrastructureRetryAt) { rows, _ -> rows },
+            combine(scheduleDao.observeActive(), infrastructureRetryAt) { rows, _ -> rows },
             walletDocumentOperationController.state,
             sessionController.unlockedState,
             resetStatus.isResetting,
@@ -134,7 +129,6 @@ class DeferredIssuanceSchedulerImpl(
                     generation = currentGeneration
                     reconciliation = null
                     infrastructureRetryAt.value = emptyMap()
-                    recoveryRemovalAttempts.clear()
                 }
                 if (reconciliation == null) {
                     reconciliation =
@@ -152,8 +146,7 @@ class DeferredIssuanceSchedulerImpl(
                 while (true) {
                     val operationState = walletDocumentOperationController.state.value
                     val candidates = rows.filter { row ->
-                        row.status == DeferredDocumentScheduleStatus.ACTIVE &&
-                                row.identifier !in operationState.activeDocumentIds &&
+                        row.identifier !in operationState.activeDocumentIds &&
                                 row.identifier !in operationState.removingDocumentIds &&
                                 row.identifier !in operationState.removedDocumentIds
                     }.sortedWith(compareBy({ row -> dueAt(row) }, { row -> row.identifier }))
@@ -179,11 +172,9 @@ class DeferredIssuanceSchedulerImpl(
             limit = config.maxConcurrentDeferredRequests,
         ) {
             try {
-                val shouldRemove = walletDocumentOperationController.withDocumentLock(documentId) {
+                walletDocumentOperationController.withDocumentLock(documentId) {
                     attempt(documentId)
                 }
-                // Trust cleanup takes the same removal lock as user Remove.
-                if (shouldRemove) removeUntrustedDocument(documentId)
             } catch (error: CancellationException) {
                 throw error
             } catch (_: Exception) {
@@ -231,36 +222,28 @@ class DeferredIssuanceSchedulerImpl(
                 }
             }
         }
-        // Null/missing Core reads are ambiguous. Do not erase rows based on absence alone.
-        for (row in scheduleDao.retrieveAll()) {
-            if (row.status == DeferredDocumentScheduleStatus.PENDING_TRUST_REMOVAL &&
-                recoveryRemovalAttempts.add(row.identifier)
-            ) {
-                removeUntrustedDocument(row.identifier)
-            }
-        }
     }
 
-    /** Runs under the document lock. True requests trust cleanup after releasing it. */
-    private suspend fun attempt(documentId: String): Boolean {
-        val row = scheduleDao.retrieve(documentId) ?: return false
+    /** Rechecks the persisted schedule under the document lock before submitting the request. */
+    private suspend fun attempt(documentId: String) {
+        val row = scheduleDao.retrieve(documentId) ?: return
         if (row.status != DeferredDocumentScheduleStatus.ACTIVE ||
             !walletDocumentOperationController.canPoll(documentId) || dueAt(row) > now()
-        ) return false
+        ) return
 
         infrastructureRetryAt.update { deadlines -> deadlines - documentId }
         val controller = getDocumentsController()
         when (controller.getDocumentById(documentId)) {
             is IssuedDocument -> {
                 finishIssuance(documentId)
-                return false
+                return
             }
 
             is DeferredDocument -> Unit
             else -> {
                 // A null lookup can mean a local read failure. Keep the row and its UI state.
                 postponeAfterLocalFailure(documentId)
-                return false
+                return
             }
         }
 
@@ -284,28 +267,28 @@ class DeferredIssuanceSchedulerImpl(
             }
 
             is IssueDeferredDocumentPartialState.Expired -> {
-                scheduleDao.update(row.copy(status = DeferredDocumentScheduleStatus.EXPIRED))
-                walletDocumentOperationController.setRetryableDeferredFailure(
-                    documentId,
-                    failed = false
-                )
-                notifyDocumentChanged(DeferredDocumentEventDomain.StatusChanged(documentId))
+                markTerminalFailure(row, DeferredDocumentScheduleStatus.EXPIRED)
             }
 
             is IssueDeferredDocumentPartialState.IssuerNotTrusted -> {
-                scheduleDao.update(row.copy(status = DeferredDocumentScheduleStatus.PENDING_TRUST_REMOVAL))
-                walletDocumentOperationController.setRetryableDeferredFailure(
-                    documentId,
-                    failed = false
-                )
-                if (documentId !in walletDocumentOperationController.state.value.removingDocumentIds) return true
-                // The user already requested Remove. If it fails, the trust decision is still visible.
-                notifyDocumentChanged(DeferredDocumentEventDomain.StatusChanged(documentId))
+                markTerminalFailure(row, DeferredDocumentScheduleStatus.ISSUER_NOT_TRUSTED)
             }
 
             is IssueDeferredDocumentPartialState.Issued -> finishIssuance(documentId)
         }
-        return false
+    }
+
+    /** The persisted status stops future polls and keeps the document visible as Failed after restart. */
+    private suspend fun markTerminalFailure(
+        schedule: DeferredDocumentSchedule,
+        status: DeferredDocumentScheduleStatus,
+    ) {
+        scheduleDao.update(schedule.copy(status = status))
+        walletDocumentOperationController.setRetryableDeferredFailure(
+            schedule.identifier,
+            failed = false
+        )
+        notifyDocumentChanged(DeferredDocumentEventDomain.StatusChanged(schedule.identifier))
     }
 
     private fun updateFailureIndication(documentId: String, failed: Boolean) {
@@ -321,46 +304,14 @@ class DeferredIssuanceSchedulerImpl(
         notifyDocumentChanged(DeferredDocumentEventDomain.Issued(documentId))
     }
 
-    private suspend fun removeUntrustedDocument(documentId: String) {
-        val controller = getDocumentsController()
-        // The controller rechecks both the stored trust decision and the Core document under its lock.
-        if (controller.deleteUntrustedDeferredDocument(documentId)
-                .first() == DeleteDocumentPartialState.Success
-        ) {
-            notifyDocumentChanged(
-                DeferredDocumentEventDomain.Removed(
-                    documentId = documentId,
-                    reason = DeferredDocumentRemovalReasonDomain.ISSUER_NOT_TRUSTED,
-                )
-            )
-            return
-        }
-
-        walletDocumentOperationController.withDocumentLock(documentId) {
-            // A failed schedule write can follow a confirmed Core deletion. Refresh Documents in both cases.
-            if (documentId !in walletDocumentOperationController.state.value.removedDocumentIds &&
-                controller.getDocumentById(documentId) is IssuedDocument
-            ) {
-                finishIssuance(documentId)
-            } else {
-                // A retained document stays Failed until a later launch retries trust cleanup.
-                notifyDocumentChanged(DeferredDocumentEventDomain.StatusChanged(documentId))
-            }
-        }
-    }
-
     private fun notifyDocumentChanged(event: DeferredDocumentEventDomain) {
         val action = when (event) {
             is DeferredDocumentEventDomain.Issued -> CoreActions.DEFERRED_DOCUMENT_ISSUED_ACTION
             is DeferredDocumentEventDomain.StatusChanged -> CoreActions.DEFERRED_DOCUMENT_STATUS_CHANGED_ACTION
-            is DeferredDocumentEventDomain.Removed -> CoreActions.DEFERRED_DOCUMENT_REMOVED_ACTION
         }
         val intent = Intent(action).apply {
             setPackage(context.packageName)
             putExtra(CoreActions.DEFERRED_DOCUMENT_ID_EXTRA, event.documentId)
-            if (event is DeferredDocumentEventDomain.Removed) {
-                putExtra(CoreActions.DEFERRED_REMOVAL_REASON_EXTRA, event.reason.name)
-            }
         }
         context.sendBroadcast(intent)
     }

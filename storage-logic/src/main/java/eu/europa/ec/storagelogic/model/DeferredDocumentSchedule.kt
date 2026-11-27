@@ -19,11 +19,11 @@ package eu.europa.ec.storagelogic.model
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
-/** Only an active transaction can be polled. Trust cleanup retries deletion on a later launch. */
+/** Expiry and issuer trust rejection end polling. Documents shows both as Failed until user removal. */
 enum class DeferredDocumentScheduleStatus {
     ACTIVE,
     EXPIRED,
-    PENDING_TRUST_REMOVAL,
+    ISSUER_NOT_TRUSTED,
 }
 
 /**

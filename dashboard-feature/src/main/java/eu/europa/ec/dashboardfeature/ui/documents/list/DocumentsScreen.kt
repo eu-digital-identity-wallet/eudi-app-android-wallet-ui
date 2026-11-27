@@ -72,7 +72,6 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.compose.currentStateAsState
 import androidx.navigation.NavController
-import eu.europa.ec.corelogic.model.DeferredDocumentRemovalReasonDomain
 import eu.europa.ec.corelogic.model.DocumentCategory
 import eu.europa.ec.corelogic.model.DocumentIdentifier
 import eu.europa.ec.corelogic.util.CoreActions
@@ -207,7 +206,6 @@ fun DocumentsScreen(
                 CoreActions.RE_ISSUANCE_WORK_REFRESH_ACTION,
                 CoreActions.DEFERRED_DOCUMENT_ISSUED_ACTION,
                 CoreActions.DEFERRED_DOCUMENT_STATUS_CHANGED_ACTION,
-                CoreActions.DEFERRED_DOCUMENT_REMOVED_ACTION,
             ),
             callback = { intent ->
                 val documentId = intent?.getStringExtra(CoreActions.DEFERRED_DOCUMENT_ID_EXTRA)
@@ -222,20 +220,6 @@ fun DocumentsScreen(
 
                         CoreActions.DEFERRED_DOCUMENT_STATUS_CHANGED_ACTION -> {
                             Event.DeferredDocumentStatusChanged(documentId)
-                        }
-
-                        CoreActions.DEFERRED_DOCUMENT_REMOVED_ACTION -> {
-                            val reasonName =
-                                intent.getStringExtra(CoreActions.DEFERRED_REMOVAL_REASON_EXTRA)
-                            val reason = DeferredDocumentRemovalReasonDomain.entries.find { entry ->
-                                entry.name == reasonName
-                            }
-
-                            if (reason != null) {
-                                Event.DeferredDocumentRemoved(documentId, reason)
-                            } else {
-                                Event.GetDocuments
-                            }
                         }
 
                         else -> {

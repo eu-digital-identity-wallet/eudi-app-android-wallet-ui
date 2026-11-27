@@ -80,7 +80,6 @@ import eu.europa.ec.storagelogic.dao.RevokedDocumentDao
 import eu.europa.ec.storagelogic.dao.StatusRefreshFailureDao
 import eu.europa.ec.storagelogic.model.Bookmark
 import eu.europa.ec.storagelogic.model.DeferredDocumentSchedule
-import eu.europa.ec.storagelogic.model.DeferredDocumentScheduleStatus
 import eu.europa.ec.storagelogic.model.FailedReIssuedDocument
 import eu.europa.ec.storagelogic.model.IssuerTrust
 import eu.europa.ec.storagelogic.model.IssuerTrustVerdict
@@ -212,7 +211,7 @@ sealed class IssueDeferredDocumentPartialState {
         val interval: Duration?,
     ) : IssueDeferredDocumentPartialState()
 
-    /** A DocumentFailed callback from Core. The transaction remains eligible for another attempt. */
+    /** An ordinary DocumentFailed callback from Core. The transaction remains eligible for another attempt. */
     data object Failed : IssueDeferredDocumentPartialState()
 
     /** A local lookup or setup failed before a Core result was available. Preserve the visible status. */
@@ -222,6 +221,7 @@ sealed class IssueDeferredDocumentPartialState {
         val documentId: DocumentId,
     ) : IssueDeferredDocumentPartialState()
 
+    /** A trust rejection ends polling for this document and leaves it available for user removal. */
     data class IssuerNotTrusted(
         val documentId: DocumentId,
     ) : IssueDeferredDocumentPartialState()
@@ -297,9 +297,6 @@ interface WalletCoreDocumentsController {
      * New ordinary operations remain blocked while reset uses this explicit entry point.
      */
     fun deleteDocumentForReset(documentId: DocumentId): Flow<DeleteDocumentPartialState>
-
-    /** Trust cleanup rechecks the persisted refusal and Deferred document under its removal lock. */
-    fun deleteUntrustedDeferredDocument(documentId: DocumentId): Flow<DeleteDocumentPartialState>
 
     /**
      * Removes all documents, including Pending replacements, after active operations finish.
@@ -751,23 +748,13 @@ class WalletCoreDocumentsControllerImpl(
     ): Flow<DeleteDocumentPartialState> = deleteDocumentAsTrackedOperation(
         documentId = documentId,
         duringReset = false,
-        requireUntrustedDeferredDocument = false,
     )
 
     override fun deleteDocumentForReset(documentId: String): Flow<DeleteDocumentPartialState> =
         deleteDocumentAsTrackedOperation(
             documentId = documentId,
             duringReset = true,
-            requireUntrustedDeferredDocument = false,
         )
-
-    override fun deleteUntrustedDeferredDocument(
-        documentId: String,
-    ): Flow<DeleteDocumentPartialState> = deleteDocumentAsTrackedOperation(
-        documentId = documentId,
-        duringReset = false,
-        requireUntrustedDeferredDocument = true,
-    )
 
     /**
      * Tracks Core deletion and metadata cleanup as one operation for reset. The removal guard
@@ -776,15 +763,11 @@ class WalletCoreDocumentsControllerImpl(
     private fun deleteDocumentAsTrackedOperation(
         documentId: String,
         duringReset: Boolean,
-        requireUntrustedDeferredDocument: Boolean,
     ): Flow<DeleteDocumentPartialState> = walletDocumentOperationController.trackedOperationFlow(
         completeWhen = { true },
         isResetOperation = duringReset,
         flowToCollect = {
-            deleteDocumentAndCleanUpLocalMetadata(
-                documentId = documentId,
-                requireUntrustedDeferredDocument = requireUntrustedDeferredDocument,
-            )
+            deleteDocumentAndCleanUpLocalMetadata(documentId)
         },
     ).safeAsync {
         DeleteDocumentPartialState.Failure(it.localizedMessage ?: genericErrorMessage)
@@ -797,18 +780,9 @@ class WalletCoreDocumentsControllerImpl(
      */
     private fun deleteDocumentAndCleanUpLocalMetadata(
         documentId: String,
-        requireUntrustedDeferredDocument: Boolean,
     ): Flow<DeleteDocumentPartialState> = flow {
         val result = walletDocumentOperationController.withRemoval(documentId) {
             // A user Remove still targets this ID if an in-flight ping issued it while waiting.
-            if (requireUntrustedDeferredDocument) {
-                val schedule = deferredScheduleDao.retrieve(documentId)
-                if (schedule?.status != DeferredDocumentScheduleStatus.PENDING_TRUST_REMOVAL ||
-                    getDocumentById(documentId) !is DeferredDocument
-                ) {
-                    return@withRemoval DeleteDocumentPartialState.Failure(genericErrorMessage)
-                }
-            }
             eudiWallet.deleteDocumentById(documentId).kotlinResult.fold(
                 onSuccess = {
                     // Remember the confirmed removal before fallible cleanup so a late callback
@@ -866,10 +840,7 @@ class WalletCoreDocumentsControllerImpl(
 
         for (document in documentsExceptMainPid) {
             when (
-                val result = deleteDocumentAndCleanUpLocalMetadata(
-                    documentId = document.id,
-                    requireUntrustedDeferredDocument = false,
-                ).first()
+                val result = deleteDocumentAndCleanUpLocalMetadata(document.id).first()
             ) {
                 is DeleteDocumentPartialState.Failure -> {
                     lastDeletionErrorMessage = result.errorMessage
@@ -888,10 +859,7 @@ class WalletCoreDocumentsControllerImpl(
         if (mainPidDocument == null) return DeleteAllDocumentsPartialState.Success
 
         return when (
-            val result = deleteDocumentAndCleanUpLocalMetadata(
-                documentId = mainPidDocument.id,
-                requireUntrustedDeferredDocument = false,
-            ).first()
+            val result = deleteDocumentAndCleanUpLocalMetadata(mainPidDocument.id).first()
         ) {
             is DeleteDocumentPartialState.Failure ->
                 DeleteAllDocumentsPartialState.Failure(errorMessage = result.errorMessage)

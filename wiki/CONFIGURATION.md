@@ -1159,7 +1159,8 @@ poll concurrently. Each document can have at most one active request.
 
 - The first ping uses `initialPollingDelay` because Core 0.32.0 does not expose the initial issuer interval.
 - On a fresh valid `DocumentNotReady` interval, the Wallet stores the reported value and adds one second to the next deadline to allow for whole-second rounding. An absent or invalid interval uses the last valid value or the initial fallback as-is.
-- Each ordinary `DocumentFailed` schedules a retry after `failureRetryDelay` from the failure, regardless of the previous issuer interval. Repeated ordinary failures keep polling. `DocumentExpired` stops polling for that ID.
+- Each ordinary `DocumentFailed` schedules a retry after `failureRetryDelay` from the failure, regardless of the previous issuer interval. Repeated ordinary failures keep polling.
+- Both `DocumentExpired` and an explicit issuer trust rejection during polling keep the deferred document in the Wallet as **Failed**. Polling stops for that ID, including after an app restart. The user can remove the document from Documents.
 
 Polling starts after the first unlocked Dashboard. New pings require a resumed
 Wallet host Activity and an unlocked session. Polling continues with Filters open.

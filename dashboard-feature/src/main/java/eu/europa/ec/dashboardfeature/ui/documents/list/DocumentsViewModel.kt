@@ -21,7 +21,6 @@ import eu.europa.ec.commonfeature.config.IssuanceFlowType
 import eu.europa.ec.commonfeature.config.IssuanceUiConfig
 import eu.europa.ec.commonfeature.config.QrScanFlow
 import eu.europa.ec.commonfeature.config.QrScanUiConfig
-import eu.europa.ec.corelogic.model.DeferredDocumentRemovalReasonDomain
 import eu.europa.ec.corelogic.model.DocumentCategory
 import eu.europa.ec.dashboardfeature.interactor.DocumentInteractorDeleteDocumentPartialState
 import eu.europa.ec.dashboardfeature.interactor.DocumentInteractorFilterPartialState
@@ -85,10 +84,6 @@ sealed class Event : ViewEvent {
     data class DeferredDocumentIssued(val documentId: String) : Event()
     data class DeferredIssuanceHighlightShown(val documentId: String) : Event()
     data class DeferredDocumentStatusChanged(val documentId: String) : Event()
-    data class DeferredDocumentRemoved(
-        val documentId: String,
-        val reason: DeferredDocumentRemovalReasonDomain,
-    ) : Event()
 
     data object Pop : Event()
     data class GoToDocumentDetails(val docId: DocumentId) : Event()
@@ -187,8 +182,7 @@ class DocumentsViewModel(
             }
 
             is Event.GetDocuments,
-            is Event.DeferredDocumentStatusChanged,
-            is Event.DeferredDocumentRemoved -> getDocuments(Event.GetDocuments)
+            is Event.DeferredDocumentStatusChanged -> getDocuments(Event.GetDocuments)
 
             is Event.DeferredDocumentIssued -> {
                 closeRemovalSheetIfOpenFor(issuedDocumentId = event.documentId)

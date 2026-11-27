@@ -16,10 +16,6 @@
 
 package eu.europa.ec.corelogic.model
 
-enum class DeferredDocumentRemovalReasonDomain {
-    ISSUER_NOT_TRUSTED,
-}
-
 /** Per-document outcomes published after persistence; consumers refresh from current storage. */
 sealed interface DeferredDocumentEventDomain {
     val documentId: String
@@ -28,13 +24,8 @@ sealed interface DeferredDocumentEventDomain {
         override val documentId: String
     ) : DeferredDocumentEventDomain
 
-    /** The visible Pending/Failed state can change while polling continues. */
+    /** Refresh the visible Pending/Failed state after a retryable or terminal polling result. */
     data class StatusChanged(
         override val documentId: String
-    ) : DeferredDocumentEventDomain
-
-    data class Removed(
-        override val documentId: String,
-        val reason: DeferredDocumentRemovalReasonDomain,
     ) : DeferredDocumentEventDomain
 }
