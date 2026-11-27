@@ -46,6 +46,7 @@ import eu.europa.ec.corelogic.model.ScopedDocumentDomain
 import eu.europa.ec.corelogic.model.UntrustedIssuerReasonDomain
 import eu.europa.ec.corelogic.model.isBlockedForIssuance
 import eu.europa.ec.corelogic.model.toDocumentIdentifier
+import eu.europa.ec.corelogic.util.IssuanceStart
 import eu.europa.ec.corelogic.util.OfferIssuer
 import eu.europa.ec.corelogic.util.issuerLogoOrNull
 import eu.europa.ec.corelogic.util.offerIssuerOf
@@ -112,9 +113,6 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import java.net.URI
 import java.util.Locale
-import java.util.concurrent.atomic.AtomicBoolean
-import kotlin.coroutines.AbstractCoroutineContextElement
-import kotlin.coroutines.CoroutineContext
 import kotlin.time.Duration
 
 enum class IssuanceMethod {
@@ -1675,18 +1673,4 @@ class WalletCoreDocumentsControllerImpl(
         return manager?.let(Result.Companion::success)
             ?: Result.failure(RuntimeException(errorMessage))
     }
-}
-
-/**
- * Marks, for one tracked issuance, whether Wallet Core has reported [IssueEvent.Started]. It
- * reaches the issuance callback through the coroutine context of the collected flow.
- */
-private class IssuanceStart : AbstractCoroutineContextElement(IssuanceStart) {
-    companion object Key : CoroutineContext.Key<IssuanceStart>
-
-    private val started = AtomicBoolean(false)
-
-    val hasStarted: Boolean get() = started.get()
-
-    fun markStarted() = started.set(true)
 }

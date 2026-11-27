@@ -47,14 +47,13 @@ class TestDeferredDocumentScheduleDao {
         database.close()
     }
 
-    //region store
-
-    // Case 1:
-    // 1. A schedule is stored for a document.
-    // 2. A later callback stores the same document with a later deadline.
-    //
-    // Case 1 Expected Result:
-    // The first deadline is kept.
+    /**
+     * 1. A schedule is stored for a document.
+     * 2. A later callback stores the same document with a later deadline.
+     *
+     * Expected result:
+     * The first deadline is kept.
+     */
     @Test
     fun `Given a stored schedule, When its ID is stored again, Then the first deadline stays`() =
         runBlocking {
@@ -68,12 +67,13 @@ class TestDeferredDocumentScheduleDao {
             assertEquals(listOf(mockedSchedule), dao.retrieveAll())
         }
 
-    // Case 2:
-    // 1. A schedule has stopped because its transaction expired.
-    // 2. A repeated callback stores the same document as active.
-    //
-    // Case 2 Expected Result:
-    // The terminal status is kept.
+    /**
+     * 1. A schedule has stopped because its transaction expired.
+     * 2. A repeated callback stores the same document as active.
+     *
+     * Expected result:
+     * The terminal status is kept.
+     */
     @Test
     fun `Given an expired schedule, When its ID is stored as active, Then it stays expired`() =
         runBlocking {
@@ -112,16 +112,13 @@ class TestDeferredDocumentScheduleDao {
             )
         }
 
-    //endregion
-
-    //region observeActive
-
-    // Case 1:
-    // 1. Three active rows, two of them with the same deadline.
-    // 2. One expired row and one row refused for issuer trust, both due earlier.
-    //
-    // Case 1 Expected Result:
-    // Only the active rows, ordered by deadline and then by identifier.
+    /**
+     * 1. Three active rows, two of them with the same deadline.
+     * 2. One expired row and one row refused for issuer trust, both due earlier.
+     *
+     * Expected result:
+     * Only the active rows, ordered by deadline and then by identifier.
+     */
     @Test
     fun `Given mixed rows, When observeActive is read, Then active rows come in order`() =
         runBlocking {
@@ -164,16 +161,13 @@ class TestDeferredDocumentScheduleDao {
             assertEquals(emptyList<DeferredDocumentSchedule>(), dao.observeActive().first())
         }
 
-    //endregion
-
-    //region attachOriginalIfUnknown
-
-    // Case 1:
-    // 1. One row has no known original and another already has one.
-    // 2. The same original is attached to both, and to an ID without a row.
-    //
-    // Case 1 Expected Result:
-    // Only the row without an original gains it; the known original stays and no row is created.
+    /**
+     * 1. One row has no known original and another already has one.
+     * 2. The same original is attached to both, and to an ID without a row.
+     *
+     * Expected result:
+     * Only the row without an original gains it; the known original stays and no row is created.
+     */
     @Test
     fun `Given known and unknown origins, When attached, Then only the unknown is filled`() =
         runBlocking {
@@ -196,15 +190,12 @@ class TestDeferredDocumentScheduleDao {
             assertNull(dao.retrieve("missing"))
         }
 
-    //endregion
-
-    //region hasPendingReplacement
-
-    // Case 1:
-    // 1. An active replacement of one original and an expired replacement of another.
-    //
-    // Case 1 Expected Result:
-    // Only the original with the active replacement has a pending replacement.
+    /**
+     * 1. An active replacement of one original and an expired replacement of another.
+     *
+     * Expected result:
+     * Only the original with the active replacement has a pending replacement.
+     */
     @Test
     fun `Given two replacements, When asked if pending, Then only the active one counts`() =
         runBlocking {
@@ -232,10 +223,6 @@ class TestDeferredDocumentScheduleDao {
             assertFalse(other)
         }
 
-    //endregion
-
-    //region getTerminalDocumentIds
-
     @Test
     fun `Given mixed rows, When getTerminalDocumentIds is called, Then stopped IDs return`() =
         runBlocking {
@@ -261,10 +248,6 @@ class TestDeferredDocumentScheduleDao {
             assertEquals(setOf("expired", "untrusted"), terminalIds.toSet())
             assertEquals(2, terminalIds.size)
         }
-
-    //endregion
-
-    //region delete
 
     @Test
     fun `Given two rows, When one is deleted, Then only the other remains`() =
@@ -300,16 +283,10 @@ class TestDeferredDocumentScheduleDao {
             assertEquals(emptyList<DeferredDocumentSchedule>(), dao.retrieveAll())
         }
 
-    //endregion
-
-    //region Mocked objects needed for tests.
-
     private val mockedSchedule = DeferredDocumentSchedule(
         identifier = "pending",
         nextAttemptAt = 5_000,
         lastIntervalMillis = null,
         originalDocumentId = null,
     )
-
-    //endregion
 }

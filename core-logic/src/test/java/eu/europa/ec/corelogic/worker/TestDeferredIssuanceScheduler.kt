@@ -154,11 +154,10 @@ class TestDeferredIssuanceScheduler {
     }
 
     /**
-     * Case 1:
      * 1. Local Core documents include a Deferred and an Issued document.
      * 2. Admission opens only after the first start call.
      *
-     * Case 1 Expected Result:
+     * Expected result:
      * Local recovery runs once, registering the Deferred fallback and clearing the Issued row.
      */
     @Test
@@ -191,10 +190,9 @@ class TestDeferredIssuanceScheduler {
         }
 
     /**
-     * Case 2:
      * 1. Two rows have different deadlines and a configured concurrency limit.
      *
-     * Case 2 Expected Result:
+     * Expected result:
      * Each deadline is scheduled independently and admission receives the configured limit.
      */
     @Test
@@ -237,10 +235,9 @@ class TestDeferredIssuanceScheduler {
         }
 
     /**
-     * Case 3:
      * 1. A deadline passes while new polling is paused.
      *
-     * Case 3 Expected Result:
+     * Expected result:
      * One attempt is submitted on resume without replaying missed intervals.
      */
     @Test
@@ -267,11 +264,10 @@ class TestDeferredIssuanceScheduler {
         }
 
     /**
-     * Case 4:
      * 1. An issuer was rejected for one Deferred document. A second document is still polling.
      * 2. A fresh scheduler opens the same stored schedules after restart.
      *
-     * Case 4 Expected Result:
+     * Expected result:
      * The rejected document stays Failed. Only the other document is polled when its deadline
      * passes.
      */
@@ -332,12 +328,11 @@ class TestDeferredIssuanceScheduler {
         }
 
     /**
-     * Case 5:
      * 1. A poll is in flight when the Wallet leaves the foreground.
      * 2. Its next deadline passes in the background, and the Wallet returns with the session
      *    locked.
      *
-     * Case 5 Expected Result:
+     * Expected result:
      * Save the response on arrival. Unlocking starts one overdue poll for this ID.
      */
     @Test
@@ -401,10 +396,9 @@ class TestDeferredIssuanceScheduler {
         }
 
     /**
-     * Case 1:
      * 1. Reset creates a new wallet lifecycle while the old scheduler still observes state.
      *
-     * Case 1 Expected Result:
+     * Expected result:
      * Recovery waits for Dashboard to start scheduling for the new wallet.
      */
     @Test
@@ -438,10 +432,9 @@ class TestDeferredIssuanceScheduler {
         }
 
     /**
-     * Case 1:
      * 1. A previously failing document returns NotReady with a new interval.
      *
-     * Case 1 Expected Result:
+     * Expected result:
      * Write the pre-call deadline first. Only the deadline calculated from the new interval gets
      * the margin.
      */
@@ -521,10 +514,9 @@ class TestDeferredIssuanceScheduler {
         }
 
     /**
-     * Case 4:
      * 1. Core issues a previously Deferred document.
      *
-     * Case 4 Expected Result:
+     * Expected result:
      * Delete the schedule before broadcasting the individual document ID.
      */
     @Test
@@ -549,10 +541,9 @@ class TestDeferredIssuanceScheduler {
         }
 
     /**
-     * Case 5:
      * 1. The request is blocked after saving the deadline and before the Core call.
      *
-     * Case 5 Expected Result:
+     * Expected result:
      * Restore the previous deadline and leave the existing indication alone.
      */
     @Test
@@ -570,10 +561,9 @@ class TestDeferredIssuanceScheduler {
         }
 
     /**
-     * Case 6:
      * 1. The issuer reports expiration while the document is still Deferred in the wallet.
      *
-     * Case 6 Expected Result:
+     * Expected result:
      * The persisted expiry ends polling across restarts and the document remains available for
      * Remove.
      */
@@ -598,10 +588,9 @@ class TestDeferredIssuanceScheduler {
         }
 
     /**
-     * Case 7:
      * 1. The wallet no longer trusts the issuer of a document that is still Deferred.
      *
-     * Case 7 Expected Result:
+     * Expected result:
      * Persist the terminal status before refreshing Documents. The user can still remove the
      * document.
      */
@@ -780,11 +769,10 @@ class TestDeferredIssuanceScheduler {
         }
 
     /**
-     * Case 2:
      * 1. Two documents fail. On retry, one receives NotReady without an interval and the other
      *    fails again.
      *
-     * Case 2 Expected Result:
+     * Expected result:
      * Only the recovering ID returns to Pending and reuses its raw issuer interval.
      * The repeated failure updates its deadline without another status notification.
      */
@@ -935,10 +923,9 @@ class TestDeferredIssuanceScheduler {
         }
 
     /**
-     * Case 3:
      * 1. A due document has a long previous interval. The final local lookup reports Unavailable.
      *
-     * Case 3 Expected Result:
+     * Expected result:
      * Restore the due row, keep its current indication and retry after the local backoff.
      */
     @Test

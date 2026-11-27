@@ -29,10 +29,9 @@ class TestDeferredRetryPolicy {
     private val policy = DeferredRetryPolicy(mockedDeferredConfig)
 
     /**
-     * Case 1:
      * 1. Initial polling and failure retries have different configured delays.
      *
-     * Case 1 Expected Result:
+     * Expected result:
      * The next deadline uses the initial delay, or the last issuer interval when known.
      */
     @Test
@@ -54,10 +53,9 @@ class TestDeferredRetryPolicy {
     }
 
     /**
-     * Case 1:
      * 1. A new issuer interval differs from the one used before the attempt.
      *
-     * Case 1 Expected Result:
+     * Expected result:
      * The deadline includes a one-second margin from receipt. The stored issuer interval stays
      * exact.
      */
@@ -75,10 +73,9 @@ class TestDeferredRetryPolicy {
     }
 
     /**
-     * Case 2:
      * 1. The response interval is absent, zero, negative or infinite.
      *
-     * Case 2 Expected Result:
+     * Expected result:
      * Keep the last valid interval, or the configured initial delay when absent.
      */
     @Test

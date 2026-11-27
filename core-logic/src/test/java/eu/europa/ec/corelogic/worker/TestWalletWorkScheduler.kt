@@ -83,10 +83,9 @@ class TestWalletWorkScheduler {
 
     //region stop
     /**
-     * Case 5:
      * 1. A background lock takes twenty seconds to release and Core is still finishing.
      *
-     * Case 5 Expected Result:
+     * Expected result:
      * The entire stop times out at thirty seconds; a later retry can succeed.
      */
     @Test

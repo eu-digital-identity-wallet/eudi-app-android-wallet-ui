@@ -199,10 +199,9 @@ class TestThrowableExtensions {
     }
 
     /**
-     * Case 3:
      * 1. The issuer refusal is caused by a certificate that is not valid yet.
      *
-     * Case 3 Expected Result:
+     * Expected result:
      * false, because a wrong device clock can cause it.
      */
     @Test
@@ -301,11 +300,10 @@ class TestThrowableExtensions {
     }
 
     /**
-     * Case 10:
      * 1. A refusal with a chain cause and a registration policy failure, each wrapped twice.
      * 2. A refusal without a cause, wrapped twice.
      *
-     * Case 10 Expected Result:
+     * Expected result:
      * The same results as unwrapped: true, true and false.
      */
     @Test

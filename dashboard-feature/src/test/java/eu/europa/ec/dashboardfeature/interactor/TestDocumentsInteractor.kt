@@ -737,10 +737,9 @@ class TestDocumentsInteractor {
     //region getDocuments — UnsignedDocument & expired
 
     /**
-     * Case 6:
      * 1. The scheduler reports a failure for only one of two retained Deferred documents.
      *
-     * Case 6 Expected Result:
+     * Expected result:
      * Only the ID in the current failure snapshot renders Failed.
      */
     @Test
@@ -1061,9 +1060,9 @@ class TestDocumentsInteractor {
     //endregion
 
     //region addDynamicFilters default parameter
+    // The interface declares `filters: Filters = Filters.emptyFilters()`. Calling without
+    // the filters argument exercises the default-parameter synthetic.
     /**
-     * The interface declares `filters: Filters = Filters.emptyFilters()`. Calling without
-     * the filters argument exercises the default-parameter synthetic.
      * The default filters is Filters.emptyFilters(), which has empty filterGroups.
      */
     @Test

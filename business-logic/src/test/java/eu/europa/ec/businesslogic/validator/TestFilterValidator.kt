@@ -67,10 +67,9 @@ class TestFilterValidator {
     )
 
     /**
-     * Case 1:
      * 1. A draft selection is cancelled immediately before a dynamic refresh.
      *
-     * Case 1 Expected Result:
+     * Expected result:
      * The refreshed list keeps the applied selection, not the cancelled draft.
      */
     @Test

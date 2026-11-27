@@ -26,6 +26,8 @@ import java.security.cert.CertPathValidatorException
 import java.security.cert.CertificateExpiredException
 import java.security.cert.CertificateNotYetValidException
 
+private const val INVALID_TRANSACTION_ID = "invalid_transaction_id"
+
 /**
  * Which trust layer refused the issuer behind this failure, or null when the failure is not about
  * trust and the caller should surface it as an ordinary error. An untrusted issuer chain or
@@ -94,8 +96,6 @@ fun Throwable.isUnknownDeferredTransaction(): Boolean {
     }
     return false
 }
-
-private const val INVALID_TRANSACTION_ID = "invalid_transaction_id"
 
 private fun Throwable.isCertificateValidityError(): Boolean {
     var throwable: Throwable? = this

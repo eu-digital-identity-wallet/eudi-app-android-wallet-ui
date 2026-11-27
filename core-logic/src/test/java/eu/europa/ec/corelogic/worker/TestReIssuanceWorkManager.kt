@@ -156,11 +156,10 @@ class TestReIssuanceWorkManager {
     }
 
     /**
-     * Case 3:
      * 1. Automatic Reissuance requires the user to unlock the document key.
      * 2. Core delivers its terminal failure after acknowledging cancellation.
      *
-     * Case 3 Expected Result:
+     * Expected result:
      * The worker cancels authentication once, waits for the outcome and records the original ID.
      */
     @Test
@@ -244,12 +243,11 @@ class TestReIssuanceWorkManager {
         }
 
     /**
-     * Case 5:
      * 1. Two originals are due for automatic Reissuance. Only the first has an active replacement.
      * 2. On the next run the first replacement has stopped polling and the second original has an
      *    active one.
      *
-     * Case 5 Expected Result:
+     * Expected result:
      * Each run submits only the original that is eligible at that time. Skips leave no failure
      * record.
      */

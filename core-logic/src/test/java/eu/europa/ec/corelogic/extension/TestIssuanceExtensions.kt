@@ -54,11 +54,10 @@ class TestIssuanceExtensions {
     )
 
     /**
-     * Case 1:
      * 1. The observer has left before Core asks for a key unlock.
      * 2. Core waits for cancellation before it emits the terminal failure.
      *
-     * Case 1 Expected Result:
+     * Expected result:
      * The request is cancelled on arrival and the failure reaches the tracked flow.
      */
     @Test
@@ -85,11 +84,10 @@ class TestIssuanceExtensions {
         }
 
     /**
-     * Case 2:
      * 1. A request has been forwarded to the prompt.
      * 2. The observer leaves before the prompt answers.
      *
-     * Case 2 Expected Result:
+     * Expected result:
      * Core receives one cancellation even if the prompt later reports success or error.
      */
     @Test
@@ -109,10 +107,9 @@ class TestIssuanceExtensions {
         }
 
     /**
-     * Case 3:
      * 1. The prompt succeeds and a second authentication request arrives.
      *
-     * Case 3 Expected Result:
+     * Expected result:
      * The first request is resumed once. On exit only the unanswered request is cancelled.
      */
     @Test
@@ -135,10 +132,9 @@ class TestIssuanceExtensions {
         }
 
     /**
-     * Case 4:
      * 1. The prompt reports an authentication error before the observer leaves.
      *
-     * Case 4 Expected Result:
+     * Expected result:
      * The prompt cancels Core once and a late success cannot resume the request.
      */
     @Test
@@ -158,10 +154,9 @@ class TestIssuanceExtensions {
         }
 
     /**
-     * Case 5:
      * 1. Issuance completes without needing authentication after the observer leaves.
      *
-     * Case 5 Expected Result:
+     * Expected result:
      * The terminal state reaches the tracked operation.
      */
     @Test

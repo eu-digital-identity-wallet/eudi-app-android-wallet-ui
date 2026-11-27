@@ -78,10 +78,9 @@ class TestSessionController {
     }
 
     /**
-     * Case 1:
      * 1. The session has locked before an action is submitted.
      *
-     * Case 1 Expected Result:
+     * Expected result:
      * The action is refused without being called.
      */
     @Test
@@ -100,10 +99,9 @@ class TestSessionController {
     }
 
     /**
-     * Case 2:
      * 1. Authentication has unlocked the session.
      *
-     * Case 2 Expected Result:
+     * Expected result:
      * The action runs once and admission succeeds.
      */
     @Test
@@ -121,11 +119,10 @@ class TestSessionController {
     }
 
     /**
-     * Case 3:
      * 1. An admitted action has started while the session is unlocked.
      * 2. Another thread checks the expired idle timeout before that action returns.
      *
-     * Case 3 Expected Result:
+     * Expected result:
      * The session remains unlocked through submission, then the idle lock completes.
      */
     @Test
