@@ -110,6 +110,10 @@ interface DocumentDetailsInteractor {
         wasIssuerDetailsExpanded: Boolean?
     ): Flow<DocumentDetailsInteractorPartialState>
 
+    /**
+     * Removes [documentId]. When PID activation is required, removing the main PID removes all
+     * documents, including Pending replacements. Other originals leave their replacements intact.
+     */
     fun deleteDocument(
         documentId: DocumentId
     ): Flow<DocumentDetailsInteractorDeleteDocumentPartialState>
@@ -254,7 +258,6 @@ class DocumentDetailsInteractorImpl(
                 && (docIdentifier == DocumentIdentifier.MdocPid ||
                         docIdentifier == DocumentIdentifier.SdJwtPid)
             ) {
-
                 val allPidDocuments = walletCoreDocumentsController.getAllDocumentsByType(
                     documentIdentifiers = listOf(
                         DocumentIdentifier.MdocPid,
@@ -272,34 +275,32 @@ class DocumentDetailsInteractorImpl(
             }
 
             if (shouldDeleteAllDocuments) {
-                walletCoreDocumentsController.deleteAllDocuments()
-                    .map {
-                        when (it) {
-                            is DeleteAllDocumentsPartialState.Failure ->
-                                DocumentDetailsInteractorDeleteDocumentPartialState.Failure(
-                                    errorMessage = it.errorMessage
-                                )
-
-                            is DeleteAllDocumentsPartialState.Success ->
-                                DocumentDetailsInteractorDeleteDocumentPartialState
-                                    .AllDocumentsDeleted
-                        }
-                    }
-            } else {
-                walletCoreDocumentsController.deleteDocument(documentId = documentId).map {
-                    when (it) {
-                        is DeleteDocumentPartialState.Failure ->
+                walletCoreDocumentsController.deleteAllDocuments().map { result ->
+                    when (result) {
+                        is DeleteAllDocumentsPartialState.Failure ->
                             DocumentDetailsInteractorDeleteDocumentPartialState.Failure(
-                                errorMessage = it.errorMessage
+                                errorMessage = result.errorMessage
                             )
 
-                        is DeleteDocumentPartialState.Success ->
-                            DocumentDetailsInteractorDeleteDocumentPartialState
-                                .SingleDocumentDeleted
+                        is DeleteAllDocumentsPartialState.Success ->
+                            DocumentDetailsInteractorDeleteDocumentPartialState.AllDocumentsDeleted
                     }
                 }
-            }.collect {
-                emit(it)
+            } else {
+                walletCoreDocumentsController.deleteDocument(documentId = documentId)
+                    .map { result ->
+                        when (result) {
+                            is DeleteDocumentPartialState.Failure ->
+                                DocumentDetailsInteractorDeleteDocumentPartialState.Failure(
+                                    errorMessage = result.errorMessage
+                                )
+
+                            is DeleteDocumentPartialState.Success ->
+                                DocumentDetailsInteractorDeleteDocumentPartialState.SingleDocumentDeleted
+                        }
+                    }
+            }.collect { state ->
+                emit(state)
             }
         }.safeAsync {
             DocumentDetailsInteractorDeleteDocumentPartialState.Failure(

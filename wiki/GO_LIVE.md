@@ -2079,11 +2079,11 @@ records of every document Wallet Core no longer holds.
 deleted, and requires the PIN or a biometric. `WalletCoreResetController` then, while the app keeps
 running:
 
-1. blocks new checks before cancelling the scheduled revocation and re-issuance work
-   (`WalletWorkScheduler.stop`), then waits up to `WalletCoreConfig.workerStopTimeout` (30 seconds
-   by default) for running work to finish. Wallet Core finishes a re-issuance it has started even
-   when its worker is cancelled, so the worker follows it to its outcome first. If a worker is still
-   working when the wait ends, the reset fails before anything is deleted;
+1. blocks new checks before cancelling scheduled revocation and re-issuance work and pausing
+   Deferred Issuance (`WalletWorkScheduler.stop`). It uses one total
+   `WalletCoreConfig.workerStopTimeout` (30 seconds by default) for cancellation, running workers
+   and tracked document operations, including callback persistence. Core calls already started finish
+   even if a screen leaves. If work remains at the deadline, reset fails before any reset deletion;
 2. deletes every document Wallet Core stores, the main PID last, so that their keys are removed as
    Wallet Core intends. Meanwhile it holds the Digital Credential API registration, and then clears
    the registry, which the system keeps outside the app's data
@@ -2134,7 +2134,7 @@ Clearing the app's data from the system settings, or reinstalling, removes these
 Production rules:
 
 * Any local store you add must be covered by both paths. Records scoped to a document must be
-  deleted in `deleteDocumentRecords` in `WalletCoreDocumentsControllerImpl`.
+  deleted in `deleteLocalDocumentMetadata` in `WalletCoreDocumentsControllerImpl`.
 * Data kept outside the app's data directory, for example in shared storage or another app, is not
   cleared by the reset and must be given its own deletion step, as the Digital Credential API
   registry is.

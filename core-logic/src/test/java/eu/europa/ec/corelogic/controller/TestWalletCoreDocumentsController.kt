@@ -19,6 +19,8 @@ package eu.europa.ec.corelogic.controller
 import eu.europa.ec.businesslogic.controller.storage.PrefKeys
 import eu.europa.ec.corelogic.config.VciConfig
 import eu.europa.ec.corelogic.config.WalletCoreConfig
+import eu.europa.ec.corelogic.util.mockedDeferredConfig
+import eu.europa.ec.corelogic.util.mockedDocumentOperationState
 import eu.europa.ec.corelogic.worker.WalletWorkScheduler
 import eu.europa.ec.eudi.openid4vci.CredentialOffer
 import eu.europa.ec.eudi.wallet.EudiWallet
@@ -35,6 +37,7 @@ import eu.europa.ec.eudi.wallet.issue.openid4vci.OpenId4VciManager
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.storagelogic.dao.BookmarkDao
+import eu.europa.ec.storagelogic.dao.DeferredDocumentScheduleDao
 import eu.europa.ec.storagelogic.dao.FailedReIssuedDocumentDao
 import eu.europa.ec.storagelogic.dao.IssuerTrustDao
 import eu.europa.ec.storagelogic.dao.RevokedDocumentDao
@@ -47,6 +50,8 @@ import eu.europa.ec.storagelogic.model.RevocationStatus
 import eu.europa.ec.storagelogic.model.RevokedDocument
 import eu.europa.ec.testlogic.extension.runTest
 import eu.europa.ec.testlogic.rule.CoroutineTestRule
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -64,6 +69,7 @@ import org.mockito.kotlin.any
 import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.doAnswer
 import org.mockito.kotlin.doReturn
+import org.mockito.kotlin.doSuspendableAnswer
 import org.mockito.kotlin.doThrow
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
@@ -110,6 +116,12 @@ class TestWalletCoreDocumentsController {
     @Mock
     private lateinit var eudiWallet: EudiWallet
 
+    @Mock
+    private lateinit var deferredScheduleDao: DeferredDocumentScheduleDao
+
+    @Mock
+    private lateinit var walletDocumentOperationController: WalletDocumentOperationController
+
     private lateinit var controller: WalletCoreDocumentsController
 
     private val firstIssuerManager: OpenId4VciManager = mock()
@@ -134,6 +146,41 @@ class TestWalletCoreDocumentsController {
         runBlocking {
             whenever(prefKeys.getSessionId()).thenReturn("session")
         }
+        whenever(walletCoreConfig.deferredIssuanceConfig).thenReturn(mockedDeferredConfig)
+        whenever(walletDocumentOperationController.state).thenReturn(
+            MutableStateFlow(
+                mockedDocumentOperationState
+            )
+        )
+        whenever(
+            walletDocumentOperationController.trackedOperationFlow<IssueDocumentsPartialState>(
+                any(),
+                any(),
+                any()
+            )
+        )
+            .thenAnswer { invocation ->
+                invocation.getArgument<() -> Flow<IssueDocumentsPartialState>>(
+                    2
+                ).invoke()
+            }
+        runBlocking {
+            whenever(
+                walletDocumentOperationController.withRemoval<DeleteDocumentPartialState>(
+                    any(),
+                    any()
+                )
+            )
+                .doSuspendableAnswer { invocation ->
+                    invocation.getArgument<suspend () -> DeleteDocumentPartialState>(
+                        1
+                    ).invoke()
+                }
+            whenever(walletDocumentOperationController.withDocumentLock<Unit>(any(), any()))
+                .doSuspendableAnswer { invocation ->
+                    invocation.getArgument<suspend () -> Unit>(1).invoke()
+                }
+        }
         whenever(eudiWallet.getDocumentById("pid")).thenReturn(pid)
         controller = WalletCoreDocumentsControllerImpl(
             resourceProvider = resourceProvider,
@@ -145,6 +192,8 @@ class TestWalletCoreDocumentsController {
             statusRefreshFailureDao = statusRefreshFailureDao,
             prefKeys = prefKeys,
             walletWorkScheduler = walletWorkScheduler,
+            deferredScheduleDao = deferredScheduleDao,
+            walletDocumentOperationController = walletDocumentOperationController,
             dispatcher = coroutineRule.testDispatcher,
             walletCore = eudiWallet,
         )
@@ -305,7 +354,7 @@ class TestWalletCoreDocumentsController {
             whenever(eudiWallet.getDocuments(anyOrNull())).thenReturn(listOf(otherPid))
 
             // When
-            implementation().deleteRecordsOfMissingDocuments()
+            implementation().deleteLocalMetadataForMissingDocuments()
 
             // Then
             verify(issuerTrustDao).delete("oldPid")
@@ -328,7 +377,7 @@ class TestWalletCoreDocumentsController {
             whenever(eudiWallet.getDocuments(anyOrNull())).thenReturn(listOf(otherPid))
 
             // When
-            implementation().deleteRecordsOfMissingDocuments()
+            implementation().deleteLocalMetadataForMissingDocuments()
 
             // Then
             verify(revokedDocumentDao).delete("oldPid")
@@ -439,17 +488,23 @@ class TestWalletCoreDocumentsController {
         coroutineRule.runTest {
             // Given
             givenTwoIssuers()
+            val documentId = "deferred"
             val metadata: IssuerMetadata =
                 mock { on { credentialIssuerIdentifier } doReturn CONFIGURED_ISSUER }
             val deferred: DeferredDocument = mock {
-                on { id } doReturn "deferred"
+                on { id } doReturn documentId
                 on { issuerMetadata } doReturn metadata
             }
-            whenever(eudiWallet.getDocumentById("deferred")).thenReturn(deferred)
+            whenever(eudiWallet.getDocumentById(documentId)).thenReturn(deferred)
+            whenever(walletDocumentOperationController.startCorePolling(eq(documentId), any()))
+                .thenAnswer { invocation ->
+                    invocation.getArgument<() -> Unit>(1).invoke()
+                    true
+                }
 
             // When
             val job = coroutineRule.testScope.launch {
-                controller.issueDeferredDocument("deferred").collect {}
+                controller.issueDeferredDocument(documentId).collect {}
             }
             coroutineRule.testScope.runCurrent()
 

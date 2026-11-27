@@ -27,4 +27,8 @@ data class DocumentUi(
     val uiData: ListItemDataUi,
     val documentIdentifier: DocumentIdentifier,
     val documentCategory: DocumentCategory,
-) : FilterableItemPayload
+) : FilterableItemPayload {
+    val isDeferred: Boolean
+        get() = documentIssuanceState == DocumentIssuanceStateUi.Pending ||
+                documentIssuanceState == DocumentIssuanceStateUi.Failed
+}

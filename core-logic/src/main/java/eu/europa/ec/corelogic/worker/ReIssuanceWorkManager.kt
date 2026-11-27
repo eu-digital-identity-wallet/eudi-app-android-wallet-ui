@@ -26,12 +26,12 @@ import eu.europa.ec.corelogic.util.CoreActions
 import eu.europa.ec.corelogic.util.CoreActions.RE_ISSUANCE_IDS_DETAILS_EXTRA
 import eu.europa.ec.eudi.wallet.document.CreateDocumentSettings.CredentialPolicy
 import eu.europa.ec.eudi.wallet.document.IssuedDocument
+import eu.europa.ec.storagelogic.dao.DeferredDocumentScheduleDao
 import eu.europa.ec.storagelogic.dao.FailedReIssuedDocumentDao
 import eu.europa.ec.storagelogic.model.FailedReIssuedDocument
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.ensureActive
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
@@ -52,6 +52,7 @@ class ReIssuanceWorkManager(
     appContext: Context,
     workerParams: WorkerParameters,
     private val failedReIssuedDocumentDao: FailedReIssuedDocumentDao,
+    private val deferredScheduleDao: DeferredDocumentScheduleDao,
     private val walletCoreDocumentsController: WalletCoreDocumentsController,
 ) : CoroutineWorker(appContext, workerParams) {
 
@@ -70,6 +71,7 @@ class ReIssuanceWorkManager(
 
             val failed = mutableListOf<String>()
             val idsRemoved = mutableListOf<String>()
+            var documentsChanged = false
 
             val now = Clock.System.now()
 
@@ -98,35 +100,39 @@ class ReIssuanceWorkManager(
 
                     currentCoroutineContext().ensureActive()
 
+                    // A manual request may have registered a replacement while earlier originals were processed.
+                    if (deferredScheduleDao.hasPendingReplacement(document.id)) return@forEach
+
                     val issuerId = document.issuerMetadata?.credentialIssuerIdentifier.orEmpty()
 
-                    val state = withContext(NonCancellable) {
+                    withContext(NonCancellable) {
                         walletCoreDocumentsController.reIssueDocument(
                             documentId = document.id,
                             issuerId = issuerId,
                             allowAuthorizationFallback = false
-                        ).first()
-                    }
+                        ).collect { state ->
+                            when (state) {
+                                is IssueDocumentsPartialState.DeferredSuccess,
+                                is IssueDocumentsPartialState.PartialSuccess,
+                                is IssueDocumentsPartialState.PartialSuccessWithUntrustedIssuer,
+                                is IssueDocumentsPartialState.Success -> {
+                                    documentsChanged = true
+                                    if (walletCoreDocumentsController.getDocumentById(document.id) == null) {
+                                        idsRemoved.add(document.id)
+                                    }
+                                }
 
-                    when (state) {
-                        is IssueDocumentsPartialState.DeferredSuccess,
-                        is IssueDocumentsPartialState.PartialSuccess,
-                        is IssueDocumentsPartialState.PartialSuccessWithUntrustedIssuer,
-                        is IssueDocumentsPartialState.Success -> {
-                            idsRemoved.add(document.id)
-                        }
+                                is IssueDocumentsPartialState.Failure,
+                                is IssueDocumentsPartialState.IssuerNotTrusted -> {
+                                    failed.add(document.id)
+                                }
 
-                        is IssueDocumentsPartialState.Failure -> {
-                            failed.add(document.id)
-                        }
-
-                        is IssueDocumentsPartialState.IssuerNotTrusted -> {
-                            failed.add(document.id)
-                        }
-
-                        is IssueDocumentsPartialState.UserAuthRequired -> {
-                            state.resultHandler.onAuthenticationFailure()
-                            failed.add(document.id)
+                                is IssueDocumentsPartialState.UserAuthRequired -> {
+                                    // The worker cannot show a prompt. Core emits Failure when we cancel authentication.
+                                    // The Failure branch adds the document ID to failed. Adding it here would duplicate the ID.
+                                    state.resultHandler.onAuthenticationError()
+                                }
+                            }
                         }
                     }
                 }
@@ -137,8 +143,11 @@ class ReIssuanceWorkManager(
                 storeFailedToStorage(failed)
             }
 
-            if (idsRemoved.isNotEmpty()) {
+            // A Deferred replacement changes the list even while the original remains in the wallet.
+            if (documentsChanged) {
                 notifyDocumentsList()
+            }
+            if (idsRemoved.isNotEmpty()) {
                 notifyDocumentDetails(idsRemoved)
             }
 

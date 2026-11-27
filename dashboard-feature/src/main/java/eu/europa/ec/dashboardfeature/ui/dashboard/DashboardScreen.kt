@@ -18,6 +18,7 @@ package eu.europa.ec.dashboardfeature.ui.dashboard
 
 import android.content.Context
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.MutableTransitionState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
@@ -31,6 +32,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -89,6 +91,8 @@ internal fun DashboardScreen(
 
     val scope = rememberCoroutineScope()
     val bottomSheetState = rememberWrapModalBottomSheetState()
+    val sideMenuVisibility = remember { MutableTransitionState(state.isSideMenuVisible) }
+    sideMenuVisibility.targetState = state.isSideMenuVisible
 
     Scaffold(
         bottomBar = { BottomNavigationBar(bottomNavigationController) }
@@ -118,6 +122,7 @@ internal fun DashboardScreen(
                 DocumentsScreen(
                     hostNavController,
                     documentsViewModel,
+                    isDashboardCovered = state.isBottomSheetOpen || state.isSideMenuVisible || !sideMenuVisibility.isIdle,
                     onDashboardEventSent = { event ->
                         viewModel.setEvent(event)
                     }
@@ -156,7 +161,7 @@ internal fun DashboardScreen(
     }
 
     AnimatedVisibility(
-        visible = state.isSideMenuVisible,
+        visibleState = sideMenuVisibility,
         modifier = Modifier.fillMaxSize(),
         enter = slideInHorizontally(initialOffsetX = { it }),
         exit = when (state.sideMenuAnimation) {

@@ -35,6 +35,7 @@ import androidx.navigation.NavGraphBuilder
 import eu.europa.ec.authenticationlogic.controller.session.SessionController
 import eu.europa.ec.businesslogic.controller.storage.PrefKeys
 import eu.europa.ec.businesslogic.provider.UuidProvider
+import eu.europa.ec.corelogic.controller.WalletDocumentOperationController
 import eu.europa.ec.corelogic.controller.WalletResetStatus
 import eu.europa.ec.corelogic.di.getOrNullKoinScope
 import eu.europa.ec.corelogic.provider.DCAPISettingProvider
@@ -78,6 +79,7 @@ open class EudiComponentActivity : FragmentActivity() {
     private val configUILogic: ConfigUILogic by inject()
     private val sessionController: SessionController by inject()
     private val walletResetStatus: WalletResetStatus by inject()
+    private val walletDocumentOperationController: WalletDocumentOperationController by inject()
     private val viewModel: EudiComponentActivityViewModel by viewModel()
 
     private var idleLockJob: Job? = null
@@ -186,7 +188,15 @@ open class EudiComponentActivity : FragmentActivity() {
     override fun onResume() {
         super.onResume()
         viewModel.onResume()
+        // Apply session timeouts before allowing new Deferred requests to start.
         checkSessionAfterCover()
+        checkSessionOnForeground()
+        walletDocumentOperationController.setForeground(true)
+    }
+
+    override fun onPause() {
+        walletDocumentOperationController.setForeground(false)
+        super.onPause()
     }
 
     /**

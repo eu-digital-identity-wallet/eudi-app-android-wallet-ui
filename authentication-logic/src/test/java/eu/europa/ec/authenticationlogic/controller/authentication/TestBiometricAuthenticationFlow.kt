@@ -195,20 +195,21 @@ class TestBiometricAuthenticationFlow {
         }
 
     @Test
-    fun `Given a cipher that cannot be set up, When authentication starts, Then a failure is reported without opening a prompt`() = coroutineRule.runTest {
-        // Given
-        whenever(crypto.getCipher(any(), any(), any())).thenReturn(null)
-        val expectedFailure = BiometricsAuthenticate.Failed(
-            activity.getString(R.string.biometric_authentication_error)
-        )
+    fun `Given a cipher that cannot be set up, When authentication starts, Then a failure is reported without opening a prompt`() =
+        coroutineRule.runTest {
+            // Given
+            whenever(crypto.getCipher(any(), any(), any())).thenReturn(null)
+            val expectedFailure = BiometricsAuthenticate.Failed(
+                activity.getString(R.string.biometric_authentication_error)
+            )
 
-        // When
-        startAuthentication()
+            // When
+            startAuthentication()
 
-        // Then
-        assertEquals(listOf(expectedFailure), results)
-        assertTrue(prompts.constructed().isEmpty())
-    }
+            // Then
+            assertEquals(listOf(expectedFailure), results)
+            assertTrue(prompts.constructed().isEmpty())
+        }
 
     @Test
     fun `Given a storage that throws, When authentication starts, Then a failure is reported and no attempt is left pending`() =
@@ -226,21 +227,22 @@ class TestBiometricAuthenticationFlow {
         }
 
     @Test
-    fun `Given a prompt that fails on startup, When authentication starts, Then a failure is reported`() = coroutineRule.runTest {
-        // Given
-        prompts.close()
-        prompts = mockConstruction(BiometricPrompt::class.java) { prompt, _ ->
-            doThrow(IllegalArgumentException("unsupported")).whenever(prompt)
-                .authenticate(any(), any<BiometricPrompt.CryptoObject>())
+    fun `Given a prompt that fails on startup, When authentication starts, Then a failure is reported`() =
+        coroutineRule.runTest {
+            // Given
+            prompts.close()
+            prompts = mockConstruction(BiometricPrompt::class.java) { prompt, _ ->
+                doThrow(IllegalArgumentException("unsupported")).whenever(prompt)
+                    .authenticate(any(), any<BiometricPrompt.CryptoObject>())
+            }
+
+            // When
+            startAuthentication()
+
+            // Then
+            assertTrue(results.single() is BiometricsAuthenticate.Failed)
+            assertEquals(1, prompts.constructed().size)
         }
-
-        // When
-        startAuthentication()
-
-        // Then
-        assertTrue(results.single() is BiometricsAuthenticate.Failed)
-        assertEquals(1, prompts.constructed().size)
-    }
 
     /**
      * The test simulates even a synchronous cancellation callback from an OEM implementation.
@@ -269,25 +271,27 @@ class TestBiometricAuthenticationFlow {
         }
 
     @Test
-    fun `Given a started authentication, When a scan is rejected and then the user cancels, Then the prompt stays open until the cancellation`() = coroutineRule.runTest {
-        // Given
-        startAuthentication(notifyOnFailure = false)
+    fun `Given a started authentication, When a scan is rejected and then the user cancels, Then the prompt stays open until the cancellation`() =
+        coroutineRule.runTest {
+            // Given
+            startAuthentication(notifyOnFailure = false)
 
-        // When
-        callbacks.single().onAuthenticationFailed()
-        coroutineRule.testScope.runCurrent()
+            // When
+            callbacks.single().onAuthenticationFailed()
+            coroutineRule.testScope.runCurrent()
 
-        // Then
-        assertTrue(results.isEmpty())
-        verify(prompts.constructed().single(), never()).cancelAuthentication()
+            // Then
+            assertTrue(results.isEmpty())
+            verify(prompts.constructed().single(), never()).cancelAuthentication()
 
-        // When
-        callbacks.single().onAuthenticationError(BiometricPrompt.ERROR_USER_CANCELED, "cancelled")
-        coroutineRule.testScope.runCurrent()
+            // When
+            callbacks.single()
+                .onAuthenticationError(BiometricPrompt.ERROR_USER_CANCELED, "cancelled")
+            coroutineRule.testScope.runCurrent()
 
-        // Then
-        assertEquals(listOf(BiometricsAuthenticate.Cancelled), results)
-    }
+            // Then
+            assertEquals(listOf(BiometricsAuthenticate.Cancelled), results)
+        }
 
     @Test
     fun `Given a started authentication, When scans are rejected repeatedly and then one succeeds, Then success is reported in the same prompt without a failure`() =
@@ -382,61 +386,64 @@ class TestBiometricAuthenticationFlow {
         }
 
     @Test
-    fun `Given a key that is invalidated, When authentication succeeds, Then it fails instead of succeeding or crashing`() = coroutineRule.runTest {
-        // Given
-        whenever(crypto.encryptDecrypt(any(), any()))
-            .thenThrow(IllegalStateException("invalidated key"))
+    fun `Given a key that is invalidated, When authentication succeeds, Then it fails instead of succeeding or crashing`() =
+        coroutineRule.runTest {
+            // Given
+            whenever(crypto.encryptDecrypt(any(), any()))
+                .thenThrow(IllegalStateException("invalidated key"))
 
-        // When
-        startAuthentication()
-        callbacks.single().onAuthenticationSucceeded(successfulAuthenticationResult())
-        coroutineRule.testScope.runCurrent()
+            // When
+            startAuthentication()
+            callbacks.single().onAuthenticationSucceeded(successfulAuthenticationResult())
+            coroutineRule.testScope.runCurrent()
 
-        // Then
-        assertTrue(results.single() is BiometricsAuthenticate.Failed)
-        verify(storage, never()).setBiometricAuthentication(any())
-    }
+            // Then
+            assertTrue(results.single() is BiometricsAuthenticate.Failed)
+            verify(storage, never()).setBiometricAuthentication(any())
+        }
 
     /**
      * The test ends with a fresh activity so that teardown can run normally.
      */
     @Test
-    fun `Given a started authentication, When the activity is destroyed, Then the prompt is cancelled and the caller is notified once`() = coroutineRule.runTest {
-        // Given
-        startAuthentication()
+    fun `Given a started authentication, When the activity is destroyed, Then the prompt is cancelled and the caller is notified once`() =
+        coroutineRule.runTest {
+            // Given
+            startAuthentication()
 
-        // When
-        host.pause().stop().destroy()
-        coroutineRule.testScope.runCurrent()
+            // When
+            host.pause().stop().destroy()
+            coroutineRule.testScope.runCurrent()
 
-        // Then
-        verify(prompts.constructed().single()).cancelAuthentication()
-        assertEquals(listOf(BiometricsAuthenticate.Cancelled), results)
+            // Then
+            verify(prompts.constructed().single()).cancelAuthentication()
+            assertEquals(listOf(BiometricsAuthenticate.Cancelled), results)
 
-        // When
-        callbacks.single().onAuthenticationError(BiometricPrompt.ERROR_CANCELED, "cancelled")
-        coroutineRule.testScope.runCurrent()
+            // When
+            callbacks.single().onAuthenticationError(BiometricPrompt.ERROR_CANCELED, "cancelled")
+            coroutineRule.testScope.runCurrent()
 
-        // Then
-        assertEquals(1, results.size)
+            // Then
+            assertEquals(1, results.size)
 
-        host = Robolectric.buildActivity(FragmentActivity::class.java).setup()
-    }
+            host = Robolectric.buildActivity(FragmentActivity::class.java).setup()
+        }
 
     @Test
-    fun `Given a destroyed activity, When authentication starts, Then the caller is notified`() = coroutineRule.runTest {
-        // Given
-        host.pause().stop().destroy()
+    fun `Given a destroyed activity, When authentication starts, Then the caller is notified`() =
+        coroutineRule.runTest {
+            // Given
+            host.pause().stop().destroy()
 
-        // When
-        startAuthentication()
+            // When
+            startAuthentication()
 
-        // Then
-        assertEquals(listOf(BiometricsAuthenticate.Cancelled), results)
-        assertTrue(prompts.constructed().isEmpty())
+            // Then
+            assertEquals(listOf(BiometricsAuthenticate.Cancelled), results)
+            assertTrue(prompts.constructed().isEmpty())
 
-        host = Robolectric.buildActivity(FragmentActivity::class.java).setup()
-    }
+            host = Robolectric.buildActivity(FragmentActivity::class.java).setup()
+        }
 
     /**
      * Real AndroidX is used after the prompt mock is closed: it returns without a callback if
@@ -509,28 +516,29 @@ class TestBiometricAuthenticationFlow {
     }
 
     @Test
-    fun `Given a pending suspend request, When the caller is cancelled, Then its prompt is dismissed`() = coroutineRule.runTest {
-        // Given
-        val request = async {
-            controller.authenticate(
-                activity,
-                BiometricCrypto(null),
-                BiometricPrompt.PromptInfo.Builder()
-                    .setTitle("Test")
-                    .setNegativeButtonText("Cancel")
-                    .build(),
-                false
-            )
+    fun `Given a pending suspend request, When the caller is cancelled, Then its prompt is dismissed`() =
+        coroutineRule.runTest {
+            // Given
+            val request = async {
+                controller.authenticate(
+                    activity,
+                    BiometricCrypto(null),
+                    BiometricPrompt.PromptInfo.Builder()
+                        .setTitle("Test")
+                        .setNegativeButtonText("Cancel")
+                        .build(),
+                    false
+                )
+            }
+            coroutineRule.testScope.runCurrent()
+
+            // When
+            request.cancel()
+            coroutineRule.testScope.runCurrent()
+
+            // Then
+            verify(prompts.constructed().single()).cancelAuthentication()
         }
-        coroutineRule.testScope.runCurrent()
-
-        // When
-        request.cancel()
-        coroutineRule.testScope.runCurrent()
-
-        // Then
-        verify(prompts.constructed().single()).cancelAuthentication()
-    }
 
     @Test
     fun `Given strong biometrics not enrolled and weak ones available, When availability is checked, Then the requested strength is enforced`() {

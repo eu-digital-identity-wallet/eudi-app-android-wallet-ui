@@ -53,6 +53,7 @@ import org.multipaz.request.Requester
 import org.multipaz.request.RequesterIdentity
 import org.multipaz.trustmanagement.TrustMetadata
 import java.util.Locale
+import kotlin.time.Duration.Companion.seconds
 
 /**
  * The controller's [WalletCorePresentationController.events] run Wallet Core's listener on
@@ -190,7 +191,7 @@ class TestWalletCorePresentationController {
         val listener = argumentCaptor<TransferEvent.Listener>()
         verify(
             eudiWallet,
-            timeout(EVENT_TIMEOUT_MILLIS)
+            timeout(EVENT_TIMEOUT.inWholeMilliseconds)
         ).addTransferEventListener(listener.capture())
 
         val received = requests.map { request ->
@@ -200,7 +201,7 @@ class TestWalletCorePresentationController {
                     request = mock<Request>()
                 )
             )
-            withTimeout(EVENT_TIMEOUT_MILLIS) { states.receive() }
+            withTimeout(EVENT_TIMEOUT) { states.receive() }
         }
         collector.cancel()
 
@@ -237,6 +238,6 @@ class TestWalletCorePresentationController {
     }
 
     private companion object {
-        const val EVENT_TIMEOUT_MILLIS = 10_000L
+        val EVENT_TIMEOUT = 10.seconds
     }
 }

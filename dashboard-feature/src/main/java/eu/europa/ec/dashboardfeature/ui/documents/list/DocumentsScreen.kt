@@ -46,8 +46,10 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SheetState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -56,16 +58,21 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.LayoutBoundsHolder
+import androidx.compose.ui.layout.layoutBounds
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.compose.currentStateAsState
 import androidx.navigation.NavController
+import eu.europa.ec.corelogic.model.DeferredDocumentRemovalReasonDomain
 import eu.europa.ec.corelogic.model.DocumentCategory
 import eu.europa.ec.corelogic.model.DocumentIdentifier
 import eu.europa.ec.corelogic.util.CoreActions
@@ -97,7 +104,6 @@ import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
 import eu.europa.ec.uilogic.component.utils.SPACING_SMALL
 import eu.europa.ec.uilogic.component.utils.VSpacer
 import eu.europa.ec.uilogic.component.wrap.BottomSheetTextDataUi
-import eu.europa.ec.uilogic.component.wrap.BottomSheetWithOptionsList
 import eu.europa.ec.uilogic.component.wrap.BottomSheetWithTwoBigIcons
 import eu.europa.ec.uilogic.component.wrap.ButtonConfig
 import eu.europa.ec.uilogic.component.wrap.ButtonType
@@ -115,6 +121,7 @@ import eu.europa.ec.uilogic.component.wrap.WrapModalBottomSheet
 import eu.europa.ec.uilogic.component.wrap.WrapPrimaryExtendedFab
 import eu.europa.ec.uilogic.component.wrap.rememberWrapModalBottomSheetState
 import eu.europa.ec.uilogic.extension.applyTestTag
+import eu.europa.ec.uilogic.extension.findActivity
 import eu.europa.ec.uilogic.extension.finish
 import eu.europa.ec.uilogic.extension.isScrollingUp
 import eu.europa.ec.uilogic.extension.paddingFrom
@@ -137,10 +144,15 @@ private const val FAB_ENTER_DURATION_MILLIS = 300
 fun DocumentsScreen(
     navHostController: NavController,
     viewModel: DocumentsViewModel,
+    isDashboardCovered: Boolean,
     onDashboardEventSent: (DashboardEvent) -> Unit,
 ) {
     val state: State by viewModel.viewState.collectAsStateWithLifecycle()
     val context = LocalContext.current
+    val lifecycleState by LocalLifecycleOwner.current.lifecycle.currentStateAsState()
+    val canShowHighlights = lifecycleState == Lifecycle.State.RESUMED &&
+            LocalWindowInfo.current.isWindowFocused && !isDashboardCovered &&
+            !state.isEditingFilters && !state.isBottomSheetOpen && !state.isLoading
 
     val isBottomSheetOpen = state.isBottomSheetOpen
     val scope = rememberCoroutineScope()
@@ -192,17 +204,55 @@ fun DocumentsScreen(
         broadcastAction = BroadcastAction(
             intentFilters = listOf(
                 CoreActions.REVOCATION_WORK_REFRESH_ACTION,
-                CoreActions.RE_ISSUANCE_WORK_REFRESH_ACTION
+                CoreActions.RE_ISSUANCE_WORK_REFRESH_ACTION,
+                CoreActions.DEFERRED_DOCUMENT_ISSUED_ACTION,
+                CoreActions.DEFERRED_DOCUMENT_STATUS_CHANGED_ACTION,
+                CoreActions.DEFERRED_DOCUMENT_REMOVED_ACTION,
             ),
-            callback = {
-                viewModel.setEvent(Event.GetDocuments)
+            callback = { intent ->
+                val documentId = intent?.getStringExtra(CoreActions.DEFERRED_DOCUMENT_ID_EXTRA)
+
+                val event = if (intent == null || documentId == null) {
+                    Event.GetDocuments
+                } else {
+                    when (intent.action) {
+                        CoreActions.DEFERRED_DOCUMENT_ISSUED_ACTION -> {
+                            Event.DeferredDocumentIssued(documentId)
+                        }
+
+                        CoreActions.DEFERRED_DOCUMENT_STATUS_CHANGED_ACTION -> {
+                            Event.DeferredDocumentStatusChanged(documentId)
+                        }
+
+                        CoreActions.DEFERRED_DOCUMENT_REMOVED_ACTION -> {
+                            val reasonName =
+                                intent.getStringExtra(CoreActions.DEFERRED_REMOVAL_REASON_EXTRA)
+                            val reason = DeferredDocumentRemovalReasonDomain.entries.find { entry ->
+                                entry.name == reasonName
+                            }
+
+                            if (reason != null) {
+                                Event.DeferredDocumentRemoved(documentId, reason)
+                            } else {
+                                Event.GetDocuments
+                            }
+                        }
+
+                        else -> {
+                            Event.GetDocuments
+                        }
+                    }
+                }
+
+                viewModel.setEvent(event)
             }
         )
     ) { paddingValues ->
         Content(
             state = state,
+            canShowHighlights = canShowHighlights,
             effectFlow = viewModel.effect,
-            onEventSend = { viewModel.setEvent(it) },
+            onEventSend = { event -> viewModel.setEvent(event) },
             onNavigationRequested = { navigationEffect ->
                 handleNavigationEffect(navigationEffect, navHostController, context)
             },
@@ -224,10 +274,9 @@ fun DocumentsScreen(
                 sheetState = bottomSheetState
             ) {
                 DocumentsSheetContent(
-                    sheetContent = state.sheetContent,
                     state = state,
-                    onEventSent = {
-                        viewModel.setEvent(it)
+                    onEventSent = { event ->
+                        viewModel.setEvent(event)
                     }
                 )
             }
@@ -236,6 +285,17 @@ fun DocumentsScreen(
 
     OncePerViewModelEffect(viewModel) {
         viewModel.setEvent(Event.Init)
+    }
+    DisposableEffect(viewModel, context) {
+        val activity = context.findActivity()
+        onDispose {
+            // Leaving Documents discards an open draft even if its ViewModel survives.
+            // Rotation recreates the Activity with the same draft and pending refresh.
+            if (!activity.isChangingConfigurations) {
+                viewModel.setEvent(Event.OnScreenDisposed)
+                viewModel.setEvent(Event.BottomSheet.UpdateBottomSheetState(isOpen = false))
+            }
+        }
     }
 }
 
@@ -324,6 +384,7 @@ private fun TopBar(
 @Composable
 private fun Content(
     state: State,
+    canShowHighlights: Boolean,
     effectFlow: Flow<Effect>,
     onEventSend: (Event) -> Unit,
     onNavigationRequested: (navigationEffect: Effect.Navigation) -> Unit,
@@ -332,13 +393,18 @@ private fun Content(
     coroutineScope: CoroutineScope,
     modalBottomSheetState: SheetState,
 ) {
+    val listViewport = remember { LayoutBoundsHolder() }
+    val idsToHighlight =
+        if (state.isApplyingDocumentFilters) emptySet() else state.unseenDeferredIssuanceIds
     Box(
         modifier = Modifier
             .fillMaxSize()
             .paddingFrom(paddingValues, bottom = false)
     ) {
         LazyColumn(
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier
+                .fillMaxSize()
+                .layoutBounds(listViewport),
             state = scrollState,
             contentPadding = PaddingValues(bottom = SPACING_MEDIUM.dp),
         ) {
@@ -361,12 +427,36 @@ private fun Content(
                     NoResults(modifier = Modifier.fillMaxWidth())
                 }
             } else {
-                itemsIndexed(items = state.documentsUi) { index, (documentCategory, documents) ->
+                itemsIndexed(
+                    items = state.documentsUi,
+                    key = { _, group -> group.first.id },
+                ) { index, (documentCategory, documents) ->
                     DocumentCategory(
                         modifier = Modifier.fillMaxWidth(),
                         category = documentCategory,
                         documents = documents,
-                        onEventSend = onEventSend
+                        listViewport = listViewport,
+                        canShowHighlights = canShowHighlights,
+                        unseenDeferredIssuanceIds = idsToHighlight,
+                        onHighlightShown = { id ->
+                            onEventSend(
+                                Event.DeferredIssuanceHighlightShown(
+                                    id
+                                )
+                            )
+                        },
+                        onDocumentClick = { document ->
+                            val id = document.uiData.itemId
+                            if (document.isDeferred) {
+                                onEventSend(
+                                    Event.BottomSheet.DeferredDocument.DeferredNotReadyYet.DocumentSelected(
+                                        id
+                                    )
+                                )
+                            } else {
+                                onEventSend(Event.GoToDocumentDetails(id))
+                            }
+                        },
                     )
 
                     if (index != state.documentsUi.lastIndex) {
@@ -419,13 +509,6 @@ private fun Content(
                     onEventSend(Event.BottomSheet.UpdateBottomSheetState(isOpen = true))
                 }
 
-                is Effect.DocumentsFetched -> {
-                    onEventSend(Event.TryIssuingDeferredDocuments(effect.deferredDocs))
-                }
-
-                is Effect.ResumeOnApplyFilter -> {
-                    onEventSend(Event.GetDocuments)
-                }
             }
         }.collect()
     }
@@ -436,7 +519,11 @@ private fun DocumentCategory(
     modifier: Modifier = Modifier,
     category: DocumentCategory,
     documents: List<DocumentUi>,
-    onEventSend: (Event) -> Unit,
+    listViewport: LayoutBoundsHolder,
+    canShowHighlights: Boolean,
+    unseenDeferredIssuanceIds: Set<String>,
+    onHighlightShown: (String) -> Unit,
+    onDocumentClick: (DocumentUi) -> Unit,
 ) {
     Column(
         modifier = modifier,
@@ -451,28 +538,19 @@ private fun DocumentCategory(
             modifier = Modifier.fillMaxWidth(),
             verticalArrangement = Arrangement.spacedBy(WrapListItemDefaults.GroupedItemSpacing)
         ) {
-            documents.forEachIndexed { index, documentItem: DocumentUi ->
-                WrapListItem(
-                    modifier = Modifier.fillMaxWidth(),
-                    item = documentItem.uiData,
-                    onItemClick = {
-                        val onItemClickEvent = if (
-                            documentItem.documentIssuanceState == DocumentIssuanceStateUi.Pending
-                            || documentItem.documentIssuanceState == DocumentIssuanceStateUi.Failed
-                        ) {
-                            Event.BottomSheet.DeferredDocument.DeferredNotReadyYet.DocumentSelected(
-                                documentId = documentItem.uiData.itemId
-                            )
-                        } else {
-                            Event.GoToDocumentDetails(documentItem.uiData.itemId)
-                        }
-                        onEventSend(onItemClickEvent)
-                    },
-                    shape = WrapListItemDefaults.groupedShape(
-                        index = index,
-                        itemCount = documents.size
-                    ),
-                )
+            documents.forEachIndexed { index, document ->
+                val id = document.uiData.itemId
+                key(id) {
+                    DocumentRow(
+                        document = document,
+                        shape = WrapListItemDefaults.groupedShape(index, documents.size),
+                        listViewport = listViewport,
+                        canShowHighlights = canShowHighlights,
+                        awaitingHighlight = id in unseenDeferredIssuanceIds,
+                        onHighlightShown = { onHighlightShown(id) },
+                        onClick = { onDocumentClick(document) },
+                    )
+                }
             }
         }
     }
@@ -497,11 +575,10 @@ private fun NoResults(
 
 @Composable
 private fun DocumentsSheetContent(
-    sheetContent: DocumentsBottomSheetContent,
     state: State,
     onEventSent: (event: Event) -> Unit,
 ) {
-    when (sheetContent) {
+    when (val sheetContent = state.sheetContent) {
         is DocumentsBottomSheetContent.Filters -> {
             GenericBottomSheet(
                 titleContent = {
@@ -528,15 +605,20 @@ private fun DocumentsSheetContent(
                                         data = filter.nestedItems,
                                         isItemClickable = { true },
                                         isExpanded = filter.isExpanded,
-                                        onExpandedChange = {
+                                        onExpandedChange = { item ->
                                             onEventSent(
-                                                Event.OnFilterGroupExpansionChanged(it.itemId)
+                                                Event.BottomSheet.Filters.ExpansionChanged(item.itemId)
                                             )
                                         },
-                                        onItemClick = {
-                                            val id = it.itemId
+                                        onItemClick = { item ->
+                                            val id = item.itemId
                                             val groupId = filter.header.itemId
-                                            onEventSent(Event.OnFilterSelectionChanged(id, groupId))
+                                            onEventSent(
+                                                Event.BottomSheet.Filters.SelectionChanged(
+                                                    id,
+                                                    groupId
+                                                )
+                                            )
                                         },
                                         addDivider = false,
                                         collapsedMainContentVerticalPadding = 18.dp,
@@ -562,7 +644,7 @@ private fun DocumentsSheetContent(
                                 buttonConfig = ButtonConfig(
                                     type = ButtonType.SECONDARY,
                                     onClick = {
-                                        onEventSent(Event.OnFiltersReset)
+                                        onEventSent(Event.BottomSheet.Filters.Reset)
                                     }
                                 )
                             ) {
@@ -574,7 +656,7 @@ private fun DocumentsSheetContent(
                                 buttonConfig = ButtonConfig(
                                     type = ButtonType.PRIMARY,
                                     onClick = {
-                                        onEventSent(Event.OnFiltersApply)
+                                        onEventSent(Event.BottomSheet.Filters.Apply)
                                     }
                                 )
                             ) {
@@ -638,20 +720,6 @@ private fun DocumentsSheetContent(
             )
         }
 
-        is DocumentsBottomSheetContent.DeferredDocumentsReady -> {
-            BottomSheetWithOptionsList(
-                textData = BottomSheetTextDataUi(
-                    title = stringResource(
-                        id = R.string.dashboard_bottom_sheet_deferred_documents_ready_title
-                    ),
-                    message = stringResource(
-                        id = R.string.dashboard_bottom_sheet_deferred_documents_ready_subtitle
-                    ),
-                ),
-                options = sheetContent.options,
-                onEventSent = onEventSent,
-            )
-        }
     }
 }
 
@@ -744,6 +812,7 @@ private fun DocumentsScreenPreview() {
                     isFilteringActive = false,
                     documentsUi = documentsList.groupBy { it.documentCategory }.toList(),
                 ),
+                canShowHighlights = true,
                 effectFlow = Channel<Effect>().receiveAsFlow(),
                 onEventSend = {},
                 onNavigationRequested = {},

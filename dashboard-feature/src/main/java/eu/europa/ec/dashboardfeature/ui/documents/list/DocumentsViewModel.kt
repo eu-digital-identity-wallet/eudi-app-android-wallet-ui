@@ -17,31 +17,22 @@
 package eu.europa.ec.dashboardfeature.ui.documents.list
 
 import androidx.lifecycle.viewModelScope
-import eu.europa.ec.businesslogic.validator.model.FilterableList
 import eu.europa.ec.commonfeature.config.IssuanceFlowType
 import eu.europa.ec.commonfeature.config.IssuanceUiConfig
 import eu.europa.ec.commonfeature.config.QrScanFlow
 import eu.europa.ec.commonfeature.config.QrScanUiConfig
-import eu.europa.ec.corelogic.model.DeferredDocumentDataDomain
+import eu.europa.ec.corelogic.model.DeferredDocumentRemovalReasonDomain
 import eu.europa.ec.corelogic.model.DocumentCategory
-import eu.europa.ec.corelogic.model.FormatType
 import eu.europa.ec.dashboardfeature.interactor.DocumentInteractorDeleteDocumentPartialState
 import eu.europa.ec.dashboardfeature.interactor.DocumentInteractorFilterPartialState
 import eu.europa.ec.dashboardfeature.interactor.DocumentInteractorGetDocumentsPartialState
-import eu.europa.ec.dashboardfeature.interactor.DocumentInteractorRetryIssuingDeferredDocumentsPartialState
 import eu.europa.ec.dashboardfeature.interactor.DocumentsInteractor
-import eu.europa.ec.dashboardfeature.ui.documents.detail.model.DocumentIssuanceStateUi
 import eu.europa.ec.dashboardfeature.ui.documents.list.DocumentsBottomSheetContent.DeferredDocumentPressed
 import eu.europa.ec.dashboardfeature.ui.documents.list.DocumentsBottomSheetContent.Filters
 import eu.europa.ec.dashboardfeature.ui.documents.list.model.DocumentUi
 import eu.europa.ec.eudi.wallet.document.DocumentId
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
-import eu.europa.ec.uilogic.component.AppIcons
-import eu.europa.ec.uilogic.component.ListItemSupportingContentDataUi
-import eu.europa.ec.uilogic.component.ListItemTrailingContentDataUi
-import eu.europa.ec.uilogic.component.ModalOptionUi
-import eu.europa.ec.uilogic.component.ThemeColorKey
 import eu.europa.ec.uilogic.component.content.ContentErrorConfig
 import eu.europa.ec.uilogic.component.wrap.ExpandableListItemUi
 import eu.europa.ec.uilogic.extension.collapsedExpansionState
@@ -59,23 +50,28 @@ import eu.europa.ec.uilogic.navigation.helper.generateComposableArguments
 import eu.europa.ec.uilogic.navigation.helper.generateComposableNavigationLink
 import eu.europa.ec.uilogic.serializer.UiSerializer
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import kotlin.time.Duration.Companion.milliseconds
 
+/**
+ * @property isEditingFilters Protects the editable draft from the opening request through actual closure.
+ * @property isRefreshPending Coalesces document changes delayed by Filters into one reload.
+ * @property isApplyingDocumentFilters Keeps new highlights off the previous search or filter results.
+ */
 data class State(
     val isLoading: Boolean,
     val error: ContentErrorConfig? = null,
     val isBottomSheetOpen: Boolean = false,
-    val sheetContent: DocumentsBottomSheetContent = Filters(filters = emptyList()),
+    val sheetContent: DocumentsBottomSheetContent = Filters,
 
     val documentsUi: List<Pair<DocumentCategory, List<DocumentUi>>> = emptyList(),
+    val unseenDeferredIssuanceIds: Set<String> = emptySet(),
     val showNoResultsFound: Boolean = false,
-    val deferredFailedDocIds: List<DocumentId> = emptyList(),
     val searchText: String = "",
     val allowUserInteraction: Boolean = true,
-    val isFromOnPause: Boolean = true,
     val shouldRevertFilterChanges: Boolean = true,
+    val isEditingFilters: Boolean = false,
+    val isRefreshPending: Boolean = false,
+    val isApplyingDocumentFilters: Boolean = false,
 
     val filtersUi: List<ExpandableListItemUi.NestedListItem> = emptyList(),
     val isFilteringActive: Boolean,
@@ -85,20 +81,31 @@ sealed class Event : ViewEvent {
     data object Init : Event()
     data object GetDocuments : Event()
     data object OnPause : Event()
-    data class TryIssuingDeferredDocuments(val deferredDocs: Map<DocumentId, FormatType>) : Event()
+    data object OnScreenDisposed : Event()
+    data class DeferredDocumentIssued(val documentId: String) : Event()
+    data class DeferredIssuanceHighlightShown(val documentId: String) : Event()
+    data class DeferredDocumentStatusChanged(val documentId: String) : Event()
+    data class DeferredDocumentRemoved(
+        val documentId: String,
+        val reason: DeferredDocumentRemovalReasonDomain,
+    ) : Event()
+
     data object Pop : Event()
     data class GoToDocumentDetails(val docId: DocumentId) : Event()
     data class OnSearchQueryChanged(val query: String) : Event()
-    data class OnFilterSelectionChanged(val filterId: String, val groupId: String) : Event()
-    data class OnFilterGroupExpansionChanged(val groupId: String) : Event()
-    data object OnFiltersReset : Event()
-    data object OnFiltersApply : Event()
 
     data object AddDocumentPressed : Event()
     data object FiltersPressed : Event()
 
     sealed class BottomSheet : Event() {
         data class UpdateBottomSheetState(val isOpen: Boolean) : BottomSheet()
+
+        sealed class Filters : BottomSheet() {
+            data class SelectionChanged(val filterId: String, val groupId: String) : Filters()
+            data class ExpansionChanged(val groupId: String) : Filters()
+            data object Reset : Filters()
+            data object Apply : Filters()
+        }
 
         sealed class AddDocument : BottomSheet() {
             data object FromList : AddDocument()
@@ -121,10 +128,6 @@ sealed class Event : ViewEvent {
                     override val documentId: DocumentId,
                 ) : DeferredNotReadyYet(documentId)
             }
-
-            data class OptionListItemForSuccessfullyIssuingDeferredDocumentSelected(
-                val documentId: DocumentId,
-            ) : DeferredDocument()
         }
     }
 }
@@ -139,24 +142,15 @@ sealed class Effect : ViewSideEffect {
         ) : Navigation()
     }
 
-    data class DocumentsFetched(val deferredDocs: Map<DocumentId, FormatType>) : Effect()
-
     data object ShowBottomSheet : Effect()
     data object CloseBottomSheet : Effect()
-
-    data object ResumeOnApplyFilter : Effect()
 }
 
 sealed class DocumentsBottomSheetContent {
-    data class Filters(val filters: List<ExpandableListItemUi.SingleListItem>) :
-        DocumentsBottomSheetContent()
+    data object Filters : DocumentsBottomSheetContent()
 
     data object AddDocument : DocumentsBottomSheetContent()
     data class DeferredDocumentPressed(val documentId: DocumentId) : DocumentsBottomSheetContent()
-    data class DeferredDocumentsReady(
-        val successfullyIssuedDeferredDocuments: List<DeferredDocumentDataDomain>,
-        val options: List<ModalOptionUi<Event>>,
-    ) : DocumentsBottomSheetContent()
 }
 
 class DocumentsViewModel(
@@ -165,8 +159,19 @@ class DocumentsViewModel(
     private val uiSerializer: UiSerializer,
 ) : MviViewModel<Event, State, Effect>() {
 
-    private var retryDeferredDocsJob: Job? = null
+    private var filterStateJob: Job? = null
     private var fetchDocumentsJob: Job? = null
+
+    // A Remove tap can still arrive while the sheet is closing after issuance.
+    private var documentIdToIgnoreRemoveTapsFor: DocumentId? = null
+
+    init {
+        viewModelScope.launch {
+            interactor.unseenDeferredIssuanceIds.collect { ids ->
+                setState { copy(unseenDeferredIssuanceIds = ids) }
+            }
+        }
+    }
 
     override fun setInitialState(): State {
         return State(
@@ -181,21 +186,22 @@ class DocumentsViewModel(
                 filterStateChanged()
             }
 
-            is Event.GetDocuments -> {
-                getDocuments(
-                    event = event,
-                    deferredFailedDocIds = viewState.value.deferredFailedDocIds,
-                )
+            is Event.GetDocuments,
+            is Event.DeferredDocumentStatusChanged,
+            is Event.DeferredDocumentRemoved -> getDocuments(Event.GetDocuments)
+
+            is Event.DeferredDocumentIssued -> {
+                closeRemovalSheetIfOpenFor(issuedDocumentId = event.documentId)
+                getDocuments(Event.GetDocuments)
             }
 
-            is Event.OnPause -> {
-                stopDeferredIssuing()
+            is Event.DeferredIssuanceHighlightShown -> interactor.markDeferredIssuanceSeen(event.documentId)
+
+            is Event.OnPause -> stopFetchDocuments()
+
+            is Event.OnScreenDisposed -> {
                 stopFetchDocuments()
-                setState { copy(isFromOnPause = true) }
-            }
-
-            is Event.TryIssuingDeferredDocuments -> {
-                tryIssuingDeferredDocuments(event, event.deferredDocs)
+                finishFiltering(refresh = false)
             }
 
             is Event.Pop -> setEffect { Effect.Navigation.Pop }
@@ -209,38 +215,36 @@ class DocumentsViewModel(
             }
 
             is Event.FiltersPressed -> {
-                stopDeferredIssuing()
                 collapseFilterGroups()
-                showBottomSheet(sheetContent = Filters(filters = emptyList()))
+                showBottomSheet(sheetContent = Filters)
             }
 
             is Event.OnSearchQueryChanged -> {
                 applySearch(event.query)
             }
 
-            is Event.OnFilterSelectionChanged -> {
+            is Event.BottomSheet.Filters.SelectionChanged -> {
                 updateFilter(event.filterId, event.groupId)
             }
 
-            is Event.OnFilterGroupExpansionChanged -> {
+            is Event.BottomSheet.Filters.ExpansionChanged -> {
                 updateFilterGroupExpansion(event.groupId)
             }
 
-            is Event.OnFiltersApply -> {
+            is Event.BottomSheet.Filters.Apply -> {
                 applySelectedFilters()
             }
 
-            is Event.OnFiltersReset -> {
+            is Event.BottomSheet.Filters.Reset -> {
                 resetFilters()
             }
 
             is Event.BottomSheet.UpdateBottomSheetState -> {
-                if (viewState.value.sheetContent is Filters
-                    && !event.isOpen
-                ) {
-                    setEffect { Effect.ResumeOnApplyFilter }
+                setState { copy(isBottomSheetOpen = event.isOpen) }
+                if (!event.isOpen) {
+                    documentIdToIgnoreRemoveTapsFor = null
+                    finishFiltering(refresh = true)
                 }
-                revertFilters(event.isOpen)
             }
 
             is Event.BottomSheet.AddDocument.FromList -> {
@@ -262,6 +266,7 @@ class DocumentsViewModel(
             }
 
             is Event.BottomSheet.DeferredDocument.DeferredNotReadyYet.PrimaryButtonPressed -> {
+                if (event.documentId == documentIdToIgnoreRemoveTapsFor) return
                 hideBottomSheet()
                 deleteDocument(event = event, documentId = event.documentId)
             }
@@ -270,22 +275,25 @@ class DocumentsViewModel(
                 hideBottomSheet()
             }
 
-            is Event.BottomSheet.DeferredDocument.OptionListItemForSuccessfullyIssuingDeferredDocumentSelected -> {
-                hideBottomSheet()
-                goToDocumentDetails(docId = event.documentId)
-            }
         }
     }
 
     private fun filterStateChanged() {
-        viewModelScope.launch {
+        if (filterStateJob?.isActive == true) return
+        filterStateJob = viewModelScope.launch {
             interactor.onFilterStateChange().collect { result ->
                 when (result) {
                     is DocumentInteractorFilterPartialState.FilterApplyResult -> {
+                        // A queued Apply result must not replace an open Filters draft.
+                        if (viewState.value.isEditingFilters) {
+                            setState { copy(isRefreshPending = true) }
+                            return@collect
+                        }
                         setState {
                             copy(
                                 isFilteringActive = !result.allDefaultFiltersAreSelected,
                                 documentsUi = result.documents,
+                                isApplyingDocumentFilters = false,
                                 showNoResultsFound = result.documents.isEmpty(),
                                 filtersUi = result.filters.withExpansionStateFrom(
                                     currentItems = filtersUi
@@ -310,8 +318,12 @@ class DocumentsViewModel(
 
     private fun getDocuments(
         event: Event,
-        deferredFailedDocIds: List<DocumentId>,
     ) {
+        if (viewState.value.isEditingFilters) {
+            setState { copy(isRefreshPending = true) }
+            return
+        }
+        stopFetchDocuments()
         setState {
             copy(
                 isLoading = documentsUi.isEmpty(),
@@ -321,6 +333,11 @@ class DocumentsViewModel(
         fetchDocumentsJob = viewModelScope.launch {
             interactor.getDocuments()
                 .collect { response ->
+                    // A load started before Filters opened may still deliver a result.
+                    if (viewState.value.isEditingFilters) {
+                        setState { copy(isRefreshPending = true) }
+                        return@collect
+                    }
                     when (response) {
                         is DocumentInteractorGetDocumentsPartialState.Failure -> {
                             setState {
@@ -339,147 +356,20 @@ class DocumentsViewModel(
                         }
 
                         is DocumentInteractorGetDocumentsPartialState.Success -> {
-                            val deferredDocs: MutableMap<DocumentId, FormatType> = mutableMapOf()
-                            response.allDocuments.items.filter { document ->
-                                with(document.payload as DocumentUi) {
-                                    documentIssuanceState == DocumentIssuanceStateUi.Pending
-                                }
-                            }.forEach { documentItem ->
-                                with(documentItem.payload as DocumentUi) {
-                                    deferredDocs[uiData.itemId] =
-                                        documentIdentifier.formatType
-                                }
-                            }
-                            val documentsWithFailed =
-                                response.allDocuments
-                                    .generateFailedDeferredDocs(deferredFailedDocIds)
-
-                            if (viewState.value.isFromOnPause) {
-                                interactor.initializeFilters(
-                                    filterableList = documentsWithFailed
-                                )
-                            } else {
-                                interactor.updateLists(
-                                    filterableList = documentsWithFailed
-                                )
-                            }
-
-                            interactor.applyFilters()
-
                             setState {
                                 copy(
                                     isLoading = false,
                                     error = null,
-                                    deferredFailedDocIds = deferredFailedDocIds,
                                     allowUserInteraction = response.shouldAllowUserInteraction,
-                                    isFromOnPause = false
+                                    isApplyingDocumentFilters = true,
                                 )
                             }
-                            setEffect { Effect.DocumentsFetched(deferredDocs) }
+                            // Rebuild dynamic options while keeping valid applied selections.
+                            interactor.initializeFilters(response.allDocuments)
+                            interactor.applyFilters()
                         }
                     }
                 }
-        }
-    }
-
-    private fun FilterableList.generateFailedDeferredDocs(deferredFailedDocIds: List<DocumentId>): FilterableList {
-        return copy(items = items.map { filterableItem ->
-            val data = filterableItem.payload as DocumentUi
-            val failedUiItem = if (data.uiData.itemId in deferredFailedDocIds) {
-                data.copy(
-                    documentIssuanceState = DocumentIssuanceStateUi.Failed,
-                    uiData = data.uiData.copy(
-                        supportingContentData = ListItemSupportingContentDataUi.Text(
-                            text = resourceProvider.getString(R.string.dashboard_document_deferred_failed),
-                            textColorKey = ThemeColorKey.Error,
-                        ),
-                        trailingContentData = ListItemTrailingContentDataUi.Icon(
-                            iconData = AppIcons.ErrorFilled,
-                            tint = ThemeColorKey.Error
-                        )
-                    )
-                )
-            } else {
-                data
-            }
-
-            filterableItem.copy(payload = failedUiItem)
-        })
-    }
-
-    private fun tryIssuingDeferredDocuments(
-        event: Event,
-        deferredDocs: Map<DocumentId, FormatType>,
-    ) {
-        setState {
-            copy(
-                isLoading = false,
-                error = null
-            )
-        }
-
-        stopDeferredIssuing()
-        retryDeferredDocsJob = viewModelScope.launch {
-            if (deferredDocs.isEmpty()) {
-                return@launch
-            }
-
-            delay(5000L.milliseconds)
-
-            interactor.tryIssuingDeferredDocumentsFlow(deferredDocs).collect { response ->
-                when (response) {
-                    is DocumentInteractorRetryIssuingDeferredDocumentsPartialState.Failure -> {
-                        setState {
-                            copy(
-                                isLoading = false,
-                                error = ContentErrorConfig(
-                                    onRetry = { setEvent(event) },
-                                    errorSubTitle = response.errorMessage,
-                                    onCancel = {
-                                        setState { copy(error = null) }
-                                    }
-                                )
-                            )
-                        }
-                    }
-
-                    is DocumentInteractorRetryIssuingDeferredDocumentsPartialState.Result -> {
-                        val successDocs = response.successfullyIssuedDeferredDocuments
-                        if (successDocs.isNotEmpty()
-                            && (!viewState.value.isBottomSheetOpen
-                                    || (viewState.value.isBottomSheetOpen
-                                    && viewState.value.sheetContent !is DocumentsBottomSheetContent.DeferredDocumentsReady)
-                                    )
-                        ) {
-                            showBottomSheet(
-                                sheetContent = DocumentsBottomSheetContent.DeferredDocumentsReady(
-                                    successfullyIssuedDeferredDocuments = successDocs,
-                                    options = getBottomSheetOptions(
-                                        deferredDocumentsData = successDocs
-                                    )
-                                )
-                            )
-                        }
-
-                        getDocuments(
-                            event = event,
-                            deferredFailedDocIds = response.failedIssuedDeferredDocuments,
-                        )
-                    }
-                }
-            }
-        }
-    }
-
-    private fun getBottomSheetOptions(deferredDocumentsData: List<DeferredDocumentDataDomain>): List<ModalOptionUi<Event>> {
-        return deferredDocumentsData.map {
-            ModalOptionUi(
-                title = it.docName,
-                trailingIcon = AppIcons.KeyboardArrowRight,
-                event = Event.BottomSheet.DeferredDocument.OptionListItemForSuccessfullyIssuingDeferredDocumentSelected(
-                    documentId = it.documentId
-                )
-            )
         }
     }
 
@@ -516,7 +406,6 @@ class DocumentsViewModel(
                     is DocumentInteractorDeleteDocumentPartialState.SingleDocumentDeleted -> {
                         getDocuments(
                             event = event,
-                            deferredFailedDocIds = viewState.value.deferredFailedDocIds,
                         )
                     }
 
@@ -607,6 +496,19 @@ class DocumentsViewModel(
     }
 
     private fun showBottomSheet(sheetContent: DocumentsBottomSheetContent) {
+        if (sheetContent is Filters) {
+            // Freeze the displayed options before opening. Issuer pings continue independently.
+            setState {
+                copy(
+                    isEditingFilters = true,
+                    isRefreshPending = isRefreshPending || isApplyingDocumentFilters ||
+                            fetchDocumentsJob?.isActive == true,
+                    isLoading = false,
+                    shouldRevertFilterChanges = true,
+                )
+            }
+            stopFetchDocuments()
+        }
         setState {
             copy(sheetContent = sheetContent)
         }
@@ -621,11 +523,21 @@ class DocumentsViewModel(
         }
     }
 
-    private fun applySearch(queryText: String) {
-        interactor.applySearch(queryText)
-        setState {
-            copy(searchText = queryText)
+    private fun closeRemovalSheetIfOpenFor(issuedDocumentId: DocumentId) {
+        val state = viewState.value
+        val removalSheet = state.sheetContent as? DeferredDocumentPressed
+        if (state.isBottomSheetOpen
+            && removalSheet?.documentId == issuedDocumentId
+            && documentIdToIgnoreRemoveTapsFor == null
+        ) {
+            documentIdToIgnoreRemoveTapsFor = issuedDocumentId
+            hideBottomSheet()
         }
+    }
+
+    private fun applySearch(queryText: String) {
+        setState { copy(searchText = queryText, isApplyingDocumentFilters = true) }
+        interactor.applySearch(queryText)
     }
 
     private fun updateFilter(filterId: String, groupId: String) {
@@ -649,36 +561,31 @@ class DocumentsViewModel(
     }
 
     private fun applySelectedFilters() {
+        setState { copy(shouldRevertFilterChanges = false, isApplyingDocumentFilters = true) }
         interactor.applyFilters()
-        setState {
-            copy(
-                shouldRevertFilterChanges = false
-            )
-        }
         hideBottomSheet()
     }
 
     private fun resetFilters() {
+        setState { copy(shouldRevertFilterChanges = false, isApplyingDocumentFilters = true) }
         interactor.resetFilters()
         hideBottomSheet()
     }
 
-    private fun revertFilters(isOpening: Boolean) {
-        if (viewState.value.sheetContent is Filters
-            && !isOpening
-            && viewState.value.shouldRevertFilterChanges
-        ) {
-            interactor.revertFilters()
-            setState { copy(shouldRevertFilterChanges = true) }
-        }
-
+    /** Called after reported sheet closure or real screen disposal. */
+    private fun finishFiltering(refresh: Boolean) {
+        if (!viewState.value.isEditingFilters) return
+        // Resolve the draft before a refresh rebuilds issuer/category options.
+        if (viewState.value.shouldRevertFilterChanges) interactor.revertFilters()
+        val needsRefresh = viewState.value.isRefreshPending
         setState {
-            copy(isBottomSheetOpen = isOpening)
+            copy(
+                isEditingFilters = false,
+                isRefreshPending = false,
+                shouldRevertFilterChanges = true,
+            )
         }
-    }
-
-    private fun stopDeferredIssuing() {
-        retryDeferredDocsJob?.cancel()
+        if (refresh && needsRefresh) getDocuments(Event.GetDocuments)
     }
 
     private fun stopFetchDocuments() {

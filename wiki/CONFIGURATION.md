@@ -13,6 +13,7 @@
 * [Pin Storage configuration](#pin-storage-configuration)
 * [PIN throttle configuration](#pin-throttle-configuration)
 * [Analytics configuration](#analytics-configuration)
+* [Deferred Issuance configuration](#deferred-issuance-configuration)
 
 ## General configuration
 
@@ -52,6 +53,9 @@ interface WalletCoreConfig {
 
     // 10. How long a factory reset waits for the background workers; default 30.seconds.
     val workerStopTimeout: Duration
+
+    // 10. Per-document Deferred Issuance polling and retry policy.
+    val deferredIssuanceConfig: DeferredIssuanceConfig
 
 }
 ```
@@ -528,7 +532,7 @@ complete production process, see [GO_LIVE.md](GO_LIVE.md).
 | DCAPI                                      | `configureDCAPI { withEnabled(...); withSupportedProtocols(...) }` and the *Allow document requests from apps and websites (DC API)* setting (`DCAPISettingProvider`) | Enable only if the production wallet supports Digital Credential API flows and has tested them. List only approved protocols; at least one is required. The user setting is on by default, is shown only when the build enables the API, and should be kept (see [GO_LIVE.md](GO_LIVE.md#digital-credential-api)).                                                                                                                                                                                                                                                                                                                                                                                                                                      |
 | Document issuance rules                    | `documentIssuanceConfig`                                                                                                                  | Credential rotation, one-time-use, quantity, and re-issuance intervals agreed with issuer capacity and privacy policy.                                                                                                                                                                                                                                                                                                                                                                                                               |
 | Revocation interval                        | `revocationInterval`                                                                                                                      | A value that balances user experience, battery/network use, and relying-party risk.                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| Worker stop timeout                        | `workerStopTimeout`                                                                                                                       | How long a factory reset waits for running revocation and re-issuance work to finish after cancellation. The default is 30 seconds. The app blocks new checks and waits for active operations to complete. A timeout fails the reset before data deletion. See [GO_LIVE.md](GO_LIVE.md#data-deletion-and-factory-reset). |
+| Worker stop timeout                        | `workerStopTimeout`                                                                                                                       | One total budget for stopping revocation, Reissuance and Deferred Issuance, including Core callbacks and persistence. The default is 30 seconds. The app blocks new checks and waits for active operations to complete. A timeout fails the reset before data deletion. See [GO_LIVE.md](GO_LIVE.md#data-deletion-and-factory-reset). |
 | RQES QTSP endpoint                         | `business-logic/src/<flavor>/java/.../RQESConfigImpl.kt`                                                                                  | Production CSC/QTSP endpoint provided by the selected qualified trust service provider.                                                                                                                                                                                                                                                                                                                                                                                                                                              |
 | RQES TSA URL                               | `RQESConfigImpl.kt`                                                                                                                       | Production timestamp authority URL required by the QTSP/signature profile.                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
 | RQES client ID/secret                      | `RQESConfigImpl.kt`                                                                                                                       | Do not hardcode confidential secrets in the app. Use an approved public-client or backend-mediated design.                                                                                                                                                                                                                                                                                                                                                                                                                           |
@@ -1136,3 +1140,28 @@ fun provideAnalyticsConfig(): AnalyticsConfig {
     }
 }
 ```
+
+## Deferred Issuance configuration
+
+Override `deferredIssuanceConfig` in a flavor's `WalletCoreConfigImpl` when needed:
+
+```kotlin
+override val deferredIssuanceConfig = DeferredIssuanceConfig(
+    initialPollingDelay = 5.seconds,
+    failureRetryDelay = 30.seconds,
+    maxConcurrentDeferredRequests = null,
+)
+```
+
+These are the shared defaults. A positive `maxConcurrentDeferredRequests` caps
+concurrent requests across documents. With `null`, every eligible document may
+poll concurrently. Each document can have at most one active request.
+
+- The first ping uses `initialPollingDelay` because Core 0.32.0 does not expose the initial issuer interval.
+- On a fresh valid `DocumentNotReady` interval, the Wallet stores the reported value and adds one second to the next deadline to allow for whole-second rounding. An absent or invalid interval uses the last valid value or the initial fallback as-is.
+- Each ordinary `DocumentFailed` schedules a retry after `failureRetryDelay` from the failure, regardless of the previous issuer interval. Repeated ordinary failures keep polling. `DocumentExpired` stops polling for that ID.
+
+Polling starts after the first unlocked Dashboard. New pings require a resumed
+Wallet host Activity and an unlocked session. Polling continues with Filters open.
+Wallet Reset blocks new pings and uses one shared `workerStopTimeout` for active
+workers and tracked Core operations, including Deferred Issuance.

@@ -19,12 +19,14 @@ package eu.europa.ec.storagelogic.service
 import androidx.room.Database
 import androidx.room.RoomDatabase
 import eu.europa.ec.storagelogic.dao.BookmarkDao
+import eu.europa.ec.storagelogic.dao.DeferredDocumentScheduleDao
 import eu.europa.ec.storagelogic.dao.FailedReIssuedDocumentDao
 import eu.europa.ec.storagelogic.dao.IssuerTrustDao
 import eu.europa.ec.storagelogic.dao.RevokedDocumentDao
 import eu.europa.ec.storagelogic.dao.StatusRefreshFailureDao
 import eu.europa.ec.storagelogic.dao.TransactionLogDao
 import eu.europa.ec.storagelogic.model.Bookmark
+import eu.europa.ec.storagelogic.model.DeferredDocumentSchedule
 import eu.europa.ec.storagelogic.model.FailedReIssuedDocument
 import eu.europa.ec.storagelogic.model.IssuerTrust
 import eu.europa.ec.storagelogic.model.RevokedDocument
@@ -53,8 +55,9 @@ import eu.europa.ec.storagelogic.model.TransactionLog
         FailedReIssuedDocument::class,
         IssuerTrust::class,
         StatusRefreshFailure::class,
+        DeferredDocumentSchedule::class,
     ],
-    version = 5
+    version = 6
 )
 abstract class DatabaseService : RoomDatabase() {
 
@@ -68,4 +71,5 @@ abstract class DatabaseService : RoomDatabase() {
     abstract fun failedReIssuedDocumentDao(): FailedReIssuedDocumentDao
     abstract fun issuerTrustDao(): IssuerTrustDao
     abstract fun statusRefreshFailureDao(): StatusRefreshFailureDao
+    abstract fun deferredDocumentScheduleDao(): DeferredDocumentScheduleDao
 }

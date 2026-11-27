@@ -315,8 +315,6 @@
     <string name="dashboard_bottom_sheet_deferred_document_pressed_primary_button_text">@string/generic_bottom_sheet_delete_primary_button_text</string>
     <string name="dashboard_bottom_sheet_deferred_document_pressed_secondary_button_text">@string/generic_bottom_sheet_delete_secondary_button_text</string>
 
-    <string name="dashboard_bottom_sheet_deferred_documents_ready_title">Documents issued</string>
-    <string name="dashboard_bottom_sheet_deferred_documents_ready_subtitle">New documents have been added to your wallet.</string>
 
     <string name="dashboard_bottom_sheet_revoked_document_dialog_title">Revoked or suspended documents</string>
     <string name="dashboard_bottom_sheet_revoked_document_dialog_subtitle">The issuers of the following documents have revoked or suspended them, so they cannot be used.</string>
@@ -382,6 +380,7 @@
 
     <!-- region Documents Screen -->
     <string name="documents_screen_title">Documents</string>
+    <string name="documents_screen_deferred_document_issued">%1$s has been issued.</string>
     <string name="documents_screen_search_label">@string/generic_search</string>
     <string name="documents_screen_search_no_results">No documents match your search. Try changing your search query or filters.</string>
     <string name="documents_screen_add_document_title">Add document</string>

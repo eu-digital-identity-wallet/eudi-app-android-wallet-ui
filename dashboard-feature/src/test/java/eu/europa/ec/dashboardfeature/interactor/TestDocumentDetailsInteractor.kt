@@ -51,6 +51,7 @@ import eu.europa.ec.testfeature.util.createMockedNamespaceData
 import eu.europa.ec.testfeature.util.getMockedMdlWithBasicFields
 import eu.europa.ec.testfeature.util.getMockedOldestPidWithBasicFields
 import eu.europa.ec.testfeature.util.getMockedPidWithBasicFields
+import eu.europa.ec.testfeature.util.getMockedSdJwtPidWithBasicFields
 import eu.europa.ec.testfeature.util.mockedDefaultLocale
 import eu.europa.ec.testfeature.util.mockedDocumentAvailableCredentials
 import eu.europa.ec.testfeature.util.mockedDocumentTotalCredentials
@@ -62,7 +63,6 @@ import eu.europa.ec.testfeature.util.mockedGenericErrorMessage
 import eu.europa.ec.testfeature.util.mockedMdlId
 import eu.europa.ec.testfeature.util.mockedMdocPidNameSpace
 import eu.europa.ec.testfeature.util.mockedNotifyOnAuthenticationFailure
-import eu.europa.ec.testfeature.util.mockedOldestPidId
 import eu.europa.ec.testfeature.util.mockedPidDocName
 import eu.europa.ec.testfeature.util.mockedPidId
 import eu.europa.ec.testfeature.util.mockedPlainFailureMessage
@@ -826,218 +826,166 @@ class TestDocumentDetailsInteractor {
         }
     }
 
-    /**
-     * Case 1:
-     *
-     * 1. A documentId and document is PID.
-     * 2. walletCoreDocumentsController.getAllDocuments() returns 1 Document and it is PID.
-     * 3. walletCoreDocumentsController.getDocumentById returns that PID Document.
-     * 4. walletCoreDocumentsController.deleteAllDocuments() returns Failed.
-     */
+    //region deleteDocument
+    // Case 1:
+    // 1. PID activation is required and the selected document is the only Issued PID.
+    //
+    // Case 1 Expected Result:
+    // Request full-wallet deletion, which includes any Pending replacements.
     @Test
-    fun `Given Case 1, When deleteDocument is called, Then it returns Failure with failure's error message`() {
+    fun `Given Case 1, When deleteDocument is called, Then Case 1 Expected Result is returned`() =
         coroutineRule.runTest {
             // Given
-            val mockedPidWithBasicFields = getMockedPidWithBasicFields()
-            mockGetAllDocumentsCall(
-                response = listOf(
-                    mockedPidWithBasicFields
+            val original = getMockedPidWithBasicFields()
+            mockGetDocumentByIdCall(response = original)
+            mockGetAllDocumentsWithTypeCall(response = listOf(original))
+            mockDeleteAllDocumentsCall(response = DeleteAllDocumentsPartialState.Success)
+
+            // When
+            interactor.deleteDocument(documentId = original.id).runFlowTest {
+                // Then
+                assertEquals(
+                    DocumentDetailsInteractorDeleteDocumentPartialState.AllDocumentsDeleted,
+                    awaitItem(),
                 )
-            )
+            }
+            verify(walletCoreDocumentsController).deleteAllDocuments()
+            verify(walletCoreDocumentsController, never()).deleteDocument(any())
+        }
+
+    // Case 2:
+    // 1. PID activation is required and the selected PID is the main one among several PIDs.
+    //
+    // Case 2 Expected Result:
+    // Request full-wallet deletion and return AllDocumentsDeleted.
+    @Test
+    fun `Given Case 2, When deleteDocument is called, Then Case 2 Expected Result is returned`() =
+        coroutineRule.runTest {
+            // Given
+            val mainPid = getMockedOldestPidWithBasicFields()
+            val otherPid = getMockedPidWithBasicFields()
+            mockGetDocumentByIdCall(response = mainPid)
+            mockGetAllDocumentsWithTypeCall(response = listOf(mainPid, otherPid))
+            mockGetMainPidDocument(response = mainPid)
+            mockDeleteAllDocumentsCall(response = DeleteAllDocumentsPartialState.Success)
+
+            // When
+            interactor.deleteDocument(documentId = mainPid.id).runFlowTest {
+                // Then
+                assertEquals(
+                    DocumentDetailsInteractorDeleteDocumentPartialState.AllDocumentsDeleted,
+                    awaitItem(),
+                )
+            }
+            verify(walletCoreDocumentsController).deleteAllDocuments()
+            verify(walletCoreDocumentsController, never()).deleteDocument(any())
+        }
+
+    // Case 3:
+    // 1. PID activation is optional and the selected document is a PID.
+    //
+    // Case 3 Expected Result:
+    // Delete only the selected ID, leaving any replacement intact.
+    @Test
+    fun `Given Case 3, When deleteDocument is called, Then Case 3 Expected Result is returned`() =
+        coroutineRule.runTest {
+            // Given
+            whenever(configLogic.forcePidActivation).thenReturn(false)
+            mockGetDocumentByIdCall(response = getMockedPidWithBasicFields())
+            mockDeleteDocumentCall(response = DeleteDocumentPartialState.Success)
+
+            // When
+            interactor.deleteDocument(documentId = mockedPidId).runFlowTest {
+                // Then
+                assertEquals(
+                    DocumentDetailsInteractorDeleteDocumentPartialState.SingleDocumentDeleted,
+                    awaitItem(),
+                )
+            }
+            verify(walletCoreDocumentsController).deleteDocument(mockedPidId)
+            verify(walletCoreDocumentsController, never()).deleteAllDocuments()
+        }
+
+    // Case 4:
+    // 1. PID activation is required and the selected PID is not the main PID.
+    //
+    // Case 4 Expected Result:
+    // Delete only the selected ID.
+    @Test
+    fun `Given Case 4, When deleteDocument is called, Then Case 4 Expected Result is returned`() =
+        coroutineRule.runTest {
+            // Given
+            val mainPid = getMockedOldestPidWithBasicFields()
+            val otherPid = getMockedPidWithBasicFields()
+            mockGetDocumentByIdCall(response = otherPid)
+            mockGetAllDocumentsWithTypeCall(response = listOf(mainPid, otherPid))
+            mockGetMainPidDocument(response = mainPid)
+            mockDeleteDocumentCall(response = DeleteDocumentPartialState.Success)
+
+            // When
+            interactor.deleteDocument(documentId = otherPid.id).runFlowTest {
+                // Then
+                assertEquals(
+                    DocumentDetailsInteractorDeleteDocumentPartialState.SingleDocumentDeleted,
+                    awaitItem(),
+                )
+            }
+            verify(walletCoreDocumentsController).deleteDocument(otherPid.id)
+            verify(walletCoreDocumentsController, never()).deleteAllDocuments()
+        }
+
+    // Case 5:
+    // 1. PID activation is required and the selected document is an mDL.
+    //
+    // Case 5 Expected Result:
+    // Delete only the selected ID, leaving any replacement intact.
+    @Test
+    fun `Given Case 5, When deleteDocument is called, Then Case 5 Expected Result is returned`() =
+        coroutineRule.runTest {
+            // Given
+            mockGetDocumentByIdCall(response = getMockedMdlWithBasicFields())
+            mockDeleteDocumentCall(response = DeleteDocumentPartialState.Success)
+
+            // When
+            interactor.deleteDocument(documentId = mockedMdlId).runFlowTest {
+                // Then
+                assertEquals(
+                    DocumentDetailsInteractorDeleteDocumentPartialState.SingleDocumentDeleted,
+                    awaitItem(),
+                )
+            }
+            verify(walletCoreDocumentsController).deleteDocument(mockedMdlId)
+            verify(walletCoreDocumentsController, never()).deleteAllDocuments()
+        }
+
+    // Case 6:
+    // 1. Removing the only Issued PID requests full-wallet deletion, which fails.
+    //
+    // Case 6 Expected Result:
+    // Forward the failure without reporting AllDocumentsDeleted.
+    @Test
+    fun `Given Case 6, When deleteDocument is called, Then Case 6 Expected Result is returned`() =
+        coroutineRule.runTest {
+            // Given
+            val original = getMockedPidWithBasicFields()
+            mockGetDocumentByIdCall(response = original)
+            mockGetAllDocumentsWithTypeCall(response = listOf(original))
             mockDeleteAllDocumentsCall(
-                response = DeleteAllDocumentsPartialState.Failure(
-                    errorMessage = mockedPlainFailureMessage
-                )
-            )
-            mockGetDocumentByIdCall(
-                response = mockedPidWithBasicFields
+                response = DeleteAllDocumentsPartialState.Failure(mockedPlainFailureMessage)
             )
 
             // When
-            interactor.deleteDocument(
-                documentId = mockedPidId,
-            ).runFlowTest {
+            interactor.deleteDocument(documentId = original.id).runFlowTest {
                 // Then
                 assertEquals(
                     DocumentDetailsInteractorDeleteDocumentPartialState.Failure(
-                        errorMessage = mockedPlainFailureMessage
+                        mockedPlainFailureMessage
                     ),
-                    awaitItem()
+                    awaitItem(),
                 )
             }
+            verify(walletCoreDocumentsController, never()).deleteDocument(any())
         }
-    }
-
-    /**
-     * Case 2:
-     *
-     * 1. A documentId and document is PID.
-     * 2. walletCoreDocumentsController.getAllDocuments() returns 1 Document and it is PID.
-     * 3. walletCoreDocumentsController.getDocumentById returns that PID Document.
-     * 4. walletCoreDocumentsController.deleteAllDocuments() returns Success.
-     */
-    @Test
-    fun `Given Case 2, When deleteDocument is called, Then it returns AllDocumentsDeleted`() {
-        coroutineRule.runTest {
-            // Given
-            val mockedPidWithBasicFields = getMockedPidWithBasicFields()
-            mockGetAllDocumentsCall(
-                response = listOf(
-                    mockedPidWithBasicFields
-                )
-            )
-            mockDeleteAllDocumentsCall(response = DeleteAllDocumentsPartialState.Success)
-            mockGetDocumentByIdCall(
-                response = mockedPidWithBasicFields
-            )
-
-            // When
-            interactor.deleteDocument(
-                documentId = mockedPidId,
-            ).runFlowTest {
-                // Then
-                assertEquals(
-                    DocumentDetailsInteractorDeleteDocumentPartialState.AllDocumentsDeleted,
-                    awaitItem()
-                )
-            }
-        }
-    }
-
-    /**
-     * Case 3:
-     *
-     * 1. A documentId and document is PID.
-     * 2. walletCoreDocumentsController.getAllDocuments() returns more than 1 PIDs
-     * 3. walletCoreDocumentsController.getDocumentById returns the oldest Document.
-     * 4. walletCoreDocumentsController.deleteAllDocuments() returns Success.
-     */
-    @Test
-    fun `Given Case 3, When deleteDocument is called, Then it returns AllDocumentsDeleted`() {
-        coroutineRule.runTest {
-            // Given
-            val mockedMdlWithBasicFields = getMockedMdlWithBasicFields()
-            val mockedPidWithBasicFields = getMockedPidWithBasicFields()
-            val mockedOldestPidWithBasicFields = getMockedOldestPidWithBasicFields()
-
-            mockGetAllDocumentsCall(
-                response = listOf(
-                    mockedMdlWithBasicFields,
-                    mockedPidWithBasicFields,
-                    mockedOldestPidWithBasicFields
-                )
-            )
-            mockDeleteAllDocumentsCall(response = DeleteAllDocumentsPartialState.Success)
-            mockGetDocumentByIdCall(
-                response = mockedOldestPidWithBasicFields
-            )
-
-            // When
-            interactor.deleteDocument(
-                documentId = mockedOldestPidId,
-            ).runFlowTest {
-                // Then
-                assertEquals(
-                    DocumentDetailsInteractorDeleteDocumentPartialState.AllDocumentsDeleted,
-                    awaitItem()
-                )
-            }
-        }
-    }
-
-    /**
-     * Case 4:
-     *
-     * 1. A documentId and document is PID.
-     * 2. walletCoreDocumentsController.getAllDocuments(documentIdentifier: DocumentIdentifier)
-     *    returns more than 1 PIDs
-     *      AND the documentId we are about to delete is NOT the one of the oldest PID.
-     * 3. walletCoreDocumentsController.deleteDocument() returns Success.
-     */
-    @Test
-    fun `Given Case 4, When deleteDocument is called, Then it returns SingleDocumentDeleted`() {
-        coroutineRule.runTest {
-            // Given
-            val mockedPidWithBasicFields = getMockedPidWithBasicFields()
-            val mockedOldestPidWithBasicFields = getMockedOldestPidWithBasicFields()
-
-            mockGetAllDocumentsWithTypeCall(
-                response = listOf(
-                    mockedPidWithBasicFields,
-                    mockedOldestPidWithBasicFields
-                )
-            )
-            mockDeleteDocumentCall(response = DeleteDocumentPartialState.Success)
-            mockGetMainPidDocument(mockedOldestPidWithBasicFields)
-
-            // When
-            interactor.deleteDocument(
-                documentId = mockedPidId,
-            ).runFlowTest {
-                // Then
-                assertEquals(
-                    DocumentDetailsInteractorDeleteDocumentPartialState.SingleDocumentDeleted,
-                    awaitItem()
-                )
-            }
-        }
-    }
-
-    /**
-     * Case 5:
-     *
-     * 1. A documentId and document is mDL.
-     * 2. walletCoreDocumentsController.deleteDocument() returns Failed.
-     */
-    @Test
-    fun `Given Case 5, When deleteDocument is called, Then it returns Failure with failure's error message`() {
-        coroutineRule.runTest {
-            // Given
-            mockDeleteDocumentCall(
-                response = DeleteDocumentPartialState.Failure(
-                    errorMessage = mockedPlainFailureMessage
-                )
-            )
-
-            // When
-            interactor.deleteDocument(
-                documentId = mockedMdlId,
-            ).runFlowTest {
-                // Then
-                assertEquals(
-                    DocumentDetailsInteractorDeleteDocumentPartialState.Failure(
-                        errorMessage = mockedPlainFailureMessage
-                    ),
-                    awaitItem()
-                )
-            }
-        }
-    }
-
-    /**
-     * Case 6:
-     *
-     * 1. A documentId and document is mDL.
-     * 2. walletCoreDocumentsController.deleteDocument() returns Success.
-     */
-    @Test
-    fun `Given Case 6, When deleteDocument is called, Then it returns SingleDocumentDeleted`() {
-        coroutineRule.runTest {
-            // Given
-            mockDeleteDocumentCall(response = DeleteDocumentPartialState.Success)
-
-            // When
-            interactor.deleteDocument(
-                documentId = mockedMdlId,
-            ).runFlowTest {
-                // Then
-                assertEquals(
-                    DocumentDetailsInteractorDeleteDocumentPartialState.SingleDocumentDeleted,
-                    awaitItem()
-                )
-            }
-        }
-    }
 
     /**
      * Case 7:
@@ -1095,192 +1043,90 @@ class TestDocumentDetailsInteractor {
         }
     }
 
-    /**
-     * Case 9 (deleteDocument):
-     * forcePidActivation=false → shouldDeleteAllDocuments=false (short-circuit on `&&`)
-     * → deleteDocument single-document path.
-     */
+    // Case 9:
+    // 1. Deleting an mDL fails.
+    //
+    // Case 9 Expected Result:
+    // Forward the single-document deletion failure.
     @Test
-    fun `Given Case 9, When deleteDocument is called with forcePidActivation false, Then SingleDocumentDeleted is returned`() {
+    fun `Given Case 9, When deleteDocument is called, Then Case 9 Expected Result is returned`() =
         coroutineRule.runTest {
             // Given
-            whenever(configLogic.forcePidActivation).thenReturn(false)
-            val mockedPidWithBasicFields = getMockedPidWithBasicFields()
-            mockGetDocumentByIdCall(response = mockedPidWithBasicFields)
-            mockDeleteDocumentCall(response = DeleteDocumentPartialState.Success)
-
-            // When
-            interactor.deleteDocument(documentId = mockedPidId).runFlowTest {
-                // Then
-                assertEquals(
-                    DocumentDetailsInteractorDeleteDocumentPartialState.SingleDocumentDeleted,
-                    awaitItem()
-                )
-            }
-        }
-    }
-
-    /**
-     * Case 10 (deleteDocument):
-     * The fetched document is non-PID (e.g., mDL) → shouldDeleteAllDocuments=false
-     * (short-circuit on docIdentifier check) → deleteDocument single-document path.
-     */
-    @Test
-    fun `Given Case 10, When deleteDocument is called for a non-PID document, Then SingleDocumentDeleted is returned`() {
-        coroutineRule.runTest {
-            // Given
-            val mockedMdlWithBasicFields = getMockedMdlWithBasicFields()
-            mockGetDocumentByIdCall(response = mockedMdlWithBasicFields)
-            mockDeleteDocumentCall(response = DeleteDocumentPartialState.Success)
+            mockGetDocumentByIdCall(response = getMockedMdlWithBasicFields())
+            mockDeleteDocumentCall(
+                response = DeleteDocumentPartialState.Failure(mockedPlainFailureMessage)
+            )
 
             // When
             interactor.deleteDocument(documentId = mockedMdlId).runFlowTest {
                 // Then
                 assertEquals(
-                    DocumentDetailsInteractorDeleteDocumentPartialState.SingleDocumentDeleted,
-                    awaitItem()
+                    DocumentDetailsInteractorDeleteDocumentPartialState.Failure(
+                        mockedPlainFailureMessage
+                    ),
+                    awaitItem(),
                 )
             }
         }
-    }
 
-    /**
-     * Case 11 (deleteDocument):
-     * The document is an SdJwt PID → the `docType` resolution falls through the
-     * `(format as? MsoMdocFormat)?.docType ?: (format as? SdJwtVcFormat)?.vct` chain to the
-     * SdJwt branch (line 598). With forcePidActivation=true and one SdJwt PID, the
-     * shouldDeleteAllDocuments branch returns true → deleteAllDocuments path.
-     */
+    // Case 10:
+    // 1. PID activation is required and the only Issued PID uses the SD-JWT format.
+    //
+    // Case 10 Expected Result:
+    // Apply the same full-wallet deletion rule as for an mdoc PID.
     @Test
-    fun `Given Case 11, When deleteDocument is called for an SdJwt PID, Then AllDocumentsDeleted is returned`() {
+    fun `Given Case 10, When deleteDocument is called, Then Case 10 Expected Result is returned`() =
         coroutineRule.runTest {
             // Given
-            val sdJwtPid = eu.europa.ec.testfeature.util.getMockedSdJwtPidWithBasicFields()
-            mockGetAllDocumentsCall(response = listOf(sdJwtPid))
-            mockGetAllDocumentsWithTypeCall(response = listOf(sdJwtPid))
-            mockGetDocumentByIdCall(response = sdJwtPid)
+            val original = getMockedSdJwtPidWithBasicFields()
+            mockGetDocumentByIdCall(response = original)
+            mockGetAllDocumentsWithTypeCall(response = listOf(original))
             mockDeleteAllDocumentsCall(response = DeleteAllDocumentsPartialState.Success)
 
             // When
-            interactor.deleteDocument(documentId = sdJwtPid.id).runFlowTest {
+            interactor.deleteDocument(documentId = original.id).runFlowTest {
                 // Then
                 assertEquals(
                     DocumentDetailsInteractorDeleteDocumentPartialState.AllDocumentsDeleted,
-                    awaitItem()
+                    awaitItem(),
                 )
             }
+            verify(walletCoreDocumentsController).deleteAllDocuments()
+            verify(walletCoreDocumentsController, never()).deleteDocument(any())
         }
-    }
 
     /**
-     * Case 12 (deleteDocument):
-     * Multiple PID documents exist; the document being deleted is NOT the main PID
-     * (allPidDocuments.count > 1 AND getMainPidDocument().id != documentId).
-     * → shouldDeleteAllDocuments evaluates false → single-document delete path.
+     * Case 11:
+     * 1. PID activation is required and the wallet holds two issued PIDs.
+     * 2. The wallet cannot identify the main PID.
+     *
+     * Case 11 Expected Result:
+     * Remove deletes only the selected PID.
      */
     @Test
-    fun `Given Case 12, When deleteDocument is called for a non-main PID with multiple PIDs, Then SingleDocumentDeleted is returned`() {
+    fun `Given two PIDs and no main PID, When deleteDocument is called, Then only the selected PID is deleted`() =
         coroutineRule.runTest {
             // Given
-            val mainPid = getMockedPidWithBasicFields()
+            val selectedPid = getMockedPidWithBasicFields()
             val otherPid = getMockedOldestPidWithBasicFields()
-            mockGetAllDocumentsWithTypeCall(response = listOf(mainPid, otherPid))
-            mockGetDocumentByIdCall(response = otherPid)
-            mockGetMainPidDocument(response = mainPid)
-            mockDeleteDocumentCall(response = DeleteDocumentPartialState.Success)
-
-            // When
-            interactor.deleteDocument(documentId = otherPid.id).runFlowTest {
-                // Then
-                assertEquals(
-                    DocumentDetailsInteractorDeleteDocumentPartialState.SingleDocumentDeleted,
-                    awaitItem()
-                )
-            }
-        }
-    }
-
-    /**
-     * Case 13 (deleteDocument):
-     * forcePidActivation=true, doc is PID, allPidDocuments has exactly 1 entry → the
-     * `if (allPidDocuments.count() > 1)` false branch runs → `else true` returns true →
-     * shouldDeleteAllDocuments=true → deleteAllDocuments path with single PID present.
-     */
-    @Test
-    fun `Given Case 13, When deleteDocument is called for the single PID, Then AllDocumentsDeleted is returned`() {
-        coroutineRule.runTest {
-            // Given
-            val mainPid = getMockedPidWithBasicFields()
-            mockGetAllDocumentsWithTypeCall(response = listOf(mainPid))
-            mockGetDocumentByIdCall(response = mainPid)
-            mockDeleteAllDocumentsCall(response = DeleteAllDocumentsPartialState.Success)
-
-            // When
-            interactor.deleteDocument(documentId = mainPid.id).runFlowTest {
-                // Then
-                assertEquals(
-                    DocumentDetailsInteractorDeleteDocumentPartialState.AllDocumentsDeleted,
-                    awaitItem()
-                )
-            }
-        }
-    }
-
-    /**
-     * Case 15 (deleteDocument):
-     * Multiple PIDs exist but getMainPidDocument returns null → the `?.id` safe-call returns
-     * null → `null == documentId` is false → shouldDeleteAllDocuments=false →
-     * SingleDocumentDeleted.
-     */
-    @Test
-    fun `Given Case 15, When deleteDocument is called and getMainPidDocument returns null, Then SingleDocumentDeleted is returned`() {
-        coroutineRule.runTest {
-            // Given
-            val pid1 = getMockedPidWithBasicFields()
-            val pid2 = getMockedOldestPidWithBasicFields()
-            mockGetAllDocumentsWithTypeCall(response = listOf(pid1, pid2))
-            mockGetDocumentByIdCall(response = pid1)
+            mockGetDocumentByIdCall(response = selectedPid)
+            mockGetAllDocumentsWithTypeCall(response = listOf(selectedPid, otherPid))
             mockGetMainPidDocument(response = null)
             mockDeleteDocumentCall(response = DeleteDocumentPartialState.Success)
 
             // When
-            interactor.deleteDocument(documentId = pid1.id).runFlowTest {
+            interactor.deleteDocument(documentId = selectedPid.id).runFlowTest {
                 // Then
                 assertEquals(
                     DocumentDetailsInteractorDeleteDocumentPartialState.SingleDocumentDeleted,
-                    awaitItem()
+                    awaitItem(),
                 )
             }
+            verify(walletCoreDocumentsController).deleteDocument(selectedPid.id)
+            verify(walletCoreDocumentsController, never()).deleteDocument(otherPid.id)
+            verify(walletCoreDocumentsController, never()).deleteAllDocuments()
         }
-    }
-
-    /**
-     * Case 14 (deleteDocument):
-     * forcePidActivation=true, doc is PID, multiple PIDs exist, AND getMainPidDocument().id
-     * matches the documentId being deleted → the inner `getMainPidDocument()?.id == documentId`
-     * branch evaluates true → shouldDeleteAllDocuments=true → deleteAllDocuments path.
-     */
-    @Test
-    fun `Given Case 14, When deleteDocument is called for the main PID with multiple PIDs, Then AllDocumentsDeleted is returned`() {
-        coroutineRule.runTest {
-            // Given
-            val mainPid = getMockedPidWithBasicFields()
-            val otherPid = getMockedOldestPidWithBasicFields()
-            mockGetAllDocumentsWithTypeCall(response = listOf(mainPid, otherPid))
-            mockGetDocumentByIdCall(response = mainPid)
-            mockGetMainPidDocument(response = mainPid)
-            mockDeleteAllDocumentsCall(response = DeleteAllDocumentsPartialState.Success)
-
-            // When
-            interactor.deleteDocument(documentId = mainPid.id).runFlowTest {
-                // Then
-                assertEquals(
-                    DocumentDetailsInteractorDeleteDocumentPartialState.AllDocumentsDeleted,
-                    awaitItem()
-                )
-            }
-        }
-    }
+    //endregion
 
     /**
      * Case 1:
@@ -1509,6 +1355,35 @@ class TestDocumentDetailsInteractor {
             }
         }
     }
+
+    // A Deferred result completes the manual submission while the replacement keeps polling.
+    @Test
+    fun `Given a Deferred replacement, When the user reissues the original again, Then each submission succeeds independently`() =
+        coroutineRule.runTest {
+            // Given
+            val replacements = listOf("R1", "R2", "R3").iterator()
+            whenever(
+                walletCoreDocumentsController.reIssueDocument(
+                    documentId = mockedPidId,
+                    issuerId = mockedReIssueIssuerId,
+                    allowAuthorizationFallback = true,
+                )
+            ).thenAnswer {
+                IssueDocumentsPartialState.DeferredSuccess(
+                    deferredDocuments = mapOf(replacements.next() to mockedMdocPidNameSpace)
+                ).toFlow()
+            }
+
+            // When
+            repeat(3) {
+                interactor.reIssueDocument(mockedPidId, mockedReIssueIssuerId).runFlowTest {
+                    // Then
+                    assertEquals(DocumentDetailsInteractorIssuancePartialState.Success, awaitItem())
+                }
+            }
+            verify(walletCoreDocumentsController, times(3))
+                .reIssueDocument(mockedPidId, mockedReIssueIssuerId, true)
+        }
 
     @Test
     fun `Given a re-issuance that succeeds, When reIssueDocument is called, Then it runs as an external flow that ends with the outcome`() {
@@ -1943,11 +1818,6 @@ class TestDocumentDetailsInteractor {
         // Then
         verify(walletCoreDocumentsController, times(1))
             .resumeOpenId4VciWithAuthorization(mockedReIssueUri)
-    }
-
-    private fun mockGetAllDocumentsCall(response: List<IssuedDocument>) {
-        whenever(walletCoreDocumentsController.getAllDocuments())
-            .thenReturn(response)
     }
 
     private fun mockGetAllDocumentsWithTypeCall(response: List<IssuedDocument>) {

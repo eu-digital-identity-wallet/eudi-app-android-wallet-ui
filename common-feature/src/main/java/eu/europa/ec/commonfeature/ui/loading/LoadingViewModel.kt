@@ -204,13 +204,12 @@ abstract class LoadingViewModel : MviViewModel<Event, State, Effect>() {
     }
 
     private fun initiateCancellableTimeoutIfAvailable() {
-        with(getCancellableTimeout()) {
-            if (isPositive()) {
-                viewModelScope.launch {
-                    delay(this@with.inWholeMilliseconds)
-                    setState { copy(isCancellable = true) }
-                }
-            }
+        val timeout = getCancellableTimeout()
+        if (!timeout.isPositive()) return
+
+        viewModelScope.launch {
+            delay(timeout)
+            setState { copy(isCancellable = true) }
         }
     }
 }

@@ -26,6 +26,7 @@ import eu.europa.ec.uilogic.mvi.ViewState
 import eu.europa.ec.uilogic.navigation.ModuleRoute
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlin.time.Duration.Companion.milliseconds
 
 data class State(
     val logoAnimationDuration: Int = 1500,
@@ -72,7 +73,7 @@ class SplashViewModel(
         }
         viewModelScope.launch {
             if (animateLogo) {
-                delay((viewState.value.logoAnimationDuration + 500).toLong())
+                delay((viewState.value.logoAnimationDuration + 500).milliseconds)
             }
 
             when (val result = interactor.getAfterSplashRoute()) {
