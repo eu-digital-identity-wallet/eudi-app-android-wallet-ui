@@ -168,7 +168,7 @@
         <item quantity="other">You have entered the wrong PIN %1$d times in a row.\nPlease wait %2$s before trying again.</item>
     </plurals>
 
-    <string name="quick_pin_create_title">Welcome to your Wallet</string>
+    <string name="quick_pin_create_title">Welcome to your wallet</string>
     <string name="quick_pin_create_subtitle">Secure your wallet with a PIN code and connect to your National System.</string>
     <string name="quick_pin_create_enter_pin_input_label">Type a PIN</string>
     <string name="quick_pin_create_reenter_pin_input_label">Confirm PIN</string>
@@ -276,7 +276,7 @@
     <string name="request_bottom_sheet_warning_title">Warning</string>
     <string name="request_bottom_sheet_warning_subtitle">Choosing not to share certain data may result in failure to issue the requested document.</string>
     <string name="request_blocked_bottom_sheet_title">Presentation blocked</string>
-    <string name="request_blocked_bottom_sheet_message">This presentation request has been blocked because the relying party could not be verified by your Wallet.\n\nYour personal information or other data has not been shared with this relying party.</string>
+    <string name="request_blocked_bottom_sheet_message">This presentation request has been blocked because the relying party could not be verified by your wallet.\n\nYour personal information or other data has not been shared with this relying party.</string>
     <string name="request_blocked_bottom_sheet_primary_button_text">@string/generic_close</string>
     <string name="request_user_image_notice">This request includes your portrait, which can be used as biometric data to identify you by your face.</string>
     <string name="request_bottom_sheet_user_image_title">Share your portrait?</string>
@@ -619,10 +619,10 @@
     <!-- region Issuance Document Errors -->
     <string name="issuance_generic_error">Something went wrong issuing your document(s)</string>
     <string name="issuance_blocked_bottom_sheet_title">Issuance blocked</string>
-    <string name="issuance_blocked_bottom_sheet_message">This issuance request has been blocked because the provider could not be verified by your Wallet.\n\nYour personal information or other data has not been shared with this provider.</string>
+    <string name="issuance_blocked_bottom_sheet_message">This issuance request has been blocked because the provider could not be verified by your wallet.\n\nYour personal information or other data has not been shared with this provider.</string>
     <string name="issuance_blocked_bottom_sheet_primary_button_text">@string/generic_close</string>
     <string name="issuance_partially_blocked_bottom_sheet_title">Not all documents were added</string>
-    <string name="issuance_partially_blocked_bottom_sheet_message">Some documents were added to your Wallet. The rest were blocked because their provider could not be verified, and no data was shared for those.</string>
+    <string name="issuance_partially_blocked_bottom_sheet_message">Some documents were added to your wallet. The rest were blocked because their provider could not be verified, and no data was shared for those.</string>
     <string name="issuance_partially_blocked_bottom_sheet_primary_button_text">@string/generic_continue</string>
     <!--endregion-->
 
@@ -679,8 +679,8 @@
     <string name="privacy_history_deletion_title">Previous data deletion requests for %1$s</string>
     <string name="privacy_history_report_title">Previous transaction reports for %1$s</string>
     <string name="privacy_history_relying_party_default_name">Relying party</string>
-    <string name="privacy_history_deletion_disclaimer">Data deletion requests are completed outside the Wallet; therefore their final outcome cannot be tracked.</string>
-    <string name="privacy_history_report_disclaimer">Transaction reports are completed outside the Wallet; therefore their final outcome cannot be tracked.</string>
+    <string name="privacy_history_deletion_disclaimer">Data deletion requests are completed outside the wallet; therefore their final outcome cannot be tracked.</string>
+    <string name="privacy_history_report_disclaimer">Transaction reports are completed outside the wallet; therefore their final outcome cannot be tracked.</string>
     <string name="privacy_history_deletion_intro">You have previously attempted to initiate a data deletion request with this Relying Party via the following methods:</string>
     <string name="privacy_history_report_intro">You have previously attempted to initiate a transaction report with the responsible data protection authority via the following methods:</string>
     <string name="privacy_history_deletion_empty">No previous data deletion request attempts for this transaction.</string>
