@@ -81,10 +81,19 @@ fun Throwable.isDeferredTrustVerdict(): Boolean {
 
 /**
  * Whether the issuer answered a deferred request with `invalid_transaction_id`: the transaction
- * was never issued or was already used, so asking again cannot succeed.
+ * was never issued or was already used, so asking again cannot succeed. The answer is found
+ * anywhere in the cause chain.
  */
-fun Throwable.isUnknownDeferredTransaction(): Boolean =
-    this is IllegalStateException && message == INVALID_TRANSACTION_ID
+fun Throwable.isUnknownDeferredTransaction(): Boolean {
+    var throwable: Throwable? = this
+    while (throwable != null) {
+        if (throwable is IllegalStateException && throwable.message == INVALID_TRANSACTION_ID) {
+            return true
+        }
+        throwable = throwable.cause
+    }
+    return false
+}
 
 private const val INVALID_TRANSACTION_ID = "invalid_transaction_id"
 

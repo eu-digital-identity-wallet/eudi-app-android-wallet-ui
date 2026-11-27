@@ -30,10 +30,12 @@ import eu.europa.ec.eudi.wallet.document.Outcome
 import eu.europa.ec.eudi.wallet.document.UnsignedDocument
 import eu.europa.ec.eudi.wallet.document.format.MsoMdocFormat
 import eu.europa.ec.eudi.wallet.document.metadata.IssuerMetadata
+import eu.europa.ec.eudi.wallet.issue.openid4vci.DeferredIssueResult
 import eu.europa.ec.eudi.wallet.issue.openid4vci.IssueEvent
 import eu.europa.ec.eudi.wallet.issue.openid4vci.Offer
 import eu.europa.ec.eudi.wallet.issue.openid4vci.OfferResult
 import eu.europa.ec.eudi.wallet.issue.openid4vci.OpenId4VciManager
+import eu.europa.ec.eudi.wallet.trust.IssuerNotTrustedException
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.storagelogic.dao.BookmarkDao
@@ -43,6 +45,8 @@ import eu.europa.ec.storagelogic.dao.IssuerTrustDao
 import eu.europa.ec.storagelogic.dao.RevokedDocumentDao
 import eu.europa.ec.storagelogic.dao.StatusRefreshFailureDao
 import eu.europa.ec.storagelogic.model.Bookmark
+import eu.europa.ec.storagelogic.model.DeferredDocumentSchedule
+import eu.europa.ec.storagelogic.model.DeferredDocumentScheduleStatus
 import eu.europa.ec.storagelogic.model.FailedReIssuedDocument
 import eu.europa.ec.storagelogic.model.IssuerTrust
 import eu.europa.ec.storagelogic.model.IssuerTrustVerdict
@@ -50,6 +54,7 @@ import eu.europa.ec.storagelogic.model.RevocationStatus
 import eu.europa.ec.storagelogic.model.RevokedDocument
 import eu.europa.ec.testlogic.extension.runTest
 import eu.europa.ec.testlogic.rule.CoroutineTestRule
+import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
@@ -59,6 +64,7 @@ import kotlinx.coroutines.test.runCurrent
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
@@ -67,6 +73,7 @@ import org.mockito.Mock
 import org.mockito.MockitoAnnotations
 import org.mockito.kotlin.any
 import org.mockito.kotlin.anyOrNull
+import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.doAnswer
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.doSuspendableAnswer
@@ -80,6 +87,7 @@ import org.mockito.kotlin.verifyNoInteractions
 import org.mockito.kotlin.whenever
 import java.net.URL
 import java.net.URLEncoder
+import java.security.cert.CertificateExpiredException
 
 class TestWalletCoreDocumentsController {
 
@@ -404,6 +412,7 @@ class TestWalletCoreDocumentsController {
                 statusRefreshFailureDao,
                 bookmarkDao,
                 failedReIssuedDocumentDao,
+                deferredScheduleDao,
             )
         }
 
@@ -615,6 +624,206 @@ class TestWalletCoreDocumentsController {
         }
 
     /**
+     * Case 1:
+     * 1. Core reports one document as deferred during an issuance.
+     *
+     * Case 1 Expected Result:
+     * An active schedule is stored for it, due after the configured initial polling delay.
+     */
+    @Test
+    fun `Given Core defers a document, When it is issued, Then its schedule is stored`() =
+        coroutineRule.runTest {
+            // Given
+            givenTwoIssuers()
+            val deferred = mockedDeferredDocument()
+            doAnswer { invocation ->
+                val onIssueEvent = invocation.getArgument<OpenId4VciManager.OnIssueEvent>(4)
+                onIssueEvent(IssueEvent.Started(total = 1))
+                onIssueEvent(IssueEvent.DocumentDeferred(deferred))
+                onIssueEvent(IssueEvent.Finished(issuedDocuments = listOf(DEFERRED_ID)))
+            }.whenever(configuredIssuerManager).issueDocumentByConfigurationIdentifiers(
+                eq(CONFIGURED_ISSUER),
+                any(),
+                anyOrNull(),
+                anyOrNull(),
+                any(),
+            )
+            val delay = mockedDeferredConfig.initialPollingDelay.inWholeMilliseconds
+            val earliest = System.currentTimeMillis() + delay
+
+            // When
+            val result = controller.issueDocuments(
+                issuanceMethod = IssuanceMethod.OPENID4VCI,
+                configIds = listOf("mdl"),
+                issuerId = CONFIGURED_ISSUER,
+            ).first()
+
+            // Then
+            val latest = System.currentTimeMillis() + delay
+            assertEquals(
+                IssueDocumentsPartialState.DeferredSuccess(
+                    deferredDocuments = mapOf(DEFERRED_ID to MDL_TYPE)
+                ),
+                result,
+            )
+            val schedule = argumentCaptor<DeferredDocumentSchedule>().apply {
+                verify(deferredScheduleDao).store(capture())
+            }.firstValue
+            assertEquals(DEFERRED_ID, schedule.identifier)
+            assertEquals(DeferredDocumentScheduleStatus.ACTIVE, schedule.status)
+            assertNull(schedule.lastIntervalMillis)
+            assertNull(schedule.originalDocumentId)
+            assertTrue(schedule.nextAttemptAt in earliest..latest)
+            verify(deferredScheduleDao, never()).attachOriginalIfUnknown(any(), any())
+        }
+
+    @Test
+    fun `Given a deferred document, When it is deleted, Then its schedule is deleted`() =
+        coroutineRule.runTest {
+            // Given
+            whenever(eudiWallet.deleteDocumentById(DEFERRED_ID)).thenReturn(Outcome.success(null))
+
+            // When
+            val result = controller.deleteDocument(DEFERRED_ID).first()
+
+            // Then
+            assertEquals(DeleteDocumentPartialState.Success, result)
+            verify(walletDocumentOperationController).recordRemoval(DEFERRED_ID)
+            verify(deferredScheduleDao).delete(DEFERRED_ID)
+        }
+
+    /** Wallet Core has already deleted the document, so the failure is reported, not undone. */
+    @Test
+    fun `Given the schedule cannot be deleted, When the document is deleted, Then it fails`() =
+        coroutineRule.runTest {
+            // Given
+            whenever(eudiWallet.deleteDocumentById(DEFERRED_ID)).thenReturn(Outcome.success(null))
+            whenever(deferredScheduleDao.delete(DEFERRED_ID))
+                .doThrow(IllegalStateException("database closed"))
+
+            // When
+            val result = controller.deleteDocument(DEFERRED_ID).first()
+
+            // Then
+            assertEquals(DeleteDocumentPartialState.Failure("database closed"), result)
+        }
+
+    @Test
+    fun `Given an unknown transaction, When a deferred request fails, Then it is Expired`() =
+        coroutineRule.runTest {
+            // Given
+            givenDeferredFailure(IllegalStateException("invalid_transaction_id"))
+
+            // When
+            val result = controller.issueDeferredDocument(DEFERRED_ID).first()
+
+            // Then
+            assertEquals(IssueDeferredDocumentPartialState.Expired(DEFERRED_ID), result)
+        }
+
+    /** A trust check that produced no result is asked again. */
+    @Test
+    fun `Given a refusal without a cause, When a deferred request fails, Then it is Failed`() =
+        coroutineRule.runTest {
+            // Given
+            givenDeferredFailure(IssuerNotTrustedException(message = "no trust result"))
+
+            // When
+            val result = controller.issueDeferredDocument(DEFERRED_ID).first()
+
+            // Then
+            assertEquals(IssueDeferredDocumentPartialState.Failed, result)
+        }
+
+    @Test
+    fun `Given an untrusted chain, When a deferred request fails, Then it is IssuerNotTrusted`() =
+        coroutineRule.runTest {
+            // Given
+            givenDeferredFailure(
+                IssuerNotTrustedException(
+                    message = "untrusted",
+                    cause = RuntimeException("untrusted chain"),
+                )
+            )
+
+            // When
+            val result = controller.issueDeferredDocument(DEFERRED_ID).first()
+
+            // Then
+            assertEquals(IssueDeferredDocumentPartialState.IssuerNotTrusted(DEFERRED_ID), result)
+        }
+
+    /** A chain refused for its validity period may be a wrong device clock; it is asked again. */
+    @Test
+    fun `Given an expired certificate, When a deferred request fails, Then it is Failed`() =
+        coroutineRule.runTest {
+            // Given
+            givenDeferredFailure(
+                IssuerNotTrustedException(
+                    message = "untrusted",
+                    cause = RuntimeException("chain", CertificateExpiredException("expired")),
+                )
+            )
+
+            // When
+            val result = controller.issueDeferredDocument(DEFERRED_ID).first()
+
+            // Then
+            assertEquals(IssueDeferredDocumentPartialState.Failed, result)
+        }
+
+    @Test
+    fun `Given an invalid token, When a deferred request fails, Then it is Failed`() =
+        coroutineRule.runTest {
+            // Given
+            givenDeferredFailure(IllegalStateException("invalid_token"))
+
+            // When
+            val result = controller.issueDeferredDocument(DEFERRED_ID).first()
+
+            // Then
+            assertEquals(IssueDeferredDocumentPartialState.Failed, result)
+        }
+
+    @Test
+    fun `Given no issued PID, When all documents are deleted, Then it fails and deletes nothing`() =
+        coroutineRule.runTest {
+            // Given
+            val mdl: IssuedDocument = mock {
+                on { id } doReturn "mdl"
+                on { format } doReturn MsoMdocFormat(MDL_TYPE)
+            }
+            val deferred = mockedDeferredDocument()
+            whenever(eudiWallet.getDocuments(anyOrNull())).thenReturn(listOf(mdl, deferred))
+            whenever(resourceProvider.genericErrorMessage()).thenReturn("error")
+            whenever(
+                walletDocumentOperationController
+                    .tryStartRemovingAllDocuments<DeleteAllDocumentsPartialState>(any())
+            ).thenAnswer { invocation ->
+                coroutineRule.testScope.async {
+                    invocation.getArgument<suspend () -> DeleteAllDocumentsPartialState>(0)
+                        .invoke()
+                }
+            }
+
+            // When
+            val result = controller.deleteAllDocuments().first()
+
+            // Then
+            assertEquals(DeleteAllDocumentsPartialState.Failure(errorMessage = "error"), result)
+            verify(eudiWallet, never()).deleteDocumentById(any())
+            verify(walletDocumentOperationController, never()).recordRemoval(any())
+            verifyNoInteractions(
+                deferredScheduleDao,
+                revokedDocumentDao,
+                issuerTrustDao,
+                statusRefreshFailureDao,
+                bookmarkDao,
+                failedReIssuedDocumentDao,
+            )
+        }
+
+    /**
      * Two configured issuers, the first of which the old fallback would have used for any unknown
      * issuer, each with its own mocked manager.
      */
@@ -641,6 +850,37 @@ class TestWalletCoreDocumentsController {
         whenever(resourceProvider.genericErrorMessage()).thenReturn("error")
     }
 
+    private fun mockedDeferredDocument(): DeferredDocument {
+        val metadata: IssuerMetadata =
+            mock { on { credentialIssuerIdentifier } doReturn CONFIGURED_ISSUER }
+        return mock {
+            on { id } doReturn DEFERRED_ID
+            on { name } doReturn "mDL"
+            on { format } doReturn MsoMdocFormat(MDL_TYPE)
+            on { issuerMetadata } doReturn metadata
+        }
+    }
+
+    /** Core answers the deferred request for [DEFERRED_ID] with a failure caused by [cause]. */
+    private fun givenDeferredFailure(cause: Throwable) {
+        givenTwoIssuers()
+        val deferred = mockedDeferredDocument()
+        whenever(eudiWallet.getDocumentById(DEFERRED_ID)).thenReturn(deferred)
+        whenever(walletDocumentOperationController.startCorePolling(eq(DEFERRED_ID), any()))
+            .thenAnswer { invocation ->
+                invocation.getArgument<() -> Unit>(1).invoke()
+                true
+            }
+        doAnswer { invocation ->
+            invocation.getArgument<OpenId4VciManager.OnDeferredIssueResult>(2)
+                .onResult(DeferredIssueResult.DocumentFailed(deferred, cause))
+        }.whenever(configuredIssuerManager).issueDeferredDocument(
+            eq(deferred),
+            anyOrNull(),
+            any(),
+        )
+    }
+
     private fun offerByValue(issuer: String): String {
         val offer = """{"credential_issuer":"$issuer","credential_configuration_ids":["pid"]}"""
         return "openid-credential-offer://?credential_offer=${URLEncoder.encode(offer, "UTF-8")}"
@@ -652,5 +892,6 @@ class TestWalletCoreDocumentsController {
         const val UNREADABLE = "unreadable"
         const val DOCUMENT_ERROR = "document error"
         const val MDL_TYPE = "org.iso.18013.5.1.mDL"
+        const val DEFERRED_ID = "deferred"
     }
 }
