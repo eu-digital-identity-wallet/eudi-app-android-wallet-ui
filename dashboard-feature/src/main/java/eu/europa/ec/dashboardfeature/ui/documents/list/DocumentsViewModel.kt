@@ -252,6 +252,10 @@ class DocumentsViewModel(
             }
 
             is Event.BottomSheet.DeferredDocument.DeferredNotReadyYet.DocumentSelected -> {
+                if (event.documentId in viewState.value.unseenDeferredIssuanceIds) {
+                    getDocuments(Event.GetDocuments)
+                    return
+                }
                 showBottomSheet(
                     sheetContent = DeferredDocumentPressed(
                         documentId = event.documentId
@@ -260,7 +264,9 @@ class DocumentsViewModel(
             }
 
             is Event.BottomSheet.DeferredDocument.DeferredNotReadyYet.PrimaryButtonPressed -> {
-                if (event.documentId == documentIdToIgnoreRemoveTapsFor) return
+                if (event.documentId == documentIdToIgnoreRemoveTapsFor ||
+                    event.documentId in viewState.value.unseenDeferredIssuanceIds
+                ) return
                 hideBottomSheet()
                 deleteDocument(event = event, documentId = event.documentId)
             }

@@ -53,9 +53,17 @@ internal class DeferredRetryPolicy(private val config: DeferredIssuanceConfig) {
         )
     }
 
-    /** The previous wait elapsed before this attempt. An ordinary failure starts the configured retry delay. */
+    /**
+     * An ordinary failure waits the configured retry delay or the issuer's last interval, whichever
+     * is longer, and keeps that interval for the answers to come.
+     */
     fun failed(schedule: DeferredDocumentSchedule, now: Long): DeferredDocumentSchedule =
-        schedule.copy(nextAttemptAt = now + config.failureRetryDelay.inWholeMilliseconds)
+        schedule.copy(
+            nextAttemptAt = now + maxOf(
+                config.failureRetryDelay.inWholeMilliseconds,
+                schedule.lastIntervalMillis ?: 0L,
+            )
+        )
 
     private fun pollingDelay(schedule: DeferredDocumentSchedule): Long =
         schedule.lastIntervalMillis ?: config.initialPollingDelay.inWholeMilliseconds

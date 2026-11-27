@@ -326,21 +326,20 @@ class TestSettingsViewModel {
         }
 
     @Test
-    fun `Given no biometric enrollment, When the switch is tapped, Then the system setup opens without authenticating`() =
-        coroutineRule.runTest {
-            // Given
-            whenever(interactor.getBiometricsAvailability())
-                .thenReturn(BiometricsAvailability.NonEnrolled)
+    fun `Given no biometric enrollment, When the switch is tapped, Then the system setup opens without authenticating`() = coroutineRule.runTest {
+        // Given
+        whenever(interactor.getBiometricsAvailability())
+            .thenReturn(BiometricsAvailability.NonEnrolled)
 
-            viewModel.effect.runFlowTest {
-                // When
-                viewModel.handleEvents(click)
+        viewModel.effect.runFlowTest {
+            // When
+            viewModel.handleEvents(click)
 
-                // Then
-                assertEquals(Effect.Navigation.LaunchBiometricsSystemScreen, awaitItem())
-                assertEquals(0, callbacks.size)
-            }
+            // Then
+            assertEquals(Effect.Navigation.LaunchBiometricsSystemScreen, awaitItem())
+            assertEquals(0, callbacks.size)
         }
+    }
 
     @Test
     fun `Given a pending settings load, When Init is sent, Then a loading pass shows before the settings items are published`() =
@@ -371,27 +370,25 @@ class TestSettingsViewModel {
         }
 
     @Test
-    fun `Given the settings screen, When Pop is sent, Then navigation goes back`() =
-        coroutineRule.runTest {
-            viewModel.effect.runFlowTest {
-                // When
-                viewModel.handleEvents(Event.Pop)
-
-                // Then
-                assertEquals(Effect.Navigation.Pop, awaitItem())
-            }
-        }
-
-    @Test
-    fun `Given the settings screen, When LaunchBiometricSystemScreen is sent, Then it is delegated to the interactor`() =
-        coroutineRule.runTest {
+    fun `Given the settings screen, When Pop is sent, Then navigation goes back`() = coroutineRule.runTest {
+        viewModel.effect.runFlowTest {
             // When
-            viewModel.handleEvents(Event.LaunchBiometricSystemScreen)
+            viewModel.handleEvents(Event.Pop)
 
             // Then
-            verify(interactor).launchBiometricSystemScreen()
-            assertEquals(0, callbacks.size)
+            assertEquals(Effect.Navigation.Pop, awaitItem())
         }
+    }
+
+    @Test
+    fun `Given the settings screen, When LaunchBiometricSystemScreen is sent, Then it is delegated to the interactor`() = coroutineRule.runTest {
+        // When
+        viewModel.handleEvents(Event.LaunchBiometricSystemScreen)
+
+        // Then
+        verify(interactor).launchBiometricSystemScreen()
+        assertEquals(0, callbacks.size)
+    }
 
     @Test
     fun `Given updated settings items, When the batch issuance counter item is clicked, Then the setting is toggled and the items refresh`() =
@@ -453,137 +450,111 @@ class TestSettingsViewModel {
         }
 
     @Test
-    fun `Given log files, When the Retrieve logs item is clicked, Then every log file is shared`() =
-        coroutineRule.runTest {
-            // Given
-            val logs = arrayListOf("content://logs/1".toUri(), "content://logs/2".toUri())
-            whenever(interactor.retrieveLogFileUris()).thenReturn(logs)
+    fun `Given log files, When the Retrieve logs item is clicked, Then every log file is shared`() = coroutineRule.runTest {
+        // Given
+        val logs = arrayListOf("content://logs/1".toUri(), "content://logs/2".toUri())
+        whenever(interactor.retrieveLogFileUris()).thenReturn(logs)
 
-            viewModel.effect.runFlowTest {
-                // When
-                viewModel.handleEvents(
-                    Event.ItemClicked(
-                        SettingsMenuItemType.RETRIEVE_LOGS,
-                        context
-                    )
-                )
-
-                // Then
-                val effect = awaitItem()
-                assertTrue(effect is Effect.ShareLogFile)
-                val shareLogFile = effect as Effect.ShareLogFile
-                assertEquals(Intent.ACTION_SEND_MULTIPLE, shareLogFile.intent.action)
-                assertEquals("text/*", shareLogFile.intent.type)
-                assertEquals(LOGS_CHOOSER_TITLE, shareLogFile.chooserTitle)
-                assertEquals(
-                    logs,
-                    IntentCompat.getParcelableArrayListExtra(
-                        shareLogFile.intent,
-                        Intent.EXTRA_STREAM,
-                        Uri::class.java
-                    )
-                )
-            }
-        }
-
-    @Test
-    fun `Given no log files, When the Retrieve logs item is clicked, Then nothing is emitted`() =
-        coroutineRule.runTest {
-            // Given
-            whenever(interactor.retrieveLogFileUris()).thenReturn(arrayListOf())
-
-            viewModel.effect.runFlowTest {
-                // When
-                viewModel.handleEvents(
-                    Event.ItemClicked(
-                        SettingsMenuItemType.RETRIEVE_LOGS,
-                        context
-                    )
-                )
-                coroutineRule.testScope.runCurrent()
-
-                // Then
-                expectNoEvents()
-            }
-        }
-
-    @Test
-    fun `Given a configured changelog url, When the Changelog item is clicked, Then the url opens externally`() =
-        coroutineRule.runTest {
-            // Given
-            whenever(interactor.getChangelogUrl()).thenReturn(CHANGELOG_URL)
-            val withChangelog = newViewModel("withChangelog")
-
-            withChangelog.effect.runFlowTest {
-                // When
-                withChangelog.handleEvents(
-                    Event.ItemClicked(
-                        SettingsMenuItemType.CHANGELOG,
-                        context
-                    )
-                )
-
-                // Then
-                assertEquals(
-                    Effect.Navigation.OpenUrlExternally(CHANGELOG_URL.toUri()),
-                    awaitItem()
-                )
-            }
-        }
-
-    @Test
-    fun `Given no changelog url, When the Changelog item is clicked, Then nothing is emitted`() =
-        coroutineRule.runTest {
-            // Given
-            whenever(interactor.getChangelogUrl()).thenReturn(null)
-            val withoutChangelog = newViewModel("withoutChangelog")
-
-            withoutChangelog.effect.runFlowTest {
-                // When
-                withoutChangelog.handleEvents(
-                    Event.ItemClicked(SettingsMenuItemType.CHANGELOG, context)
-                )
-                coroutineRule.testScope.runCurrent()
-
-                // Then
-                expectNoEvents()
-            }
-        }
-
-    @Test
-    fun `Given the settings screen, When the Reset wallet item is clicked, Then a confirmation sheet is requested first`() =
-        coroutineRule.runTest {
-            viewModel.effect.runFlowTest {
-                // When
-                viewModel.handleEvents(
-                    Event.ItemClicked(
-                        SettingsMenuItemType.RESET_WALLET,
-                        context
-                    )
-                )
-
-                // Then
-                assertEquals(Effect.ShowBottomSheet, awaitItem())
-                expectNoEvents()
-            }
-            verify(uiSerializer, never()).toBase64(any<BiometricUiConfig>(), any())
-        }
-
-    @Test
-    fun `Given the settings screen, When the bottom sheet state is updated, Then the view state follows`() =
-        coroutineRule.runTest {
+        viewModel.effect.runFlowTest {
             // When
-            viewModel.handleEvents(Event.BottomSheet.UpdateBottomSheetState(isOpen = true))
+            viewModel.handleEvents(Event.ItemClicked(SettingsMenuItemType.RETRIEVE_LOGS, context))
 
             // Then
-            assertTrue(viewModel.viewState.value.isBottomSheetOpen)
+            val effect = awaitItem()
+            assertTrue(effect is Effect.ShareLogFile)
+            val shareLogFile = effect as Effect.ShareLogFile
+            assertEquals(Intent.ACTION_SEND_MULTIPLE, shareLogFile.intent.action)
+            assertEquals("text/*", shareLogFile.intent.type)
+            assertEquals(LOGS_CHOOSER_TITLE, shareLogFile.chooserTitle)
+            assertEquals(
+                logs,
+                IntentCompat.getParcelableArrayListExtra(
+                    shareLogFile.intent,
+                    Intent.EXTRA_STREAM,
+                    Uri::class.java
+                )
+            )
+        }
+    }
 
+    @Test
+    fun `Given no log files, When the Retrieve logs item is clicked, Then nothing is emitted`() = coroutineRule.runTest {
+        // Given
+        whenever(interactor.retrieveLogFileUris()).thenReturn(arrayListOf())
+
+        viewModel.effect.runFlowTest {
             // When
-            viewModel.handleEvents(Event.BottomSheet.UpdateBottomSheetState(isOpen = false))
+            viewModel.handleEvents(Event.ItemClicked(SettingsMenuItemType.RETRIEVE_LOGS, context))
+            coroutineRule.testScope.runCurrent()
 
             // Then
-            assertFalse(viewModel.viewState.value.isBottomSheetOpen)
+            expectNoEvents()
         }
+    }
+
+    @Test
+    fun `Given a configured changelog url, When the Changelog item is clicked, Then the url opens externally`() = coroutineRule.runTest {
+        // Given
+        whenever(interactor.getChangelogUrl()).thenReturn(CHANGELOG_URL)
+        val withChangelog = newViewModel("withChangelog")
+
+        withChangelog.effect.runFlowTest {
+            // When
+            withChangelog.handleEvents(Event.ItemClicked(SettingsMenuItemType.CHANGELOG, context))
+
+            // Then
+            assertEquals(
+                Effect.Navigation.OpenUrlExternally(CHANGELOG_URL.toUri()),
+                awaitItem()
+            )
+        }
+    }
+
+    @Test
+    fun `Given no changelog url, When the Changelog item is clicked, Then nothing is emitted`() = coroutineRule.runTest {
+        // Given
+        whenever(interactor.getChangelogUrl()).thenReturn(null)
+        val withoutChangelog = newViewModel("withoutChangelog")
+
+        withoutChangelog.effect.runFlowTest {
+            // When
+            withoutChangelog.handleEvents(
+                Event.ItemClicked(SettingsMenuItemType.CHANGELOG, context)
+            )
+            coroutineRule.testScope.runCurrent()
+
+            // Then
+            expectNoEvents()
+        }
+    }
+
+    @Test
+    fun `Given the settings screen, When the Reset wallet item is clicked, Then a confirmation sheet is requested first`() = coroutineRule.runTest {
+        viewModel.effect.runFlowTest {
+            // When
+            viewModel.handleEvents(Event.ItemClicked(SettingsMenuItemType.RESET_WALLET, context))
+
+            // Then
+            assertEquals(Effect.ShowBottomSheet, awaitItem())
+            expectNoEvents()
+        }
+        verify(uiSerializer, never()).toBase64(any<BiometricUiConfig>(), any())
+    }
+
+    @Test
+    fun `Given the settings screen, When the bottom sheet state is updated, Then the view state follows`() = coroutineRule.runTest {
+        // When
+        viewModel.handleEvents(Event.BottomSheet.UpdateBottomSheetState(isOpen = true))
+
+        // Then
+        assertTrue(viewModel.viewState.value.isBottomSheetOpen)
+
+        // When
+        viewModel.handleEvents(Event.BottomSheet.UpdateBottomSheetState(isOpen = false))
+
+        // Then
+        assertFalse(viewModel.viewState.value.isBottomSheetOpen)
+    }
 
     @Test
     fun `Given the reset confirmation sheet, When the reset is confirmed, Then the PIN check opens and leads to the reset screen`() =
@@ -625,23 +596,22 @@ class TestSettingsViewModel {
         }
 
     @Test
-    fun `Given the reset confirmation sheet, When the reset is cancelled, Then only the sheet closes`() =
-        coroutineRule.runTest {
-            viewModel.effect.runFlowTest {
-                // When
-                viewModel.handleEvents(Event.BottomSheet.ResetWallet.SecondaryButtonPressed)
+    fun `Given the reset confirmation sheet, When the reset is cancelled, Then only the sheet closes`() = coroutineRule.runTest {
+        viewModel.effect.runFlowTest {
+            // When
+            viewModel.handleEvents(Event.BottomSheet.ResetWallet.SecondaryButtonPressed)
 
-                // Then
-                assertEquals(Effect.CloseBottomSheet, awaitItem())
+            // Then
+            assertEquals(Effect.CloseBottomSheet, awaitItem())
 
-                // When
-                viewModel.handleEvents(Event.BottomSheet.FinishedClosing)
+            // When
+            viewModel.handleEvents(Event.BottomSheet.FinishedClosing)
 
-                // Then
-                expectNoEvents()
-            }
-            verify(uiSerializer, never()).toBase64(any<BiometricUiConfig>(), any())
+            // Then
+            expectNoEvents()
         }
+        verify(uiSerializer, never()).toBase64(any<BiometricUiConfig>(), any())
+    }
 
     private fun completeAuthentication(result: BiometricsAuthenticate) {
         callbacks.single().invoke(result)

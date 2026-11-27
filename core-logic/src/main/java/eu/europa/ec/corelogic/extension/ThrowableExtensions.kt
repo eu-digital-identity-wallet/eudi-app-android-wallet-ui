@@ -22,6 +22,9 @@ import eu.europa.ec.eudi.openid4vci.CredentialIssuerMetadataError
 import eu.europa.ec.eudi.openid4vci.CredentialOfferRequestError
 import eu.europa.ec.eudi.openid4vci.CredentialOfferRequestException
 import eu.europa.ec.eudi.wallet.trust.IssuerNotTrustedException
+import java.security.cert.CertPathValidatorException
+import java.security.cert.CertificateExpiredException
+import java.security.cert.CertificateNotYetValidException
 
 /**
  * Which trust layer refused the issuer behind this failure, or null when the failure is not about
@@ -54,4 +57,48 @@ fun Throwable.toUntrustedIssuerReasonOrNull(): UntrustedIssuerReasonDomain? {
             }
     }
     return null
+}
+
+/**
+ * Whether a failed deferred request carries a definite trust verdict, which stops the requests: a
+ * registration that fails the issuance policy, or an issuer chain that was evaluated and found
+ * untrusted for a reason other than its validity period. A trust check that could not run (no
+ * result, for example an unreachable trust list), a chain refused for its validity period (a wrong
+ * device clock) and signed metadata that cannot be verified are asked again.
+ */
+fun Throwable.isDeferredTrustVerdict(): Boolean {
+    var throwable: Throwable? = this
+    while (throwable != null) {
+        if (throwable is AuthorizationPolicyValidationError) return true
+        if (throwable is IssuerNotTrustedException) {
+            val reason = throwable.cause ?: return false
+            return !reason.isCertificateValidityError()
+        }
+        throwable = throwable.cause
+    }
+    return false
+}
+
+/**
+ * Whether the issuer answered a deferred request with `invalid_transaction_id`: the transaction
+ * was never issued or was already used, so asking again cannot succeed.
+ */
+fun Throwable.isUnknownDeferredTransaction(): Boolean =
+    this is IllegalStateException && message == INVALID_TRANSACTION_ID
+
+private const val INVALID_TRANSACTION_ID = "invalid_transaction_id"
+
+private fun Throwable.isCertificateValidityError(): Boolean {
+    var throwable: Throwable? = this
+    while (throwable != null) {
+        if (throwable is CertificateExpiredException ||
+            throwable is CertificateNotYetValidException
+        ) return true
+        if (throwable is CertPathValidatorException &&
+            (throwable.reason == CertPathValidatorException.BasicReason.EXPIRED ||
+                    throwable.reason == CertPathValidatorException.BasicReason.NOT_YET_VALID)
+        ) return true
+        throwable = throwable.cause
+    }
+    return false
 }

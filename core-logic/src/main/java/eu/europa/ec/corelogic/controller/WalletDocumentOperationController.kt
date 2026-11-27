@@ -89,11 +89,14 @@ interface WalletDocumentOperationController {
 
     /**
      * Forwards states from [flowToCollect] up to and including the first state matching [completeWhen].
-     * The flow must finish its writes before emitting that state. Tracking continues if the screen stops observing.
+     * The flow must finish its writes before emitting that state. Tracking continues if the screen stops
+     * observing, unless [isAbandonable] is true then: such an operation has written nothing yet and is
+     * cancelled, so it cannot hold back reset or bulk removal.
      */
     fun <T> trackedOperationFlow(
         completeWhen: (state: T) -> Boolean,
         isResetOperation: Boolean,
+        isAbandonable: () -> Boolean = { false },
         flowToCollect: () -> Flow<T>,
     ): Flow<T>
 
@@ -262,6 +265,7 @@ class WalletDocumentOperationControllerImpl(
     override fun <T> trackedOperationFlow(
         completeWhen: (state: T) -> Boolean,
         isResetOperation: Boolean,
+        isAbandonable: () -> Boolean,
         flowToCollect: () -> Flow<T>,
     ): Flow<T> = flow {
         // Buffer intermediate states without making Core observation wait for the screen.
@@ -293,6 +297,7 @@ class WalletDocumentOperationControllerImpl(
             if (trackedOperation != null) emit(trackedOperation.await())
         } finally {
             intermediateStates.cancel()
+            if (trackedOperation?.isActive == true && isAbandonable()) trackedOperation.cancel()
         }
     }
 

@@ -64,7 +64,7 @@ internal fun DocumentRow(
     val item = document.uiData
     // A placed row can become eligible after a refresh or sheet closure without moving.
     var isRowVisible by remember(item.itemId) { mutableStateOf(false) }
-    var isHighlighting by remember(item.itemId, canShowHighlights) { mutableStateOf(false) }
+    var isHighlighting by remember(item.itemId) { mutableStateOf(false) }
     val showHighlight = isHighlighting ||
             (canShowHighlights && awaitingHighlight && isRowVisible && !document.isDeferred)
 

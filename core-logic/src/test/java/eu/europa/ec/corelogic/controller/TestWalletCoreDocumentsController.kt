@@ -156,12 +156,13 @@ class TestWalletCoreDocumentsController {
             walletDocumentOperationController.trackedOperationFlow<IssueDocumentsPartialState>(
                 any(),
                 any(),
+                any(),
                 any()
             )
         )
             .thenAnswer { invocation ->
                 invocation.getArgument<() -> Flow<IssueDocumentsPartialState>>(
-                    2
+                    3
                 ).invoke()
             }
         runBlocking {

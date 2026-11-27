@@ -28,6 +28,8 @@ import eu.europa.ec.corelogic.di.getOrCreateKoinScope
 import eu.europa.ec.corelogic.extension.documentIdentifier
 import eu.europa.ec.corelogic.extension.getIssuerLogo
 import eu.europa.ec.corelogic.extension.getLocalizedDisplayName
+import eu.europa.ec.corelogic.extension.isDeferredTrustVerdict
+import eu.europa.ec.corelogic.extension.isUnknownDeferredTransaction
 import eu.europa.ec.corelogic.extension.localizedIssuerMetadata
 import eu.europa.ec.corelogic.extension.toIssuerRegistrationDomain
 import eu.europa.ec.corelogic.extension.toIssuerTrustVerdict
@@ -102,6 +104,7 @@ import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
@@ -109,6 +112,9 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import java.net.URI
 import java.util.Locale
+import java.util.concurrent.atomic.AtomicBoolean
+import kotlin.coroutines.AbstractCoroutineContextElement
+import kotlin.coroutines.CoroutineContext
 import kotlin.time.Duration
 
 enum class IssuanceMethod {
@@ -833,8 +839,9 @@ class WalletCoreDocumentsControllerImpl(
     private suspend fun deleteAllDocumentsWithMainPidLast(): DeleteAllDocumentsPartialState {
         val allDocuments = getAllDocuments()
         val mainPidDocument = getMainPidDocument()
+            ?: return DeleteAllDocumentsPartialState.Failure(errorMessage = genericErrorMessage)
         val documentsExceptMainPid = allDocuments.filterNot { document ->
-            document.id == mainPidDocument?.id
+            document.id == mainPidDocument.id
         }
         var lastDeletionErrorMessage: String? = null
 
@@ -855,9 +862,6 @@ class WalletCoreDocumentsControllerImpl(
         lastDeletionErrorMessage?.let { message ->
             return DeleteAllDocumentsPartialState.Failure(errorMessage = message)
         }
-        // Earlier operations may already have removed the last PID or emptied the wallet.
-        if (mainPidDocument == null) return DeleteAllDocumentsPartialState.Success
-
         return when (
             val result = deleteDocumentAndCleanUpLocalMetadata(mainPidDocument.id).first()
         ) {
@@ -967,13 +971,20 @@ class WalletCoreDocumentsControllerImpl(
                         onIssueResult = { deferredIssuanceResult ->
                             when (deferredIssuanceResult) {
                                 is DeferredIssueResult.DocumentFailed -> {
+                                    val cause = deferredIssuanceResult.cause
                                     trySendBlocking(
-                                        if (deferredIssuanceResult.cause.toUntrustedIssuerReasonOrNull() != null) {
-                                            IssueDeferredDocumentPartialState.IssuerNotTrusted(
-                                                documentId = deferredIssuanceResult.documentId
-                                            )
-                                        } else {
-                                            IssueDeferredDocumentPartialState.Failed
+                                        when {
+                                            cause.isDeferredTrustVerdict() ->
+                                                IssueDeferredDocumentPartialState.IssuerNotTrusted(
+                                                    documentId = deferredIssuanceResult.documentId
+                                                )
+
+                                            cause.isUnknownDeferredTransaction() ->
+                                                IssueDeferredDocumentPartialState.Expired(
+                                                    documentId = deferredIssuanceResult.documentId
+                                                )
+
+                                            else -> IssueDeferredDocumentPartialState.Failed
                                         }
                                     )
                                 }
@@ -1290,6 +1301,7 @@ class WalletCoreDocumentsControllerImpl(
     ): OpenId4VciManager.OnIssueEvent {
 
         var totalDocumentsToBeIssued = 0
+        val issuanceStart = coroutineContext[IssuanceStart]
         val untrustedDocuments: MutableMap<FormatType, String> = mutableMapOf()
         val nonIssuedDocuments: MutableMap<FormatType, String> = mutableMapOf()
         val deferredDocuments: MutableMap<DocumentId, FormatType> = mutableMapOf()
@@ -1479,6 +1491,7 @@ class WalletCoreDocumentsControllerImpl(
 
                 is IssueEvent.Started -> {
                     totalDocumentsToBeIssued = event.total
+                    issuanceStart?.markStarted()
                 }
 
                 is IssueEvent.DocumentDeferred -> {
@@ -1550,16 +1563,23 @@ class WalletCoreDocumentsControllerImpl(
      * If Core needs a key unlocked, an observer that leaves can no longer answer the prompt.
      * Cancel its unanswered authentication so Core can send the terminal result.
      * Reset and bulk removal wait for every submission, including multiple replacements for one original.
+     * Until Wallet Core reports [IssueEvent.Started] (after any browser sign-in), nothing is written,
+     * so a screen that leaves before then cancels the operation: an abandoned sign-in, which Wallet Core
+     * waits for with no time limit, does not hold back reset or bulk removal.
      */
     private fun Flow<IssueDocumentsPartialState>.trackedIssuance(): Flow<IssueDocumentsPartialState> =
         flow {
             val observerLifetime = Job()
-            val issuance = this@trackedIssuance.withAuthenticationObserver(observerLifetime)
+            val issuanceStart = IssuanceStart()
+            val issuance = this@trackedIssuance
+                .flowOn(issuanceStart)
+                .withAuthenticationObserver(observerLifetime)
             val trackedOperation = walletDocumentOperationController.trackedOperationFlow(
                 completeWhen = { state ->
                     state !is IssueDocumentsPartialState.UserAuthRequired
                 },
                 isResetOperation = false,
+                isAbandonable = { !issuanceStart.hasStarted },
                 flowToCollect = { issuance },
             )
             try {
@@ -1631,4 +1651,18 @@ class WalletCoreDocumentsControllerImpl(
         return manager?.let(Result.Companion::success)
             ?: Result.failure(RuntimeException(errorMessage))
     }
+}
+
+/**
+ * Marks, for one tracked issuance, whether Wallet Core has reported [IssueEvent.Started]. It reaches
+ * the issuance callback through the coroutine context of the collected flow.
+ */
+private class IssuanceStart : AbstractCoroutineContextElement(IssuanceStart) {
+    companion object Key : CoroutineContext.Key<IssuanceStart>
+
+    private val started = AtomicBoolean(false)
+
+    val hasStarted: Boolean get() = started.get()
+
+    fun markStarted() = started.set(true)
 }

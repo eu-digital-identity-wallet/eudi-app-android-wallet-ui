@@ -183,11 +183,10 @@ class TestDeviceAuthenticationController {
         }
 
     @Test
-    fun `Given a crypto request, When it is authenticated, Then strong biometrics or device credentials are allowed`() =
-        coroutineRule.runTest {
-            // Then
-            assertCryptoPromptAccepted(BIOMETRIC_STRONG or DEVICE_CREDENTIAL, "")
-        }
+    fun `Given a crypto request, When it is authenticated, Then strong biometrics or device credentials are allowed`() = coroutineRule.runTest {
+        // Then
+        assertCryptoPromptAccepted(BIOMETRIC_STRONG or DEVICE_CREDENTIAL, "")
+    }
 
     @Test
     @Config(sdk = [30])
@@ -311,34 +310,32 @@ class TestDeviceAuthenticationController {
     }
 
     @Test
-    fun `Given a prompt that throws on startup, When a request is authenticated, Then the error callback is invoked once`() =
-        coroutineRule.runTest {
-            // Given
-            whenever(biometric.authenticate(any(), any(), any(), any()))
-                .thenThrow(IllegalArgumentException("Prompt unavailable"))
+    fun `Given a prompt that throws on startup, When a request is authenticated, Then the error callback is invoked once`() = coroutineRule.runTest {
+        // Given
+        whenever(biometric.authenticate(any(), any(), any(), any()))
+            .thenThrow(IllegalArgumentException("Prompt unavailable"))
 
-            // When
-            controller.authenticate(host.get(), cryptoRequest(), true, result)
-            coroutineRule.testScope.runCurrent()
+        // When
+        controller.authenticate(host.get(), cryptoRequest(), true, result)
+        coroutineRule.testScope.runCurrent()
 
-            // Then
-            assertEquals(listOf("error"), outcomes)
-        }
+        // Then
+        assertEquals(listOf("error"), outcomes)
+    }
 
     @Test
-    fun `Given a prompt cancelled by its coroutine, When a request is authenticated, Then the error callback terminates the request`() =
-        coroutineRule.runTest {
-            // Given
-            whenever(biometric.authenticate(any(), any(), any(), any()))
-                .thenThrow(CancellationException("Activity destroyed"))
+    fun `Given a prompt cancelled by its coroutine, When a request is authenticated, Then the error callback terminates the request`() = coroutineRule.runTest {
+        // Given
+        whenever(biometric.authenticate(any(), any(), any(), any()))
+            .thenThrow(CancellationException("Activity destroyed"))
 
-            // When
-            controller.authenticate(host.get(), cryptoRequest(), true, result)
-            coroutineRule.testScope.runCurrent()
+        // When
+        controller.authenticate(host.get(), cryptoRequest(), true, result)
+        coroutineRule.testScope.runCurrent()
 
-            // Then
-            assertEquals(listOf("error"), outcomes)
-        }
+        // Then
+        assertEquals(listOf("error"), outcomes)
+    }
 
     @Test
     fun `Given a pending device request, When the activity is destroyed, Then the error callback is invoked exactly once`() =
@@ -366,21 +363,20 @@ class TestDeviceAuthenticationController {
         }
 
     @Test
-    fun `Given a destroyed activity, When a request is authenticated, Then the request is terminated with an error`() =
-        coroutineRule.runTest {
-            // Given
-            host.pause().stop().destroy()
+    fun `Given a destroyed activity, When a request is authenticated, Then the request is terminated with an error`() = coroutineRule.runTest {
+        // Given
+        host.pause().stop().destroy()
 
-            // When
-            controller.authenticate(host.get(), cryptoRequest(), false, result)
-            coroutineRule.testScope.runCurrent()
+        // When
+        controller.authenticate(host.get(), cryptoRequest(), false, result)
+        coroutineRule.testScope.runCurrent()
 
-            // Then
-            assertEquals(listOf("error"), outcomes)
-            verify(biometric, never()).authenticate(any(), any(), any(), any())
+        // Then
+        assertEquals(listOf("error"), outcomes)
+        verify(biometric, never()).authenticate(any(), any(), any(), any())
 
-            host = Robolectric.buildActivity(FragmentActivity::class.java).setup()
-        }
+        host = Robolectric.buildActivity(FragmentActivity::class.java).setup()
+    }
 
     @Test
     fun `Given a success callback in progress, When the activity is destroyed, Then no second outcome is reported`() =

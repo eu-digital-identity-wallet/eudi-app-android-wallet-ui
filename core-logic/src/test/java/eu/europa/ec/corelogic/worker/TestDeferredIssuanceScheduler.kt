@@ -677,7 +677,7 @@ class TestDeferredIssuanceScheduler {
                 identifier = "expired",
                 status = DeferredDocumentScheduleStatus.EXPIRED
             )
-            val issuerInterval = 1.days
+            val issuerInterval = 20.seconds
             val firstFailureAt = issuerInterval.inWholeMilliseconds + 1_000
             mockStoredSchedules(listOf(mockedDeferredSchedule, expired))
             whenever(documentsController.issueDeferredDocument(documentId)).thenReturn(
@@ -771,7 +771,7 @@ class TestDeferredIssuanceScheduler {
     fun `Given two failures, When only one document recovers, Then their indications and deadlines stay independent`() =
         coroutineRule.runTest {
             // Given
-            val recovering = mockedDeferredSchedule.copy(lastIntervalMillis = 120_000)
+            val recovering = mockedDeferredSchedule.copy(lastIntervalMillis = 20_000)
             val stillFailing = mockedDeferredSchedule.copy(identifier = "other-document")
             mockStoredSchedules(listOf(recovering, stillFailing))
             val otherDocument =
@@ -811,7 +811,7 @@ class TestDeferredIssuanceScheduler {
             // Then
             assertEquals(setOf(stillFailing.identifier), scheduler.getFailedDocumentIds())
             assertEquals(
-                recovering.copy(nextAttemptAt = 150_000),
+                recovering.copy(nextAttemptAt = 50_000),
                 scheduleDao.retrieve(recovering.identifier)
             )
             assertEquals(

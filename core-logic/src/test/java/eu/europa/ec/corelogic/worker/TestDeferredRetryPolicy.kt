@@ -101,11 +101,11 @@ class TestDeferredRetryPolicy {
     //endregion
 
     //region failed
-    // Case 1: An earlier one-day issuer interval has already elapsed when the poll fails.
+    // Case 1: The last issuer interval is shorter than the retry delay, so each failure waits the delay.
     @Test
     fun `Given six failed polls, When each retry is scheduled, Then the row stays active and uses the failure delay each time`() {
         // Given
-        val schedule = mockedDeferredSchedule.copy(lastIntervalMillis = 1.days.inWholeMilliseconds)
+        val schedule = mockedDeferredSchedule.copy(lastIntervalMillis = 10_000)
 
         // When
         var next = schedule
@@ -115,23 +115,24 @@ class TestDeferredRetryPolicy {
         assertEquals(schedule.copy(nextAttemptAt = 180_000), next)
     }
 
-    // Case 2: The configurable retry delay applies independently of the last issuer interval.
+    // Case 2: The retry waits the configured delay or the last issuer interval, whichever is longer.
     @Test
-    fun `Given a configured failure delay, When a poll fails, Then the retry uses that delay from receipt`() {
+    fun `Given a configured failure delay, When a poll fails, Then the retry waits that delay or a longer issuer interval`() {
         // Given
         val policy = DeferredRetryPolicy(mockedDeferredConfig.copy(failureRetryDelay = 45.seconds))
-        val schedules = listOf(
-            mockedDeferredSchedule,
-            mockedDeferredSchedule.copy(lastIntervalMillis = 10_000),
-            mockedDeferredSchedule.copy(lastIntervalMillis = 1.days.inWholeMilliseconds),
+        val expectedDeadlines = listOf(
+            mockedDeferredSchedule to 46_000L,
+            mockedDeferredSchedule.copy(lastIntervalMillis = 10_000) to 46_000L,
+            mockedDeferredSchedule.copy(lastIntervalMillis = 1.days.inWholeMilliseconds) to
+                    1_000L + 1.days.inWholeMilliseconds,
         )
 
-        schedules.forEach { schedule ->
+        expectedDeadlines.forEach { (schedule, deadline) ->
             // When
             val result = policy.failed(schedule, now = 1_000)
 
             // Then
-            assertEquals(schedule.copy(nextAttemptAt = 46_000), result)
+            assertEquals(schedule.copy(nextAttemptAt = deadline), result)
         }
     }
     //endregion

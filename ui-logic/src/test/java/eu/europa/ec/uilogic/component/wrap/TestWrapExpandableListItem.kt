@@ -69,8 +69,7 @@ class TestWrapExpandableListItem {
     @Test
     fun `Given a card at the bottom of a scroll area, When it opens with the flag on, Then it is scrolled into view`() {
         // Given
-        val scroll =
-            showCardBelowSpacer(shouldBringOpenedIntoView = true, isInitiallyExpanded = false)
+        val scroll = showCardBelowSpacer(shouldBringOpenedIntoView = true, isInitiallyExpanded = false)
 
         // When
         openCard()
@@ -85,8 +84,7 @@ class TestWrapExpandableListItem {
     @Test
     fun `Given a card at the bottom of a scroll area, When it opens with the flag off, Then nothing scrolls`() {
         // Given
-        val scroll =
-            showCardBelowSpacer(shouldBringOpenedIntoView = false, isInitiallyExpanded = false)
+        val scroll = showCardBelowSpacer(shouldBringOpenedIntoView = false, isInitiallyExpanded = false)
 
         // When
         openCard()
@@ -101,8 +99,7 @@ class TestWrapExpandableListItem {
     @Test
     fun `Given a card that starts open, When the screen appears, Then nothing scrolls`() {
         // Given
-        val scroll =
-            showCardBelowSpacer(shouldBringOpenedIntoView = true, isInitiallyExpanded = true)
+        val scroll = showCardBelowSpacer(shouldBringOpenedIntoView = true, isInitiallyExpanded = true)
 
         // When
         composeRule.waitForIdle()

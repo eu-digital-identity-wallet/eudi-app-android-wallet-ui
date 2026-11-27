@@ -245,26 +245,25 @@ class TestBiometricViewModel {
         }
 
     @Test
-    fun `Given a valid PIN, When the biometric prompt is cancelled and the PIN is entered, Then the PIN still succeeds`() =
-        coroutineRule.runTest {
-            // Given
-            val pin = SecurePinImpl("123456")
-            whenever(interactor.isPinValid(pin))
-                .thenReturn(flowOf(QuickPinInteractorPinValidPartialState.Success))
+    fun `Given a valid PIN, When the biometric prompt is cancelled and the PIN is entered, Then the PIN still succeeds`() = coroutineRule.runTest {
+        // Given
+        val pin = SecurePinImpl("123456")
+        whenever(interactor.isPinValid(pin))
+            .thenReturn(flowOf(QuickPinInteractorPinValidPartialState.Success))
 
-            viewModel.effect.runFlowTest {
-                // When
-                viewModel.handleEvents(click)
-                completeAuthentication(BiometricsAuthenticate.Cancelled)
-                viewModel.handleEvents(Event.OnQuickPinEntered(pin))
+        viewModel.effect.runFlowTest {
+            // When
+            viewModel.handleEvents(click)
+            completeAuthentication(BiometricsAuthenticate.Cancelled)
+            viewModel.handleEvents(Event.OnQuickPinEntered(pin))
 
-                // Then
-                assertEquals(Effect.Navigation.Pop, awaitItem())
-                verify(interactor).resetPinThrottle()
-            }
-
-            pin.close()
+            // Then
+            assertEquals(Effect.Navigation.Pop, awaitItem())
+            verify(interactor).resetPinThrottle()
         }
+
+        pin.close()
+    }
 
     @Test
     fun `Given no enrolled biometrics, When a manual attempt is made, Then the system setup screen opens`() =
@@ -284,23 +283,22 @@ class TestBiometricViewModel {
         }
 
     @Test
-    fun `Given no enrolled biometrics, When an automatic attempt is made, Then nothing is shown`() =
-        coroutineRule.runTest {
-            // Given
-            whenever(interactor.getBiometricsAvailability())
-                .thenReturn(BiometricsAvailability.NonEnrolled)
+    fun `Given no enrolled biometrics, When an automatic attempt is made, Then nothing is shown`() = coroutineRule.runTest {
+        // Given
+        whenever(interactor.getBiometricsAvailability())
+            .thenReturn(BiometricsAvailability.NonEnrolled)
 
-            viewModel.effect.runFlowTest {
-                // When
-                viewModel.handleEvents(click.copy(shouldThrowErrorIfNotAvailable = false))
-                coroutineRule.testScope.runCurrent()
+        viewModel.effect.runFlowTest {
+            // When
+            viewModel.handleEvents(click.copy(shouldThrowErrorIfNotAvailable = false))
+            coroutineRule.testScope.runCurrent()
 
-                // Then
-                assertNull(viewModel.viewState.value.error)
-                assertEquals(0, callbacks.size)
-                expectNoEvents()
-            }
+            // Then
+            assertNull(viewModel.viewState.value.error)
+            assertEquals(0, callbacks.size)
+            expectNoEvents()
         }
+    }
 
     @Test
     fun `Given an unsupported biometrics explanation, When its own action is invoked, Then it is dismissed`() =
@@ -321,37 +319,36 @@ class TestBiometricViewModel {
         }
 
     @Test
-    fun `Given a running lockout, When a new lockout starts, Then it replaces the tick already running`() =
-        coroutineRule.runTest {
-            // When
-            lockViewModelOut(30.seconds)
+    fun `Given a running lockout, When a new lockout starts, Then it replaces the tick already running`() = coroutineRule.runTest {
+        // When
+        lockViewModelOut(30.seconds)
 
-            // Then
-            assertEquals("locked:$MAX_ATTEMPTS:00:30", viewModel.viewState.value.lockoutMessage)
+        // Then
+        assertEquals("locked:$MAX_ATTEMPTS:00:30", viewModel.viewState.value.lockoutMessage)
 
-            // When
-            whenever(interactor.getPinLockoutState())
-                .thenReturn(lockout(90.seconds), PinLockoutState.Idle)
-            viewModel.handleEvents(Event.Init)
-            coroutineRule.testScope.runCurrent()
+        // When
+        whenever(interactor.getPinLockoutState())
+            .thenReturn(lockout(90.seconds), PinLockoutState.Idle)
+        viewModel.handleEvents(Event.Init)
+        coroutineRule.testScope.runCurrent()
 
-            // Then
-            assertEquals("locked:$MAX_ATTEMPTS:01:30", viewModel.viewState.value.lockoutMessage)
+        // Then
+        assertEquals("locked:$MAX_ATTEMPTS:01:30", viewModel.viewState.value.lockoutMessage)
 
-            // When
-            coroutineRule.testScope.advanceTimeBy(1_500.milliseconds)
-            coroutineRule.testScope.runCurrent()
+        // When
+        coroutineRule.testScope.advanceTimeBy(1_500.milliseconds)
+        coroutineRule.testScope.runCurrent()
 
-            // Then
-            assertEquals("locked:$MAX_ATTEMPTS:01:29", viewModel.viewState.value.lockoutMessage)
+        // Then
+        assertEquals("locked:$MAX_ATTEMPTS:01:29", viewModel.viewState.value.lockoutMessage)
 
-            // When
-            coroutineRule.testScope.advanceTimeBy(30_000.milliseconds)
+        // When
+        coroutineRule.testScope.advanceTimeBy(30_000.milliseconds)
 
-            // Then
-            assertTrue(viewModel.viewState.value.isLockedOut)
-            assertEquals("locked:$MAX_ATTEMPTS:00:59", viewModel.viewState.value.lockoutMessage)
-        }
+        // Then
+        assertTrue(viewModel.viewState.value.isLockedOut)
+        assertEquals("locked:$MAX_ATTEMPTS:00:59", viewModel.viewState.value.lockoutMessage)
+    }
 
     @Test
     fun `Given biometrics enabled, When init runs, Then the preference is published and the prompt is requested`() =
@@ -372,75 +369,72 @@ class TestBiometricViewModel {
         }
 
     @Test
-    fun `Given biometrics disabled, When init runs, Then the prompt stays closed`() =
-        coroutineRule.runTest {
-            // Given
-            whenever(interactor.getBiometricUserSelection()).thenReturn(false)
-            whenever(interactor.getPinLockoutState()).thenReturn(PinLockoutState.Idle)
+    fun `Given biometrics disabled, When init runs, Then the prompt stays closed`() = coroutineRule.runTest {
+        // Given
+        whenever(interactor.getBiometricUserSelection()).thenReturn(false)
+        whenever(interactor.getPinLockoutState()).thenReturn(PinLockoutState.Idle)
 
-            viewModel.effect.runFlowTest {
-                // When
-                viewModel.handleEvents(Event.Init)
-                coroutineRule.testScope.runCurrent()
-
-                // Then
-                assertFalse(viewModel.viewState.value.userBiometricsAreEnabled)
-                expectNoEvents()
-            }
-        }
-
-    @Test
-    fun `Given a screen that opts out, When init runs, Then the prompt stays closed`() =
-        coroutineRule.runTest {
-            // Given
-            whenever(interactor.getBiometricUserSelection()).thenReturn(true)
-            whenever(interactor.getPinLockoutState()).thenReturn(PinLockoutState.Idle)
-            val optedOut = newViewModel(
-                "optedOut",
-                config(shouldInitializeBiometricAuthOnCreate = false)
-            )
-
-            optedOut.effect.runFlowTest {
-                // When
-                optedOut.handleEvents(Event.Init)
-                coroutineRule.testScope.runCurrent()
-
-                // Then
-                assertTrue(optedOut.viewState.value.userBiometricsAreEnabled)
-                expectNoEvents()
-            }
-        }
-
-    @Test
-    fun `Given an active lockout, When init runs, Then it is restored and counted down to release`() =
-        coroutineRule.runTest {
-            // Given
-            whenever(interactor.getBiometricUserSelection()).thenReturn(false)
-            whenever(interactor.getPinLockoutState())
-                .thenReturn(lockout(3.seconds), PinLockoutState.Idle)
-
+        viewModel.effect.runFlowTest {
             // When
             viewModel.handleEvents(Event.Init)
             coroutineRule.testScope.runCurrent()
 
             // Then
-            assertTrue(viewModel.viewState.value.isLockedOut)
-            assertEquals("locked:$MAX_ATTEMPTS:00:03", viewModel.viewState.value.lockoutMessage)
+            assertFalse(viewModel.viewState.value.userBiometricsAreEnabled)
+            expectNoEvents()
+        }
+    }
 
+    @Test
+    fun `Given a screen that opts out, When init runs, Then the prompt stays closed`() = coroutineRule.runTest {
+        // Given
+        whenever(interactor.getBiometricUserSelection()).thenReturn(true)
+        whenever(interactor.getPinLockoutState()).thenReturn(PinLockoutState.Idle)
+        val optedOut = newViewModel(
+            "optedOut",
+            config(shouldInitializeBiometricAuthOnCreate = false)
+        )
+
+        optedOut.effect.runFlowTest {
             // When
-            coroutineRule.testScope.advanceTimeBy(1_500.milliseconds)
+            optedOut.handleEvents(Event.Init)
             coroutineRule.testScope.runCurrent()
 
             // Then
-            assertEquals("locked:$MAX_ATTEMPTS:00:02", viewModel.viewState.value.lockoutMessage)
-
-            // When
-            coroutineRule.testScope.advanceUntilIdle()
-
-            // Then
-            assertFalse(viewModel.viewState.value.isLockedOut)
-            assertNull(viewModel.viewState.value.lockoutMessage)
+            assertTrue(optedOut.viewState.value.userBiometricsAreEnabled)
+            expectNoEvents()
         }
+    }
+
+    @Test
+    fun `Given an active lockout, When init runs, Then it is restored and counted down to release`() = coroutineRule.runTest {
+        // Given
+        whenever(interactor.getBiometricUserSelection()).thenReturn(false)
+        whenever(interactor.getPinLockoutState())
+            .thenReturn(lockout(3.seconds), PinLockoutState.Idle)
+
+        // When
+        viewModel.handleEvents(Event.Init)
+        coroutineRule.testScope.runCurrent()
+
+        // Then
+        assertTrue(viewModel.viewState.value.isLockedOut)
+        assertEquals("locked:$MAX_ATTEMPTS:00:03", viewModel.viewState.value.lockoutMessage)
+
+        // When
+        coroutineRule.testScope.advanceTimeBy(1_500.milliseconds)
+        coroutineRule.testScope.runCurrent()
+
+        // Then
+        assertEquals("locked:$MAX_ATTEMPTS:00:02", viewModel.viewState.value.lockoutMessage)
+
+        // When
+        coroutineRule.testScope.advanceUntilIdle()
+
+        // Then
+        assertFalse(viewModel.viewState.value.isLockedOut)
+        assertNull(viewModel.viewState.value.lockoutMessage)
+    }
 
     /**
      * At zero the state is read again: a lockout that is still running goes on, and the read that
@@ -503,34 +497,33 @@ class TestBiometricViewModel {
         }
 
     @Test
-    fun `Given a back navigation that indicates cancellation, When back is pressed, Then the flow is reported as cancelled`() =
-        coroutineRule.runTest {
-            // Given
-            val backable = newViewModel(
-                "backable",
-                config(
-                    onBackNavigation = ConfigNavigation(
-                        navigationType = NavigationType.PopTo(DashboardScreens.Dashboard),
-                        indicateFlowCompletion = FlowCompletion.CANCEL
-                    )
+    fun `Given a back navigation that indicates cancellation, When back is pressed, Then the flow is reported as cancelled`() = coroutineRule.runTest {
+        // Given
+        val backable = newViewModel(
+            "backable",
+            config(
+                onBackNavigation = ConfigNavigation(
+                    navigationType = NavigationType.PopTo(DashboardScreens.Dashboard),
+                    indicateFlowCompletion = FlowCompletion.CANCEL
                 )
             )
+        )
 
-            backable.effect.runFlowTest {
-                // When
-                backable.handleEvents(Event.OnNavigateBack)
+        backable.effect.runFlowTest {
+            // When
+            backable.handleEvents(Event.OnNavigateBack)
 
-                // Then
-                assertEquals(
-                    Effect.Navigation.PopBackStackUpTo(
-                        screenRoute = DashboardScreens.Dashboard.screenRoute,
-                        inclusive = false,
-                        indicateFlowCompletion = FlowCompletion.CANCEL
-                    ),
-                    awaitItem()
-                )
-            }
+            // Then
+            assertEquals(
+                Effect.Navigation.PopBackStackUpTo(
+                    screenRoute = DashboardScreens.Dashboard.screenRoute,
+                    inclusive = false,
+                    indicateFlowCompletion = FlowCompletion.CANCEL
+                ),
+                awaitItem()
+            )
         }
+    }
 
     @Test
     fun `Given a back navigation that indicates success, When back is pressed, Then no success completion is reported`() =
@@ -563,18 +556,17 @@ class TestBiometricViewModel {
         }
 
     @Test
-    fun `Given no back route, When back is pressed, Then nothing is emitted`() =
-        coroutineRule.runTest {
-            viewModel.effect.runFlowTest {
-                // When
-                viewModel.handleEvents(Event.OnNavigateBack)
-                coroutineRule.testScope.runCurrent()
+    fun `Given no back route, When back is pressed, Then nothing is emitted`() = coroutineRule.runTest {
+        viewModel.effect.runFlowTest {
+            // When
+            viewModel.handleEvents(Event.OnNavigateBack)
+            coroutineRule.testScope.runCurrent()
 
-                // Then
-                assertNull(viewModel.viewState.value.error)
-                expectNoEvents()
-            }
+            // Then
+            assertNull(viewModel.viewState.value.error)
+            expectNoEvents()
         }
+    }
 
     @Test
     @Suppress("UnusedFlow")
@@ -592,142 +584,134 @@ class TestBiometricViewModel {
     }
 
     @Test
-    fun `Given a lockout, When the PIN length changes, Then the change is ignored`() =
-        coroutineRule.runTest {
-            // Given
-            lockViewModelOut()
+    fun `Given a lockout, When the PIN length changes, Then the change is ignored`() = coroutineRule.runTest {
+        // Given
+        lockViewModelOut()
 
-            // When
-            viewModel.handleEvents(Event.OnQuickPinLengthChanged(3))
+        // When
+        viewModel.handleEvents(Event.OnQuickPinLengthChanged(3))
 
-            // Then
-            assertTrue(viewModel.viewState.value.isLockedOut)
-            assertEquals("locked:$MAX_ATTEMPTS:00:30", viewModel.viewState.value.lockoutMessage)
-        }
+        // Then
+        assertTrue(viewModel.viewState.value.isLockedOut)
+        assertEquals("locked:$MAX_ATTEMPTS:00:30", viewModel.viewState.value.lockoutMessage)
+    }
 
     @Test
-    fun `Given a wrong PIN error, When the PIN length changes, Then the error is cleared`() =
-        coroutineRule.runTest {
-            // Given
-            whenever(interactor.recordPinFailure()).thenReturn(PinLockoutState.Idle)
+    fun `Given a wrong PIN error, When the PIN length changes, Then the error is cleared`() = coroutineRule.runTest {
+        // Given
+        whenever(interactor.recordPinFailure()).thenReturn(PinLockoutState.Idle)
 
-            // When
-            val pin = enterPin("123456", QuickPinInteractorPinValidPartialState.Failed("Wrong PIN"))
+        // When
+        val pin = enterPin("123456", QuickPinInteractorPinValidPartialState.Failed("Wrong PIN"))
 
-            // Then
-            assertEquals("Wrong PIN", viewModel.viewState.value.quickPinError)
+        // Then
+        assertEquals("Wrong PIN", viewModel.viewState.value.quickPinError)
 
-            // When
-            viewModel.handleEvents(Event.OnQuickPinLengthChanged(3))
+        // When
+        viewModel.handleEvents(Event.OnQuickPinLengthChanged(3))
 
-            // Then
-            assertNull(viewModel.viewState.value.quickPinError)
+        // Then
+        assertNull(viewModel.viewState.value.quickPinError)
 
-            pin.close()
-        }
+        pin.close()
+    }
 
     @Test
     @Suppress("UnusedFlow")
-    fun `Given an incomplete PIN, When it is entered, Then it is discarded without validation`() =
-        coroutineRule.runTest {
-            // Given
-            val pin = SecurePinImpl("123")
+    fun `Given an incomplete PIN, When it is entered, Then it is discarded without validation`() = coroutineRule.runTest {
+        // Given
+        val pin = SecurePinImpl("123")
 
+        // When
+        viewModel.handleEvents(Event.OnQuickPinEntered(pin))
+
+        // Then
+        assertTrue(pin.isCleared)
+        assertFalse(viewModel.viewState.value.isLoading)
+        verify(interactor, never()).isPinValid(any())
+    }
+
+    @Test
+    fun `Given attempts remaining, When a wrong PIN is entered, Then the error is shown`() = coroutineRule.runTest {
+        // Given
+        whenever(interactor.recordPinFailure()).thenReturn(PinLockoutState.Idle)
+
+        // When
+        val pin = enterPin("123456", QuickPinInteractorPinValidPartialState.Failed("Wrong PIN"))
+
+        // Then
+        assertEquals("Wrong PIN", viewModel.viewState.value.quickPinError)
+        assertFalse(viewModel.viewState.value.isLoading)
+        assertFalse(viewModel.viewState.value.isLockedOut)
+
+        pin.close()
+    }
+
+    @Test
+    fun `Given one attempt remaining, When a wrong PIN is entered, Then the lockout starts`() = coroutineRule.runTest {
+        // Given
+        whenever(interactor.recordPinFailure()).thenReturn(lockout(30.seconds))
+        whenever(interactor.getPinLockoutState()).thenReturn(PinLockoutState.Idle)
+
+        // When
+        val pin = enterPin("123456", QuickPinInteractorPinValidPartialState.Failed("Wrong PIN"))
+
+        // Then
+        assertTrue(viewModel.viewState.value.isLockedOut)
+        assertFalse(viewModel.viewState.value.isLoading)
+        assertEquals("locked:$MAX_ATTEMPTS:00:30", viewModel.viewState.value.lockoutMessage)
+
+        pin.close()
+    }
+
+    @Test
+    fun `Given a lockout, When the view model is cleared, Then the lockout state is frozen`() = coroutineRule.runTest {
+        // Given
+        lockViewModelOut()
+
+        // When
+        store.clear()
+        coroutineRule.testScope.advanceUntilIdle()
+
+        // Then
+        assertTrue(viewModel.viewState.value.isLockedOut)
+        assertEquals("locked:$MAX_ATTEMPTS:00:30", viewModel.viewState.value.lockoutMessage)
+    }
+
+    @Test
+    fun `Given a successful authentication, When the user taps again, Then the re-entrancy guard is released`() = coroutineRule.runTest {
+        viewModel.effect.runFlowTest {
             // When
-            viewModel.handleEvents(Event.OnQuickPinEntered(pin))
-
-            // Then
-            assertTrue(pin.isCleared)
-            assertFalse(viewModel.viewState.value.isLoading)
-            verify(interactor, never()).isPinValid(any())
-        }
-
-    @Test
-    fun `Given attempts remaining, When a wrong PIN is entered, Then the error is shown`() =
-        coroutineRule.runTest {
-            // Given
-            whenever(interactor.recordPinFailure()).thenReturn(PinLockoutState.Idle)
-
-            // When
-            val pin = enterPin("123456", QuickPinInteractorPinValidPartialState.Failed("Wrong PIN"))
-
-            // Then
-            assertEquals("Wrong PIN", viewModel.viewState.value.quickPinError)
-            assertFalse(viewModel.viewState.value.isLoading)
-            assertFalse(viewModel.viewState.value.isLockedOut)
-
-            pin.close()
-        }
-
-    @Test
-    fun `Given one attempt remaining, When a wrong PIN is entered, Then the lockout starts`() =
-        coroutineRule.runTest {
-            // Given
-            whenever(interactor.recordPinFailure()).thenReturn(lockout(30.seconds))
-            whenever(interactor.getPinLockoutState()).thenReturn(PinLockoutState.Idle)
-
-            // When
-            val pin = enterPin("123456", QuickPinInteractorPinValidPartialState.Failed("Wrong PIN"))
-
-            // Then
-            assertTrue(viewModel.viewState.value.isLockedOut)
-            assertFalse(viewModel.viewState.value.isLoading)
-            assertEquals("locked:$MAX_ATTEMPTS:00:30", viewModel.viewState.value.lockoutMessage)
-
-            pin.close()
-        }
-
-    @Test
-    fun `Given a lockout, When the view model is cleared, Then the lockout state is frozen`() =
-        coroutineRule.runTest {
-            // Given
-            lockViewModelOut()
-
-            // When
-            store.clear()
-            coroutineRule.testScope.advanceUntilIdle()
-
-            // Then
-            assertTrue(viewModel.viewState.value.isLockedOut)
-            assertEquals("locked:$MAX_ATTEMPTS:00:30", viewModel.viewState.value.lockoutMessage)
-        }
-
-    @Test
-    fun `Given a successful authentication, When the user taps again, Then the re-entrancy guard is released`() =
-        coroutineRule.runTest {
-            viewModel.effect.runFlowTest {
-                // When
-                viewModel.handleEvents(click)
-                completeAuthentication(BiometricsAuthenticate.Success)
-                coroutineRule.testScope.runCurrent()
-
-                // Then
-                assertEquals(Effect.Navigation.Pop, awaitItem())
-
-                // When
-                viewModel.handleEvents(click)
-
-                // Then
-                assertEquals(2, callbacks.size)
-            }
-        }
-
-    @Test
-    fun `Given a biometric failure, When its own action is invoked, Then it is dismissed`() =
-        coroutineRule.runTest {
-            // Given
             viewModel.handleEvents(click)
-            completeAuthentication(BiometricsAuthenticate.Failed("Locked sensor"))
-
-            assertNotNull(viewModel.viewState.value.error)
-
-            // When
-            viewModel.viewState.value.error?.onCancel?.invoke()
+            completeAuthentication(BiometricsAuthenticate.Success)
             coroutineRule.testScope.runCurrent()
 
             // Then
-            assertNull(viewModel.viewState.value.error)
+            assertEquals(Effect.Navigation.Pop, awaitItem())
+
+            // When
+            viewModel.handleEvents(click)
+
+            // Then
+            assertEquals(2, callbacks.size)
         }
+    }
+
+    @Test
+    fun `Given a biometric failure, When its own action is invoked, Then it is dismissed`() = coroutineRule.runTest {
+        // Given
+        viewModel.handleEvents(click)
+        completeAuthentication(BiometricsAuthenticate.Failed("Locked sensor"))
+
+        assertNotNull(viewModel.viewState.value.error)
+
+        // When
+        viewModel.viewState.value.error?.onCancel?.invoke()
+        coroutineRule.testScope.runCurrent()
+
+        // Then
+        assertNull(viewModel.viewState.value.error)
+    }
 
     @Test
     fun `Given an invalid configuration, When the state is read, Then it is rejected`() {
@@ -878,40 +862,38 @@ class TestBiometricViewModel {
         }
 
     @Test
-    fun `Given a pre-authorization check, When the authentication succeeds, Then the session is unlocked`() =
-        coroutineRule.runTest {
-            // Given
-            val vm = newViewModel("login", config(isPreAuthorization = true))
+    fun `Given a pre-authorization check, When the authentication succeeds, Then the session is unlocked`() = coroutineRule.runTest {
+        // Given
+        val vm = newViewModel("login", config(isPreAuthorization = true))
 
-            vm.effect.runFlowTest {
-                // When
-                vm.handleEvents(Event.OnBiometricsClicked(context, true))
-                callbacks.last().invoke(BiometricsAuthenticate.Success)
-                coroutineRule.testScope.runCurrent()
+        vm.effect.runFlowTest {
+            // When
+            vm.handleEvents(Event.OnBiometricsClicked(context, true))
+            callbacks.last().invoke(BiometricsAuthenticate.Success)
+            coroutineRule.testScope.runCurrent()
 
-                // Then
-                assertEquals(Effect.Navigation.Pop, awaitItem())
-                verify(interactor).unlockSession()
-            }
+            // Then
+            assertEquals(Effect.Navigation.Pop, awaitItem())
+            verify(interactor).unlockSession()
         }
+    }
 
     @Test
-    fun `Given a check that is not a pre-authorization, When the authentication succeeds, Then the session is not unlocked`() =
-        coroutineRule.runTest {
-            // Given
-            val vm = newViewModel("confirmation", config(isPreAuthorization = false))
+    fun `Given a check that is not a pre-authorization, When the authentication succeeds, Then the session is not unlocked`() = coroutineRule.runTest {
+        // Given
+        val vm = newViewModel("confirmation", config(isPreAuthorization = false))
 
-            vm.effect.runFlowTest {
-                // When
-                vm.handleEvents(Event.OnBiometricsClicked(context, true))
-                callbacks.last().invoke(BiometricsAuthenticate.Success)
-                coroutineRule.testScope.runCurrent()
+        vm.effect.runFlowTest {
+            // When
+            vm.handleEvents(Event.OnBiometricsClicked(context, true))
+            callbacks.last().invoke(BiometricsAuthenticate.Success)
+            coroutineRule.testScope.runCurrent()
 
-                // Then
-                assertEquals(Effect.Navigation.Pop, awaitItem())
-                verify(interactor, never()).unlockSession()
-            }
+            // Then
+            assertEquals(Effect.Navigation.Pop, awaitItem())
+            verify(interactor, never()).unlockSession()
         }
+    }
 
     @Test
     fun `Given a device without a screen lock, When the login screen starts, Then it warns and the PIN still logs in`() =

@@ -318,31 +318,26 @@ fun ListItem(
 
     with(item) {
         Row(
-            modifier = Modifier
-                .applyRowSemantics(
-                    trailingContentData = trailingContentData
-                        .takeUnless { clickableAreas.contains(TRAILING_CONTENT) },
-                    onRowClick = onRowClick,
-                )
-                .then(
-                    other = if (collectionItemIndex != null) {
-                        Modifier.semantics {
-                            collectionItemInfo = CollectionItemInfo(
-                                rowIndex = collectionItemIndex,
-                                rowSpan = 1,
-                                columnIndex = 0,
-                                columnSpan = 1,
-                            )
-                        }
-                    } else {
-                        Modifier
+            modifier = Modifier.applyRowSemantics(
+                trailingContentData = trailingContentData
+                    .takeUnless { clickableAreas.contains(TRAILING_CONTENT) },
+                onRowClick = onRowClick,
+            ).then(
+                other = if (collectionItemIndex != null) {
+                    Modifier.semantics {
+                        collectionItemInfo = CollectionItemInfo(
+                            rowIndex = collectionItemIndex,
+                            rowSpan = 1,
+                            columnIndex = 0,
+                            columnSpan = 1,
+                        )
                     }
-                )
-                .then(
-                    other = modifier.padding(
-                        horizontal = contentHorizontalPadding ?: SPACING_MEDIUM.dp
-                    )
-                ),
+                } else {
+                    Modifier
+                }
+            ).then(
+                other = modifier.padding(horizontal = contentHorizontalPadding ?: SPACING_MEDIUM.dp)
+            ),
             horizontalArrangement = Arrangement.Start,
             verticalAlignment = Alignment.CenterVertically
         ) {
