@@ -317,7 +317,7 @@ The product name appears in user-facing copy as well as the launcher label. Thes
 `values-<lang>/strings.xml` you add), **not** in the theme. If you rename the product, search the string
 resources for `EUDI`/`Wallet` and review at least:
 
-* Onboarding/login copy — e.g. `quick_pin_create_title` ("Welcome to your Wallet") and
+* Onboarding/login copy — e.g. `quick_pin_create_title` ("Welcome to your wallet") and
   `biometric_login_biometrics_enabled_subtitle` ("…access the EUDI Wallet.").
 * The side-menu title `dashboard_side_menu_title` ("My EU Wallet").
 * The NFC service description `nfc_engagement_service_desc`, shown by the OS in tap-to-pay/NFC

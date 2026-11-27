@@ -162,6 +162,9 @@ interface WalletCoreConfig {
                     DocumentIdentifier.OTHER(
                         formatType = "urn:eu.europa.ec.eudi:ehic:1"
                     ),
+                    DocumentIdentifier.OTHER(
+                        formatType = "urn:eudi:ehic:1"
+                    ),
                 ),
                 DocumentCategory.SocialSecurity to listOf(
                     DocumentIdentifier.OTHER(

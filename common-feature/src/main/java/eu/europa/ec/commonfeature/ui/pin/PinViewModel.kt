@@ -73,10 +73,14 @@ data class State(
     val deviceLockNotice: String? = null,
     val isBlockedByDeviceLock: Boolean = false,
 ) : ViewState {
+    /** While a new PIN is confirmed, the screen offers a way back to choosing it again. */
     val action: ScreenNavigateAction
         get() {
             return when (pinFlow) {
-                PinFlow.CREATE_WITH_ACTIVATION, PinFlow.CREATE_WITHOUT_ACTIVATION -> ScreenNavigateAction.NONE
+                PinFlow.CREATE_WITH_ACTIVATION, PinFlow.CREATE_WITHOUT_ACTIVATION ->
+                    if (pinState == PinValidationState.REENTER) ScreenNavigateAction.BACKABLE
+                    else ScreenNavigateAction.NONE
+
                 PinFlow.UPDATE -> ScreenNavigateAction.CANCELABLE
             }
         }
@@ -84,7 +88,9 @@ data class State(
     val onBackEvent: Event
         get() {
             return when (pinFlow) {
-                PinFlow.CREATE_WITH_ACTIVATION, PinFlow.CREATE_WITHOUT_ACTIVATION -> Event.Finish
+                PinFlow.CREATE_WITH_ACTIVATION, PinFlow.CREATE_WITHOUT_ACTIVATION ->
+                    if (pinState == PinValidationState.REENTER) Event.GoBack else Event.Finish
+
                 PinFlow.UPDATE -> Event.CancelPressed
             }
         }
@@ -99,6 +105,9 @@ sealed class Event : ViewEvent {
     data object OnResume : Event()
     data object CancelPressed : Event()
     data object Finish : Event()
+
+    /** Back from confirming a new PIN to choosing it again. */
+    data object GoBack : Event()
     sealed class BottomSheet : Event() {
         data class UpdateBottomSheetState(val isOpen: Boolean) : BottomSheet()
         data object FinishedClosing : BottomSheet()
@@ -256,6 +265,8 @@ class PinViewModel(
                 clearPendingPin()
                 setEffect { Effect.Navigation.Finish }
             }
+
+            is Event.GoBack -> goBackToEnterPhase()
         }
     }
 
@@ -344,7 +355,35 @@ class PinViewModel(
         }
     }
 
+    /**
+     * Drops the PIN waiting for confirmation and asks for a new one, after the same pause as the
+     * step forward, which also brings the keyboard back. Ignored while the new PIN is being saved,
+     * which still uses it.
+     */
+    private fun goBackToEnterPhase() {
+        val state = viewState.value
+        if (pinFlow == PinFlow.UPDATE ||
+            state.pinState != PinValidationState.REENTER ||
+            state.isLoading
+        ) return
+        clearPendingPin()
+        viewModelScope.launch {
+            setState {
+                copy(isLoading = true)
+            }
+
+            artificialDelay()
+
+            setupEnterPhase()
+        }
+    }
+
+    /**
+     * Keeps [enteredPin] as the PIN waiting for confirmation before the pause, so leaving the
+     * screen during the pause still closes it.
+     */
     private fun setupReenterPhase(enteredPin: SecurePin) {
+        replacePendingPin(enteredPin)
         viewModelScope.launch {
             setState {
                 copy(isLoading = true)
@@ -353,7 +392,6 @@ class PinViewModel(
             artificialDelay()
 
             val newPinState = PinValidationState.REENTER
-            replacePendingPin(enteredPin)
             setState {
                 copy(
                     quickPinError = null,

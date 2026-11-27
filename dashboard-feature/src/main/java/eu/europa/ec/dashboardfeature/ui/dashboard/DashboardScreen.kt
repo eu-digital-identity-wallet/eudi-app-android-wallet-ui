@@ -18,11 +18,14 @@ package eu.europa.ec.dashboardfeature.ui.dashboard
 
 import android.content.Context
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.core.MutableTransitionState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
@@ -35,12 +38,16 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.pointer.PointerEventPass
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavController
+import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -101,15 +108,13 @@ internal fun DashboardScreen(
             bottom = padding.calculateBottomPadding()
         )
 
-        NavHost(
+        DashboardTabs(
+            navController = bottomNavigationController,
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
                 .consumeWindowInsets(paddingValues),
-            navController = bottomNavigationController,
-            startDestination = BottomNavigationItem.Home.route
-        ) {
-            composable(BottomNavigationItem.Home.route) {
+            homeTab = {
                 HomeScreen(
                     hostNavController,
                     homeViewModel,
@@ -117,8 +122,8 @@ internal fun DashboardScreen(
                         viewModel.setEvent(event)
                     }
                 )
-            }
-            composable(BottomNavigationItem.Documents.route) {
+            },
+            documentsTab = {
                 DocumentsScreen(
                     hostNavController,
                     documentsViewModel,
@@ -129,8 +134,8 @@ internal fun DashboardScreen(
                         viewModel.setEvent(event)
                     }
                 )
-            }
-            composable(BottomNavigationItem.Transactions.route) {
+            },
+            transactionsTab = {
                 TransactionsScreen(
                     hostNavController,
                     transactionsViewModel,
@@ -138,8 +143,8 @@ internal fun DashboardScreen(
                         viewModel.setEvent(event)
                     }
                 )
-            }
-        }
+            },
+        )
 
         if (state.isBottomSheetOpen) {
             WrapModalBottomSheet(
@@ -229,6 +234,65 @@ internal fun DashboardScreen(
                 Event.DocumentRevocationNotificationReceived(it)
             )
         }
+    }
+}
+
+/**
+ * The tabs, which switch without a transition. During Navigation's default fade the tab being left
+ * stayed on top, so a quick tap after switching reached it instead of the new tab.
+ */
+@Composable
+internal fun DashboardTabs(
+    navController: NavHostController,
+    modifier: Modifier,
+    homeTab: @Composable () -> Unit,
+    documentsTab: @Composable () -> Unit,
+    transactionsTab: @Composable () -> Unit,
+) {
+    NavHost(
+        modifier = modifier,
+        navController = navController,
+        startDestination = BottomNavigationItem.Home.route,
+        enterTransition = { EnterTransition.None },
+        exitTransition = { ExitTransition.None },
+    ) {
+        composable(BottomNavigationItem.Home.route) { entry ->
+            DashboardTab(navController = navController, entry = entry, content = homeTab)
+        }
+        composable(BottomNavigationItem.Documents.route) { entry ->
+            DashboardTab(navController = navController, entry = entry, content = documentsTab)
+        }
+        composable(BottomNavigationItem.Transactions.route) { entry ->
+            DashboardTab(navController = navController, entry = entry, content = transactionsTab)
+        }
+    }
+}
+
+/**
+ * Lets taps reach a tab only while it is the current one. A tab being left stays on screen until
+ * the next frames are drawn, which on a slow device is long enough for a second tap to reach it.
+ */
+@Composable
+private fun DashboardTab(
+    navController: NavController,
+    entry: NavBackStackEntry,
+    content: @Composable () -> Unit,
+) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .pointerInput(navController, entry.id) {
+                awaitPointerEventScope {
+                    while (true) {
+                        val event = awaitPointerEvent(PointerEventPass.Initial)
+                        if (navController.currentBackStackEntry?.id != entry.id) {
+                            event.changes.forEach { change -> change.consume() }
+                        }
+                    }
+                }
+            }
+    ) {
+        content()
     }
 }
 
